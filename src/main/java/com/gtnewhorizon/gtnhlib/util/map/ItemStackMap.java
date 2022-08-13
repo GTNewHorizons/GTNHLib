@@ -108,7 +108,8 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     @Override
     public T put(ItemStack key, T value) {
         if (key == null || key.getItem() == null || value == null) return null;
-        return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive)).put(key, value);
+        return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive))
+                .put(key, value);
     }
 
     @Override
@@ -183,7 +184,8 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         private DetailIter(Map.Entry<Item, ItemStackMap<T>.DetailMap> input) {
             this.owner = input.getKey();
             this.backing = input.getValue();
-            damageIter = backing.damageMap != null ? backing.damageMap.entrySet().iterator() : null;
+            damageIter =
+                    backing.damageMap != null ? backing.damageMap.entrySet().iterator() : null;
             tagIter = backing.tagMap != null ? backing.tagMap.entrySet().iterator() : null;
             metaIter = backing.metaMap != null ? backing.metaMap.entrySet().iterator() : null;
         }
@@ -375,14 +377,14 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
             // 2 = DamageMap
             // 3 = WildCard
 
-            if(!NBTSensitive) {
+            if (!NBTSensitive) {
                 if (isWildcard(damage)) return 3;
-                else                    return 2;
+                else return 2;
             } else {
                 // Bitwise Operations
                 int i = 0;
-                if (isWildcard(damage)) i  = 1;
-                if (isWildcard(tag))    i |= 2;
+                if (isWildcard(damage)) i = 1;
+                if (isWildcard(tag)) i |= 2;
                 return i;
             }
         }
@@ -471,7 +473,8 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
 
         @Override
         public boolean add(Map.Entry<ItemStack, T> itemStackTEntry) {
-            return itemStackTEntry.getKey() != null && itemStackTEntry.getValue() != null
+            return itemStackTEntry.getKey() != null
+                    && itemStackTEntry.getValue() != null
                     && put(itemStackTEntry.getKey(), itemStackTEntry.getValue()) == null;
         }
 
