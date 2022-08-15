@@ -13,7 +13,13 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = Tags.MODID, version = Tags.VERSION, name = Tags.MODNAME, acceptedMinecraftVersions = "[1.7.10]")
+@Mod(
+    modid = Tags.MODID, 
+    version = Tags.VERSION, 
+    name = Tags.MODNAME, 
+    acceptedMinecraftVersions = "[1.7.10]",
+    dependencies = "required-after:spongemixins@[1.4.0,);"
+)
 public class GTNHLib {
 
     private static Logger LOG = LogManager.getLogger(Tags.MODID);
