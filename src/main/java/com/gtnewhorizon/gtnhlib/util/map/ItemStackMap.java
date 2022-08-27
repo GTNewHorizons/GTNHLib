@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.init.Items;
@@ -128,6 +130,22 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         if (stack.getItem() == null) return false;
         DetailMap map = itemMap.get(stack.getItem());
         return map != null && map.get(stack) != null;
+    }
+
+    @Override
+    public T merge(ItemStack key, T value, BiFunction<? super T, ? super T, ? extends T> remappingFunction) {
+        if (key == null || key.getItem() == null || value == null || remappingFunction == null) return null;
+        DetailMap map = itemMap.get(key.getItem());
+        return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive))
+            .merge(key, value, remappingFunction);
+    }
+
+    @Override
+    public T computeIfAbsent(ItemStack key, Function<? super ItemStack, ? extends T> mappingFunction) {
+        if (key == null || key.getItem() == null || mappingFunction == null) return null;
+        DetailMap map = itemMap.get(key.getItem());
+        return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive))
+            .computeIfAbsent(key, mappingFunction);
     }
 
     @Override
@@ -460,6 +478,54 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 ItemStackMap.this.size += newSize - size;
                 size = newSize;
             }
+        }
+
+        public T merge(ItemStack key, T value, BiFunction<? super T, ? super T, ? extends T> remappingFunction) {
+            try {
+                switch (getKeyType(actualDamage(key), key.stackTagCompound)) {
+                    case 0:
+                        if (metaMap == null) metaMap = new HashMap<>();
+                        return metaMap.merge(new StackMetaKey(key), value, remappingFunction);
+                    case 1:
+                        if (tagMap == null) tagMap = new HashMap<>();
+                        return tagMap.merge(key.stackTagCompound, value, remappingFunction);
+                    case 2:
+                        if (damageMap == null) damageMap = new HashMap<>();
+                        return damageMap.merge(actualDamage(key), value, remappingFunction);
+                    case 3:
+                        T newValue = wildcard == null ? value : remappingFunction.apply(wildcard, value);
+                        wildcard = newValue;
+                        hasWildcard = newValue != null;
+                        return newValue;
+                }
+            } finally {
+                updateSize();
+            }
+            return null;
+        }
+
+        public T computeIfAbsent(ItemStack key, Function<? super ItemStack,? extends T> mappingFunction) {
+            try {
+                switch (getKeyType(actualDamage(key), key.stackTagCompound)) {
+                    case 0:
+                        if (metaMap == null) metaMap = new HashMap<>();
+                        return metaMap.computeIfAbsent(new StackMetaKey(key), x -> mappingFunction.apply(key));
+                    case 1:
+                        if (tagMap == null) tagMap = new HashMap<>();
+                        return tagMap.computeIfAbsent(key.stackTagCompound, x -> mappingFunction.apply(key));
+                    case 2:
+                        if (damageMap == null) damageMap = new HashMap<>();
+                        return damageMap.computeIfAbsent(actualDamage(key), x -> mappingFunction.apply(key));
+                    case 3:
+                        T newValue = wildcard == null ? mappingFunction.apply(key) : wildcard;
+                        wildcard = newValue;
+                        hasWildcard = newValue != null;
+                        return newValue;
+                }
+            } finally {
+                updateSize();
+            }
+            return null;
         }
     }
 
