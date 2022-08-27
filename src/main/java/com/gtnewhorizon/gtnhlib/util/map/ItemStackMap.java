@@ -137,7 +137,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         if (key == null || key.getItem() == null || value == null || remappingFunction == null) return null;
         DetailMap map = itemMap.get(key.getItem());
         return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive))
-            .merge(key, value, remappingFunction);
+                .merge(key, value, remappingFunction);
     }
 
     @Override
@@ -145,7 +145,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         if (key == null || key.getItem() == null || mappingFunction == null) return null;
         DetailMap map = itemMap.get(key.getItem());
         return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive))
-            .computeIfAbsent(key, mappingFunction);
+                .computeIfAbsent(key, mappingFunction);
     }
 
     @Override
@@ -504,7 +504,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
             return null;
         }
 
-        public T computeIfAbsent(ItemStack key, Function<? super ItemStack,? extends T> mappingFunction) {
+        public T computeIfAbsent(ItemStack key, Function<? super ItemStack, ? extends T> mappingFunction) {
             try {
                 switch (getKeyType(actualDamage(key), key.stackTagCompound)) {
                     case 0:
