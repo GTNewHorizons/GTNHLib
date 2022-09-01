@@ -552,10 +552,10 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     }
 
     private enum KeyType {
-        NotWildcard,    // MetaMap
-        WildcardMeta,   // TagMap
-        WildcardTag,    // DamageMap
-        WildcardAll,    // WildCard
+        NotWildcard, // MetaMap
+        WildcardMeta, // TagMap
+        WildcardTag, // DamageMap
+        WildcardAll, // WildCard
         ;
         private static final KeyType[] VALUES = values();
 
