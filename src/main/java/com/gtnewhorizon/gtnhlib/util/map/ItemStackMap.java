@@ -4,7 +4,7 @@ package com.gtnewhorizon.gtnhlib.util.map;
  * Copyright (c) 2022, GTNH Team, glee8e, Code Chicken,
  *
  * This file is originally part of NotEnoughtItem by Code Chicken.
- * It is adapted to implement the standard Map interface by glease
+ * It is adapted to implement the standard Map interface by glee8e
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -389,22 +389,10 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
             this.NBTSensitive = NBTSensitive;
         }
 
-        private int getKeyType(int damage, NBTTagCompound tag) {
-            // 0 = MetaMap
-            // 1 = TagMap
-            // 2 = DamageMap
-            // 3 = WildCard
-
-            if (!NBTSensitive) {
-                if (isWildcard(damage)) return 3;
-                else return 2;
-            } else {
-                // Bitwise Operations
-                int i = 0;
-                if (isWildcard(damage)) i = 1;
-                if (isWildcard(tag)) i |= 2;
-                return i;
-            }
+        private KeyType getKeyType(int damage, NBTTagCompound tag) {
+            KeyType i = isWildcard(damage) ? KeyType.WildcardMeta : KeyType.NotWildcard;
+            if (!NBTSensitive || isWildcard(tag)) i = i.withWildcardTag();
+            return i;
         }
 
         public T get(ItemStack key) {
@@ -426,16 +414,16 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         public T put(ItemStack key, T value) {
             try {
                 switch (getKeyType(actualDamage(key), key.stackTagCompound)) {
-                    case 0:
+                    case NotWildcard:
                         if (metaMap == null) metaMap = new HashMap<>();
                         return metaMap.put(new StackMetaKey(key), value);
-                    case 1:
+                    case WildcardMeta:
                         if (tagMap == null) tagMap = new HashMap<>();
                         return tagMap.put(key.stackTagCompound, value);
-                    case 2:
+                    case WildcardTag:
                         if (damageMap == null) damageMap = new HashMap<>();
                         return damageMap.put(actualDamage(key), value);
-                    case 3:
+                    case WildcardAll:
                         T ret = wildcard;
                         wildcard = value;
                         hasWildcard = true;
@@ -450,13 +438,13 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         public T remove(ItemStack key) {
             try {
                 switch (getKeyType(actualDamage(key), key.stackTagCompound)) {
-                    case 0:
+                    case NotWildcard:
                         return metaMap != null ? metaMap.remove(new StackMetaKey(key)) : null;
-                    case 1:
+                    case WildcardMeta:
                         return tagMap != null ? tagMap.remove(key.stackTagCompound) : null;
-                    case 2:
+                    case WildcardTag:
                         return damageMap != null ? damageMap.remove(actualDamage(key)) : null;
-                    case 3:
+                    case WildcardAll:
                         T ret = wildcard;
                         wildcard = null;
                         hasWildcard = false;
@@ -483,16 +471,16 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         public T merge(ItemStack key, T value, BiFunction<? super T, ? super T, ? extends T> remappingFunction) {
             try {
                 switch (getKeyType(actualDamage(key), key.stackTagCompound)) {
-                    case 0:
+                    case NotWildcard:
                         if (metaMap == null) metaMap = new HashMap<>();
                         return metaMap.merge(new StackMetaKey(key), value, remappingFunction);
-                    case 1:
+                    case WildcardMeta:
                         if (tagMap == null) tagMap = new HashMap<>();
                         return tagMap.merge(key.stackTagCompound, value, remappingFunction);
-                    case 2:
+                    case WildcardTag:
                         if (damageMap == null) damageMap = new HashMap<>();
                         return damageMap.merge(actualDamage(key), value, remappingFunction);
-                    case 3:
+                    case WildcardAll:
                         T newValue = wildcard == null ? value : remappingFunction.apply(wildcard, value);
                         wildcard = newValue;
                         hasWildcard = newValue != null;
@@ -507,16 +495,16 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         public T computeIfAbsent(ItemStack key, Function<? super ItemStack, ? extends T> mappingFunction) {
             try {
                 switch (getKeyType(actualDamage(key), key.stackTagCompound)) {
-                    case 0:
+                    case NotWildcard:
                         if (metaMap == null) metaMap = new HashMap<>();
                         return metaMap.computeIfAbsent(new StackMetaKey(key), x -> mappingFunction.apply(key));
-                    case 1:
+                    case WildcardMeta:
                         if (tagMap == null) tagMap = new HashMap<>();
                         return tagMap.computeIfAbsent(key.stackTagCompound, x -> mappingFunction.apply(key));
-                    case 2:
+                    case WildcardTag:
                         if (damageMap == null) damageMap = new HashMap<>();
                         return damageMap.computeIfAbsent(actualDamage(key), x -> mappingFunction.apply(key));
-                    case 3:
+                    case WildcardAll:
                         T newValue = wildcard == null ? mappingFunction.apply(key) : wildcard;
                         wildcard = newValue;
                         hasWildcard = newValue != null;
@@ -560,6 +548,23 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         @Override
         public int size() {
             return size;
+        }
+    }
+
+    private enum KeyType {
+        NotWildcard,    // MetaMap
+        WildcardMeta,   // TagMap
+        WildcardTag,    // DamageMap
+        WildcardAll,    // WildCard
+        ;
+        private static final KeyType[] VALUES = values();
+
+        public KeyType withWildcardMeta() {
+            return VALUES[ordinal() | 1];
+        }
+
+        public KeyType withWildcardTag() {
+            return VALUES[ordinal() | 2];
         }
     }
 }
