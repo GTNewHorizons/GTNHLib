@@ -1,45 +1,100 @@
 package com.gtnewhorizon.gtnhlib;
 
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
-import cpw.mods.fml.common.event.FMLServerStartedEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.event.FMLServerStoppedEvent;
-import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import cpw.mods.fml.common.event.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 
 public class ClientProxy extends CommonProxy {
 
+    private final Minecraft mc = Minecraft.getMinecraft();
+
+    @Override
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
     }
 
+    @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
     }
 
+    @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
     }
 
+    @Override
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         super.serverAboutToStart(event);
     }
 
+    @Override
     public void serverStarting(FMLServerStartingEvent event) {
         super.serverStarting(event);
     }
 
+    @Override
     public void serverStarted(FMLServerStartedEvent event) {
         super.serverStarted(event);
     }
 
+    @Override
     public void serverStopping(FMLServerStoppingEvent event) {
         super.serverStopping(event);
     }
 
+    @Override
     public void serverStopped(FMLServerStoppedEvent event) {
         super.serverStopped(event);
+    }
+
+    @Override
+    public void addDebugToChat(String message) {
+        addDebugToChat(new ChatComponentText(message));
+    }
+
+    @Override
+    public void addDebugToChat(IChatComponent componentText) {
+        addMessageToChat(new ChatComponentText(EnumChatFormatting.YELLOW + "[Debug]: ").appendSibling(componentText));
+    }
+
+    @Override
+    public void addInfoToChat(String message) {
+        addInfoToChat(new ChatComponentText(message));
+    }
+
+    @Override
+    public void addInfoToChat(IChatComponent componentText) {
+        addMessageToChat(new ChatComponentText(EnumChatFormatting.GREEN + "[Info]: ").appendSibling(componentText));
+    }
+
+    @Override
+    public void addWarnToChat(String message) {
+        addWarnToChat(new ChatComponentText(message));
+    }
+
+    @Override
+    public void addWarnToChat(IChatComponent componentText) {
+        addMessageToChat(
+                new ChatComponentText(EnumChatFormatting.LIGHT_PURPLE + "[Warn]: ").appendSibling(componentText));
+    }
+
+    @Override
+    public void addErrorToChat(String message) {
+        addErrorToChat(new ChatComponentText(message));
+    }
+
+    @Override
+    public void addErrorToChat(IChatComponent componentText) {
+        addMessageToChat(new ChatComponentText(EnumChatFormatting.RED + "[Error]: ").appendSibling(componentText));
+    }
+
+    @Override
+    public void addMessageToChat(IChatComponent componentText) {
+        if (mc.theWorld != null && mc.thePlayer != null) {
+            mc.thePlayer.addChatMessage(componentText);
+        }
     }
 }
