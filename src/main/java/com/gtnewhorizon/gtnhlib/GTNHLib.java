@@ -96,7 +96,8 @@ public class GTNHLib {
     }
 
     public static void addWarnToChat(IChatComponent componentText) {
-        addMessageToChat(new ChatComponentText(EnumChatFormatting.LIGHT_PURPLE + "[Warn]: ").appendSibling(componentText));
+        addMessageToChat(
+                new ChatComponentText(EnumChatFormatting.LIGHT_PURPLE + "[Warn]: ").appendSibling(componentText));
     }
 
     public static void addErrorToChat(String message) {
