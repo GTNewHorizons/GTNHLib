@@ -27,6 +27,7 @@ public class AboveHotbarHUD {
             ticks--;
         }
     }
+
     private static String displayText;
     private static int time;
     private static int ticks;
@@ -75,7 +76,7 @@ public class AboveHotbarHUD {
      * @param duration The duration to be displayed for in ticks
      * @param shadow add a shadow on the text
      */
-    public static void renderTextAboveHotbar(String message, int duration, boolean shadow){
+    public static void renderTextAboveHotbar(String message, int duration, boolean shadow) {
         instance.display(message, duration, shadow);
         MinecraftForge.EVENT_BUS.register(instance);
         FMLCommonHandler.instance().bus().register(instance);
