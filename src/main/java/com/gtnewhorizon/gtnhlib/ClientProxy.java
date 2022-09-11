@@ -7,6 +7,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
+@SuppressWarnings("unused")
 public class ClientProxy extends CommonProxy {
 
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -104,10 +105,11 @@ public class ClientProxy extends CommonProxy {
      *
      * @param message Color it with EnumChatFormatting
      * @param displayDuration in ticks
-     * @param shadow To add a shadow behind the text
+     * @param drawShadow Should the message be drawn with a drawShadow
+     * @param shouldFade Should the message fade away with time
      */
     @Override
-    public void printMessageAboveHotbar(String message, int displayDuration, boolean shadow) {
-        AboveHotbarHUD.renderTextAboveHotbar(message, displayDuration, shadow);
+    public void printMessageAboveHotbar(String message, int displayDuration, boolean drawShadow, boolean shouldFade) {
+        AboveHotbarHUD.renderTextAboveHotbar(message, displayDuration, drawShadow, shouldFade);
     }
 }

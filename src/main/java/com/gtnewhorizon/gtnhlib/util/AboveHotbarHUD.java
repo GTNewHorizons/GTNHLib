@@ -15,69 +15,73 @@ import org.lwjgl.opengl.GL11;
 public class AboveHotbarHUD {
 
     private static final AboveHotbarHUD instance = new AboveHotbarHUD();
+    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static String displayText;
+    private static int time;
+    private static int ticks;
+    private static boolean drawShadow;
+    private static boolean shouldFade;
 
-    @SubscribeEvent
-    public void onDrawScreenPost(RenderGameOverlayEvent.Post event) {
-        renderTextAboveHotbar();
+    /**
+     * Used to register the values for rending text above the hotbar
+     *
+     * @param message      The message to display above the hotbar
+     * @param duration     The duration to be displayed for in ticks
+     * @param drawShadowIn Should the message be drawn with a drawShadow
+     * @param shouldFadeIn Should the message fade away with time
+     */
+    public static void renderTextAboveHotbar(String message, int duration, boolean drawShadowIn, boolean shouldFadeIn) {
+        displayText = message;
+        ticks = duration;
+        time = duration;
+        drawShadow = drawShadowIn;
+        shouldFade = shouldFadeIn;
+        MinecraftForge.EVENT_BUS.register(instance);
+        FMLCommonHandler.instance().bus().register(instance);
     }
 
     @SubscribeEvent
     public void updateTicks(TickEvent.ClientTickEvent event) {
-        if (ticks > 0 && event.phase == TickEvent.Phase.END) {
+        if (event.phase == TickEvent.Phase.END) {
+            if (ticks < 0) {
+                MinecraftForge.EVENT_BUS.unregister(instance);
+                FMLCommonHandler.instance().bus().unregister(instance);
+            }
             ticks--;
         }
     }
-    private static String displayText;
-    private static int time;
-    private static int ticks;
-    private static boolean displayShadow;
 
-    /**
-     * Use when using custom colors for different parts of the text
-     * @param text
-     * Make sure you add Colour formatting, if not use displaySolidColor
-     * @param duration
-     * The duration is in ticks
-     * @param shadow Asks if you want a shadow
-     */
-    public void display(String text, int duration, boolean shadow) {
-        displayText = text;
-        ticks = time = duration;
-        displayShadow = shadow;
-    }
     /**
      * Renders text above the Hotbar of the player
      */
-    public static void renderTextAboveHotbar() {
-        Minecraft mc = Minecraft.getMinecraft();
-        int alpha = ticks > time * 0.25F ? 255 : (int) (255F * ticks / (time * 0.25F));
-        if (alpha < 5) alpha = 0;
-        ScaledResolution res = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-        int color = (alpha << 24);
-        int x = res.getScaledWidth() / 2 - mc.fontRenderer.getStringWidth(displayText) / 2;
-        int y = res.getScaledHeight() - 70;
-        if (alpha > 0) {
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            if (displayShadow) mc.fontRenderer.drawStringWithShadow(displayText, x, y, color);
-            else mc.fontRenderer.drawString(displayText, x, y, color);
-            GL11.glDisable(GL11.GL_BLEND);
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public void renderTextAboveHotbar(RenderGameOverlayEvent.Post event) {
+        if (event.type != RenderGameOverlayEvent.ElementType.TEXT) {
+            return;
         }
-        if (alpha == 0) {
-            MinecraftForge.EVENT_BUS.unregister(instance);
-            FMLCommonHandler.instance().bus().unregister(instance);
+        int alpha = 1; // set to 1 just to pass the if(alpha > 0) check and render if shouldFade = false
+        int color = 0;
+        if (shouldFade) {
+            alpha = ticks > time * 0.25F ? 255 : (int) (255F * ticks / (time * 0.25F));
+            if (alpha < 5) {
+                alpha = 0;
+            }
+            color = (alpha << 24);
+        }
+        if (alpha > 0) {
+            GL11.glPushMatrix();
+            {
+                GL11.glEnable(GL11.GL_BLEND);
+                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                final ScaledResolution res = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+                final int x = (res.getScaledWidth() - mc.fontRenderer.getStringWidth(displayText)) / 2;
+                final int y = res.getScaledHeight() - 70;
+                mc.fontRenderer.drawString(displayText, x, y, color, drawShadow);
+                GL11.glDisable(GL11.GL_BLEND);
+            }
+            GL11.glPopMatrix();
         }
     }
 
-    /**
-     * Used to register the values for rending text above the hotbar
-     * @param message The message to display above the hotbar
-     * @param duration The duration to be displayed for in ticks
-     * @param shadow add a shadow on the text
-     */
-    public static void renderTextAboveHotbar(String message, int duration, boolean shadow){
-        instance.display(message, duration, shadow);
-        MinecraftForge.EVENT_BUS.register(instance);
-        FMLCommonHandler.instance().bus().register(instance);
-    }
 }
