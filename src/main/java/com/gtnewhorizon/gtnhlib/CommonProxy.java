@@ -47,4 +47,6 @@ public class CommonProxy {
     public void addErrorToChat(IChatComponent componentText) {}
 
     public void addMessageToChat(IChatComponent componentText) {}
+
+    public void printMessageAboveHotbar(String message, int displayDuration, boolean shadow) {}
 }
