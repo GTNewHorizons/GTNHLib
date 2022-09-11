@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import cpw.mods.fml.common.event.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
@@ -96,5 +97,17 @@ public class ClientProxy extends CommonProxy {
         if (mc.theWorld != null && mc.thePlayer != null) {
             mc.thePlayer.addChatMessage(componentText);
         }
+    }
+
+    /**
+     * Prints a message above the hotbar
+     *
+     * @param message Color it with EnumChatFormatting
+     * @param displayDuration in ticks
+     * @param shadow To add a shadow behind the text
+     */
+    @Override
+    public void printMessageAboveHotbar(String message, int displayDuration, boolean shadow) {
+        AboveHotbarHUD.renderTextAboveHotbar(message, displayDuration, shadow);
     }
 }
