@@ -6,7 +6,6 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.opengl.GL11;
@@ -40,6 +39,7 @@ public class AboveHotbarHUD {
         FMLCommonHandler.instance().bus().register(instance);
     }
 
+    @SuppressWarnings("unused")
     @SubscribeEvent
     public void updateTicks(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
@@ -74,9 +74,8 @@ public class AboveHotbarHUD {
             {
                 GL11.glEnable(GL11.GL_BLEND);
                 GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                final ScaledResolution res = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-                final int x = (res.getScaledWidth() - mc.fontRenderer.getStringWidth(displayText)) / 2;
-                final int y = res.getScaledHeight() - 70;
+                final int x = (event.resolution.getScaledWidth() - mc.fontRenderer.getStringWidth(displayText)) / 2;
+                final int y = event.resolution.getScaledHeight() - 70;
                 mc.fontRenderer.drawString(displayText, x, y, color, drawShadow);
                 GL11.glDisable(GL11.GL_BLEND);
             }
