@@ -12,6 +12,7 @@ import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.util.FakePlayer;
 
 public class CommonProxy {
 
@@ -65,6 +66,7 @@ public class CommonProxy {
             int displayDuration,
             boolean drawShadow,
             boolean shouldFade) {
+        if (player instanceof FakePlayer) return;
         NetworkHandler.instance.sendTo(
                 new PacketMessageAboveHotbar(chatComponent, displayDuration, drawShadow, shouldFade), player);
     }

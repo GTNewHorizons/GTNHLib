@@ -1,11 +1,8 @@
 package com.gtnewhorizon.gtnhlib;
 
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.*;
-import cpw.mods.fml.relauncher.Side;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
@@ -114,18 +111,5 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void printMessageAboveHotbar(String message, int displayDuration, boolean drawShadow, boolean shouldFade) {
         AboveHotbarHUD.renderTextAboveHotbar(message, displayDuration, drawShadow, shouldFade);
-    }
-
-    @Override
-    public void sendMessageAboveHotbar(
-            EntityPlayerMP player,
-            IChatComponent chatComponent,
-            int displayDuration,
-            boolean drawShadow,
-            boolean shouldFade) {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
-            return;
-        }
-        super.sendMessageAboveHotbar(player, chatComponent, displayDuration, drawShadow, shouldFade);
     }
 }
