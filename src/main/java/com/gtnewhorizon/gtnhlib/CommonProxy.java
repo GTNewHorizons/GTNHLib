@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
+import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -8,7 +10,9 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.util.FakePlayer;
 
 public class CommonProxy {
 
@@ -16,7 +20,9 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + com.gtnewhorizon.gtnhlib.Tags.VERSION + " loaded.");
     }
 
-    public void init(FMLInitializationEvent event) {}
+    public void init(FMLInitializationEvent event) {
+        NetworkHandler.init();
+    }
 
     public void postInit(FMLPostInitializationEvent event) {}
 
@@ -49,4 +55,19 @@ public class CommonProxy {
     public void addMessageToChat(IChatComponent componentText) {}
 
     public void printMessageAboveHotbar(String message, int displayDuration, boolean drawShadow, boolean shouldFade) {}
+
+    /**
+     * Sends packet from server to client that will display message above hotbar.
+     * @see ClientProxy#printMessageAboveHotbar
+     */
+    public void sendMessageAboveHotbar(
+            EntityPlayerMP player,
+            IChatComponent chatComponent,
+            int displayDuration,
+            boolean drawShadow,
+            boolean shouldFade) {
+        if (player instanceof FakePlayer) return;
+        NetworkHandler.instance.sendTo(
+                new PacketMessageAboveHotbar(chatComponent, displayDuration, drawShadow, shouldFade), player);
+    }
 }
