@@ -1,11 +1,13 @@
 package com.gtnewhorizon.gtnhlib;
 
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
+import com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler;
 import cpw.mods.fml.common.event.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.MinecraftForge;
 
 @SuppressWarnings("unused")
 public class ClientProxy extends CommonProxy {
@@ -25,6 +27,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+        MinecraftForge.EVENT_BUS.register(new AnimatedTooltipHandler());
     }
 
     @Override
