@@ -181,5 +181,4 @@ public class AnimatedTooltipHandler {
 
         NEW_LINE = () -> "\n";
     }
-
 }
