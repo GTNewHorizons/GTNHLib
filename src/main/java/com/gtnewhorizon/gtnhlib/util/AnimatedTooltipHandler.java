@@ -74,7 +74,6 @@ public class AnimatedTooltipHandler {
         return () -> String.format(Locale.ROOT, format, args);
     }
 
-
     /**
      * Helper method to create a translated and static text
      * @author glowredman
@@ -82,7 +81,6 @@ public class AnimatedTooltipHandler {
     public static Supplier<String> translatedText(String translationKey) {
         return () -> StatCollector.translateToLocal(translationKey);
     }
-
 
     /**
      * Helper method to create a translated, formatted and static text
@@ -132,7 +130,8 @@ public class AnimatedTooltipHandler {
      * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
      * @author TTFTCUTS, glowredman
      */
-    public static Supplier<String> animatedText(String format, Object[] args, int posstep, int delay, String... formattingArray) {
+    public static Supplier<String> animatedText(
+            String format, Object[] args, int posstep, int delay, String... formattingArray) {
         return animatedText(String.format(Locale.ROOT, format, args), posstep, delay, formattingArray);
     }
 
@@ -146,7 +145,8 @@ public class AnimatedTooltipHandler {
      * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
      * @author TTFTCUTS, glowredman
      */
-    public static Supplier<String> translatedAnimatedText(String translationKey, int posstep, int delay, String... formattingArray) {
+    public static Supplier<String> translatedAnimatedText(
+            String translationKey, int posstep, int delay, String... formattingArray) {
         return animatedText(StatCollector.translateToLocal(translationKey), posstep, delay, formattingArray);
     }
 
@@ -161,8 +161,10 @@ public class AnimatedTooltipHandler {
      * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
      * @author TTFTCUTS, glowredman
      */
-    public static Supplier<String> translatedAnimatedText(String translationKey, Object[] args, int posstep, int delay, String... formattingArray) {
-        return animatedText(StatCollector.translateToLocalFormatted(translationKey, args), posstep, delay, formattingArray);
+    public static Supplier<String> translatedAnimatedText(
+            String translationKey, Object[] args, int posstep, int delay, String... formattingArray) {
+        return animatedText(
+                StatCollector.translateToLocalFormatted(translationKey, args), posstep, delay, formattingArray);
     }
 
     /**
