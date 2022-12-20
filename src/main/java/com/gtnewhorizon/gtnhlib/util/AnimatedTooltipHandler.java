@@ -4,11 +4,13 @@ import com.gtnewhorizon.gtnhlib.util.map.ItemStackMap;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
@@ -65,6 +67,30 @@ public class AnimatedTooltipHandler {
     }
 
     /**
+     * Helper method to create a formatted and static text
+     * @author glowredman
+     */
+    public static Supplier<String> text(String format, Object... args) {
+        return () -> String.format(Locale.ROOT, format, args);
+    }
+
+    /**
+     * Helper method to create a translated and static text
+     * @author glowredman
+     */
+    public static Supplier<String> translatedText(String translationKey) {
+        return () -> StatCollector.translateToLocal(translationKey);
+    }
+
+    /**
+     * Helper method to create a translated, formatted and static text
+     * @author glowredman
+     */
+    public static Supplier<String> translatedText(String translationKey, Object... args) {
+        return () -> StatCollector.translateToLocalFormatted(translationKey, args);
+    }
+
+    /**
      * Helper method to create an animated text
      * <p>
      * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
@@ -91,6 +117,54 @@ public class AnimatedTooltipHandler {
             }
             return sb.toString();
         };
+    }
+
+    /**
+     * Helper method to create an formatted and animated text
+     * <p>
+     * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
+     * @param format The text to be formatted and animated
+     * @param args The formatting arguments
+     * @param posstep How many steps {@code formattingArray} is shifted each {@code delay}
+     * @param delay How many milliseconds are between each shift of {@code formattingArray}
+     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
+     * @author TTFTCUTS, glowredman
+     */
+    public static Supplier<String> animatedText(
+            String format, Object[] args, int posstep, int delay, String... formattingArray) {
+        return animatedText(String.format(Locale.ROOT, format, args), posstep, delay, formattingArray);
+    }
+
+    /**
+     * Helper method to create an translated and animated text
+     * <p>
+     * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
+     * @param translationKey The key used to look up the translation
+     * @param posstep How many steps {@code formattingArray} is shifted each {@code delay}
+     * @param delay How many milliseconds are between each shift of {@code formattingArray}
+     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
+     * @author TTFTCUTS, glowredman
+     */
+    public static Supplier<String> translatedAnimatedText(
+            String translationKey, int posstep, int delay, String... formattingArray) {
+        return animatedText(StatCollector.translateToLocal(translationKey), posstep, delay, formattingArray);
+    }
+
+    /**
+     * Helper method to create an translated, formatted and animated text
+     * <p>
+     * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
+     * @param translationKey The key used to look up the translation
+     * @param args The formatting arguments
+     * @param posstep How many steps {@code formattingArray} is shifted each {@code delay}
+     * @param delay How many milliseconds are between each shift of {@code formattingArray}
+     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
+     * @author TTFTCUTS, glowredman
+     */
+    public static Supplier<String> translatedAnimatedText(
+            String translationKey, Object[] args, int posstep, int delay, String... formattingArray) {
+        return animatedText(
+                StatCollector.translateToLocalFormatted(translationKey, args), posstep, delay, formattingArray);
     }
 
     /**
