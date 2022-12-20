@@ -1,9 +1,9 @@
 package com.gtnewhorizon.gtnhlib.util;
 
+import com.gtnewhorizon.gtnhlib.util.map.ItemStackMap;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.item.Item;
@@ -14,7 +14,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class AnimatedTooltipHandler {
 
-    private static final Map<String, Supplier<String>> tooltipMap = new HashMap<>();
+    private static final Map<ItemStack, Supplier<String>> tooltipMap = new ItemStackMap<>(false);
 
     public static final String BLACK,
             DARK_BLUE,
@@ -77,8 +77,8 @@ public class AnimatedTooltipHandler {
     public static Supplier<String> animatedText(String text, int posstep, int delay, String... formattingArray) {
         if (text == null || text.isEmpty() || formattingArray == null || formattingArray.length == 0) return () -> "";
 
-        final int finalDelay = delay > 0 ? delay : 1;
-        final int finalPosstep = posstep >= 0 ? posstep : 0;
+        final int finalDelay = Math.max(delay, 1);
+        final int finalPosstep = Math.max(posstep, 0);
 
         return () -> {
             StringBuilder sb = new StringBuilder(text.length() * 3);
@@ -114,9 +114,8 @@ public class AnimatedTooltipHandler {
      */
     public static void addItemTooltip(String modID, String registryName, int meta, Supplier<String> tooltip) {
         Item item = GameRegistry.findItem(modID, registryName);
-        if (item == null || meta < 0 || meta >= OreDictionary.WILDCARD_VALUE || tooltip == null) return;
-        String identifier = item.getUnlocalizedName() + "@" + meta;
-        tooltipMap.merge(identifier, tooltip, (a, b) -> chain(a, NEW_LINE, b));
+        if (item == null || tooltip == null) return;
+        tooltipMap.merge(new ItemStack(item, 1, meta), tooltip, (a, b) -> chain(a, NEW_LINE, b));
     }
 
     /**
@@ -127,32 +126,18 @@ public class AnimatedTooltipHandler {
      */
     public static void addItemTooltip(ItemStack item, Supplier<String> tooltip) {
         if (item == null || tooltip == null) return;
-        String identifier = getStackIdentifier(item);
-        tooltipMap.merge(identifier, tooltip, (a, b) -> chain(a, NEW_LINE, b));
-    }
-
-    private static String getStackIdentifier(ItemStack stack) {
-        return stack == null ? "" : stack.getItem().getUnlocalizedName() + "@" + stack.getItemDamage();
+        tooltipMap.merge(item, tooltip, (a, b) -> chain(a, NEW_LINE, b));
     }
 
     @SubscribeEvent
     public void renderTooltip(ItemTooltipEvent event) {
-        Supplier<String> tooltip = tooltipMap.get(getStackIdentifier(event.itemStack));
-        if (tooltip != null) {
-            String text = tooltip.get();
-            if (!text.isEmpty()) {
-                event.toolTip.addAll(Arrays.asList(text.split("\n")));
-            }
-        }
-        ItemStack wildcardItem = event.itemStack.copy();
-        wildcardItem.setItemDamage(OreDictionary.WILDCARD_VALUE);
-        tooltip = tooltipMap.get(getStackIdentifier(wildcardItem));
-        if (tooltip != null) {
-            String text = tooltip.get();
-            if (!text.isEmpty()) {
-                event.toolTip.addAll(Arrays.asList(text.split("\n")));
-            }
-        }
+        Supplier<String> tooltip = tooltipMap.get(event.itemStack);
+        if (tooltip == null) return;
+
+        String text = tooltip.get();
+        if (text == null) return;
+
+        event.toolTip.addAll(Arrays.asList(text.split("\n")));
     }
 
     static {
