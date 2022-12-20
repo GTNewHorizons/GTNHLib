@@ -17,7 +17,7 @@ import net.minecraftforge.common.util.FakePlayer;
 public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event) {
-        GTNHLib.info("GTNHLib version " + com.gtnewhorizon.gtnhlib.Tags.VERSION + " loaded.");
+        GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
     }
 
     public void init(FMLInitializationEvent event) {
