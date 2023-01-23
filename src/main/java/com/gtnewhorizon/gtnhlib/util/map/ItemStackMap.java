@@ -294,7 +294,10 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     assert iter.damageIter != null;
                     Map.Entry<Integer, T> entry = iter.damageIter.next();
-                    return new ItemStackEntry<>(newItemStack(iter.owner, 1, entry.getKey(), iter.backing.NBTSensitive ? WILDCARD_TAG : null), entry);
+                    return new ItemStackEntry<>(
+                            newItemStack(
+                                    iter.owner, 1, entry.getKey(), iter.backing.NBTSensitive ? WILDCARD_TAG : null),
+                            entry);
                 }
 
                 @Override
