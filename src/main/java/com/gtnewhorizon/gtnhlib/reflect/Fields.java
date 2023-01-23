@@ -269,8 +269,7 @@ public class Fields {
                             try {
                                 return (F) exactGetterHandle.invokeExact();
                             } catch (Throwable e) {
-                                Throwables.propagate(e);
-                                throw new IllegalStateException(); // unreachable
+                                throw Throwables.propagate(e);
                             }
                         };
                     } else {
@@ -280,8 +279,7 @@ public class Fields {
                             try {
                                 return (F) exactGetterHandle.invokeExact((Object) obj);
                             } catch (Throwable e) {
-                                Throwables.propagate(e);
-                                throw new IllegalStateException(); // unreachable
+                                throw Throwables.propagate(e);
                             }
                         };
                     }
@@ -297,8 +295,7 @@ public class Fields {
                                 try {
                                     exactSetterHandle.invokeExact((Object) val);
                                 } catch (Throwable e) {
-                                    Throwables.propagate(e);
-                                    throw new IllegalStateException(); // unreachable
+                                    throw Throwables.propagate(e);
                                 }
                             };
                         } else {
@@ -308,8 +305,7 @@ public class Fields {
                                 try {
                                     exactSetterHandle.invokeExact((Object) obj, (Object) val);
                                 } catch (Throwable e) {
-                                    Throwables.propagate(e);
-                                    throw new IllegalStateException(); // unreachable
+                                    throw Throwables.propagate(e);
                                 }
                             };
                         }
