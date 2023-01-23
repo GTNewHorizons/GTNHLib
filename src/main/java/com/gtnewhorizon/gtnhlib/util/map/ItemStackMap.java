@@ -76,8 +76,8 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         return Items.diamond.getDamage(stack);
     }
 
-    static ItemStack wildcard(Item item) {
-        return newItemStack(item, 1, WILDCARD_VALUE, WILDCARD_TAG);
+    static ItemStack wildcard(Item item, boolean nbtsensitive) {
+        return newItemStack(item, 1, WILDCARD_VALUE, nbtsensitive ? WILDCARD_TAG : null);
     }
 
     static boolean isWildcard(int damage) {
@@ -263,7 +263,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 @Override
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     return new Map.Entry<ItemStack, T>() {
-                        private final ItemStack key = wildcard(iter.owner);
+                        private final ItemStack key = wildcard(iter.owner, iter.backing.NBTSensitive);
 
                         @Override
                         public ItemStack getKey() {
@@ -294,7 +294,10 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     assert iter.damageIter != null;
                     Map.Entry<Integer, T> entry = iter.damageIter.next();
-                    return new ItemStackEntry<>(newItemStack(iter.owner, 1, entry.getKey(), WILDCARD_TAG), entry);
+                    return new ItemStackEntry<>(
+                            newItemStack(
+                                    iter.owner, 1, entry.getKey(), iter.backing.NBTSensitive ? WILDCARD_TAG : null),
+                            entry);
                 }
 
                 @Override
