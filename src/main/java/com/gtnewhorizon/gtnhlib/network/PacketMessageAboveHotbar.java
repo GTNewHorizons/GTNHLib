@@ -1,12 +1,14 @@
 package com.gtnewhorizon.gtnhlib.network;
 
+import net.minecraft.util.IChatComponent;
+
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.IChatComponent;
 
 public class PacketMessageAboveHotbar implements IMessage {
 
@@ -18,8 +20,8 @@ public class PacketMessageAboveHotbar implements IMessage {
     @SuppressWarnings("unused")
     public PacketMessageAboveHotbar() {}
 
-    public PacketMessageAboveHotbar(
-            IChatComponent chatComponent, int displayDuration, boolean drawShadow, boolean shouldFade) {
+    public PacketMessageAboveHotbar(IChatComponent chatComponent, int displayDuration, boolean drawShadow,
+            boolean shouldFade) {
         this.chatComponent = chatComponent;
         this.displayDuration = displayDuration;
         this.drawShadow = drawShadow;
@@ -43,6 +45,7 @@ public class PacketMessageAboveHotbar implements IMessage {
     }
 
     public static class HandlerMessageAboveHotbar implements IMessageHandler<PacketMessageAboveHotbar, IMessage> {
+
         @Override
         public IMessage onMessage(PacketMessageAboveHotbar message, MessageContext ctx) {
             GTNHLib.proxy.printMessageAboveHotbar(

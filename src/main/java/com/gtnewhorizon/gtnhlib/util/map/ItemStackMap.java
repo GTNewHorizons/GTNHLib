@@ -1,29 +1,18 @@
 package com.gtnewhorizon.gtnhlib.util.map;
 
 /*
- * Copyright (c) 2022, GTNH Team, glee8e, Code Chicken,
- *
- * This file is originally part of NotEnoughtItem by Code Chicken.
- * It is adapted to implement the standard Map interface by glee8e
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (c) 2022, GTNH Team, glee8e, Code Chicken, This file is originally part of NotEnoughtItem by Code Chicken.
+ * It is adapted to implement the standard Map interface by glee8e This program is free software: you can redistribute
+ * it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 2.1 of the License, or (at your option) any later version. This program is distributed in
+ * the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You should have
+ * received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 import static net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Iterators;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.HashMap;
@@ -33,12 +22,17 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.Iterators;
 
 /**
  * A map class for ItemStack keys with wildcard damage/NBT. Optimised for lookup.
@@ -54,6 +48,7 @@ import net.minecraft.nbt.NBTTagCompound;
  */
 @SuppressWarnings("unused")
 public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
+
     public static final NBTTagCompound WILDCARD_TAG;
 
     static {
@@ -110,8 +105,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     @Override
     public T put(ItemStack key, T value) {
         if (key == null || key.getItem() == null || value == null) return null;
-        return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive))
-                .put(key, value);
+        return itemMap.computeIfAbsent(key.getItem(), k -> new DetailMap(this.NBTSensitive)).put(key, value);
     }
 
     @Override
@@ -160,6 +154,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     }
 
     private static class StackMetaKey {
+
         public final int damage;
         public final NBTTagCompound tag;
 
@@ -184,6 +179,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     }
 
     private static class DetailIter<T> implements Iterator<Map.Entry<ItemStack, T>> {
+
         private final Item owner;
         private final ItemStackMap<T>.DetailMap backing;
 
@@ -202,8 +198,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         private DetailIter(Map.Entry<Item, ItemStackMap<T>.DetailMap> input) {
             this.owner = input.getKey();
             this.backing = input.getValue();
-            damageIter =
-                    backing.damageMap != null ? backing.damageMap.entrySet().iterator() : null;
+            damageIter = backing.damageMap != null ? backing.damageMap.entrySet().iterator() : null;
             tagIter = backing.tagMap != null ? backing.tagMap.entrySet().iterator() : null;
             metaIter = backing.metaMap != null ? backing.metaMap.entrySet().iterator() : null;
         }
@@ -248,7 +243,9 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         }
 
         private enum DetailIterState {
+
             NOT_STARTED {
+
                 @Override
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     throw new AssertionError("Should not call get on NOT_STARTED");
@@ -260,9 +257,11 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 }
             },
             WILDCARD {
+
                 @Override
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     return new Map.Entry<ItemStack, T>() {
+
                         private final ItemStack key = wildcard(iter.owner, iter.backing.NBTSensitive);
 
                         @Override
@@ -290,13 +289,17 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 }
             },
             DAMAGE {
+
                 @Override
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     assert iter.damageIter != null;
                     Map.Entry<Integer, T> entry = iter.damageIter.next();
                     return new ItemStackEntry<>(
                             newItemStack(
-                                    iter.owner, 1, entry.getKey(), iter.backing.NBTSensitive ? WILDCARD_TAG : null),
+                                    iter.owner,
+                                    1,
+                                    entry.getKey(),
+                                    iter.backing.NBTSensitive ? WILDCARD_TAG : null),
                             entry);
                 }
 
@@ -307,6 +310,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 }
             },
             TAG {
+
                 @Override
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     assert iter.tagIter != null;
@@ -321,12 +325,14 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 }
             },
             META {
+
                 @Override
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     assert iter.metaIter != null;
                     Map.Entry<StackMetaKey, T> entry = iter.metaIter.next();
                     return new ItemStackEntry<>(
-                            newItemStack(iter.owner, 1, entry.getKey().damage, entry.getKey().tag), entry);
+                            newItemStack(iter.owner, 1, entry.getKey().damage, entry.getKey().tag),
+                            entry);
                 }
 
                 @Override
@@ -336,6 +342,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
                 }
             },
             DONE {
+
                 @Override
                 <T> Map.Entry<ItemStack, T> get(DetailIter<T> iter) {
                     throw new AssertionError("Should not call get on DONE");
@@ -352,6 +359,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
             abstract <T> void remove(DetailIter<T> iter);
 
             private static class ItemStackEntry<T> implements Map.Entry<ItemStack, T> {
+
                 private final ItemStack key;
                 private final Map.Entry<?, T> entry;
 
@@ -379,6 +387,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     }
 
     private class DetailMap {
+
         private boolean hasWildcard;
         private T wildcard;
         private HashMap<Integer, T> damageMap;
@@ -460,8 +469,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         }
 
         private void updateSize() {
-            int newSize = (hasWildcard ? 1 : 0)
-                    + (metaMap != null ? metaMap.size() : 0)
+            int newSize = (hasWildcard ? 1 : 0) + (metaMap != null ? metaMap.size() : 0)
                     + (tagMap != null ? tagMap.size() : 0)
                     + (damageMap != null ? damageMap.size() : 0);
 
@@ -521,6 +529,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     }
 
     private class SetView extends AbstractSet<Map.Entry<ItemStack, T>> {
+
         @Override
         public boolean contains(Object o) {
             if (!(o instanceof Map.Entry)) return false;
@@ -530,8 +539,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
 
         @Override
         public boolean add(Map.Entry<ItemStack, T> itemStackTEntry) {
-            return itemStackTEntry.getKey() != null
-                    && itemStackTEntry.getValue() != null
+            return itemStackTEntry.getKey() != null && itemStackTEntry.getValue() != null
                     && put(itemStackTEntry.getKey(), itemStackTEntry.getValue()) == null;
         }
 
@@ -555,11 +563,13 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
     }
 
     private enum KeyType {
+
         NotWildcard, // MetaMap
         WildcardMeta, // TagMap
         WildcardTag, // DamageMap
         WildcardAll, // WildCard
         ;
+
         private static final KeyType[] VALUES = values();
 
         public KeyType withWildcardMeta() {

@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.reflect;
 
-import com.google.common.base.Throwables;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -8,15 +7,20 @@ import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import sun.misc.Unsafe;
 
+import com.google.common.base.Throwables;
+
 /**
- * Utilities for {@link java.lang.reflect.Field} reflection, compatible with Java 8-19.
- * Can read and write to final static fields unlike the regular reflection API.
+ * Utilities for {@link java.lang.reflect.Field} reflection, compatible with Java 8-19. Can read and write to final
+ * static fields unlike the regular reflection API.
  */
 public class Fields {
+
     private static final Unsafe UNSAFE;
     private static final MethodHandles.Lookup mhLookup = MethodHandles.lookup();
 
@@ -36,6 +40,7 @@ public class Fields {
      * How to look up a field in the class?
      */
     public enum LookupType {
+
         /** Look at the public API (using {@link Class#getField(String)}) */
         PUBLIC,
         /** Look at the fields declared in the exact class specified (using {@link Class#getDeclaredField(String)}) */
@@ -84,14 +89,15 @@ public class Fields {
     }
 
     public static class ClassFields<C> {
+
         public final Class<C> klass;
 
         private ClassFields(Class<C> klass) {
             this.klass = klass;
         }
 
-        private java.lang.reflect.Field getCheckedFieldImpl(
-                @Nonnull LookupType strategy, @Nonnull String name, @Nullable Class<?> expectedType) {
+        private java.lang.reflect.Field getCheckedFieldImpl(@Nonnull LookupType strategy, @Nonnull String name,
+                @Nullable Class<?> expectedType) {
             java.lang.reflect.Field javaField = strategy.lookup(klass, name);
             if (javaField == null) {
                 return null;
@@ -99,9 +105,13 @@ public class Fields {
             if (expectedType != null) {
                 Class<?> realType = javaField.getType();
                 if (!realType.equals(expectedType)) {
-                    throw new ClassCastException(String.format(
-                            "Trying to access field %s#%s of type %s as type %s",
-                            klass.getName(), name, realType.getName(), expectedType.getName()));
+                    throw new ClassCastException(
+                            String.format(
+                                    "Trying to access field %s#%s of type %s as type %s",
+                                    klass.getName(),
+                                    name,
+                                    realType.getName(),
+                                    expectedType.getName()));
                 }
             }
             return javaField;
@@ -109,13 +119,16 @@ public class Fields {
 
         /**
          * Looks up a field in the class using the reflection API and provides non-type-safe accessors to it.
+         * 
          * @param strategy The lookup strategy, see {@link LookupType}
-         * @param name Name of the field we are searching for
+         * @param name     Name of the field we are searching for
          * @return A field wrapper for the found field, or null if not found.
          */
         public Field<?> getUntypedField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), null);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    null);
             if (javaField == null) {
                 return null;
             }
@@ -124,14 +137,15 @@ public class Fields {
 
         /**
          * Looks up a field in the class using the reflection API and provides type-safe accessors to it.
-         * @param strategy The lookup strategy, see {@link LookupType}
-         * @param name Name of the field we are searching for
+         * 
+         * @param strategy     The lookup strategy, see {@link LookupType}
+         * @param name         Name of the field we are searching for
          * @param expectedType The type we want to access the field as
          * @return A field wrapper for the found field, or null if not found.
          * @throws ClassCastException If the field exists under the given name, but is not of the given type.
          */
-        public <F> Field<F> getField(
-                @Nonnull LookupType strategy, @Nonnull String name, @Nonnull Class<F> expectedType) {
+        public <F> Field<F> getField(@Nonnull LookupType strategy, @Nonnull String name,
+                @Nonnull Class<F> expectedType) {
             java.lang.reflect.Field javaField = getCheckedFieldImpl(
                     Objects.requireNonNull(strategy),
                     Objects.requireNonNull(name),
@@ -144,11 +158,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Boolean> getBooleanField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), boolean.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    boolean.class);
             if (javaField == null) {
                 return null;
             }
@@ -157,11 +174,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Byte> getByteField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), byte.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    byte.class);
             if (javaField == null) {
                 return null;
             }
@@ -170,11 +190,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Short> getShortField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), short.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    short.class);
             if (javaField == null) {
                 return null;
             }
@@ -183,11 +206,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Integer> getIntField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), int.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    int.class);
             if (javaField == null) {
                 return null;
             }
@@ -196,11 +222,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Long> getLongField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), long.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    long.class);
             if (javaField == null) {
                 return null;
             }
@@ -209,11 +238,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Character> getCharField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), char.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    char.class);
             if (javaField == null) {
                 return null;
             }
@@ -222,11 +254,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Float> getFloatField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), float.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    float.class);
             if (javaField == null) {
                 return null;
             }
@@ -235,11 +270,14 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
+         * 
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Double> getDoubleField(@Nonnull LookupType strategy, @Nonnull String name) {
-            java.lang.reflect.Field javaField =
-                    getCheckedFieldImpl(Objects.requireNonNull(strategy), Objects.requireNonNull(name), double.class);
+            java.lang.reflect.Field javaField = getCheckedFieldImpl(
+                    Objects.requireNonNull(strategy),
+                    Objects.requireNonNull(name),
+                    double.class);
             if (javaField == null) {
                 return null;
             }
@@ -247,6 +285,7 @@ public class Fields {
         }
 
         public class Field<F> {
+
             public final java.lang.reflect.Field javaField;
             public final Class<F> accessType;
             public final boolean isPrimitive, isStatic, isFinal;
@@ -273,8 +312,8 @@ public class Fields {
                             }
                         };
                     } else {
-                        final MethodHandle exactGetterHandle =
-                                getterHandle.asType(MethodType.methodType(Object.class, Object.class));
+                        final MethodHandle exactGetterHandle = getterHandle
+                                .asType(MethodType.methodType(Object.class, Object.class));
                         this.getAccessor = obj -> {
                             try {
                                 return (F) exactGetterHandle.invokeExact((Object) obj);
@@ -286,11 +325,11 @@ public class Fields {
                     // Generate setter
                     BiConsumer<C, F> setAccessor = null;
                     try { // Try the MethodHandle way first, fall back to unsafe is not possible (e.g. static final
-                        // fields)
+                          // fields)
                         final MethodHandle setterHandle = mhLookup.unreflectSetter(javaField);
                         if (this.isStatic) {
-                            final MethodHandle exactSetterHandle =
-                                    setterHandle.asType(MethodType.methodType(void.class, Object.class));
+                            final MethodHandle exactSetterHandle = setterHandle
+                                    .asType(MethodType.methodType(void.class, Object.class));
                             setAccessor = (obj, val) -> {
                                 try {
                                     exactSetterHandle.invokeExact((Object) val);
@@ -299,8 +338,8 @@ public class Fields {
                                 }
                             };
                         } else {
-                            final MethodHandle exactSetterHandle =
-                                    setterHandle.asType(MethodType.methodType(void.class, Object.class, Object.class));
+                            final MethodHandle exactSetterHandle = setterHandle
+                                    .asType(MethodType.methodType(void.class, Object.class, Object.class));
                             setAccessor = (obj, val) -> {
                                 try {
                                     exactSetterHandle.invokeExact((Object) obj, (Object) val);
@@ -312,37 +351,37 @@ public class Fields {
                     } catch (IllegalAccessException e) {
                         // Unsafe fallback
                         final Object staticBase = isStatic ? UNSAFE.staticFieldBase(javaField) : null;
-                        final long fieldOffset =
-                                isStatic ? UNSAFE.staticFieldOffset(javaField) : UNSAFE.objectFieldOffset(javaField);
+                        final long fieldOffset = isStatic ? UNSAFE.staticFieldOffset(javaField)
+                                : UNSAFE.objectFieldOffset(javaField);
                         if (!isPrimitive) {
-                            setAccessor = (obj, val) ->
-                                    UNSAFE.putObject(unsafeBaseHelper(staticBase, obj, val), fieldOffset, val);
+                            setAccessor = (obj, val) -> UNSAFE
+                                    .putObject(unsafeBaseHelper(staticBase, obj, val), fieldOffset, val);
                         } else {
                             final Class<?> fieldType = javaField.getType();
                             if (fieldType.equals(boolean.class)) {
-                                setAccessor = (obj, val) -> UNSAFE.putBoolean(
-                                        unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Boolean) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putBoolean(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Boolean) val);
                             } else if (fieldType.equals(byte.class)) {
-                                setAccessor = (obj, val) ->
-                                        UNSAFE.putByte(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Byte) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putByte(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Byte) val);
                             } else if (fieldType.equals(short.class)) {
-                                setAccessor = (obj, val) -> UNSAFE.putShort(
-                                        unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Short) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putShort(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Short) val);
                             } else if (fieldType.equals(int.class)) {
-                                setAccessor = (obj, val) -> UNSAFE.putInt(
-                                        unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Integer) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putInt(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Integer) val);
                             } else if (fieldType.equals(long.class)) {
-                                setAccessor = (obj, val) ->
-                                        UNSAFE.putLong(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Long) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putLong(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Long) val);
                             } else if (fieldType.equals(char.class)) {
-                                setAccessor = (obj, val) -> UNSAFE.putChar(
-                                        unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Character) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putChar(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Character) val);
                             } else if (fieldType.equals(float.class)) {
-                                setAccessor = (obj, val) -> UNSAFE.putFloat(
-                                        unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Float) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putFloat(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Float) val);
                             } else if (fieldType.equals(double.class)) {
-                                setAccessor = (obj, val) -> UNSAFE.putDouble(
-                                        unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Double) val);
+                                setAccessor = (obj, val) -> UNSAFE
+                                        .putDouble(unsafeBaseHelper(staticBase, obj, val), fieldOffset, (Double) val);
                             } else {
                                 throw new IllegalStateException();
                             }
@@ -351,18 +390,23 @@ public class Fields {
                     this.setAccessor = Objects.requireNonNull(setAccessor);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(
-                            "Couldn't create a Field accessor for " + klass.getName() + "#" + javaField.getName(), e);
+                            "Couldn't create a Field accessor for " + klass.getName() + "#" + javaField.getName(),
+                            e);
                 }
             }
 
             private Object unsafeBaseHelper(Object staticBase, Object obj, Object value) {
                 if (!isStatic && !klass.isInstance(obj)) {
-                    throw new ClassCastException("Illegal reflective access to field of " + klass
-                            + " using object of type " + obj.getClass());
+                    throw new ClassCastException(
+                            "Illegal reflective access to field of " + klass
+                                    + " using object of type "
+                                    + obj.getClass());
                 }
                 if (!accessType.isAssignableFrom(value.getClass())) {
-                    throw new ClassCastException("Illegal reflective set of value of type " + value.getClass()
-                            + " to field of type " + javaField.getType());
+                    throw new ClassCastException(
+                            "Illegal reflective set of value of type " + value.getClass()
+                                    + " to field of type "
+                                    + javaField.getType());
                 }
                 return isStatic ? staticBase : obj;
             }
@@ -377,7 +421,7 @@ public class Fields {
 
             /**
              * @param object Instance of the class, or null if accessing a static field
-             * @param value New value to set in the field
+             * @param value  New value to set in the field
              */
             public void setValue(C object, F value) {
                 this.setAccessor.accept(object, value);

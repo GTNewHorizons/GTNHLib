@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.test.reflect;
 
 public class FieldsTestSubject {
+
     static {
         // Prevent constant inlining by javac
         staticFinalChar = Character.valueOf('0');

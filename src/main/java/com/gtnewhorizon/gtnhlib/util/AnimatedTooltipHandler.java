@@ -1,12 +1,10 @@
 package com.gtnewhorizon.gtnhlib.util;
 
-import com.gtnewhorizon.gtnhlib.util.map.ItemStackMap;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
+
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
@@ -14,37 +12,24 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
+import com.gtnewhorizon.gtnhlib.util.map.ItemStackMap;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
+
 public class AnimatedTooltipHandler {
 
     private static final Map<ItemStack, Supplier<String>> tooltipMap = new ItemStackMap<>(false);
 
-    public static final String BLACK,
-            DARK_BLUE,
-            DARK_GREEN,
-            DARK_AQUA,
-            DARK_RED,
-            DARK_PURPLE,
-            GOLD,
-            GRAY,
-            DARK_GRAY,
-            BLUE,
-            GREEN,
-            AQUA,
-            RED,
-            LIGHT_PURPLE,
-            YELLOW,
-            WHITE,
-            OBFUSCATED,
-            BOLD,
-            STRIKETHROUGH,
-            UNDERLINE,
-            ITALIC,
+    public static final String BLACK, DARK_BLUE, DARK_GREEN, DARK_AQUA, DARK_RED, DARK_PURPLE, GOLD, GRAY, DARK_GRAY,
+            BLUE, GREEN, AQUA, RED, LIGHT_PURPLE, YELLOW, WHITE, OBFUSCATED, BOLD, STRIKETHROUGH, UNDERLINE, ITALIC,
             RESET;
 
     public static final Supplier<String> NEW_LINE;
 
     /**
      * Helper method to concatenate multiple texts
+     * 
      * @author glowredman
      */
     @SafeVarargs
@@ -60,6 +45,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a static text
+     * 
      * @author glowredman
      */
     public static Supplier<String> text(String text) {
@@ -68,6 +54,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a formatted and static text
+     * 
      * @author glowredman
      */
     public static Supplier<String> text(String format, Object... args) {
@@ -76,6 +63,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a translated and static text
+     * 
      * @author glowredman
      */
     public static Supplier<String> translatedText(String translationKey) {
@@ -84,6 +72,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a translated, formatted and static text
+     * 
      * @author glowredman
      */
     public static Supplier<String> translatedText(String translationKey, Object... args) {
@@ -93,11 +82,15 @@ public class AnimatedTooltipHandler {
     /**
      * Helper method to create an animated text
      * <p>
-     * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * @param text The text to be animated
-     * @param posstep How many steps {@code formattingArray} is shifted each {@code delay}
-     * @param delay How many milliseconds are between each shift of {@code formattingArray}
-     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
+     * Taken and adapted from <a
+     * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
+     * 
+     * @param text            The text to be animated
+     * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
+     * @param delay           How many milliseconds are between each shift of {@code formattingArray}
+     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry,
+     *                        depending on {@code posstep} and {@code delay}. Wraps around, if shorter than
+     *                        {@code formattingArray}.
      * @author TTFTCUTS, glowredman
      */
     public static Supplier<String> animatedText(String text, int posstep, int delay, String... formattingArray) {
@@ -122,55 +115,71 @@ public class AnimatedTooltipHandler {
     /**
      * Helper method to create an formatted and animated text
      * <p>
-     * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * @param format The text to be formatted and animated
-     * @param args The formatting arguments
-     * @param posstep How many steps {@code formattingArray} is shifted each {@code delay}
-     * @param delay How many milliseconds are between each shift of {@code formattingArray}
-     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
+     * Taken and adapted from <a
+     * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
+     * 
+     * @param format          The text to be formatted and animated
+     * @param args            The formatting arguments
+     * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
+     * @param delay           How many milliseconds are between each shift of {@code formattingArray}
+     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry,
+     *                        depending on {@code posstep} and {@code delay}. Wraps around, if shorter than
+     *                        {@code formattingArray}.
      * @author TTFTCUTS, glowredman
      */
-    public static Supplier<String> animatedText(
-            String format, Object[] args, int posstep, int delay, String... formattingArray) {
+    public static Supplier<String> animatedText(String format, Object[] args, int posstep, int delay,
+            String... formattingArray) {
         return animatedText(String.format(Locale.ROOT, format, args), posstep, delay, formattingArray);
     }
 
     /**
      * Helper method to create an translated and animated text
      * <p>
-     * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * @param translationKey The key used to look up the translation
-     * @param posstep How many steps {@code formattingArray} is shifted each {@code delay}
-     * @param delay How many milliseconds are between each shift of {@code formattingArray}
-     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
+     * Taken and adapted from <a
+     * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
+     * 
+     * @param translationKey  The key used to look up the translation
+     * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
+     * @param delay           How many milliseconds are between each shift of {@code formattingArray}
+     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry,
+     *                        depending on {@code posstep} and {@code delay}. Wraps around, if shorter than
+     *                        {@code formattingArray}.
      * @author TTFTCUTS, glowredman
      */
-    public static Supplier<String> translatedAnimatedText(
-            String translationKey, int posstep, int delay, String... formattingArray) {
+    public static Supplier<String> translatedAnimatedText(String translationKey, int posstep, int delay,
+            String... formattingArray) {
         return animatedText(StatCollector.translateToLocal(translationKey), posstep, delay, formattingArray);
     }
 
     /**
      * Helper method to create an translated, formatted and animated text
      * <p>
-     * Taken and adapted from <a href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * @param translationKey The key used to look up the translation
-     * @param args The formatting arguments
-     * @param posstep How many steps {@code formattingArray} is shifted each {@code delay}
-     * @param delay How many milliseconds are between each shift of {@code formattingArray}
-     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry, depending on {@code posstep} and {@code delay}. Wraps around, if shorter than {@code formattingArray}.
+     * Taken and adapted from <a
+     * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
+     * 
+     * @param translationKey  The key used to look up the translation
+     * @param args            The formatting arguments
+     * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
+     * @param delay           How many milliseconds are between each shift of {@code formattingArray}
+     * @param formattingArray An array of formatting codes. Each char of {@code text} will be prefixed by one entry,
+     *                        depending on {@code posstep} and {@code delay}. Wraps around, if shorter than
+     *                        {@code formattingArray}.
      * @author TTFTCUTS, glowredman
      */
-    public static Supplier<String> translatedAnimatedText(
-            String translationKey, Object[] args, int posstep, int delay, String... formattingArray) {
+    public static Supplier<String> translatedAnimatedText(String translationKey, Object[] args, int posstep, int delay,
+            String... formattingArray) {
         return animatedText(
-                StatCollector.translateToLocalFormatted(translationKey, args), posstep, delay, formattingArray);
+                StatCollector.translateToLocalFormatted(translationKey, args),
+                posstep,
+                delay,
+                formattingArray);
     }
 
     /**
-     * Add {@code tooltip} to all items with {@code oredictName}.
-     * <br><b>Note:</b> The items must be registered to the {@link OreDictionary} when this method is called.
-     * <br><b>Note:</b> Items with equal registry name and meta but different NBT are considered equal.
+     * Add {@code tooltip} to all items with {@code oredictName}. <br>
+     * <b>Note:</b> The items must be registered to the {@link OreDictionary} when this method is called. <br>
+     * <b>Note:</b> Items with equal registry name and meta but different NBT are considered equal.
+     * 
      * @author glowredman
      */
     public static void addOredictTooltip(String oredictName, Supplier<String> tooltip) {
@@ -180,10 +189,11 @@ public class AnimatedTooltipHandler {
     }
 
     /**
-     * Add {@code tooltip} to item specified by {@code modID}, {@code registryName} and {@code meta}.
-     * <br><b>Note:</b> The item must be registered to the {@link GameRegistry} when this method is called.
-     * <br><b>Note:</b> Items with equal registry name and meta but different NBT are considered equal.
-     * <br><b>Note:</b> Using {@link OreDictionary#WILDCARD_VALUE} as {@code meta} is allowed.
+     * Add {@code tooltip} to item specified by {@code modID}, {@code registryName} and {@code meta}. <br>
+     * <b>Note:</b> The item must be registered to the {@link GameRegistry} when this method is called. <br>
+     * <b>Note:</b> Items with equal registry name and meta but different NBT are considered equal. <br>
+     * <b>Note:</b> Using {@link OreDictionary#WILDCARD_VALUE} as {@code meta} is allowed.
+     * 
      * @author glowredman
      */
     public static void addItemTooltip(String modID, String registryName, int meta, Supplier<String> tooltip) {
@@ -193,9 +203,10 @@ public class AnimatedTooltipHandler {
     }
 
     /**
-     * Add {@code tooltip} to {@code item}.
-     * <br><b>Note:</b> Items with equal registry name and meta but different NBT are considered equal.
-     * <br><b>Note:</b> Using {@link OreDictionary#WILDCARD_VALUE} as meta is allowed.
+     * Add {@code tooltip} to {@code item}. <br>
+     * <b>Note:</b> Items with equal registry name and meta but different NBT are considered equal. <br>
+     * <b>Note:</b> Using {@link OreDictionary#WILDCARD_VALUE} as meta is allowed.
+     * 
      * @author glowredman
      */
     public static void addItemTooltip(ItemStack item, Supplier<String> tooltip) {

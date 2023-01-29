@@ -1,13 +1,16 @@
 package com.gtnewhorizon.gtnhlib.core;
 
-import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 import java.util.Map;
+
+import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
 @IFMLLoadingPlugin.SortingIndex(-1000)
 public class GTNHLibCore implements IFMLLoadingPlugin {
+
     /*
-     * Doesn't currently do anything, other than force the mod to load with coremods so Hodgepodge can use it's functions in mixins/asm
+     * Doesn't currently do anything, other than force the mod to load with coremods so Hodgepodge can use it's
+     * functions in mixins/asm
      */
     @Override
     public String[] getASMTransformerClass() {

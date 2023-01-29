@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.network;
 
 import com.gtnewhorizon.gtnhlib.Tags;
+
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;

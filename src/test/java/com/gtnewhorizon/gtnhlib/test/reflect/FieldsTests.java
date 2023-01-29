@@ -2,8 +2,9 @@ package com.gtnewhorizon.gtnhlib.test.reflect;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.gtnewhorizon.gtnhlib.reflect.Fields;
 import org.junit.jupiter.api.Test;
+
+import com.gtnewhorizon.gtnhlib.reflect.Fields;
 
 public class FieldsTests {
 
@@ -18,12 +19,12 @@ public class FieldsTests {
     void objectFields() {
         final FieldsTestSubject subject = new FieldsTestSubject();
         final Fields.ClassFields<FieldsTestSubject> classFields = Fields.ofClass(FieldsTestSubject.class);
-        final Fields.ClassFields<FieldsTestSubject>.Field<String> dynField =
-                classFields.getField(Fields.LookupType.DECLARED, "dynamicObject", String.class);
-        final Fields.ClassFields<FieldsTestSubject>.Field<String> staField =
-                classFields.getField(Fields.LookupType.DECLARED, "staticObject", String.class);
-        final Fields.ClassFields<FieldsTestSubject>.Field<String> finField =
-                classFields.getField(Fields.LookupType.DECLARED, "staticFinalObject", String.class);
+        final Fields.ClassFields<FieldsTestSubject>.Field<String> dynField = classFields
+                .getField(Fields.LookupType.DECLARED, "dynamicObject", String.class);
+        final Fields.ClassFields<FieldsTestSubject>.Field<String> staField = classFields
+                .getField(Fields.LookupType.DECLARED, "staticObject", String.class);
+        final Fields.ClassFields<FieldsTestSubject>.Field<String> finField = classFields
+                .getField(Fields.LookupType.DECLARED, "staticFinalObject", String.class);
 
         assertAll(
                 () -> assertThrows(
@@ -78,16 +79,16 @@ public class FieldsTests {
     }
 
     @Test
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     void objectUntypedFields() {
         final FieldsTestSubject subject = new FieldsTestSubject();
         final Fields.ClassFields classFields = Fields.ofClass(FieldsTestSubject.class);
-        final Fields.ClassFields.Field dynField =
-                classFields.getUntypedField(Fields.LookupType.DECLARED, "dynamicObject");
-        final Fields.ClassFields.Field staField =
-                classFields.getUntypedField(Fields.LookupType.DECLARED, "staticObject");
-        final Fields.ClassFields.Field finField =
-                classFields.getUntypedField(Fields.LookupType.DECLARED, "staticFinalObject");
+        final Fields.ClassFields.Field dynField = classFields
+                .getUntypedField(Fields.LookupType.DECLARED, "dynamicObject");
+        final Fields.ClassFields.Field staField = classFields
+                .getUntypedField(Fields.LookupType.DECLARED, "staticObject");
+        final Fields.ClassFields.Field finField = classFields
+                .getUntypedField(Fields.LookupType.DECLARED, "staticFinalObject");
 
         assertAll(
                 () -> assertThrows(
@@ -145,12 +146,12 @@ public class FieldsTests {
     void intFields() {
         final FieldsTestSubject subject = new FieldsTestSubject();
         final Fields.ClassFields<FieldsTestSubject> classFields = Fields.ofClass(FieldsTestSubject.class);
-        final Fields.ClassFields<FieldsTestSubject>.Field<Integer> dynField =
-                classFields.getIntField(Fields.LookupType.DECLARED, "dynamicInt");
-        final Fields.ClassFields<FieldsTestSubject>.Field<Integer> staField =
-                classFields.getIntField(Fields.LookupType.DECLARED, "staticInt");
-        final Fields.ClassFields<FieldsTestSubject>.Field<Integer> finField =
-                classFields.getIntField(Fields.LookupType.DECLARED, "staticFinalInt");
+        final Fields.ClassFields<FieldsTestSubject>.Field<Integer> dynField = classFields
+                .getIntField(Fields.LookupType.DECLARED, "dynamicInt");
+        final Fields.ClassFields<FieldsTestSubject>.Field<Integer> staField = classFields
+                .getIntField(Fields.LookupType.DECLARED, "staticInt");
+        final Fields.ClassFields<FieldsTestSubject>.Field<Integer> finField = classFields
+                .getIntField(Fields.LookupType.DECLARED, "staticFinalInt");
 
         assertAll(
                 () -> assertThrows(
