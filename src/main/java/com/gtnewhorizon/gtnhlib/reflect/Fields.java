@@ -1,3 +1,9 @@
+/*
+ * GTNHLib Fields helper - A Java 8-19 compatible reflection helper for unsafe accesses to fields. Written in 2023 by
+ * Raven Szewczyk To the extent possible under law, the author(s) have dedicated all copyright and related and
+ * neighboring rights to this software to the public domain worldwide. This software is distributed without any
+ * warranty. See <http://creativecommons.org/publicdomain/zero/1.0> for the detailed license.
+ */
 package com.gtnewhorizon.gtnhlib.reflect;
 
 import java.lang.invoke.MethodHandle;
@@ -119,7 +125,7 @@ public class Fields {
 
         /**
          * Looks up a field in the class using the reflection API and provides non-type-safe accessors to it.
-         * 
+         *
          * @param strategy The lookup strategy, see {@link LookupType}
          * @param name     Name of the field we are searching for
          * @return A field wrapper for the found field, or null if not found.
@@ -137,7 +143,7 @@ public class Fields {
 
         /**
          * Looks up a field in the class using the reflection API and provides type-safe accessors to it.
-         * 
+         *
          * @param strategy     The lookup strategy, see {@link LookupType}
          * @param name         Name of the field we are searching for
          * @param expectedType The type we want to access the field as
@@ -158,7 +164,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Boolean> getBooleanField(@Nonnull LookupType strategy, @Nonnull String name) {
@@ -174,7 +180,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Byte> getByteField(@Nonnull LookupType strategy, @Nonnull String name) {
@@ -190,7 +196,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Short> getShortField(@Nonnull LookupType strategy, @Nonnull String name) {
@@ -206,7 +212,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Integer> getIntField(@Nonnull LookupType strategy, @Nonnull String name) {
@@ -222,7 +228,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Long> getLongField(@Nonnull LookupType strategy, @Nonnull String name) {
@@ -238,7 +244,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Character> getCharField(@Nonnull LookupType strategy, @Nonnull String name) {
@@ -254,7 +260,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Float> getFloatField(@Nonnull LookupType strategy, @Nonnull String name) {
@@ -270,7 +276,7 @@ public class Fields {
 
         /**
          * Looks up a primitive field in the class.
-         * 
+         *
          * @see ClassFields#getField(LookupType, String, Class)
          */
         public Field<Double> getDoubleField(@Nonnull LookupType strategy, @Nonnull String name) {
