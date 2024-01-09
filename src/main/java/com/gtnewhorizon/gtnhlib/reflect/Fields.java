@@ -17,9 +17,9 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import sun.misc.Unsafe;
-
 import com.google.common.base.Throwables;
+
+import sun.misc.Unsafe;
 
 /**
  * Utilities for {@link java.lang.reflect.Field} reflection, compatible with Java 8-19. Can read and write to final
