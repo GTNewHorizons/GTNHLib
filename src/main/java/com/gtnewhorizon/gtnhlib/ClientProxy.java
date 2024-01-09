@@ -8,6 +8,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler;
+
 import cpw.mods.fml.common.event.*;
 
 @SuppressWarnings("unused")
