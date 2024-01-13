@@ -1,6 +1,8 @@
 // Add your dependencies here
 
 dependencies {
+    shadowImplementation("it.unimi.dsi:fastutil:8.5.12") // Apache 2.0
+    
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
@@ -12,7 +14,6 @@ dependencies {
     compileOnly('org.jetbrains:annotations:24.0.1')
     compileOnly("org.projectlombok:lombok:1.18.22") {transitive = false }
     annotationProcessor("org.projectlombok:lombok:1.18.22")
-
 }
 
 test {
