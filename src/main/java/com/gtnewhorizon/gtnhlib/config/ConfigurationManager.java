@@ -43,8 +43,6 @@ public class ConfigurationManager {
 
     private static final Map<Configuration, Set<Class<?>>> configToClassMap = new HashMap<>();
 
-    private static final ConfigurationManager instance = new ConfigurationManager();
-
     private static boolean initialized = false;
 
     private static Path configDir;
@@ -72,6 +70,7 @@ public class ConfigurationManager {
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
             throw new ConfigException(e);
         }
+        registerBus();
     }
 
     private static void processConfigInternal(Class<?> configClass, String category, Configuration rawConfig)
@@ -250,7 +249,7 @@ public class ConfigurationManager {
      * Internal, do not use.
      */
     public static void registerBus() {
-        FMLCommonHandler.instance().bus().register(instance);
+        FMLCommonHandler.instance().bus().register(ConfigurationManager.class);
     }
 
     /**
@@ -259,7 +258,7 @@ public class ConfigurationManager {
      * @param event The event.
      */
     @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         init();
         val config = configs.get(event.modID);
         if (config == null) {
