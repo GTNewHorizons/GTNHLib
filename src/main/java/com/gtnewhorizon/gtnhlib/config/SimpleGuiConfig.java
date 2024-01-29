@@ -19,4 +19,15 @@ public class SimpleGuiConfig extends GuiConfig {
                 false,
                 modName + " Configuration");
     }
+
+    public SimpleGuiConfig(GuiScreen parent, String modID, String modName, Class<?>... configClasses)
+            throws ConfigException {
+        super(
+                parent,
+                ConfigurationManager.getConfigElementsMulti(configClasses),
+                modID,
+                false,
+                false,
+                modName + " Configuration");
+    }
 }
