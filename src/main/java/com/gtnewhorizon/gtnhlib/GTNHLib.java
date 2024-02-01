@@ -14,6 +14,7 @@ import cpw.mods.fml.common.event.*;
         acceptedMinecraftVersions = "[1.7.10]",
         acceptableRemoteVersions = "[0.0.13,)")
 public class GTNHLib {
+
     public static final String MODID = "gtnhlib";
     public static final String MODNAME = "GTNH Lib";
     private static final Logger LOG = LogManager.getLogger(Tags.MODID);
