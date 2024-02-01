@@ -17,9 +17,10 @@ public class GTNHLib {
 
     public static final String MODID = "gtnhlib";
     public static final String MODNAME = "GTNH Lib";
-    private static final Logger LOG = LogManager.getLogger(Tags.MODID);
+    public static final String GROUPNAME = "com.gtnewhorizon.gtnhlib";
+    private static final Logger LOG = LogManager.getLogger(GTNHLib.MODID);
 
-    @SidedProxy(clientSide = Tags.GROUPNAME + ".ClientProxy", serverSide = Tags.GROUPNAME + ".CommonProxy")
+    @SidedProxy(clientSide = GTNHLib.GROUPNAME + ".ClientProxy", serverSide = GTNHLib.GROUPNAME + ".CommonProxy")
     public static CommonProxy proxy;
 
     @Mod.EventHandler
