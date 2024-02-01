@@ -7,9 +7,15 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.*;
 
-@Mod(modid = Tags.MODID, version = Tags.VERSION, name = Tags.MODNAME, acceptedMinecraftVersions = "[1.7.10]")
+@Mod(
+        modid = GTNHLib.MODID,
+        version = Tags.VERSION,
+        name = GTNHLib.MODNAME,
+        acceptedMinecraftVersions = "[1.7.10]",
+        acceptableRemoteVersions = "[0.0.13,)")
 public class GTNHLib {
-
+    public static final String MODID = "gtnhlib";
+    public static final String MODNAME = "GTNH Lib";
     private static final Logger LOG = LogManager.getLogger(Tags.MODID);
 
     @SidedProxy(clientSide = Tags.GROUPNAME + ".ClientProxy", serverSide = Tags.GROUPNAME + ".CommonProxy")
