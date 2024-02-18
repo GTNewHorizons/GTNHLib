@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("UnusedReturnValue")
 public class MathExpressionParser {
 
     /**
