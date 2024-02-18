@@ -66,7 +66,7 @@ public @interface Config {
     @Target(ElementType.FIELD)
     @interface RangeFloat {
 
-        float min() default Float.MIN_VALUE;
+        float min() default -Float.MAX_VALUE;
 
         float max() default Float.MAX_VALUE;
     }
