@@ -19,7 +19,7 @@ public class MathExpressionParser {
      * strings that do not evaluate to a valid value. See {@link #parse(String, Context)} for an explanation of the
      * syntax.
      */
-    public static final Pattern EXPRESSION_PATTERN = Pattern.compile("[0-9.,  _+\\-*/^()eEkKmMgGbBtT%]*");
+    public static final Pattern EXPRESSION_PATTERN = Pattern.compile("[0-9.,  _’+\\-*/^()eEkKmMgGbBtT%]*");
     // Character ' ' (non-breaking space) to support French locale thousands separator.
 
     private static final Context defaultContext = new Context();
