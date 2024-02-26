@@ -22,8 +22,8 @@ public @interface Config {
     String category() default "general";
 
     /**
-     * The subdirectory of the config directory to use. Defaults to none (config/).
-     * If you want to use a subdirectory, you must specify it as a relative path (e.g. "myMod").
+     * The subdirectory of the config directory to use. Defaults to none (config/). If you want to use a subdirectory,
+     * you must specify it as a relative path (e.g. "myMod").
      */
     String configSubDirectory();
 
