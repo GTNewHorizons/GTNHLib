@@ -66,8 +66,8 @@ public class ConfigurationManager {
                 newConfigDir = newConfigDir.resolve(cfg.configSubDirectory());
             }
             String fileName;
-            if (cfg.fileName() != null) {
-                fileName = cfg.fileName();
+            if (cfg.filename() != null) {
+                fileName = cfg.filename();
             } else {
                 fileName = cfg.modid();
             }
