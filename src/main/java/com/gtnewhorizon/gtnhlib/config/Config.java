@@ -21,6 +21,17 @@ public @interface Config {
      */
     String category() default "general";
 
+    /**
+     * The subdirectory of the config directory to use. Defaults to none (config/).
+     * If you want to use a subdirectory, you must specify it as a relative path (e.g. "myMod").
+     */
+    String configSubDirectory();
+
+    /**
+     * The name of the configuration file. Defaults to the modid. The file extension (.cfg) is added automatically.
+     */
+    String fileName();
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ ElementType.FIELD, ElementType.TYPE })
     @interface LangKey {
