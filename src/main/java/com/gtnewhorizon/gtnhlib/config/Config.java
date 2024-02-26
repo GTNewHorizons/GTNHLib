@@ -30,7 +30,7 @@ public @interface Config {
     /**
      * The name of the configuration file. Defaults to the modid. The file extension (.cfg) is added automatically.
      */
-    String fileName();
+    String filename();
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ ElementType.FIELD, ElementType.TYPE })
