@@ -214,24 +214,15 @@ public class ConfigurationManager {
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
         val category = cfg.category();
         val elements = new ConfigElement<>(rawConfig.getCategory(category)).getChildElements();
-        List<IConfigElement> processedElements = elements.stream()
-                .map((element) -> new IConfigElementProxy(element, () -> {
-                    try {
-                        processConfigInternal(configClass, category, rawConfig);
-                    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException
-                            | NoSuchFieldException | ConfigException e) {
-                        e.printStackTrace();
-                    }
-                })).collect(Collectors.toList());
-
-        // Save the configuration after all elements have been processed
-        try {
-            rawConfig.save();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return processedElements;
+        return elements.stream().map((element) -> new IConfigElementProxy(element, () -> {
+            try {
+                processConfigInternal(configClass, category, rawConfig);
+                rawConfig.save();
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException
+                    | ConfigException e) {
+                e.printStackTrace();
+            }
+        })).collect(Collectors.toList());
     }
 
     @SuppressWarnings({ "rawtypes" })
