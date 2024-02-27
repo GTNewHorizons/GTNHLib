@@ -24,9 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cpw.mods.fml.client.config.IConfigElement;
-import cpw.mods.fml.client.event.ConfigChangedEvent;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -62,14 +59,14 @@ public class ConfigurationManager {
                 () -> new ConfigException("Config class " + configClass.getName() + " has an empty category!"));
         val rawConfig = configs.computeIfAbsent(cfg.modid(), (ignored) -> {
             Path newConfigDir = configDir;
-            if (cfg.configSubDirectory() != null) {
-                newConfigDir = newConfigDir.resolve(cfg.configSubDirectory());
+            if (!cfg.configSubDirectory().trim().isEmpty()) {
+                newConfigDir = newConfigDir.resolve(cfg.configSubDirectory().trim());
             }
             String fileName;
-            if (cfg.filename() != null) {
-                fileName = cfg.filename();
-            } else {
+            if (cfg.filename().trim().isEmpty()) {
                 fileName = cfg.modid();
+            } else {
+                fileName = cfg.filename().trim();
             }
             val c = new Configuration(newConfigDir.resolve(fileName + ".cfg").toFile());
             c.load();
@@ -254,38 +251,5 @@ public class ConfigurationManager {
         }
         configDir = minecraftHome().toPath().resolve("config");
         initialized = true;
-    }
-
-    /**
-     * Internal, do not use.
-     */
-    public static void registerBus() {
-        FMLCommonHandler.instance().bus().register(instance);
-    }
-
-    /**
-     * Internal, do not use.
-     *
-     * @param event The event.
-     */
-    @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        init();
-        val config = configs.get(event.modID);
-        if (config == null) {
-            return;
-        }
-        val configClasses = configToClassMap.get(config);
-        configClasses.forEach((configClass) -> {
-            try {
-                val category = Optional.ofNullable(configClass.getAnnotation(Config.class)).map(Config::category)
-                        .orElseThrow(
-                                () -> new ConfigException(
-                                        "Failed to get config category for class " + configClass.getName()));
-                processConfigInternal(configClass, category, config);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
     }
 }
