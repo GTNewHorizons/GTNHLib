@@ -62,14 +62,14 @@ public class ConfigurationManager {
                 () -> new ConfigException("Config class " + configClass.getName() + " has an empty category!"));
         val rawConfig = configs.computeIfAbsent(cfg.modid(), (ignored) -> {
             Path newConfigDir = configDir;
-            if (cfg.configSubDirectory() != null) {
-                newConfigDir = newConfigDir.resolve(cfg.configSubDirectory());
+            if (!cfg.configSubDirectory().trim().isEmpty()) {
+                newConfigDir = newConfigDir.resolve(cfg.configSubDirectory().trim());
             }
             String fileName;
-            if (cfg.filename() != null) {
-                fileName = cfg.filename();
-            } else {
+            if (cfg.filename().trim().isEmpty()) {
                 fileName = cfg.modid();
+            } else {
+                fileName = cfg.filename().trim();
             }
             val c = new Configuration(newConfigDir.resolve(fileName + ".cfg").toFile());
             c.load();
