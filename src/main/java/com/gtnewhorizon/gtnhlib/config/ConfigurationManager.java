@@ -217,15 +217,24 @@ public class ConfigurationManager {
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
         val category = cfg.category();
         val elements = new ConfigElement<>(rawConfig.getCategory(category)).getChildElements();
-        return elements.stream().map((element) -> new IConfigElementProxy(element, () -> {
-            try {
-                processConfigInternal(configClass, category, rawConfig);
-                rawConfig.save();
-            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException
-                    | ConfigException e) {
-                e.printStackTrace();
-            }
-        })).collect(Collectors.toList());
+        List<IConfigElement> processedElements = elements.stream()
+                .map((element) -> new IConfigElementProxy(element, () -> {
+                    try {
+                        processConfigInternal(configClass, category, rawConfig);
+                    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException
+                            | NoSuchFieldException | ConfigException e) {
+                        e.printStackTrace();
+                    }
+                })).collect(Collectors.toList());
+
+        // Save the configuration after all elements have been processed
+        try {
+            rawConfig.save();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return processedElements;
     }
 
     @SuppressWarnings({ "rawtypes" })
@@ -254,38 +263,5 @@ public class ConfigurationManager {
         }
         configDir = minecraftHome().toPath().resolve("config");
         initialized = true;
-    }
-
-    /**
-     * Internal, do not use.
-     */
-    public static void registerBus() {
-        FMLCommonHandler.instance().bus().register(instance);
-    }
-
-    /**
-     * Internal, do not use.
-     *
-     * @param event The event.
-     */
-    @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        init();
-        val config = configs.get(event.modID);
-        if (config == null) {
-            return;
-        }
-        val configClasses = configToClassMap.get(config);
-        configClasses.forEach((configClass) -> {
-            try {
-                val category = Optional.ofNullable(configClass.getAnnotation(Config.class)).map(Config::category)
-                        .orElseThrow(
-                                () -> new ConfigException(
-                                        "Failed to get config category for class " + configClass.getName()));
-                processConfigInternal(configClass, category, config);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
     }
 }
