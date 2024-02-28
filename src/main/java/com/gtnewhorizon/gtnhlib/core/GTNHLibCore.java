@@ -9,8 +9,8 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 public class GTNHLibCore implements IFMLLoadingPlugin {
 
     /*
-     * Doesn't currently do anything, other than force the mod to load with coremods so Hodgepodge can use it's
-     * functions in mixins/asm
+     * Doesn't currently do anything, other than force the mod to load with coremods so Hodgepodge can use its functions
+     * in mixins/asm
      */
     @Override
     public String[] getASMTransformerClass() {
