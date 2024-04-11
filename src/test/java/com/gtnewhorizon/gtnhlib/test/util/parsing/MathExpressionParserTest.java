@@ -141,6 +141,14 @@ class MathExpressionParserTest {
         assertEquals(10_000_000_000_000D, MathExpressionParser.parse("10t"));
         assertEquals(11_000_000_000_000D, MathExpressionParser.parse("11T"));
 
+        assertEquals(12 * 64, MathExpressionParser.parse("12s"));
+        assertEquals(13 * 64, MathExpressionParser.parse("13S"));
+        assertEquals(14 * 144, MathExpressionParser.parse("14i"));
+        assertEquals(15 * 144, MathExpressionParser.parse("15I"));
+
+        assertEquals(16 * 64 + 16, MathExpressionParser.parse("16.25s", ctxEN));
+        assertEquals(17 * 144 + 72, MathExpressionParser.parse("17.5i", ctxEN));
+
         assertEquals(2050, MathExpressionParser.parse("2.05k", ctxEN));
         assertEquals(50, MathExpressionParser.parse("0.05k", ctxEN));
         assertEquals(3000, MathExpressionParser.parse("3 k"));
@@ -156,6 +164,10 @@ class MathExpressionParserTest {
 
         assertEquals(3_000_000, MathExpressionParser.parse("3kk"));
         assertEquals(4_000_000_000D, MathExpressionParser.parse("4kkk"));
+
+        // Ideally we would want "1/9i" to parse into this too, but that would require a larger rework.
+        // Currently, suffixes are hardcoded to have the highest priority.
+        assertEquals(16, MathExpressionParser.parse("(1/9)i"));
 
         // Not supported, but shouldn't fail.
         assertEquals(6_000_000_000d, MathExpressionParser.parse("6km"));

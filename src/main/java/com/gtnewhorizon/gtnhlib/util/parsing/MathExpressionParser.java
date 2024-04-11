@@ -19,8 +19,8 @@ public class MathExpressionParser {
      * strings that do not evaluate to a valid value. See {@link #parse(String, Context)} for an explanation of the
      * syntax.
      */
-    public static final Pattern EXPRESSION_PATTERN = Pattern.compile("[0-9.,  _’+\\-*/^()eEkKmMgGbBtT%]*");
-    // Character ' ' (non-breaking space) to support French locale thousands separator.
+    public static final Pattern EXPRESSION_PATTERN = Pattern.compile("[0-9., \u202F_’+\\-*/^()eEkKmMgGbBtTsSiI%]*");
+    // Character \u202F (' ') (non-breaking space) to support French locale thousands separator.
 
     private static final Context defaultContext = new Context();
 
@@ -178,6 +178,16 @@ public class MathExpressionParser {
                 case 'T':
                     handleSuffix(stack, Suffix.TRILLION, c, ctx);
                     break;
+
+                case 's':
+                case 'S':
+                    handleSuffix(stack, Suffix.STACK, c, ctx);
+                    break;
+                case 'i':
+                case 'I':
+                    handleSuffix(stack, Suffix.INGOT, c, ctx);
+                    break;
+
                 case '%':
                     handleSuffix(stack, Suffix.PERCENT, c, ctx);
                     break;
@@ -511,6 +521,8 @@ public class MathExpressionParser {
         MILLION(1_000_000d),
         BILLION(1_000_000_000d),
         TRILLION(1_000_000_000_000d),
+        STACK(64),
+        INGOT(144),
         PERCENT(0); // Handled separately.
 
         public final double multiplier;
