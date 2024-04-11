@@ -21,6 +21,17 @@ public @interface Config {
      */
     String category() default "general";
 
+    /**
+     * The subdirectory of the config directory to use. Defaults to none (config/). If you want to use a subdirectory,
+     * you must specify it as a relative path (e.g. "myMod").
+     */
+    String configSubDirectory() default "";
+
+    /**
+     * The name of the configuration file. Defaults to the modid. The file extension (.cfg) is added automatically.
+     */
+    String filename() default "";
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ ElementType.FIELD, ElementType.TYPE })
     @interface LangKey {
@@ -66,7 +77,7 @@ public @interface Config {
     @Target(ElementType.FIELD)
     @interface RangeFloat {
 
-        float min() default Float.MIN_VALUE;
+        float min() default -Float.MAX_VALUE;
 
         float max() default Float.MAX_VALUE;
     }

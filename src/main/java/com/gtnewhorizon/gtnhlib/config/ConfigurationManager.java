@@ -28,6 +28,7 @@ import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -60,7 +61,17 @@ public class ConfigurationManager {
         val category = Optional.of(cfg.category().trim()).map((cat) -> cat.length() == 0 ? null : cat).orElseThrow(
                 () -> new ConfigException("Config class " + configClass.getName() + " has an empty category!"));
         val rawConfig = configs.computeIfAbsent(cfg.modid(), (ignored) -> {
-            val c = new Configuration(configDir.resolve(cfg.modid() + ".cfg").toFile());
+            Path newConfigDir = configDir;
+            if (!cfg.configSubDirectory().trim().isEmpty()) {
+                newConfigDir = newConfigDir.resolve(cfg.configSubDirectory().trim());
+            }
+            String fileName;
+            if (cfg.filename().trim().isEmpty()) {
+                fileName = cfg.modid();
+            } else {
+                fileName = cfg.filename().trim();
+            }
+            val c = new Configuration(newConfigDir.resolve(fileName + ".cfg").toFile());
             c.load();
             return c;
         });

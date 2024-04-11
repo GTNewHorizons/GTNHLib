@@ -2,7 +2,8 @@
 
 dependencies {
     shadowImplementation("it.unimi.dsi:fastutil:8.5.12") // Apache 2.0
-    
+    shadowImplementation("org.joml:joml:1.10.5") // MIT
+
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
@@ -10,6 +11,8 @@ dependencies {
     }
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
+
+    compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:0.4.0") { transitive = false }
 
     compileOnly('org.jetbrains:annotations:24.0.1')
     compileOnly("org.projectlombok:lombok:1.18.22") {transitive = false }
