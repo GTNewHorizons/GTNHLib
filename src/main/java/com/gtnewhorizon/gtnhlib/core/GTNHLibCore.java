@@ -1,19 +1,33 @@
 package com.gtnewhorizon.gtnhlib.core;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import net.minecraft.launchwrapper.Launch;
+
+import com.gtnewhorizon.gtnhlib.mixins.Mixins;
+import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
+
+import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
 @IFMLLoadingPlugin.SortingIndex(-1000)
-public class GTNHLibCore implements IFMLLoadingPlugin {
+public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
-    /*
-     * Doesn't currently do anything, other than force the mod to load with coremods so Hodgepodge can use its functions
-     * in mixins/asm
-     */
     @Override
     public String[] getASMTransformerClass() {
+        if (FMLLaunchHandler.side().isClient()) {
+            final boolean rfbLoaded = Launch.blackboard.getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE)
+                    == Boolean.TRUE;
+            if (!rfbLoaded) {
+                System.out.println("GTNHLib: RFB plugin not loaded, loading ASM transformer");
+                return new String[] { "com.gtnewhorizon.gtnhlib.transform.RedirectorTransformer" };
+            } else {
+                System.out.println("GTNHLib: RFB plugin loaded, skipping ASM transformer");
+            }
+        }
         return null;
     }
 
@@ -33,5 +47,15 @@ public class GTNHLibCore implements IFMLLoadingPlugin {
     @Override
     public String getAccessTransformerClass() {
         return null;
+    }
+
+    @Override
+    public String getMixinConfig() {
+        return "mixins.gtnhlib.early.json";
+    }
+
+    @Override
+    public List<String> getMixins(Set<String> loadedCoreMods) {
+        return Mixins.getEarlyMixins(loadedCoreMods);
     }
 }
