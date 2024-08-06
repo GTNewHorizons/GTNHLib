@@ -23,7 +23,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
                     == Boolean.TRUE;
             if (!rfbLoaded) {
                 System.out.println("GTNHLib: RFB plugin not loaded, loading ASM transformer");
-                return new String[] { "com.gtnewhorizon.gtnhlib.transform.RedirectorTransformer" };
+                return new String[] { "com.gtnewhorizon.gtnhlib.transform.TessellatorRedirectorTransformer" };
             } else {
                 System.out.println("GTNHLib: RFB plugin loaded, skipping ASM transformer");
             }
