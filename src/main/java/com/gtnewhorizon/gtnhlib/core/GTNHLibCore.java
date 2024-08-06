@@ -6,6 +6,7 @@ import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
 
+import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer;
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 
@@ -13,6 +14,9 @@ import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
+@IFMLLoadingPlugin.TransformerExclusions({ "com.gtnewhorizon.gtnhlib.core.transformer",
+        "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
+        "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 @IFMLLoadingPlugin.SortingIndex(-1000)
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
@@ -23,7 +27,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
                     == Boolean.TRUE;
             if (!rfbLoaded) {
                 System.out.println("GTNHLib: RFB plugin not loaded, loading ASM transformer");
-                return new String[] { "com.gtnewhorizon.gtnhlib.transform.TessellatorRedirectorTransformer" };
+                return new String[] { TessellatorRedirectorTransformer.class.getName() };
             } else {
                 System.out.println("GTNHLib: RFB plugin loaded, skipping ASM transformer");
             }
