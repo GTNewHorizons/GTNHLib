@@ -24,6 +24,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -39,8 +43,6 @@ public class ConfigurationManager {
     private static final Map<String, Configuration> configs = new HashMap<>();
 
     private static final Map<Configuration, Set<Class<?>>> configToClassMap = new HashMap<>();
-
-    private static final ConfigurationManager instance = new ConfigurationManager();
 
     private static boolean initialized = false;
 
@@ -99,36 +101,128 @@ public class ConfigurationManager {
             val fieldClass = field.getType();
             boolean boxed = false;
             if ((boxed = fieldClass.equals(Boolean.class)) || fieldClass.equals(boolean.class)) {
-                val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultBoolean.class))
+                boolean defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultBoolean.class))
                         .map(Config.DefaultBoolean::value)
                         .orElse(boxed ? (Boolean) field.get(null) : field.getBoolean(null));
+                if (field.isAnnotationPresent(Config.ModDetectedDefault.class)) {
+                    val newDefault = Optional.ofNullable(field.getAnnotation(Config.ModDetectedDefault.class))
+                            .map(f -> {
+                                if (!f.coremod().isEmpty()) {
+                                    try {
+                                        Class.forName(f.coremod());
+                                        return f.value();
+                                    } catch (ClassNotFoundException ignored) {}
+                                }
+                                if (!f.modID().isEmpty()) {
+                                    if (Loader.isModLoaded(f.modID())) {
+                                        return f.value();
+                                    }
+                                }
+                                return null;
+                            }).orElse(null);
+                    if (newDefault != null) defaultValue = Boolean.parseBoolean(newDefault);
+                }
                 field.setBoolean(null, rawConfig.getBoolean(name, category, defaultValue, comment, langKey));
             } else if ((boxed = fieldClass.equals(Integer.class)) || fieldClass.equals(int.class)) {
                 val range = Optional.ofNullable(field.getAnnotation(Config.RangeInt.class));
                 val min = range.map(Config.RangeInt::min).orElse(Integer.MIN_VALUE);
                 val max = range.map(Config.RangeInt::max).orElse(Integer.MAX_VALUE);
-                val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultInt.class))
+                int defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultInt.class))
                         .map(Config.DefaultInt::value).orElse(boxed ? (Integer) field.get(null) : field.getInt(null));
+                if (field.isAnnotationPresent(Config.ModDetectedDefault.class)) {
+                    val newDefault = Optional.ofNullable(field.getAnnotation(Config.ModDetectedDefault.class))
+                            .map(f -> {
+                                if (!f.coremod().isEmpty()) {
+                                    try {
+                                        Class.forName(f.coremod());
+                                        return f.value();
+                                    } catch (ClassNotFoundException ignored) {}
+                                }
+                                if (!f.modID().isEmpty()) {
+                                    if (Loader.isModLoaded(f.modID())) {
+                                        return f.value();
+                                    }
+                                }
+                                return null;
+                            }).orElse(null);
+                    if (newDefault != null) defaultValue = Integer.parseInt(newDefault);
+                }
                 field.setInt(null, rawConfig.getInt(name, category, defaultValue, min, max, comment, langKey));
             } else if ((boxed = fieldClass.equals(Float.class)) || fieldClass.equals(float.class)) {
                 val range = Optional.ofNullable(field.getAnnotation(Config.RangeFloat.class));
                 val min = range.map(Config.RangeFloat::min).orElse(Float.MIN_VALUE);
                 val max = range.map(Config.RangeFloat::max).orElse(Float.MAX_VALUE);
-                val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultFloat.class))
+                float defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultFloat.class))
                         .map(Config.DefaultFloat::value).orElse(boxed ? (Float) field.get(null) : field.getFloat(null));
+                if (field.isAnnotationPresent(Config.ModDetectedDefault.class)) {
+                    val newDefault = Optional.ofNullable(field.getAnnotation(Config.ModDetectedDefault.class))
+                            .map(f -> {
+                                if (!f.coremod().isEmpty()) {
+                                    try {
+                                        Class.forName(f.coremod());
+                                        return f.value();
+                                    } catch (ClassNotFoundException ignored) {}
+                                }
+                                if (!f.modID().isEmpty()) {
+                                    if (Loader.isModLoaded(f.modID())) {
+                                        return f.value();
+                                    }
+                                }
+                                return null;
+                            }).orElse(null);
+                    if (newDefault != null) defaultValue = Float.parseFloat(newDefault);
+                }
                 field.setFloat(null, rawConfig.getFloat(name, category, defaultValue, min, max, comment, langKey));
             } else if (fieldClass.equals(String.class)) {
-                val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultString.class))
+                String defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultString.class))
                         .map(Config.DefaultString::value).orElse((String) field.get(null));
+                if (field.isAnnotationPresent(Config.ModDetectedDefault.class)) {
+                    val newDefault = Optional.ofNullable(field.getAnnotation(Config.ModDetectedDefault.class))
+                            .map(f -> {
+                                if (!f.coremod().isEmpty()) {
+                                    try {
+                                        Class.forName(f.coremod());
+                                        return f.value();
+                                    } catch (ClassNotFoundException ignored) {}
+                                }
+                                if (!f.modID().isEmpty()) {
+                                    if (Loader.isModLoaded(f.modID())) {
+                                        return f.value();
+                                    }
+                                }
+                                return null;
+                            }).orElse(null);
+                    if (newDefault != null) defaultValue = newDefault;
+                }
                 val pattern = Optional.ofNullable(field.getAnnotation(Config.Pattern.class)).map(Config.Pattern::value)
                         .map(Pattern::compile).orElse(null);
                 field.set(null, rawConfig.getString(name, category, defaultValue, comment, langKey, pattern));
             } else if (fieldClass.isEnum()) {
                 val enumValues = Arrays.stream((Object[]) fieldClass.getDeclaredMethod("values").invoke(null))
                         .map((obj) -> (Enum<?>) obj).collect(Collectors.toList());
-                val defaultValue = (Enum<?>) Optional.ofNullable(field.getAnnotation(Config.DefaultEnum.class))
+                Enum<?> defaultValue = (Enum<?>) Optional.ofNullable(field.getAnnotation(Config.DefaultEnum.class))
                         .map(Config.DefaultEnum::value).map((defName) -> extractField(fieldClass, defName))
                         .map(ConfigurationManager::extractValue).orElse(field.get(null));
+                if (field.isAnnotationPresent(Config.ModDetectedDefault.class)) {
+                    val newDefault = Optional.ofNullable(field.getAnnotation(Config.ModDetectedDefault.class))
+                            .map(f -> {
+                                if (f.coremod() != null) {
+                                    try {
+                                        Class.forName(f.coremod());
+                                        return f.value();
+                                    } catch (ClassNotFoundException ignored) {}
+                                }
+                                if (f.modID() != null) {
+                                    if (Loader.isModLoaded(f.modID())) {
+                                        return f.value();
+                                    }
+                                }
+                                return null;
+                            }).orElse(null);
+                    if (newDefault != null) defaultValue = (Enum<?>) Optional.of(extractField(fieldClass, newDefault))
+                            .map(ConfigurationManager::extractValue).orElse(field.get(null));
+                }
+
                 val possibleValues = enumValues.stream().map(Enum::name).toArray(String[]::new);
                 String value = rawConfig.getString(
                         name,
@@ -162,8 +256,26 @@ public class ConfigurationManager {
                     field.set(null, defaultValue);
                 }
             } else if (fieldClass.isArray() && fieldClass.getComponentType().equals(String.class)) {
-                val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultStringList.class))
+                String[] defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultStringList.class))
                         .map(Config.DefaultStringList::value).orElse((String[]) field.get(null));
+                if (field.isAnnotationPresent(Config.ModDetectedDefault.class)) {
+                    val newDefault = Optional.ofNullable(field.getAnnotation(Config.ModDetectedDefault.class))
+                            .map(f -> {
+                                if (!f.coremod().isEmpty()) {
+                                    try {
+                                        Class.forName(f.coremod());
+                                        return f.values();
+                                    } catch (ClassNotFoundException ignored) {}
+                                }
+                                if (!f.modID().isEmpty()) {
+                                    if (Loader.isModLoaded(f.modID())) {
+                                        return f.values();
+                                    }
+                                }
+                                return null;
+                            }).orElse(null);
+                    if (newDefault != null) defaultValue = newDefault;
+                }
                 String[] value = rawConfig.getStringList(name, category, defaultValue, comment, null, langKey);
                 field.set(null, value);
             } else {
@@ -250,6 +362,40 @@ public class ConfigurationManager {
             return;
         }
         configDir = minecraftHome().toPath().resolve("config");
+        registerBus();
         initialized = true;
+    }
+
+    /**
+     * Internal, do not use.
+     */
+    public static void registerBus() {
+        FMLCommonHandler.instance().bus().register(ConfigurationManager.class);
+    }
+
+    /**
+     * Internal, do not use.
+     *
+     * @param event The event.
+     */
+    @SubscribeEvent
+    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        init();
+        val config = configs.get(event.modID);
+        if (config == null) {
+            return;
+        }
+        val configClasses = configToClassMap.get(config);
+        configClasses.forEach((configClass) -> {
+            try {
+                val category = Optional.ofNullable(configClass.getAnnotation(Config.class)).map(Config::category)
+                        .orElseThrow(
+                                () -> new ConfigException(
+                                        "Failed to get config category for class " + configClass.getName()));
+                processConfigInternal(configClass, category, config);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
