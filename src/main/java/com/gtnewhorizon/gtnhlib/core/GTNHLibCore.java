@@ -6,7 +6,9 @@ import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
 
-import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer;
+import org.spongepowered.asm.launch.GlobalProperties;
+import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
+
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 
@@ -22,17 +24,17 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public String[] getASMTransformerClass() {
-        if (FMLLaunchHandler.side().isClient()) {
-            final boolean rfbLoaded = Launch.blackboard.getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE)
-                    == Boolean.TRUE;
-            if (!rfbLoaded) {
-                System.out.println("GTNHLib: RFB plugin not loaded, loading ASM transformer");
-                return new String[] { TessellatorRedirectorTransformer.class.getName() };
-            } else {
-                System.out.println("GTNHLib: RFB plugin loaded, skipping ASM transformer");
-            }
+        if (!FMLLaunchHandler.side().isClient()
+                || Launch.blackboard.getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE) == Boolean.TRUE) {
+            // Don't need any transformers if we're not on the client, or the RFB Plugin was loaded
+            return new String[0];
         }
-        return null;
+        // Directly add this to the MixinServiceLaunchWrapper tweaker's list of Tweak Classes
+        List<String> mixinTweakClasses = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
+        if (mixinTweakClasses != null) {
+            mixinTweakClasses.add(MixinCompatHackTweaker.class.getName());
+        }
+        return new String[0];
     }
 
     @Override
