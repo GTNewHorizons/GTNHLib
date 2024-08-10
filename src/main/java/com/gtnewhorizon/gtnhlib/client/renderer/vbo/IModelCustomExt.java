@@ -13,4 +13,7 @@ public interface IModelCustomExt extends IModelCustom {
 
     @SideOnly(CLIENT)
     void renderAllVBO();
+
+    @SideOnly(CLIENT)
+    void captureVertexNormals(boolean flag);
 }

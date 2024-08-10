@@ -64,7 +64,7 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
         vertexBuffer.render();
     }
 
-    @Unique
+    @Override
     public void captureVertexNormals(boolean flag) {
         captureVertexNormalsFlag = flag;
     }
