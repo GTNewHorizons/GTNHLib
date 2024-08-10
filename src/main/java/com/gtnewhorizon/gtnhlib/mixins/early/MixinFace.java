@@ -31,7 +31,10 @@ public abstract class MixinFace {
     @Shadow
     public abstract Vertex calculateFaceNormal();
 
-    @Inject(method = "addFaceForRender(Lnet/minecraft/client/renderer/Tessellator;F)V", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "addFaceForRender(Lnet/minecraft/client/renderer/Tessellator;F)V",
+            at = @At("HEAD"),
+            cancellable = true)
     private void onAddFaceForRender(Tessellator tessellator, float textureOffset, CallbackInfo ci) {
         System.out.println("Hijack");
         if (FaceBehaviorManager.getVertexNormalBehavior()) {
