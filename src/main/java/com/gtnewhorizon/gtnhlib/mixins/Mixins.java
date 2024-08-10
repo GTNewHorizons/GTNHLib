@@ -17,7 +17,9 @@ public enum Mixins {
     TESSELLATOR(new Builder("Sodium").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT).setPhase(Phase.EARLY)
             .setApplyIf(() -> true).addMixinClasses("MixinTessellator")),
     WAVEFRONT_VBO(new Builder("WavefrontObject").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)
-            .setPhase(Phase.EARLY).setApplyIf(() -> true).addMixinClasses("MixinWavefrontObject")),;
+            .setPhase(Phase.EARLY).setApplyIf(() -> true).addMixinClasses("MixinWavefrontObject")),
+    FACE(new Builder("Face").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT).setPhase(Phase.EARLY)
+            .setApplyIf(() -> true).addMixinClasses("MixinFace")),;
 
     private final List<String> mixinClasses;
     private final Supplier<Boolean> applyIf;

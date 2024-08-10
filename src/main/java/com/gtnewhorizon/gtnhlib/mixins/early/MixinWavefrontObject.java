@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
+import com.gtnewhorizon.gtnhlib.client.renderer.FaceBehaviorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IModelCustomExt;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
@@ -30,6 +31,9 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     @Unique
     VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
 
+    @Unique
+    boolean captureVertexNormalsFlag = false;
+
     @Override
     public void rebuildVBO() {
         if (currentGroupObject == null) {
@@ -38,12 +42,18 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
         if (this.vertexBuffer != null) {
             this.vertexBuffer.close();
         }
+
+        if (captureVertexNormalsFlag) FaceBehaviorManager.setVertexNormalBehavior(true);
+
         TessellatorManager.startCapturing();
         final CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
         tess.startDrawing(currentGroupObject.glDrawingMode);
         tessellateAll(tess);
 
         this.vertexBuffer = TessellatorManager.stopCapturingToVBO(format);
+
+        FaceBehaviorManager.clearVertexNormalBehavior();
+
     }
 
     @Override
@@ -53,4 +63,10 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
         }
         vertexBuffer.render();
     }
+
+    @Unique
+    public void captureVertexNormals(boolean flag) {
+        captureVertexNormalsFlag = flag;
+    }
+
 }
