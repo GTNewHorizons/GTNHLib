@@ -72,7 +72,7 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
     }
 
     /**
-     * Returns an iterable of all BlockPos objects within the specified box.
+     * Returns an iterable of all BlockPos objects within the specified box. The range is inclusive.
      *
      * @param from the starting BlockPos of the box
      * @param to   the ending BlockPos of the box
@@ -89,7 +89,8 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
     }
 
     /**
-     * Returns an iterable of BlockPos objects representing all positions within the specified box.
+     * Returns an iterable of BlockPos objects representing all positions within the specified box. The range is
+     * inclusive.
      *
      * @param xMin The minimum x-coordinate of the box.
      * @param yMin The minimum y-coordinate of the box.
