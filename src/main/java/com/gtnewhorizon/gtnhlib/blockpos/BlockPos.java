@@ -71,6 +71,13 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
         return this;
     }
 
+    /**
+     * Returns an iterable of all BlockPos objects within the specified box.
+     *
+     * @param from the starting BlockPos of the box
+     * @param to   the ending BlockPos of the box
+     * @return an iterable of all BlockPos objects within the box
+     */
     public static Iterable<BlockPos> getAllInBox(BlockPos from, BlockPos to) {
         return getAllInBox(
                 Math.min(from.getX(), to.getX()),
@@ -81,8 +88,19 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
                 Math.max(from.getZ(), to.getZ()));
     }
 
-    public static Iterable<BlockPos> getAllInBox(final int x1, final int y1, final int z1, final int x2, final int y2,
-            final int z2) {
+    /**
+     * Returns an iterable of BlockPos objects representing all positions within the specified box.
+     *
+     * @param xMin The minimum x-coordinate of the box.
+     * @param yMin The minimum y-coordinate of the box.
+     * @param zMin The minimum z-coordinate of the box.
+     * @param xMax The maximum x-coordinate of the box.
+     * @param yMax The maximum y-coordinate of the box.
+     * @param zMax The maximum z-coordinate of the box.
+     * @return An iterable of BlockPos objects representing all positions within the specified box.
+     */
+    public static Iterable<BlockPos> getAllInBox(final int xMin, final int yMin, final int zMin, final int xMax,
+            final int yMax, final int zMax) {
         return new Iterable<>() {
 
             public Iterator<BlockPos> iterator() {
@@ -92,19 +110,19 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
 
                     protected BlockPos computeNext() {
                         if (this.pos == null) {
-                            this.pos = new BlockPos(x1, y1, z1);
+                            this.pos = new BlockPos(xMin, yMin, zMin);
                             return this.pos;
-                        } else if (this.pos.x == x2 && this.pos.y == y2 && this.pos.z == z2) {
+                        } else if (this.pos.x == xMax && this.pos.y == yMax && this.pos.z == zMax) {
                             return this.endOfData();
                         } else {
-                            if (this.pos.x < x2) {
+                            if (this.pos.x < xMax) {
                                 ++this.pos.x;
-                            } else if (this.pos.y < y2) {
-                                this.pos.x = x1;
+                            } else if (this.pos.y < yMax) {
+                                this.pos.x = xMin;
                                 ++this.pos.y;
-                            } else if (this.pos.z < z2) {
-                                this.pos.x = x1;
-                                this.pos.y = y1;
+                            } else if (this.pos.z < zMax) {
+                                this.pos.x = xMin;
+                                this.pos.y = yMin;
                                 ++this.pos.z;
                             }
 
