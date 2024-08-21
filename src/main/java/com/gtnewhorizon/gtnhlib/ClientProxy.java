@@ -1,21 +1,20 @@
 package com.gtnewhorizon.gtnhlib;
 
-import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
-import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
+import static com.gtnewhorizon.gtnhlib.client.model.ModelLoader.shouldLoadModels;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.MinecraftForge;
 
+import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler;
 
 import cpw.mods.fml.common.event.*;
-
-import static com.gtnewhorizon.gtnhlib.client.model.ModelLoader.shouldLoadModels;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 
 @SuppressWarnings("unused")
 public class ClientProxy extends CommonProxy {

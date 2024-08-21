@@ -124,5 +124,7 @@ public class ModelLoader {
         return modelsToBake.get(loc);
     }
 
-    public static boolean shouldLoadModels() { return !unloadedModels.isEmpty(); }
+    public static boolean shouldLoadModels() {
+        return !unloadedModels.isEmpty();
+    }
 }
