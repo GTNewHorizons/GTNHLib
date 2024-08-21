@@ -123,4 +123,6 @@ public class ModelLoader {
     public static QuadProvider getModel(Variant loc) {
         return modelsToBake.get(loc);
     }
+
+    public static boolean shouldLoadModels() { return !unloadedModels.isEmpty(); }
 }
