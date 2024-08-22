@@ -75,6 +75,13 @@ public @interface Config {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
+    @interface DefaultIntList {
+
+        int[] value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
     @interface RangeFloat {
 
         float min() default -Float.MAX_VALUE;
@@ -87,6 +94,13 @@ public @interface Config {
     @interface DefaultFloat {
 
         float value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface DefaultDoubleList {
+
+        double[] value();
     }
 
     @Retention(RetentionPolicy.RUNTIME)
