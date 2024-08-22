@@ -9,14 +9,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.compat.FalseTweaksCompat;
 
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
 public enum Mixins {
 
     TESSELLATOR(new Builder("Sodium").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT).setPhase(Phase.EARLY)
-            .setApplyIf(() -> true).addExcludedMod(TargetedMod.OPTIFINE).addExcludedMod(TargetedMod.FASTCRAFT)
-            .addMixinClasses("MixinTessellator")),
+            .setApplyIf(() -> !FalseTweaksCompat.threadingActive()).addExcludedMod(TargetedMod.OPTIFINE)
+            .addExcludedMod(TargetedMod.FASTCRAFT).addMixinClasses("MixinTessellator")),
     WAVEFRONT_VBO(new Builder("WavefrontObject").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)
             .setPhase(Phase.EARLY).setApplyIf(() -> true).addExcludedMod(TargetedMod.OPTIFINE)
             .addExcludedMod(TargetedMod.FASTCRAFT).addMixinClasses("MixinWavefrontObject")),;

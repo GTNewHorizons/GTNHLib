@@ -16,6 +16,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
+import com.gtnewhorizon.gtnhlib.compat.FalseTweaksCompat;
 
 public class TessellatorRedirectorTransformer implements IClassTransformer {
 
@@ -36,7 +37,7 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
     }
 
     public boolean shouldRfbTransform(byte[] basicClass) {
-        return cstPoolParser.find(basicClass, true);
+        return !FalseTweaksCompat.threadingActive() && cstPoolParser.find(basicClass, true);
     }
 
     @Override

@@ -14,6 +14,7 @@ dependencies {
 
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:0.4.0") { transitive = false }
 
+    compileOnly("com.falsepattern:falsetweaks-mc1.7.10:3.1.1:api")
     compileOnly('org.jetbrains:annotations:24.0.1')
     compileOnly("org.projectlombok:lombok:1.18.22") {transitive = false }
     annotationProcessor("org.projectlombok:lombok:1.18.22")
