@@ -90,7 +90,7 @@ public class ConfigurationManager {
                 continue;
             }
             field.setAccessible(true);
-            val comment = Optional.ofNullable(field.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
+            var comment = Optional.ofNullable(field.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
                     .map((lines) -> String.join("\n", lines)).orElse("");
             val name = Optional.ofNullable(field.getAnnotation(Config.Name.class)).map(Config.Name::value)
                     .orElse(field.getName());
@@ -169,12 +169,26 @@ public class ConfigurationManager {
             } else if (fieldClass.isArray() && fieldClass.getComponentType().equals(double.class)) {
                 val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultDoubleList.class))
                         .map(Config.DefaultDoubleList::value).orElse((double[]) field.get(null));
+
+                String[] stringValues = new String[defaultValue.length];
+                for (int i = 0; i < defaultValue.length; i++) {
+                    stringValues[i] = Double.toString(defaultValue[i]);
+                }
+                comment = comment + " [default: " + Arrays.toString(stringValues) + "]";
                 double[] value = rawConfig.get(category, name, defaultValue, comment).getDoubleList();
+
                 field.set(null, value);
             } else if (fieldClass.isArray() && fieldClass.getComponentType().equals(int.class)) {
                 val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultIntList.class))
                         .map(Config.DefaultIntList::value).orElse((int[]) field.get(null));
+
+                String[] stringValues = new String[defaultValue.length];
+                for (int i = 0; i < defaultValue.length; i++) {
+                    stringValues[i] = Integer.toString(defaultValue[i]);
+                }
+                comment = comment + " [default: " + Arrays.toString(stringValues) + "]";
                 int[] value = rawConfig.get(category, name, defaultValue, comment).getIntList();
+
                 field.set(null, value);
             } else {
                 throw new ConfigException(
