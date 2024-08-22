@@ -166,6 +166,16 @@ public class ConfigurationManager {
                         .map(Config.DefaultStringList::value).orElse((String[]) field.get(null));
                 String[] value = rawConfig.getStringList(name, category, defaultValue, comment, null, langKey);
                 field.set(null, value);
+            } else if (fieldClass.isArray() && fieldClass.getComponentType().equals(double.class)) {
+                val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultDoubleList.class))
+                        .map(Config.DefaultDoubleList::value).orElse((double[]) field.get(null));
+                double[] value = rawConfig.get(category, name, defaultValue, comment).getDoubleList();
+                field.set(null, value);
+            } else if (fieldClass.isArray() && fieldClass.getComponentType().equals(int.class)) {
+                val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultIntList.class))
+                        .map(Config.DefaultIntList::value).orElse((int[]) field.get(null));
+                int[] value = rawConfig.get(category, name, defaultValue, comment).getIntList();
+                field.set(null, value);
             } else {
                 throw new ConfigException(
                         "Illegal config field: " + field.getName()
