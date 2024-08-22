@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
+import lombok.val;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -43,6 +44,11 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (basicClass == null) return null;
+
+        for (val exclusion: TransformerExclusions) {
+            if (transformedName.startsWith(exclusion))
+                return basicClass;
+        }
 
         if (!cstPoolParser.find(basicClass, true)) {
             return basicClass;
