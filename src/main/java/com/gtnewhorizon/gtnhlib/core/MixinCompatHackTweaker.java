@@ -9,7 +9,6 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer;
 
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
 public class MixinCompatHackTweaker implements ITweaker {
@@ -35,7 +34,7 @@ public class MixinCompatHackTweaker implements ITweaker {
             final boolean rfbLoaded = Launch.blackboard.getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE)
                     == Boolean.TRUE;
 
-            if (!rfbLoaded && !(Loader.isModLoaded("Optifine") || Loader.isModLoaded("FastCraft"))) {
+            if (!rfbLoaded) {
                 // Run after Mixins, but before LWJGl3ify
                 Launch.classLoader.registerTransformer(TessellatorRedirectorTransformer.class.getName());
             }

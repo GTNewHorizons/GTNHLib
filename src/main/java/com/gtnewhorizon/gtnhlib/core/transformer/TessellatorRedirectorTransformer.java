@@ -29,7 +29,8 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
             "com.gtnewhorizons.angelica.glsm.",
             "com.gtnewhorizons.angelica.transform",
             "me.eigenraven.lwjgl3ify",
-            "com.gtnewhorizon.gtnhlib");
+            "com.gtnewhorizon.gtnhlib",
+            "net.minecraft.client.renderer.Tessellator");
 
     public static List<String> getTransformerExclusions() {
         return Collections.unmodifiableList(TransformerExclusions);

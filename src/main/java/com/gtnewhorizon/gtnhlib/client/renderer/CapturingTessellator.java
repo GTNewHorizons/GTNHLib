@@ -54,7 +54,8 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     }
 
     static {
-        final Field rbs = ReflectionHelper.findField(Tessellator.class, "rawBufferSize");
+        // Optifine breaks the remapping of this, so look for the obf name as well
+        final Field rbs = ReflectionHelper.findField(Tessellator.class, "rawBufferSize", "field_78388_E");
         rbs.setAccessible(true);
         try {
             sRawBufferSize = MethodHandles.lookup().unreflectSetter(rbs);
