@@ -17,6 +17,8 @@ import org.objectweb.asm.tree.MethodNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
 
+import lombok.val;
+
 public class TessellatorRedirectorTransformer implements IClassTransformer {
 
     private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
@@ -43,6 +45,10 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (basicClass == null) return null;
+
+        for (val exclusion : TransformerExclusions) {
+            if (transformedName.startsWith(exclusion)) return basicClass;
+        }
 
         if (!cstPoolParser.find(basicClass, true)) {
             return basicClass;
