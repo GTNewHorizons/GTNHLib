@@ -37,8 +37,7 @@ public class ConfigurationManager {
 
     private static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
     private static final Map<String, Configuration> configs = new HashMap<>();
-
-    private static final Map<Configuration, Set<Class<?>>> configToClassMap = new HashMap<>();
+    private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
 
@@ -57,22 +56,23 @@ public class ConfigurationManager {
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
         val category = Optional.of(cfg.category().trim()).map((cat) -> cat.length() == 0 ? null : cat).orElseThrow(
                 () -> new ConfigException("Config class " + configClass.getName() + " has an empty category!"));
-        val rawConfig = configs.computeIfAbsent(cfg.modid(), (ignored) -> {
+        val modid = cfg.modid();
+        val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
+
+        Configuration rawConfig = configs.computeIfAbsent(modid + "|" + filename, (ignored) -> {
             Path newConfigDir = configDir;
             if (!cfg.configSubDirectory().trim().isEmpty()) {
                 newConfigDir = newConfigDir.resolve(cfg.configSubDirectory().trim());
             }
-            String fileName;
-            if (cfg.filename().trim().isEmpty()) {
-                fileName = cfg.modid();
-            } else {
-                fileName = cfg.filename().trim();
-            }
-            val c = new Configuration(newConfigDir.resolve(fileName + ".cfg").toFile());
-            c.load();
-            return c;
+            val configFile = newConfigDir.resolve(filename + ".cfg").toFile();
+            val config = new Configuration(configFile);
+            config.load();
+            return config;
         });
-        configToClassMap.computeIfAbsent(rawConfig, (ignored) -> new HashSet<>()).add(configClass);
+
+        configToCategoryClassMap.computeIfAbsent(rawConfig, (ignored) -> new HashMap<>())
+                .computeIfAbsent(category, (ignored) -> new HashSet<>()).add(configClass);
+
         try {
             processConfigInternal(configClass, category, rawConfig);
             rawConfig.save();
@@ -85,6 +85,7 @@ public class ConfigurationManager {
             throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, NoSuchFieldException,
             ConfigException {
         val cat = rawConfig.getCategory(category);
+
         for (val field : configClass.getDeclaredFields()) {
             if (field.getAnnotation(Config.Ignore.class) != null) {
                 continue;
@@ -230,10 +231,11 @@ public class ConfigurationManager {
         init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
-        val rawConfig = Optional.ofNullable(configs.get(cfg.modid()))
-                .map(
-                        (conf) -> Optional.ofNullable(configToClassMap.get(conf)).map((l) -> l.contains(configClass))
-                                .orElse(false) ? conf : null)
+        val modid = cfg.modid();
+        val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
+        val rawConfig = Optional.ofNullable(configs.get(modid + "|" + filename)).map(
+                (conf) -> Optional.ofNullable(configToCategoryClassMap.get(conf))
+                        .map((map) -> map.get(cfg.category().trim()).contains(configClass)).orElse(false) ? conf : null)
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
         val category = cfg.category();
