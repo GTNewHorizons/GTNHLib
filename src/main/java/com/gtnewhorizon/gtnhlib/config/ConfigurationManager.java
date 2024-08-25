@@ -59,7 +59,7 @@ public class ConfigurationManager {
         val modid = cfg.modid();
         val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
 
-        Configuration rawConfig = configs.computeIfAbsent(modid, (ignored) -> {
+        Configuration rawConfig = configs.computeIfAbsent(modid + "|" + filename, (ignored) -> {
             Path newConfigDir = configDir;
             if (!cfg.configSubDirectory().trim().isEmpty()) {
                 newConfigDir = newConfigDir.resolve(cfg.configSubDirectory().trim());
@@ -231,7 +231,9 @@ public class ConfigurationManager {
         init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
-        val rawConfig = Optional.ofNullable(configs.get(cfg.filename().trim())).map(
+        val modid = cfg.modid();
+        val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
+        val rawConfig = Optional.ofNullable(configs.get(modid + "|" + filename)).map(
                 (conf) -> Optional.ofNullable(configToCategoryClassMap.get(conf))
                         .map((map) -> map.get(cfg.category().trim()).contains(configClass)).orElse(false) ? conf : null)
                 .orElseThrow(
