@@ -4,9 +4,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
-import com.gtnewhorizon.gtnhlib.config.ConfigException;
-import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
-import com.gtnewhorizon.gtnhlib.config.TestConfig;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 
@@ -20,14 +17,6 @@ import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 
 public class CommonProxy {
-
-    static {
-        try {
-            ConfigurationManager.registerConfig(TestConfig.class);
-        } catch (ConfigException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void preInit(FMLPreInitializationEvent event) {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
