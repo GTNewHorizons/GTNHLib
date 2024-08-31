@@ -22,9 +22,14 @@ public class SimpleGuiConfig extends GuiConfig {
 
     public SimpleGuiConfig(GuiScreen parent, String modID, String modName, Class<?>... configClasses)
             throws ConfigException {
+        this(parent, modID, modName, false, configClasses);
+    }
+
+    public SimpleGuiConfig(GuiScreen parent, String modID, String modName, boolean categorized,
+            Class<?>... configClasses) throws ConfigException {
         super(
                 parent,
-                ConfigurationManager.getConfigElementsMulti(configClasses),
+                ConfigurationManager.getConfigElementsMulti(categorized, configClasses),
                 modID,
                 false,
                 false,

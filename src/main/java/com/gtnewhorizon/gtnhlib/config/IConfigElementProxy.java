@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -57,7 +58,11 @@ public class IConfigElementProxy<T> implements IConfigElement<T> {
     @SuppressWarnings("rawtypes")
     @Override
     public List<IConfigElement> getChildElements() {
-        return proxied.getChildElements();
+        List<IConfigElement> elements = new ArrayList<>();
+        for (IConfigElement<?> element : proxied.getChildElements()) {
+            elements.add(new IConfigElementProxy<>(element, onUpdate));
+        }
+        return elements;
     }
 
     @Override

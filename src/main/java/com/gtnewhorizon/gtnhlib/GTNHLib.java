@@ -12,7 +12,8 @@ import cpw.mods.fml.common.event.*;
         version = Tags.VERSION,
         name = GTNHLib.MODNAME,
         acceptedMinecraftVersions = "[1.7.10]",
-        acceptableRemoteVersions = "[0.0.13,)")
+        acceptableRemoteVersions = "[0.0.13,)",
+        guiFactory = "com.gtnewhorizon.gtnhlib.GuiFactory")
 public class GTNHLib {
 
     public static final String MODID = "gtnhlib";
