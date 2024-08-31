@@ -72,8 +72,7 @@ public class ConfigurationManager {
         init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
-        val category = Optional.of(cfg.category().trim()).map((cat) -> cat.length() == 0 ? null : cat).orElseThrow(
-                () -> new ConfigException("Config class " + configClass.getName() + " has an empty category!"));
+        val category = cfg.category().trim();
         val modid = cfg.modid();
         val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
 
@@ -100,14 +99,8 @@ public class ConfigurationManager {
     }
 
     public static void processSubCategory(Object instance, Configuration config, Field subCategoryField,
-            String category) throws ConfigException {
-        val name = getFieldName(subCategoryField).toLowerCase();
-        val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name;
-        var comment = Optional.ofNullable(subCategoryField.getAnnotation(Config.Comment.class))
-                .map(Config.Comment::value).map((lines) -> String.join("\n", lines)).orElse("");
-        val langKey = Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class))
-                .map(Config.LangKey::value).orElse(name);
-
+            String category, String name, String comment, String langKey) throws ConfigException {
+        val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name.toLowerCase();
         ConfigCategory subCat = config.getCategory(cat);
 
         subCat.setComment(comment);
@@ -131,8 +124,7 @@ public class ConfigurationManager {
     private static void processConfigInternal(Class<?> configClass, String category, Configuration rawConfig,
             @Nullable Object instance) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             NoSuchFieldException, ConfigException {
-        val cat = rawConfig.getCategory(category);
-
+        boolean foundCategory = !category.isEmpty();
         for (val field : configClass.getDeclaredFields()) {
             if (instance != null && Modifier.isStatic(field.getModifiers())) {
                 throw new ConfigException(
@@ -149,17 +141,20 @@ public class ConfigurationManager {
             field.setAccessible(true);
             var comment = Optional.ofNullable(field.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
                     .map((lines) -> String.join("\n", lines)).orElse("");
-            val name = Optional.ofNullable(field.getAnnotation(Config.Name.class)).map(Config.Name::value)
-                    .orElse(field.getName());
+            val name = getFieldName(field);
             val langKey = Optional.ofNullable(field.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
                     .orElse(name);
             val fieldClass = field.getType();
 
             if (isFieldSubCategory(field)) {
-                processSubCategory(instance, rawConfig, field, category);
+                processSubCategory(instance, rawConfig, field, category, name, comment, langKey);
+                foundCategory = true;
                 continue;
             }
 
+            if (category.isEmpty()) continue;
+
+            val cat = rawConfig.getCategory(category);
             boolean boxed;
             if ((boxed = fieldClass.equals(Boolean.class)) || fieldClass.equals(boolean.class)) {
                 val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultBoolean.class))
@@ -289,6 +284,10 @@ public class ConfigurationManager {
                 cat.setRequiresWorldRestart(true);
             }
         }
+
+        if (!foundCategory) {
+            throw new ConfigException("No category found for config class " + configClass.getName() + "!");
+        }
     }
 
     @SneakyThrows
@@ -321,7 +320,8 @@ public class ConfigurationManager {
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
         val category = cfg.category();
-        val elements = new ConfigElement<>(rawConfig.getCategory(category)).getChildElements();
+        val elements = category.isEmpty() ? getSubcategoryElements(configClass, category, rawConfig, false)
+                : new ConfigElement<>(rawConfig.getCategory(category)).getChildElements();
         return elements.stream().map((element) -> new IConfigElementProxy(element, () -> {
             try {
                 processConfigInternal(configClass, category, rawConfig, null);
@@ -352,9 +352,15 @@ public class ConfigurationManager {
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
         val category = cfg.category();
+
+        if (category.isEmpty()) {
+            return getSubcategoryElements(configClass, category, rawConfig, true);
+        }
+
         if (category.indexOf('.') != -1) {
             return Collections.emptyList();
         }
+
         return Collections
                 .singletonList(new IConfigElementProxy(new ConfigElement(rawConfig.getCategory(category)), () -> {
                     try {
@@ -389,6 +395,37 @@ public class ConfigurationManager {
                 }
                 return result;
         }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static List<IConfigElement> getSubcategoryElements(Class<?> configClass, String category,
+            Configuration rawConfig, boolean categorized) throws ConfigException {
+        List<IConfigElement> elements = new ArrayList<>();
+        for (val field : configClass.getDeclaredFields()) {
+            if (isFieldSubCategory(field)) {
+                val name = getFieldName(field).toLowerCase();
+
+                IConfigElementProxy<?> element = new IConfigElementProxy(
+                        new ConfigElement(rawConfig.getCategory(name)),
+                        () -> {
+                            try {
+                                processConfigInternal(configClass, category, rawConfig, null);
+                                rawConfig.save();
+                            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException
+                                    | NoSuchFieldException | ConfigException e) {
+                                e.printStackTrace();
+                            }
+                        });
+
+                elements.add(element);
+
+            }
+        }
+
+        if (categorized) return elements;
+
+        return (List<IConfigElement>) elements.stream().flatMap(element -> element.getChildElements().stream())
+                .collect(Collectors.toList());
     }
 
     private static String getFieldName(Field f) {
