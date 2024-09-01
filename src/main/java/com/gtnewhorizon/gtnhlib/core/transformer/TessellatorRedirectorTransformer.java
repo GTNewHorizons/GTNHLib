@@ -23,8 +23,7 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
 
     private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
 
-    private static final com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser cstPoolParser = new ClassConstantPoolParser(
-            TessellatorClass);
+    private static final ClassConstantPoolParser cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
 
     private static final List<String> TransformerExclusions = Arrays.asList(
             "org.lwjgl",
