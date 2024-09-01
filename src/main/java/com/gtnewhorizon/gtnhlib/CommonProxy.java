@@ -60,7 +60,7 @@ public class CommonProxy {
 
     /**
      * Sends packet from server to client that will display message above hotbar.
-     * 
+     *
      * @see ClientProxy#printMessageAboveHotbar
      */
     public void sendMessageAboveHotbar(EntityPlayerMP player, IChatComponent chatComponent, int displayDuration,
