@@ -97,8 +97,8 @@ public class ConfigFieldParser {
     public interface Parser {
 
         void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey)
-                throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, NoSuchFieldException;
+                String comment, String langKey) throws IllegalAccessException, NoSuchMethodException,
+                InvocationTargetException, NoSuchFieldException, ConfigException;
 
         void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
                 throws IllegalAccessException;
@@ -226,13 +226,25 @@ public class ConfigFieldParser {
         @Override
         public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
                 String comment, String langKey)
-                throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+                throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, ConfigException {
             Class<?> fieldClass = field.getType();
             val enumValues = Arrays.stream((Object[]) fieldClass.getDeclaredMethod("values").invoke(instance))
                     .map((obj) -> (Enum<?>) obj).collect(Collectors.toList());
             val defaultValue = (Enum<?>) Optional.ofNullable(field.getAnnotation(Config.DefaultEnum.class))
                     .map(Config.DefaultEnum::value).map((defName) -> extractField(fieldClass, defName))
                     .map(ConfigFieldParser::extractValue).orElse(field.get(instance));
+
+            if (defaultValue == null) {
+                throw new ConfigException(
+                        "Invalid default value for enum field " + field.getName()
+                                + " of type "
+                                + fieldClass.getName()
+                                + " in config class "
+                                + fieldClass.getDeclaringClass().getName()
+                                + " Valid values are: "
+                                + enumValues);
+            }
+
             val possibleValues = enumValues.stream().map(Enum::name).toArray(String[]::new);
             String value = config.getString(
                     name,
@@ -259,7 +271,7 @@ public class ConfigFieldParser {
                                 + " of type "
                                 + fieldClass.getName()
                                 + " in config class "
-                                + fieldClass.getName()
+                                + fieldClass.getDeclaringClass().getName()
                                 + "! Using default value of "
                                 + defaultValue
                                 + "!");
