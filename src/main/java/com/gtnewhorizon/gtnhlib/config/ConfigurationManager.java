@@ -307,6 +307,10 @@ public class ConfigurationManager {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private static IConfigElementProxy<?> getProxyElement(IConfigElement<?> element, Class<?> configClass,
             Configuration rawConfig, String category) {
+        if (element instanceof IConfigElementProxy<?>proxy) {
+            return proxy;
+        }
+
         return new IConfigElementProxy(element, () -> {
             try {
                 processConfigInternal(configClass, category, rawConfig, null);
