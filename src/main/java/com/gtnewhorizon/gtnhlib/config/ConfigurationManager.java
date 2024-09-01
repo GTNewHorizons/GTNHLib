@@ -214,8 +214,21 @@ public class ConfigurationManager {
      *
      * @return The configuration elements.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("rawtypes")
     public static List<IConfigElement> getConfigElements(Class<?> configClass) throws ConfigException {
+        return getConfigElements(configClass, false);
+    }
+
+    /**
+     * Process the configuration into a list of config elements usable in config GUI code.
+     *
+     * @param configClass The class to process.
+     * @param categorized Whether to return the elements split by category.
+     * @return The configuration elements.
+     */
+    @SuppressWarnings("rawtypes")
+    public static List<IConfigElement> getConfigElements(Class<?> configClass, boolean categorized)
+            throws ConfigException {
         init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
@@ -224,56 +237,26 @@ public class ConfigurationManager {
                         .map((map) -> map.get(cfg.category().trim()).contains(configClass)).orElse(false) ? conf : null)
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
-        val category = cfg.category();
-        val elements = category.isEmpty() ? getSubcategoryElements(configClass, category, rawConfig, false)
-                : new ConfigElement<>(rawConfig.getCategory(category)).getChildElements();
-        return elements.stream().map((element) -> new IConfigElementProxy(element, () -> {
-            try {
-                processConfigInternal(configClass, category, rawConfig, null);
-                rawConfig.save();
-            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException
-                    | ConfigException e) {
-                e.printStackTrace();
-            }
-        })).collect(Collectors.toList());
-    }
 
-    /**
-     * Process the configuration into a list of config elements split by category usable in config GUI code.
-     *
-     * @param configClass The class to process.
-     *
-     * @return The configuration elements.
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static List<IConfigElement> getCategorizedElements(Class<?> configClass) throws ConfigException {
-        val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
-                () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));;
-        val rawConfig = Optional.ofNullable(configs.get(getConfigKey(cfg))).map(
-                (conf) -> Optional.ofNullable(configToCategoryClassMap.get(conf))
-                        .map((map) -> map.get(cfg.category().trim()).contains(configClass)).orElse(false) ? conf : null)
-                .orElseThrow(
-                        () -> new ConfigException("Tried to get config elements for non-registered config class!"));
         val category = cfg.category();
-
-        if (category.isEmpty()) {
-            return getSubcategoryElements(configClass, category, rawConfig, true);
+        List<IConfigElement> result = new ArrayList<>();
+        if (categorized) {
+            if (category.isEmpty()) return getSubcategoryElements(configClass, category, rawConfig, true);
+            if (category.indexOf('.') != -1) return Collections.emptyList();
+            result.add(
+                    getProxyElement(
+                            new ConfigElement<>(rawConfig.getCategory(category)),
+                            configClass,
+                            rawConfig,
+                            category));
+        } else {
+            val elements = category.isEmpty() ? getSubcategoryElements(configClass, category, rawConfig, false)
+                    : new ConfigElement<>(rawConfig.getCategory(category)).getChildElements();
+            elements.stream().map((element) -> getProxyElement(element, configClass, rawConfig, category))
+                    .forEach(result::add);
         }
 
-        if (category.indexOf('.') != -1) {
-            return Collections.emptyList();
-        }
-
-        return Collections
-                .singletonList(new IConfigElementProxy(new ConfigElement(rawConfig.getCategory(category)), () -> {
-                    try {
-                        processConfigInternal(configClass, category, rawConfig, null);
-                        rawConfig.save();
-                    } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException
-                            | NoSuchFieldException | ConfigException e) {
-                        e.printStackTrace();
-                    }
-                }));
+        return result;
     }
 
     @SuppressWarnings({ "rawtypes" })
@@ -288,12 +271,11 @@ public class ConfigurationManager {
             case 0:
                 return Collections.emptyList();
             case 1:
-                return categorized ? getCategorizedElements(configClasses[0]) : getConfigElements(configClasses[0]);
+                return getConfigElements(configClasses[0], categorized);
             default:
                 val result = new ArrayList<IConfigElement>();
                 for (val configClass : configClasses) {
-                    List<IConfigElement> elements = categorized ? getCategorizedElements(configClass)
-                            : getConfigElements(configClass);
+                    List<IConfigElement> elements = getConfigElements(configClass, categorized);
                     result.addAll(elements);
                 }
                 return result;
@@ -307,21 +289,12 @@ public class ConfigurationManager {
         for (val field : configClass.getDeclaredFields()) {
             if (isFieldSubCategory(field)) {
                 val name = ConfigFieldParser.getFieldName(field).toLowerCase();
-
-                IConfigElementProxy<?> element = new IConfigElementProxy(
-                        new ConfigElement(rawConfig.getCategory(name)),
-                        () -> {
-                            try {
-                                processConfigInternal(configClass, category, rawConfig, null);
-                                rawConfig.save();
-                            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException
-                                    | NoSuchFieldException | ConfigException e) {
-                                e.printStackTrace();
-                            }
-                        });
-
-                elements.add(element);
-
+                elements.add(
+                        getProxyElement(
+                                new ConfigElement(rawConfig.getCategory(name)),
+                                configClass,
+                                rawConfig,
+                                category));
             }
         }
 
@@ -329,6 +302,20 @@ public class ConfigurationManager {
 
         return (List<IConfigElement>) elements.stream().flatMap(element -> element.getChildElements().stream())
                 .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static IConfigElementProxy<?> getProxyElement(IConfigElement<?> element, Class<?> configClass,
+            Configuration rawConfig, String category) {
+        return new IConfigElementProxy(element, () -> {
+            try {
+                processConfigInternal(configClass, category, rawConfig, null);
+                rawConfig.save();
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException
+                    | ConfigException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private static boolean isFieldSubCategory(Field field) {
