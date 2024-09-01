@@ -161,4 +161,24 @@ public @interface Config {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ ElementType.FIELD, ElementType.TYPE })
     @interface RequiresWorldRestart {}
+
+    /**
+     * Set a default value if the listed coremod or modID is found. Coremod will take precedence value will be parsed to
+     * target field's type
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface ModDetectedDefault {
+
+        String coremod() default "";
+
+        String modID() default "";
+
+        String value() default "";
+
+        /**
+         * Can be used instead of value() for array fields
+         */
+        String[] values() default {};
+    }
 }

@@ -14,12 +14,16 @@ import javax.annotation.Nullable;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
+import cpw.mods.fml.common.Loader;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import lombok.SneakyThrows;
 import lombok.val;
 
 public class ConfigFieldParser {
 
     private static final Map<Class<?>, Parser> PARSERS = new HashMap<>();
+    private static final Object2BooleanMap<String> detectedMods = new Object2BooleanOpenHashMap<>();
 
     static {
         PARSERS.put(boolean.class, new BooleanParser());
@@ -46,7 +50,17 @@ public class ConfigFieldParser {
         val name = getFieldName(field);
         val langKey = Optional.ofNullable(field.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
                 .orElse(name);
-        parser.load(instance, field, config, category, name, comment, langKey);
+
+        val modDefault = getModDefault(field);
+        String defValueString = null;
+        if (modDefault != null) {
+            if (modDefault.values().length != 0) {
+                defValueString = String.join(",", modDefault.values());
+            } else {
+                defValueString = modDefault.value().replaceAll(" ", "");
+            }
+        }
+        parser.load(instance, defValueString, field, config, category, name, comment, langKey);
     }
 
     public static void saveField(Object instance, Field field, Configuration config, String category)
@@ -84,6 +98,30 @@ public class ConfigFieldParser {
         return field.getName();
     }
 
+    private static @Nullable Config.ModDetectedDefault getModDefault(Field field) {
+        val modDefault = field.getAnnotation(Config.ModDetectedDefault.class);
+        if (modDefault == null) return null;
+
+        val coremod = modDefault.coremod();
+        val modId = modDefault.modID();
+        if (coremod.isEmpty() && modId.isEmpty()) return null;
+
+        boolean isDetected = detectedMods.computeIfAbsent(modId.isEmpty() ? coremod : modId, id -> {
+            if (!modId.isEmpty() && Loader.isModLoaded(modId)) return true;
+            if (!coremod.isEmpty()) {
+                try {
+                    Class.forName(coremod);
+                    return true;
+                } catch (ClassNotFoundException e) {
+                    return false;
+                }
+            }
+            return false;
+        });
+
+        return isDetected ? modDefault : null;
+    }
+
     @SneakyThrows
     private static Field extractField(Class<?> clazz, String field) {
         return clazz.getDeclaredField(field);
@@ -96,9 +134,9 @@ public class ConfigFieldParser {
 
     public interface Parser {
 
-        void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException, NoSuchMethodException,
-                InvocationTargetException, NoSuchFieldException, ConfigException;
+        void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException,
+                NoSuchMethodException, InvocationTargetException, NoSuchFieldException, ConfigException;
 
         void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
                 throws IllegalAccessException;
@@ -107,12 +145,18 @@ public class ConfigFieldParser {
     private static class BooleanParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
             boolean boxed = field.getType().equals(Boolean.class);
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultBoolean.class))
-                    .map(Config.DefaultBoolean::value)
-                    .orElse(boxed ? (Boolean) field.get(instance) : field.getBoolean(instance));
+            boolean defaultValue;
+
+            if (defValueString != null) {
+                defaultValue = Boolean.parseBoolean(defValueString);
+            } else {
+                defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultBoolean.class))
+                        .map(Config.DefaultBoolean::value)
+                        .orElse(boxed ? (Boolean) field.get(instance) : field.getBoolean(instance));
+            }
             field.setBoolean(instance, config.getBoolean(name, category, defaultValue, comment, langKey));
         }
 
@@ -128,15 +172,20 @@ public class ConfigFieldParser {
     private static class IntParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
             boolean boxed = field.getType().equals(Integer.class);
             val range = Optional.ofNullable(field.getAnnotation(Config.RangeInt.class));
             val min = range.map(Config.RangeInt::min).orElse(Integer.MIN_VALUE);
             val max = range.map(Config.RangeInt::max).orElse(Integer.MAX_VALUE);
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultInt.class))
+            int defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultInt.class))
                     .map(Config.DefaultInt::value)
                     .orElse(boxed ? (Integer) field.get(instance) : field.getInt(instance));
+
+            if (defValueString != null) {
+                defaultValue = Integer.parseInt(defValueString);
+            }
+
             field.setInt(instance, config.getInt(name, category, defaultValue, min, max, comment, langKey));
         }
 
@@ -152,15 +201,19 @@ public class ConfigFieldParser {
     private static class FloatParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
             boolean boxed = field.getType().equals(Float.class);
             val range = Optional.ofNullable(field.getAnnotation(Config.RangeFloat.class));
             val min = range.map(Config.RangeFloat::min).orElse(Float.MIN_VALUE);
             val max = range.map(Config.RangeFloat::max).orElse(Float.MAX_VALUE);
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultFloat.class))
+            float defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultFloat.class))
                     .map(Config.DefaultFloat::value)
                     .orElse(boxed ? (Float) field.get(instance) : field.getFloat(instance));
+
+            if (defValueString != null) {
+                defaultValue = Float.parseFloat(defValueString);
+            }
             field.setFloat(instance, config.getFloat(name, category, defaultValue, min, max, comment, langKey));
         }
 
@@ -176,15 +229,20 @@ public class ConfigFieldParser {
     private static class DoubleParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
             boolean boxed = field.getType().equals(Double.class);
             val range = Optional.ofNullable(field.getAnnotation(Config.RangeDouble.class));
             val min = range.map(Config.RangeDouble::min).orElse(Double.MIN_VALUE);
             val max = range.map(Config.RangeDouble::max).orElse(Double.MAX_VALUE);
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultDouble.class))
+            double defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultDouble.class))
                     .map(Config.DefaultDouble::value)
                     .orElse(boxed ? (Double) field.get(instance) : field.getDouble(instance));
+
+            if (defValueString != null) {
+                defaultValue = Double.parseDouble(defValueString);
+            }
+
             val defaultValueComment = comment + " [range: " + min + " ~ " + max + ", default: " + defaultValue + "]";
             field.setDouble(
                     instance,
@@ -204,10 +262,15 @@ public class ConfigFieldParser {
     private static class StringParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultString.class))
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
+            String defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultString.class))
                     .map(Config.DefaultString::value).orElse((String) field.get(instance));
+
+            if (defValueString != null) {
+                defaultValue = defValueString;
+            }
+
             val pattern = Optional.ofNullable(field.getAnnotation(Config.Pattern.class)).map(Config.Pattern::value)
                     .map(Pattern::compile).orElse(null);
             field.set(instance, config.getString(name, category, defaultValue, comment, langKey, pattern));
@@ -224,15 +287,20 @@ public class ConfigFieldParser {
     private static class EnumParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey)
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey)
                 throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, ConfigException {
             Class<?> fieldClass = field.getType();
             val enumValues = Arrays.stream((Object[]) fieldClass.getDeclaredMethod("values").invoke(instance))
                     .map((obj) -> (Enum<?>) obj).collect(Collectors.toList());
-            val defaultValue = (Enum<?>) Optional.ofNullable(field.getAnnotation(Config.DefaultEnum.class))
+            Enum<?> defaultValue = (Enum<?>) Optional.ofNullable(field.getAnnotation(Config.DefaultEnum.class))
                     .map(Config.DefaultEnum::value).map((defName) -> extractField(fieldClass, defName))
                     .map(ConfigFieldParser::extractValue).orElse(field.get(instance));
+
+            if (defValueString != null) {
+                val modDefaultField = extractField(fieldClass, defValueString);
+                defaultValue = (Enum<?>) extractValue(modDefaultField);
+            }
 
             if (defaultValue == null) {
                 throw new ConfigException(
@@ -290,11 +358,16 @@ public class ConfigFieldParser {
     private static class StringArrayParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
 
             String[] defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultStringList.class))
                     .map(Config.DefaultStringList::value).orElse((String[]) field.get(instance));
+
+            if (defValueString != null) {
+                defaultValue = defValueString.split(",");
+            }
+
             if (defaultValue == null) defaultValue = new String[0];
             String[] value = config.getStringList(name, category, defaultValue, comment, null, langKey);
             field.set(instance, value);
@@ -311,10 +384,14 @@ public class ConfigFieldParser {
     private static class DoubleArrayParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
             double[] defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultDoubleList.class))
                     .map(Config.DefaultDoubleList::value).orElse((double[]) field.get(instance));
+
+            if (defValueString != null) {
+                defaultValue = Arrays.stream(defValueString.split(",")).mapToDouble(Double::parseDouble).toArray();
+            }
 
             if (defaultValue == null) defaultValue = new double[0];
 
@@ -339,10 +416,14 @@ public class ConfigFieldParser {
     private static class IntArrayParser implements Parser {
 
         @Override
-        public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
-                String comment, String langKey) throws IllegalAccessException {
+        public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
+                String category, String name, String comment, String langKey) throws IllegalAccessException {
             int[] defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultIntList.class))
                     .map(Config.DefaultIntList::value).orElse((int[]) field.get(instance));
+
+            if (defValueString != null) {
+                defaultValue = Arrays.stream(defValueString.split(",")).mapToInt(Integer::parseInt).toArray();
+            }
 
             if (defaultValue == null) defaultValue = new int[0];
 
