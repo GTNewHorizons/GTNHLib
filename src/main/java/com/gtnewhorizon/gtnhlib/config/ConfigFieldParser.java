@@ -292,8 +292,10 @@ public class ConfigFieldParser {
         @Override
         public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
                 String comment, String langKey) throws IllegalAccessException {
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultStringList.class))
+
+            String[] defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultStringList.class))
                     .map(Config.DefaultStringList::value).orElse((String[]) field.get(instance));
+            if (defaultValue == null) defaultValue = new String[0];
             String[] value = config.getStringList(name, category, defaultValue, comment, null, langKey);
             field.set(instance, value);
         }
@@ -311,8 +313,10 @@ public class ConfigFieldParser {
         @Override
         public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
                 String comment, String langKey) throws IllegalAccessException {
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultDoubleList.class))
+            double[] defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultDoubleList.class))
                     .map(Config.DefaultDoubleList::value).orElse((double[]) field.get(instance));
+
+            if (defaultValue == null) defaultValue = new double[0];
 
             String[] stringValues = new String[defaultValue.length];
             for (int i = 0; i < defaultValue.length; i++) {
@@ -337,8 +341,10 @@ public class ConfigFieldParser {
         @Override
         public void load(@Nullable Object instance, Field field, Configuration config, String category, String name,
                 String comment, String langKey) throws IllegalAccessException {
-            val defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultIntList.class))
+            int[] defaultValue = Optional.ofNullable(field.getAnnotation(Config.DefaultIntList.class))
                     .map(Config.DefaultIntList::value).orElse((int[]) field.get(instance));
+
+            if (defaultValue == null) defaultValue = new int[0];
 
             String[] stringValues = new String[defaultValue.length];
             for (int i = 0; i < defaultValue.length; i++) {

@@ -320,7 +320,8 @@ public class ConfigurationManager {
 
     private static boolean isFieldSubCategory(Field field) {
         Class<?> fieldClass = field.getType();
-        return fieldClass.getSuperclass() != null && fieldClass.getSuperclass().equals(Object.class);
+        return !ConfigFieldParser.canParse(field) && fieldClass.getSuperclass() != null
+                && fieldClass.getSuperclass().equals(Object.class);
     }
 
     private static String getConfigKey(Config cfg) {
