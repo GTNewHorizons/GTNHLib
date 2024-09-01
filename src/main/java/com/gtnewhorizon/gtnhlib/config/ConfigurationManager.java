@@ -36,7 +36,7 @@ import lombok.val;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConfigurationManager {
 
-    private static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
+    static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
     private static final Map<String, Configuration> configs = new HashMap<>();
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
 

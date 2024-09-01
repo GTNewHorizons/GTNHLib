@@ -14,8 +14,6 @@ import javax.annotation.Nullable;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -254,7 +252,7 @@ public class ConfigFieldParser {
                 }
                 field.set(instance, enumField.get(instance));
             } catch (NoSuchFieldException e) {
-                GTNHLib.LOG.warn(
+                ConfigurationManager.LOGGER.warn(
                         "Invalid value " + value
                                 + " for enum configuration field "
                                 + field.getName()
