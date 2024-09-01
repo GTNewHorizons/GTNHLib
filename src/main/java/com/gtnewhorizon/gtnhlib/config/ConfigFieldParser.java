@@ -240,7 +240,7 @@ public class ConfigFieldParser {
                                 + " of type "
                                 + fieldClass.getName()
                                 + " in config class "
-                                + fieldClass.getDeclaringClass().getName()
+                                + field.getDeclaringClass().getName()
                                 + " Valid values are: "
                                 + enumValues);
             }
@@ -271,7 +271,7 @@ public class ConfigFieldParser {
                                 + " of type "
                                 + fieldClass.getName()
                                 + " in config class "
-                                + fieldClass.getDeclaringClass().getName()
+                                + field.getDeclaringClass().getName()
                                 + "! Using default value of "
                                 + defaultValue
                                 + "!");
