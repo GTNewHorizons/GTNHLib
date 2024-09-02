@@ -33,10 +33,15 @@ public class ASMUtil {
         }
     }
 
+    /**
+     * Loads the class bytes and saves the class bytes to the disk in three files, raw class bytes, bytecode, and asmified
+     *
+     * @param clazz - the class to be saved
+     */
     public static void saveClassToDisk(Class<?> clazz) {
         try (InputStream is = clazz.getResourceAsStream('/' + clazz.getName().replace('.', '/') + ".class")) {
             final byte[] bytes = getClassBytes(is);
-            ASMUtil.saveTransformedClass(bytes, clazz.getName());
+            ASMUtil.saveClassBytesToDisk(bytes, clazz.getName());
         } catch (IOException e) {
             logger.error("Couldn't load bytes of " + clazz.getName(), e);
         }
@@ -72,11 +77,17 @@ public class ASMUtil {
         }
     }
 
-    public static void saveTransformedClass(final byte[] classBytes, final String transformedName) {
-        final String fileName = transformedName.replace('.', File.separatorChar);
-        saveAsRawClassFile(classBytes, transformedName, fileName);
-        saveAsBytecodeFile(classBytes, transformedName, fileName);
-        saveAsASMFile(classBytes, transformedName, fileName);
+    /**
+     * Saves the class bytes to the disk in three files, raw class bytes, bytecode, and asmified
+     *
+     * @param classBytes - the bytes of the class to save
+     * @param classname - the class of the name, with '.' to separate package names
+     */
+    public static void saveClassBytesToDisk(byte[] classBytes, final String classname) {
+        final String fileName = classname.replace('.', File.separatorChar);
+        saveAsRawClassFile(classBytes, classname, fileName);
+        saveAsBytecodeFile(classBytes, classname, fileName);
+        saveAsASMFile(classBytes, classname, fileName);
     }
 
     public static void saveAsRawClassFile(byte[] classBytes, String transformedName) {
@@ -111,7 +122,7 @@ public class ASMUtil {
         ASMUtil.saveAsBytecodeFile(classBytes, transformedName, fileName);
     }
 
-    public static void saveAsBytecodeFile(byte[] data, String transformedName, String fileName) {
+    public static void saveAsBytecodeFile(byte[] classBytes, String transformedName, String fileName) {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
@@ -126,7 +137,7 @@ public class ASMUtil {
             bytecodeFile.delete();
         }
         try (final OutputStream output = Files.newOutputStream(bytecodeFile.toPath())) {
-            final ClassReader classReader = new ClassReader(data);
+            final ClassReader classReader = new ClassReader(classBytes);
             classReader.accept(new TraceClassVisitor(null, new Textifier(), new PrintWriter(output)), 0);
             logger.info("Saved class (bytecode) to " + bytecodeFile.toPath());
         } catch (IOException e) {
@@ -139,7 +150,7 @@ public class ASMUtil {
         ASMUtil.saveAsASMFile(classBytes, transformedName, fileName);
     }
 
-    public static void saveAsASMFile(byte[] data, String transformedName, String fileName) {
+    public static void saveAsASMFile(byte[] classBytes, String transformedName, String fileName) {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
@@ -154,7 +165,7 @@ public class ASMUtil {
             asmifiedFile.delete();
         }
         try (final OutputStream output = Files.newOutputStream(asmifiedFile.toPath())) {
-            final ClassReader classReader = new ClassReader(data);
+            final ClassReader classReader = new ClassReader(classBytes);
             classReader.accept(new TraceClassVisitor(null, new ASMifier(), new PrintWriter(output)), 0);
             logger.info("Saved class (ASMified) to " + asmifiedFile.toPath());
         } catch (IOException e) {
