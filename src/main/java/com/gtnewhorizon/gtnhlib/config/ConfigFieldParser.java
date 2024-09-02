@@ -134,18 +134,15 @@ public class ConfigFieldParser {
     private static boolean isModDetected(String modID, String coremod) {
         if (modID.isEmpty() && coremod.isEmpty()) return false;
         return detectedMods.computeIfAbsent(modID.isEmpty() ? coremod : modID, id -> {
-            if (!modID.isEmpty() && Loader.isModLoaded(modID)) return true;
             if (!coremod.isEmpty()) {
                 try {
                     Class.forName(coremod);
                     return true;
-                } catch (ClassNotFoundException e) {
-                    return false;
-                }
+                } catch (ClassNotFoundException ignored) {}
             }
-            return false;
-        });
 
+            return !modID.isEmpty() && Loader.isModLoaded(modID);
+        });
     }
 
     @SneakyThrows
