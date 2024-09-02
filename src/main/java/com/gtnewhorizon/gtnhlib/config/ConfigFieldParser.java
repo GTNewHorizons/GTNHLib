@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.config;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -162,33 +161,31 @@ public class ConfigFieldParser {
     public interface Parser {
 
         void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException,
-                NoSuchMethodException, InvocationTargetException, NoSuchFieldException, ConfigException;
+                String category, String name, String comment, String langKey);
 
-        void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException;
+        void save(@Nullable Object instance, Field field, Configuration config, String category, String name);
     }
 
     private static class BooleanParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey)
-                throws IllegalAccessException, ConfigException {
+                String category, String name, String comment, String langKey) {
             val defaultValue = fromStringOrDefault(instance, defValueString, field);
             field.setBoolean(instance, config.getBoolean(name, category, defaultValue, comment, langKey));
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             boolean boxed = field.getType().equals(Boolean.class);
             Property prop = config.getCategory(category).get(name);
             prop.set(boxed ? (Boolean) field.get(instance) : field.getBoolean(instance));
         }
 
-        private boolean fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException, ConfigException {
+        @SneakyThrows
+        private boolean fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             val boxed = field.getType().equals(Boolean.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultBoolean.class))
@@ -208,8 +205,9 @@ public class ConfigFieldParser {
     private static class IntParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException {
+                String category, String name, String comment, String langKey) {
             val range = Optional.ofNullable(field.getAnnotation(Config.RangeInt.class));
             val min = range.map(Config.RangeInt::min).orElse(Integer.MIN_VALUE);
             val max = range.map(Config.RangeInt::max).orElse(Integer.MAX_VALUE);
@@ -219,15 +217,15 @@ public class ConfigFieldParser {
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             boolean boxed = field.getType().equals(Integer.class);
             Property prop = config.getCategory(category).get(name);
             prop.set(boxed ? (Integer) field.get(instance) : field.getInt(instance));
         }
 
-        private int fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException, NumberFormatException {
+        @SneakyThrows
+        private int fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             val boxed = field.getType().equals(Integer.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultInt.class)).map(Config.DefaultInt::value)
@@ -241,8 +239,9 @@ public class ConfigFieldParser {
     private static class FloatParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException {
+                String category, String name, String comment, String langKey) {
             val range = Optional.ofNullable(field.getAnnotation(Config.RangeFloat.class));
             val min = range.map(Config.RangeFloat::min).orElse(Float.MIN_VALUE);
             val max = range.map(Config.RangeFloat::max).orElse(Float.MAX_VALUE);
@@ -251,15 +250,15 @@ public class ConfigFieldParser {
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             boolean boxed = field.getType().equals(Float.class);
             Property prop = config.getCategory(category).get(name);
             prop.set(boxed ? (Float) field.get(instance) : field.getFloat(instance));
         }
 
-        private float fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException, NumberFormatException {
+        @SneakyThrows
+        private float fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             val boxed = field.getType().equals(Float.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultFloat.class))
@@ -274,8 +273,9 @@ public class ConfigFieldParser {
     private static class DoubleParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException {
+                String category, String name, String comment, String langKey) {
             val range = Optional.ofNullable(field.getAnnotation(Config.RangeDouble.class));
             val min = range.map(Config.RangeDouble::min).orElse(Double.MIN_VALUE);
             val max = range.map(Config.RangeDouble::max).orElse(Double.MAX_VALUE);
@@ -289,15 +289,15 @@ public class ConfigFieldParser {
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             boolean boxed = field.getType().equals(Double.class);
             Property prop = config.getCategory(category).get(name);
             prop.set(boxed ? (Double) field.get(instance) : field.getDouble(instance));
         }
 
-        private double fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException, NumberFormatException {
+        @SneakyThrows
+        private double fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             val boxed = field.getType().equals(Double.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultDouble.class))
@@ -312,8 +312,9 @@ public class ConfigFieldParser {
     private static class StringParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException {
+                String category, String name, String comment, String langKey) {
             val defaultValue = fromStringOrDefault(instance, defValueString, field);
             val pattern = Optional.ofNullable(field.getAnnotation(Config.Pattern.class)).map(Config.Pattern::value)
                     .map(Pattern::compile).orElse(null);
@@ -321,14 +322,14 @@ public class ConfigFieldParser {
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             Property prop = config.getCategory(category).get(name);
             prop.set((String) field.get(instance));
         }
 
-        private String fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException {
+        @SneakyThrows
+        private String fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultString.class))
                         .map(Config.DefaultString::value).orElse((String) field.get(instance));
@@ -341,9 +342,9 @@ public class ConfigFieldParser {
     private static class EnumParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey)
-                throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, ConfigException {
+                String category, String name, String comment, String langKey) {
             Class<?> fieldClass = field.getType();
             val enumValues = Arrays.stream((Object[]) fieldClass.getDeclaredMethod("values").invoke(instance))
                     .map((obj) -> (Enum<?>) obj).collect(Collectors.toList());
@@ -379,14 +380,15 @@ public class ConfigFieldParser {
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             Property prop = config.getCategory(category).get(name);
             prop.set(((Enum<?>) field.get(instance)).name());
         }
 
+        @SneakyThrows
         private Enum<?> fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field,
-                List<? extends Enum<?>> validValues) throws IllegalAccessException, ConfigException {
+                List<? extends Enum<?>> validValues) {
             Enum<?> value;
             if (defValueString == null) {
                 value = (Enum<?>) Optional.ofNullable(field.getAnnotation(Config.DefaultEnum.class))
@@ -408,22 +410,23 @@ public class ConfigFieldParser {
     private static class StringArrayParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException {
+                String category, String name, String comment, String langKey) {
             val defaultValue = fromStringOrDefault(instance, defValueString, field);
             val value = config.getStringList(name, category, defaultValue, comment, null, langKey);
             field.set(instance, value);
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             val prop = config.getCategory(category).get(name);
             prop.set((String[]) field.get(instance));
         }
 
-        private String[] fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException {
+        @SneakyThrows
+        private String[] fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             String[] value;
             if (defValueString == null) {
                 value = Optional.ofNullable(field.getAnnotation(Config.DefaultStringList.class))
@@ -438,8 +441,9 @@ public class ConfigFieldParser {
     private static class DoubleArrayParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException {
+                String category, String name, String comment, String langKey) {
             val defaultValue = fromStringOrDefault(instance, defValueString, field);
 
             String[] stringValues = new String[defaultValue.length];
@@ -453,14 +457,14 @@ public class ConfigFieldParser {
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             Property prop = config.getCategory(category).get(name);
             prop.set((double[]) field.get(instance));
         }
 
-        private double[] fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException, NumberFormatException {
+        @SneakyThrows
+        private double[] fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             double[] value;
             if (defValueString == null) {
                 value = Optional.ofNullable(field.getAnnotation(Config.DefaultDoubleList.class))
@@ -477,8 +481,9 @@ public class ConfigFieldParser {
     private static class IntArrayParser implements Parser {
 
         @Override
+        @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
-                String category, String name, String comment, String langKey) throws IllegalAccessException {
+                String category, String name, String comment, String langKey) {
             val defaultValue = fromStringOrDefault(instance, defValueString, field);
             String[] stringValues = new String[defaultValue.length];
             for (int i = 0; i < defaultValue.length; i++) {
@@ -491,14 +496,14 @@ public class ConfigFieldParser {
         }
 
         @Override
-        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name)
-                throws IllegalAccessException {
+        @SneakyThrows
+        public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
             Property prop = config.getCategory(category).get(name);
             prop.set((int[]) field.get(instance));
         }
 
-        private int[] fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field)
-                throws IllegalAccessException, NumberFormatException {
+        @SneakyThrows
+        private int[] fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
             int[] value;
             if (defValueString == null) {
                 value = Optional.ofNullable(field.getAnnotation(Config.DefaultIntList.class))
