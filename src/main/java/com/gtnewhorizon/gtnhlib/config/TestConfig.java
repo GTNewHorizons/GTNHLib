@@ -17,11 +17,17 @@ public class TestConfig {
     @Config.DefaultBoolean(true)
     public static boolean testBooleanButCooler;
 
-    @Config.ModDetectedDefault(modID = "hodgepodge", value = "3333")
+    @Config.ModDetectedDefaultList(
+            values = { @Config.ModDetectedDefault(modID = "modthatdoesntexistorsomething", value = "1111"),
+                    @Config.ModDetectedDefault(modID = "secondmodthatdoesntexistorsomething", value = "2222"),
+                    @Config.ModDetectedDefault(modID = "hodgepodge", value = "3333") })
     @Config.DefaultInt(1)
     public static int testInt;
 
-    @Config.ModDetectedDefault(modID = "modthatdoesntexistorsomething", value = "3333")
+    @Config.ModDetectedDefaultList(
+            values = { @Config.ModDetectedDefault(modID = "modthatdoesntexistorsomething", value = "1111"),
+                    @Config.ModDetectedDefault(modID = "secondmodthatdoesntexistorsomething", value = "2222"),
+                    @Config.ModDetectedDefault(modID = "thirdmodthatdoesntexist", value = "3333") })
     @Config.DefaultInt(1)
     public static int testIntButCooler;
 

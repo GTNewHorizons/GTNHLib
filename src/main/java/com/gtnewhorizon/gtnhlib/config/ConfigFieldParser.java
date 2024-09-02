@@ -121,15 +121,21 @@ public class ConfigFieldParser {
     }
 
     private static @Nullable Config.ModDetectedDefault getModDefault(Field field) {
+        val modDefaultList = field.getAnnotation(Config.ModDetectedDefaultList.class);
+        if (modDefaultList != null) {
+            return Arrays.stream(modDefaultList.values())
+                    .filter(modDefault -> isModDetected(modDefault.modID(), modDefault.coremod())).findFirst()
+                    .orElse(null);
+        }
+
         val modDefault = field.getAnnotation(Config.ModDetectedDefault.class);
-        if (modDefault == null) return null;
+        return (modDefault != null && isModDetected(modDefault.modID(), modDefault.coremod())) ? modDefault : null;
+    }
 
-        val coremod = modDefault.coremod();
-        val modId = modDefault.modID();
-        if (coremod.isEmpty() && modId.isEmpty()) return null;
-
-        boolean isDetected = detectedMods.computeIfAbsent(modId.isEmpty() ? coremod : modId, id -> {
-            if (!modId.isEmpty() && Loader.isModLoaded(modId)) return true;
+    private static boolean isModDetected(String modID, String coremod) {
+        if (modID.isEmpty() && coremod.isEmpty()) return false;
+        return detectedMods.computeIfAbsent(modID.isEmpty() ? coremod : modID, id -> {
+            if (!modID.isEmpty() && Loader.isModLoaded(modID)) return true;
             if (!coremod.isEmpty()) {
                 try {
                     Class.forName(coremod);
@@ -141,7 +147,6 @@ public class ConfigFieldParser {
             return false;
         });
 
-        return isDetected ? modDefault : null;
     }
 
     @SneakyThrows
@@ -363,16 +368,12 @@ public class ConfigFieldParser {
                 field.set(instance, enumField.get(instance));
             } catch (NoSuchFieldException e) {
                 ConfigurationManager.LOGGER.warn(
-                        "Invalid value " + value
-                                + " for enum configuration field "
-                                + field.getName()
-                                + " of type "
-                                + fieldClass.getName()
-                                + " in config class "
-                                + field.getDeclaringClass().getName()
-                                + "! Using default value of "
-                                + defaultValue
-                                + "!");
+                        "Invalid value {} for enum configuration field {} of type {} in config class {}! Using default value of {}!",
+                        value,
+                        field.getName(),
+                        fieldClass.getName(),
+                        field.getDeclaringClass().getName(),
+                        defaultValue);
                 field.set(instance, defaultValue);
             }
         }
@@ -385,8 +386,7 @@ public class ConfigFieldParser {
         }
 
         private Enum<?> fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field,
-                List<? extends Enum<?>> validValues)
-                throws IllegalAccessException, ConfigException {
+                List<? extends Enum<?>> validValues) throws IllegalAccessException, ConfigException {
             Enum<?> value;
             if (defValueString == null) {
                 value = (Enum<?>) Optional.ofNullable(field.getAnnotation(Config.DefaultEnum.class))

@@ -181,4 +181,11 @@ public @interface Config {
          */
         String[] values() default {};
     }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface ModDetectedDefaultList {
+
+        ModDetectedDefault[] values() default {};
+    }
 }
