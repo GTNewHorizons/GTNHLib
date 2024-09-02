@@ -1,6 +1,10 @@
 package com.gtnewhorizon.gtnhlib.asm;
 
+import java.io.*;
+import java.nio.file.Files;
+
 import net.minecraft.launchwrapper.Launch;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,9 +12,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.util.ASMifier;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceClassVisitor;
-
-import java.io.*;
-import java.nio.file.Files;
 
 public class ASMUtil {
 
@@ -23,7 +24,7 @@ public class ASMUtil {
             FileUtils.deleteDirectory(outputDir);
         } catch (IOException ignored) {}
         if (!outputDir.exists()) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             outputDir.mkdirs();
         }
     }
@@ -86,11 +87,11 @@ public class ASMUtil {
         final File classFile = new File(outputDir, fileName + ".class");
         final File outDir = classFile.getParentFile();
         if (!outDir.exists()) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             outDir.mkdirs();
         }
         if (classFile.exists()) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             classFile.delete();
         }
         try (final OutputStream output = Files.newOutputStream(classFile.toPath())) {
@@ -113,11 +114,11 @@ public class ASMUtil {
         final File bytecodeFile = new File(outputDir, fileName + "_BYTECODE.txt");
         final File outDir = bytecodeFile.getParentFile();
         if (!outDir.exists()) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             outDir.mkdirs();
         }
         if (bytecodeFile.exists()) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             bytecodeFile.delete();
         }
         try (final OutputStream output = Files.newOutputStream(bytecodeFile.toPath())) {
@@ -141,11 +142,11 @@ public class ASMUtil {
         final File asmifiedFile = new File(outputDir, fileName + "_ASM.txt");
         final File outDir = asmifiedFile.getParentFile();
         if (!outDir.exists()) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             outDir.mkdirs();
         }
         if (asmifiedFile.exists()) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             asmifiedFile.delete();
         }
         try (final OutputStream output = Files.newOutputStream(asmifiedFile.toPath())) {
