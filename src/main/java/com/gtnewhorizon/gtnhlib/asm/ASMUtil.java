@@ -34,7 +34,8 @@ public class ASMUtil {
     }
 
     /**
-     * Loads the class bytes and saves the class bytes to the disk in three files, raw class bytes, bytecode, and asmified
+     * Loads the class bytes and saves the class bytes to the disk in three files, raw class bytes, bytecode, and
+     * asmified
      *
      * @param clazz - the class to be saved
      */
@@ -81,7 +82,7 @@ public class ASMUtil {
      * Saves the class bytes to the disk in three files, raw class bytes, bytecode, and asmified
      *
      * @param classBytes - the bytes of the class to save
-     * @param classname - the class of the name, with '.' to separate package names
+     * @param classname  - the class of the name, with '.' to separate package names
      */
     public static void saveClassBytesToDisk(byte[] classBytes, final String classname) {
         final String fileName = classname.replace('.', File.separatorChar);
