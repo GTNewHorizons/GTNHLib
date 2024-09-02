@@ -9,32 +9,50 @@ public class TestConfig {
         TEST3
     }
 
-    @Config.Comment("This is a test boolean")
-    @Config.ModDetectedDefault(coremod = "coremodthatdoesntexistorsomething", value = "false")
+    @Config.ModDetectedDefault(modID = "hodgepodge", value = "false")
     @Config.DefaultBoolean(true)
     public static boolean testBoolean;
 
-    @Config.Comment("This is a test int")
-    @Config.ModDetectedDefault(modID = "modthatdoesntexistorsomething", value = "3231421")
+    @Config.ModDetectedDefault(coremod = "coremodthatdoesntexistorsomething", value = "false")
+    @Config.DefaultBoolean(true)
+    public static boolean testBooleanButCooler;
+
+    @Config.ModDetectedDefault(modID = "hodgepodge", value = "3333")
     @Config.DefaultInt(1)
     public static int testInt;
 
-    @Config.Comment("This is a test double")
-    @Config.ModDetectedDefault(coremod = "com.mitchej123.hodgepodge.core.HodgepodgeCore", value = "11122.0")
+    @Config.ModDetectedDefault(modID = "modthatdoesntexistorsomething", value = "3333")
+    @Config.DefaultInt(1)
+    public static int testIntButCooler;
+
+    @Config.ModDetectedDefault(coremod = "com.mitchej123.hodgepodge.core.HodgepodgeCore", value = "3333.0")
     @Config.DefaultDouble(1.0)
     public static double testDouble;
 
-    @Config.Comment("This is a test double")
     @Config.ModDetectedDefault(coremod = "coremodthatdoesntexistorsomething", value = "3333.0")
     @Config.DefaultDouble(1.0)
     public static double testDoubleButCooler;
 
-    @Config.Comment("This is a test enum")
+    @Config.ModDetectedDefault(modID = "hodgepodge", value = "3333.0f")
+    @Config.DefaultFloat(1.0f)
+    public static float testFloat;
+
+    @Config.ModDetectedDefault(modID = "modthatdoesntexistorsomething", value = "3333.0f")
+    @Config.DefaultFloat(1.0f)
+    public static float testFloatButCooler;
+
+    @Config.ModDetectedDefault(coremod = "com.mitchej123.hodgepodge.core.HodgepodgeCore", value = "STRING")
+    @Config.DefaultString("STRING")
+    public static String testString;
+
+    @Config.ModDetectedDefault(coremod = "coremodthatdoesntexistorsomething", value = "STRING")
+    @Config.DefaultString("STRING")
+    public static String testStringButCooler;
+
     @Config.ModDetectedDefault(modID = "hodgepodge", value = "TEST2")
     @Config.DefaultEnum("TEST1")
     public static TestEnum testEnum;
 
-    @Config.Comment("This is a test enum")
     @Config.ModDetectedDefault(modID = "modthatdoesntexistorsomething", value = "TEST3")
     @Config.DefaultEnum("TEST1")
     public static TestEnum testEnumButCooler;
