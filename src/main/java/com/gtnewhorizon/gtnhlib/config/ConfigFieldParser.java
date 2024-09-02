@@ -50,16 +50,7 @@ public class ConfigFieldParser {
             val name = getFieldName(field);
             val langKey = Optional.ofNullable(field.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
                     .orElse(name);
-
-            val modDefault = getModDefault(field);
-            String defValueString = null;
-            if (modDefault != null) {
-                if (modDefault.values().length != 0) {
-                    defValueString = String.join(",", modDefault.values());
-                } else {
-                    defValueString = modDefault.value().trim();
-                }
-            }
+            val defValueString = getModDefault(field);
 
             parser.load(instance, defValueString, field, config, category, name, comment, langKey);
         } catch (Exception e) {
@@ -119,19 +110,28 @@ public class ConfigFieldParser {
         return field.getName();
     }
 
-    private static @Nullable Config.ModDetectedDefault getModDefault(Field field) {
+    private static @Nullable String getModDefault(Field field) {
         val modDefaultList = field.getAnnotation(Config.ModDetectedDefaultList.class);
         if (modDefaultList != null) {
-            return Arrays.stream(modDefaultList.values())
-                    .filter(modDefault -> isModDetected(modDefault.modID(), modDefault.coremod())).findFirst()
+            return Arrays.stream(modDefaultList.values()).filter(ConfigFieldParser::isModDetected).findFirst()
+                    .map(
+                            modDefault -> modDefault.values().length != 0 ? String.join(",", modDefault.values())
+                                    : modDefault.value().trim())
                     .orElse(null);
         }
 
         val modDefault = field.getAnnotation(Config.ModDetectedDefault.class);
-        return (modDefault != null && isModDetected(modDefault.modID(), modDefault.coremod())) ? modDefault : null;
+        if (isModDetected(modDefault)) {
+            return modDefault.values().length != 0 ? String.join(",", modDefault.values()) : modDefault.value().trim();
+        }
+
+        return null;
     }
 
-    private static boolean isModDetected(String modID, String coremod) {
+    private static boolean isModDetected(Config.ModDetectedDefault modDefault) {
+        if (modDefault == null) return false;
+        val modID = modDefault.modID();
+        val coremod = modDefault.coremod();
         if (modID.isEmpty() && coremod.isEmpty()) return false;
         return detectedMods.computeIfAbsent(modID.isEmpty() ? coremod : modID, id -> {
             if (!coremod.isEmpty()) {
