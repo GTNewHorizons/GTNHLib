@@ -41,18 +41,15 @@ public class ConfigFieldParser {
         PARSERS.put(Enum.class, new EnumParser());
     }
 
-    public static void loadField(Object instance, Field field, Configuration config, String category)
+    public static void loadField(Object instance, Field field, Configuration config, String category, String key)
             throws ConfigException {
         try {
             Parser parser = getParser(field);
             var comment = Optional.ofNullable(field.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
                     .map((lines) -> String.join("\n", lines)).orElse("");
             val name = getFieldName(field);
-            val langKey = Optional.ofNullable(field.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
-                    .orElse(name);
             val defValueString = getModDefault(field);
-
-            parser.load(instance, defValueString, field, config, category, name, comment, langKey);
+            parser.load(instance, defValueString, field, config, category, name, comment, key);
         } catch (Exception e) {
             throw new ConfigException(
                     "Failed to load field " + field.getName()

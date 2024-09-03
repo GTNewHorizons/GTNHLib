@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.config;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -39,6 +40,7 @@ public class ConfigurationManager {
     static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
     private static final Map<String, Configuration> configs = new HashMap<>();
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
+    private static final String[] langKeyPlaceholders = new String[] { "%mod", "%cat", "%file", "%field" };
 
     private static final ConfigurationManager instance = new ConfigurationManager();
 
@@ -131,17 +133,25 @@ public class ConfigurationManager {
         var comment = Optional.ofNullable(subCategoryField.getAnnotation(Config.Comment.class))
                 .map(Config.Comment::value).map((lines) -> String.join("\n", lines)).orElse("");
         val name = ConfigFieldParser.getFieldName(subCategoryField);
-        val langKey = Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class))
-                .map(Config.LangKey::value).orElse(name);
         val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name.toLowerCase();
         ConfigCategory subCat = config.getCategory(cat);
+        val langKey = getLangKey(
+                subCategoryField.getType(),
+                subCategoryField.getAnnotation(Config.LangKey.class),
+                name,
+                subCat.getName(),
+                true);
 
         subCat.setComment(comment);
         subCat.setLanguageKey(langKey);
-        if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)) {
+        if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)
+                || getClassOrBaseAnnotation(subCategoryField.getDeclaringClass(), Config.RequiresMcRestart.class)
+                        != null) {
             subCat.setRequiresMcRestart(true);
         }
-        if (subCategoryField.isAnnotationPresent(Config.RequiresWorldRestart.class)) {
+        if (subCategoryField.isAnnotationPresent(Config.RequiresWorldRestart.class)
+                || getClassOrBaseAnnotation(subCategoryField.getDeclaringClass(), Config.RequiresWorldRestart.class)
+                        != null) {
             subCat.setRequiresWorldRestart(true);
         }
 
@@ -158,6 +168,9 @@ public class ConfigurationManager {
             @Nullable Object instance) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             NoSuchFieldException, ConfigException {
         boolean foundCategory = !category.isEmpty();
+        boolean requiresMcRestart = configClass.isAnnotationPresent(Config.RequiresMcRestart.class);
+        boolean requiresWorldRestart = configClass.isAnnotationPresent(Config.RequiresWorldRestart.class);
+
         for (val field : configClass.getDeclaredFields()) {
             if (instance != null && Modifier.isStatic(field.getModifiers())) {
                 throw new ConfigException(
@@ -191,20 +204,33 @@ public class ConfigurationManager {
 
             if (category.isEmpty()) continue;
 
-            ConfigFieldParser.loadField(instance, field, rawConfig, category);
+            val fieldName = ConfigFieldParser.getFieldName(field);
+            val langKey = getLangKey(
+                    configClass,
+                    field.getAnnotation(Config.LangKey.class),
+                    fieldName,
+                    category,
+                    false);
+            ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
 
-            val cat = rawConfig.getCategory(category);
-            if (field.isAnnotationPresent(Config.RequiresMcRestart.class)) {
-                cat.setRequiresMcRestart(true);
-            }
-            if (field.isAnnotationPresent(Config.RequiresWorldRestart.class)) {
-                cat.setRequiresWorldRestart(true);
-            }
+            requiresMcRestart |= field.isAnnotationPresent(Config.RequiresMcRestart.class);
+            requiresWorldRestart |= field.isAnnotationPresent(Config.RequiresWorldRestart.class);
         }
 
         if (!foundCategory) {
             throw new ConfigException("No category found for config class " + configClass.getName() + "!");
         }
+
+        val cat = rawConfig.getCategory(category);
+        val langKey = getLangKey(
+                configClass,
+                configClass.getAnnotation(Config.LangKey.class),
+                null,
+                cat.getName(),
+                true);
+        cat.setLanguageKey(langKey);
+        if (requiresMcRestart) cat.setRequiresMcRestart(true);
+        if (requiresWorldRestart) cat.setRequiresWorldRestart(true);
     }
 
     /**
@@ -322,7 +348,63 @@ public class ConfigurationManager {
         });
     }
 
-    private static boolean isFieldSubCategory(Field field) {
+    private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
+            String categoryName, boolean isCategory) throws ConfigException {
+        if (langKey != null) return langKey.value();
+
+        Config.LangKeyPattern pattern = getClassOrBaseAnnotation(configClass, Config.LangKeyPattern.class);
+        String name = Optional.ofNullable(fieldName).orElse(categoryName);
+        if (pattern == null) return name;
+        String patternStr = pattern.pattern();
+
+        if (!patternStr.contains("%field") || !patternStr.contains(".")) {
+            throw new ConfigException("Invalid pattern for class " + configClass.getName() + ": " + patternStr);
+        }
+
+        Config cfg = getClassOrBaseAnnotation(configClass, Config.class);
+        // Config annotation can't be null at this point
+        assert cfg != null;
+
+        return buildKeyFromPattern(cfg, patternStr, name, isCategory);
+    }
+
+    private static String buildKeyFromPattern(Config cfg, String pattern, String fieldName, boolean isCategory) {
+        StringBuilder s = new StringBuilder(pattern);
+        String[] replacements = new String[] { cfg.modid(), cfg.category(), cfg.filename(), fieldName };
+        for (int i = 0; i < langKeyPlaceholders.length; i++) {
+            String placeholder = langKeyPlaceholders[i];
+            int index = s.indexOf(placeholder);
+            if (index == -1) continue;
+            int nextIndex = index + placeholder.length();
+            if (isCategory && "%field".equals(placeholder)) {
+                if (s.charAt(index + 1) == '.') {
+                    s.delete(index, nextIndex + 1);
+                } else {
+                    s.delete(index - 1, nextIndex);
+                }
+                continue;
+            }
+            s.replace(index, nextIndex, replacements[i].toLowerCase());
+        }
+
+        return s.toString();
+    }
+
+    private static @Nullable <A extends Annotation> A getClassOrBaseAnnotation(Class<?> clazz,
+            Class<A> annotationClass) {
+        A annotation = clazz.getAnnotation(annotationClass);
+        if (annotation != null || !clazz.isMemberClass()) return annotation;
+
+        while (clazz.isMemberClass()) {
+            clazz = clazz.getDeclaringClass();
+        }
+
+        return clazz.getAnnotation(annotationClass);
+    }
+
+    private static boolean isFieldSubCategory(@Nullable Field field) {
+        if (field == null) return false;
+
         Class<?> fieldClass = field.getType();
         return !ConfigFieldParser.canParse(field) && fieldClass.getSuperclass() != null
                 && fieldClass.getSuperclass().equals(Object.class);
