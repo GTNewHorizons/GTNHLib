@@ -44,9 +44,9 @@ public @interface Config {
      * <p>
      * Placeholders: <br>
      * {@code %mod} - mod id <br>
-     * {@code %cat} - category name <br>
      * {@code %file} - file name <br>
-     * {@code %field} - field name
+     * {@code %cat} - category name <br>
+     * {@code %field} - field name <b>(required)</b> <br>
      * </p>
      * Default pattern: {@code %mod.%cat.%field}. Categories use the pattern without {@code %field}. Can be overridden
      * for fields with {@link Config.LangKey}.

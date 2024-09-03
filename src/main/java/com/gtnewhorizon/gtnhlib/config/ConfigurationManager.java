@@ -349,18 +349,23 @@ public class ConfigurationManager {
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
-            String categoryName, boolean isCategory) {
+            String categoryName, boolean isCategory) throws ConfigException {
         if (langKey != null) return langKey.value();
 
         Config.LangKeyPattern pattern = getClassOrBaseAnnotation(configClass, Config.LangKeyPattern.class);
         String name = Optional.ofNullable(fieldName).orElse(categoryName);
         if (pattern == null) return name;
+        String patternStr = pattern.pattern();
+
+        if (!patternStr.contains("%field") || !patternStr.contains(".")) {
+            throw new ConfigException("Invalid pattern for class " + configClass.getName() + ": " + patternStr);
+        }
 
         Config cfg = getClassOrBaseAnnotation(configClass, Config.class);
         // Config annotation can't be null at this point
         assert cfg != null;
 
-        return buildKeyFromPattern(cfg, pattern.pattern(), name, isCategory);
+        return buildKeyFromPattern(cfg, patternStr, name, isCategory);
     }
 
     private static String buildKeyFromPattern(Config cfg, String pattern, String fieldName, boolean isCategory) {
