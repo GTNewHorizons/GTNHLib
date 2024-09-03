@@ -39,6 +39,25 @@ public @interface Config {
         String value();
     }
 
+    /**
+     * Defines a pattern for generating lang keys for fields and categories in the annotated class.
+     * <p>
+     * Placeholders: <br>
+     * {@code %mod} - mod id <br>
+     * {@code %cat} - category name <br>
+     * {@code %file} - file name <br>
+     * {@code %field} - field name
+     * </p>
+     * Default pattern: {@code %mod.%cat.%field}. Categories use the pattern without {@code %field}. Can be overridden
+     * for fields with {@link Config.LangKey}.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface LangKeyPattern {
+
+        String pattern() default "%mod.%cat.%field";
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     @interface Comment {
