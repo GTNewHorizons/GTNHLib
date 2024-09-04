@@ -144,14 +144,10 @@ public class ConfigurationManager {
 
         subCat.setComment(comment);
         subCat.setLanguageKey(langKey);
-        if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)
-                || getClassOrBaseAnnotation(subCategoryField.getDeclaringClass(), Config.RequiresMcRestart.class)
-                        != null) {
+        if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)) {
             subCat.setRequiresMcRestart(true);
         }
-        if (subCategoryField.isAnnotationPresent(Config.RequiresWorldRestart.class)
-                || getClassOrBaseAnnotation(subCategoryField.getDeclaringClass(), Config.RequiresWorldRestart.class)
-                        != null) {
+        if (subCategoryField.isAnnotationPresent(Config.RequiresWorldRestart.class)) {
             subCat.setRequiresWorldRestart(true);
         }
 
@@ -168,8 +164,11 @@ public class ConfigurationManager {
             @Nullable Object instance) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             NoSuchFieldException, ConfigException {
         boolean foundCategory = !category.isEmpty();
-        boolean requiresMcRestart = configClass.isAnnotationPresent(Config.RequiresMcRestart.class);
-        boolean requiresWorldRestart = configClass.isAnnotationPresent(Config.RequiresWorldRestart.class);
+        ConfigCategory cat = foundCategory ? rawConfig.getCategory(category) : null;
+        boolean requiresMcRestart = getClassOrBaseAnnotation(configClass, Config.RequiresMcRestart.class) != null
+                || foundCategory && cat.requiresMcRestart();
+        boolean requiresWorldRestart = getClassOrBaseAnnotation(configClass, Config.RequiresWorldRestart.class) != null
+                || foundCategory && cat.requiresWorldRestart();
 
         for (val field : configClass.getDeclaredFields()) {
             if (instance != null && Modifier.isStatic(field.getModifiers())) {
@@ -204,24 +203,28 @@ public class ConfigurationManager {
 
             if (category.isEmpty()) continue;
 
-            val fieldName = ConfigFieldParser.getFieldName(field);
             val langKey = getLangKey(
                     configClass,
                     field.getAnnotation(Config.LangKey.class),
-                    fieldName,
+                    ConfigFieldParser.getFieldName(field),
                     category,
                     false);
             ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
 
-            requiresMcRestart |= field.isAnnotationPresent(Config.RequiresMcRestart.class);
-            requiresWorldRestart |= field.isAnnotationPresent(Config.RequiresWorldRestart.class);
+            if (!requiresMcRestart) {
+                requiresMcRestart = field.isAnnotationPresent(Config.RequiresMcRestart.class);
+            }
+
+            if (!requiresWorldRestart) {
+                requiresWorldRestart = field.isAnnotationPresent(Config.RequiresWorldRestart.class);
+            }
         }
 
         if (!foundCategory) {
             throw new ConfigException("No category found for config class " + configClass.getName() + "!");
         }
 
-        val cat = rawConfig.getCategory(category);
+        if (cat == null) cat = rawConfig.getCategory(category);
         val langKey = getLangKey(
                 configClass,
                 configClass.getAnnotation(Config.LangKey.class),
@@ -229,8 +232,8 @@ public class ConfigurationManager {
                 cat.getName(),
                 true);
         cat.setLanguageKey(langKey);
-        if (requiresMcRestart) cat.setRequiresMcRestart(true);
-        if (requiresWorldRestart) cat.setRequiresWorldRestart(true);
+        cat.setRequiresMcRestart(requiresMcRestart);
+        cat.setRequiresWorldRestart(requiresWorldRestart);
     }
 
     /**
