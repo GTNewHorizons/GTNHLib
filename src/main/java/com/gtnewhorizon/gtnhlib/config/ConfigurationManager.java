@@ -40,7 +40,7 @@ public class ConfigurationManager {
     static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
     private static final Map<String, Configuration> configs = new HashMap<>();
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
-    private static final String[] langKeyPlaceholders = new String[] { "%mod", "%cat", "%file", "%field" };
+    private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
 
     private static final ConfigurationManager instance = new ConfigurationManager();
 
@@ -138,9 +138,8 @@ public class ConfigurationManager {
         val langKey = getLangKey(
                 subCategoryField.getType(),
                 subCategoryField.getAnnotation(Config.LangKey.class),
-                name,
-                subCat.getName(),
-                true);
+                null,
+                subCat.getName());
 
         subCat.setComment(comment);
         subCat.setLanguageKey(langKey);
@@ -207,8 +206,7 @@ public class ConfigurationManager {
                     configClass,
                     field.getAnnotation(Config.LangKey.class),
                     ConfigFieldParser.getFieldName(field),
-                    category,
-                    false);
+                    category);
             ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
 
             if (!requiresMcRestart) {
@@ -224,13 +222,8 @@ public class ConfigurationManager {
             throw new ConfigException("No category found for config class " + configClass.getName() + "!");
         }
 
-        if (cat == null) cat = rawConfig.getCategory(category);
-        val langKey = getLangKey(
-                configClass,
-                configClass.getAnnotation(Config.LangKey.class),
-                null,
-                cat.getName(),
-                true);
+        if (category.isEmpty()) return;
+        val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat.getName());
         cat.setLanguageKey(langKey);
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
@@ -352,7 +345,7 @@ public class ConfigurationManager {
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
-            String categoryName, boolean isCategory) throws ConfigException {
+            String categoryName) throws ConfigException {
         if (langKey != null) return langKey.value();
 
         Config.LangKeyPattern pattern = getClassOrBaseAnnotation(configClass, Config.LangKeyPattern.class);
@@ -368,19 +361,21 @@ public class ConfigurationManager {
         // Config annotation can't be null at this point
         assert cfg != null;
 
-        return buildKeyFromPattern(cfg, patternStr, name, isCategory);
+        return buildKeyFromPattern(patternStr, cfg.modid(), cfg.filename(), categoryName, name);
     }
 
-    private static String buildKeyFromPattern(Config cfg, String pattern, String fieldName, boolean isCategory) {
+    private static String buildKeyFromPattern(String pattern, String modId, String fileName, String categoryName,
+            String fieldName) {
         StringBuilder s = new StringBuilder(pattern);
-        String[] replacements = new String[] { cfg.modid(), cfg.category(), cfg.filename(), fieldName };
+        String[] replacements = new String[] { modId, fileName, categoryName, fieldName };
+        boolean isCategory = categoryName.equals(fieldName);
         for (int i = 0; i < langKeyPlaceholders.length; i++) {
             String placeholder = langKeyPlaceholders[i];
             int index = s.indexOf(placeholder);
             if (index == -1) continue;
             int nextIndex = index + placeholder.length();
             if (isCategory && "%field".equals(placeholder)) {
-                if (s.charAt(index + 1) == '.') {
+                if (nextIndex + 1 <= s.length() && s.charAt(nextIndex + 1) == '.') {
                     s.delete(index, nextIndex + 1);
                 } else {
                     s.delete(index - 1, nextIndex);
