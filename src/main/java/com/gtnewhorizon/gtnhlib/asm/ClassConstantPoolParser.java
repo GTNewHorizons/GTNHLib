@@ -23,7 +23,7 @@
 package com.gtnewhorizon.gtnhlib.asm;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.objectweb.asm.Opcodes;
 
@@ -45,17 +45,18 @@ public class ClassConstantPoolParser {
     private static final int HANDLE = 15;
     private static final int INDY = 18;
 
-    private final ArrayList<byte[]> BYTES_TO_SEARCH;
+    private byte[][] BYTES_TO_SEARCH;
 
     public ClassConstantPoolParser(String... strings) {
-        BYTES_TO_SEARCH = new ArrayList<>(strings.length);
-        for (int i = 0; i < strings.length; i++) {
-            BYTES_TO_SEARCH.add(i, strings[i].getBytes(StandardCharsets.UTF_8));
+        BYTES_TO_SEARCH = new byte[strings.length][];
+        for (int i = 0; i < BYTES_TO_SEARCH.length; i++) {
+            BYTES_TO_SEARCH[i] = strings[i].getBytes(StandardCharsets.UTF_8);
         }
     }
 
     public void addString(String string) {
-        BYTES_TO_SEARCH.add(string.getBytes(StandardCharsets.UTF_8));
+        BYTES_TO_SEARCH = Arrays.copyOf(BYTES_TO_SEARCH, BYTES_TO_SEARCH.length + 1);
+        BYTES_TO_SEARCH[BYTES_TO_SEARCH.length - 1] = string.getBytes(StandardCharsets.UTF_8);
     }
 
     /**
