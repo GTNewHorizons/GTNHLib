@@ -260,7 +260,7 @@ public class ConfigurationManager {
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
 
-        val category = cfg.category();
+        val category = cfg.category().toLowerCase();
         List<IConfigElement> result = new ArrayList<>();
         if (categorized) {
             if (category.isEmpty()) return getSubcategoryElements(configClass, category, rawConfig, true);

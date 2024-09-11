@@ -17,7 +17,7 @@ public @interface Config {
     String modid();
 
     /**
-     * Root element category, defaults to "general". You must not specify an empty string.
+     * Root element category, defaults to "general".
      */
     String category() default "general";
 
