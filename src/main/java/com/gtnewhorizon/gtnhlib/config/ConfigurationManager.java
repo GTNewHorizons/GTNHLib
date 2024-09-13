@@ -170,16 +170,16 @@ public class ConfigurationManager {
                 || foundCategory && cat.requiresWorldRestart();
 
         for (val field : configClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Config.Ignore.class)) {
+                continue;
+            }
+
             if (instance != null && Modifier.isStatic(field.getModifiers())) {
                 throw new ConfigException(
                         "Illegal config field: " + field.getName()
                                 + " in "
                                 + configClass.getName()
                                 + ": Static field in instance context! Did you forget an @Config.Ignore annotation?");
-            }
-
-            if (field.getAnnotation(Config.Ignore.class) != null) {
-                continue;
             }
 
             field.setAccessible(true);
