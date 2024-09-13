@@ -25,6 +25,7 @@ import net.minecraftforge.common.config.Configuration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import cpw.mods.fml.client.config.IConfigElement;
 import lombok.AccessLevel;
@@ -139,7 +140,7 @@ public class ConfigurationManager {
                 subCategoryField.getType(),
                 subCategoryField.getAnnotation(Config.LangKey.class),
                 null,
-                subCat.getName());
+                subCat);
 
         subCat.setComment(comment);
         subCat.setLanguageKey(langKey);
@@ -206,7 +207,7 @@ public class ConfigurationManager {
                     configClass,
                     field.getAnnotation(Config.LangKey.class),
                     ConfigFieldParser.getFieldName(field),
-                    category);
+                    cat);
             ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
 
             if (!requiresMcRestart) {
@@ -223,7 +224,7 @@ public class ConfigurationManager {
         }
 
         if (category.isEmpty()) return;
-        val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat.getName());
+        val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
         cat.setLanguageKey(langKey);
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
@@ -345,11 +346,11 @@ public class ConfigurationManager {
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
-            String categoryName) throws ConfigException {
+            @NotNull ConfigCategory category) throws ConfigException {
         if (langKey != null) return langKey.value();
 
         Config.LangKeyPattern pattern = getClassOrBaseAnnotation(configClass, Config.LangKeyPattern.class);
-        String name = Optional.ofNullable(fieldName).orElse(categoryName);
+        String name = Optional.ofNullable(fieldName).orElse(category.getName());
         if (pattern == null) return name;
         String patternStr = pattern.pattern();
 
@@ -361,6 +362,7 @@ public class ConfigurationManager {
         // Config annotation can't be null at this point
         assert cfg != null;
 
+        String categoryName = pattern.fullyQualified() ? category.getQualifiedName() : category.getName();
         return buildKeyFromPattern(patternStr, cfg.modid(), cfg.filename(), categoryName, name);
     }
 

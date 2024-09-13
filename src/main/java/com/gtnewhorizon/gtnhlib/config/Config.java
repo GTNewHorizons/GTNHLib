@@ -56,6 +56,13 @@ public @interface Config {
     @interface LangKeyPattern {
 
         String pattern() default "%mod.%cat.%field";
+
+        /**
+         * Whether subcategories should use their fully qualified name.<br>
+         * Fully qualified: {@code category.category1.category2} <br>
+         * Normal: {@code category2}
+         */
+        boolean fullyQualified() default false;
     }
 
     @Retention(RetentionPolicy.RUNTIME)
