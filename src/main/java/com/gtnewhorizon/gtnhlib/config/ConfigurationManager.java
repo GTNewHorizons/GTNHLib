@@ -132,16 +132,15 @@ public class ConfigurationManager {
 
     private static void processSubCategory(Object instance, Configuration config, Field subCategoryField,
             String category) throws ConfigException {
-        var comment = Optional.ofNullable(subCategoryField.getAnnotation(Config.Comment.class))
-                .map(Config.Comment::value).map((lines) -> String.join("\n", lines)).orElse("");
         val name = ConfigFieldParser.getFieldName(subCategoryField);
         val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name.toLowerCase();
         ConfigCategory subCat = config.getCategory(cat);
-        val langKey = Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class))
-                .map(Config.LangKey::value).orElse(subCat.getName());
 
-        subCat.setComment(comment);
-        subCat.setLanguageKey(langKey);
+        Optional.ofNullable(subCategoryField.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
+                .map((lines) -> String.join("\n", lines)).ifPresent(subCat::setComment);
+        Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
+                .ifPresent(subCat::setLanguageKey);
+
         if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)) {
             subCat.setRequiresMcRestart(true);
         }
@@ -228,6 +227,9 @@ public class ConfigurationManager {
         }
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
+
+        Optional.ofNullable(configClass.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
+                .map((lines) -> String.join("\n", lines)).ifPresent(cat::setComment);
     }
 
     /**
