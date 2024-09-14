@@ -42,6 +42,7 @@ public class ConfigurationManager {
     private static final Map<String, Configuration> configs = new HashMap<>();
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
     private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
+    private static final Boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
 
     private static final ConfigurationManager instance = new ConfigurationManager();
 
@@ -136,11 +137,8 @@ public class ConfigurationManager {
         val name = ConfigFieldParser.getFieldName(subCategoryField);
         val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name.toLowerCase();
         ConfigCategory subCat = config.getCategory(cat);
-        val langKey = getLangKey(
-                subCategoryField.getType(),
-                subCategoryField.getAnnotation(Config.LangKey.class),
-                null,
-                subCat);
+        val langKey = Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class))
+                .map(Config.LangKey::value).orElse(subCat.getName());
 
         subCat.setComment(comment);
         subCat.setLanguageKey(langKey);
@@ -224,8 +222,10 @@ public class ConfigurationManager {
         }
 
         if (category.isEmpty()) return;
-        val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
-        cat.setLanguageKey(langKey);
+        if (cat.getLanguagekey().equals(cat.getName())) {
+            val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
+            cat.setLanguageKey(langKey);
+        }
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
     }
@@ -363,7 +363,17 @@ public class ConfigurationManager {
         assert cfg != null;
 
         String categoryName = pattern.fullyQualified() ? category.getQualifiedName() : category.getName();
-        return buildKeyFromPattern(patternStr, cfg.modid(), cfg.filename(), categoryName, name);
+        if (fieldName == null) name = categoryName;
+        String key = buildKeyFromPattern(patternStr, cfg.modid(), cfg.filename(), categoryName, name);
+
+        if (PRINT_KEYS) {
+            if (fieldName != null) {
+                LOGGER.info("Lang key for field {} in category {}: {}", fieldName, category.getName(), key);
+            } else {
+                LOGGER.info("Lang key for category {}: {}", category.getName(), key);
+            }
+        }
+        return key;
     }
 
     private static String buildKeyFromPattern(String pattern, String modId, String fileName, String categoryName,
