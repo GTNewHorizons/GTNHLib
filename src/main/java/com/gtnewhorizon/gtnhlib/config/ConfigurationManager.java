@@ -59,7 +59,7 @@ public class ConfigurationManager {
         init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
-        val category = cfg.category().trim();
+        val category = cfg.category().trim().toLowerCase();
         val modid = cfg.modid();
         val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
 
@@ -93,7 +93,7 @@ public class ConfigurationManager {
             try {
                 val cfg = Optional.ofNullable(clazz.getAnnotation(Config.class)).orElseThrow(
                         () -> new ConfigException("Class " + clazz.getName() + " does not have a @Config annotation!"));
-                val category = cfg.category().trim();
+                val category = cfg.category().trim().toLowerCase();
                 Configuration rawConfig = configs.get(getConfigKey(cfg));
                 save(clazz, null, rawConfig, category);
                 savedConfigs.add(rawConfig);
@@ -221,7 +221,7 @@ public class ConfigurationManager {
         }
 
         if (category.isEmpty()) return;
-        if (cat.getLanguagekey().equals(cat.getName())) {
+        if (cat.getLanguagekey().equals(category)) {
             val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
             cat.setLanguageKey(langKey);
         }
@@ -259,7 +259,9 @@ public class ConfigurationManager {
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
         val rawConfig = Optional.ofNullable(configs.get(getConfigKey(cfg))).map(
                 (conf) -> Optional.ofNullable(configToCategoryClassMap.get(conf))
-                        .map((map) -> map.get(cfg.category().trim()).contains(configClass)).orElse(false) ? conf : null)
+                        .map((map) -> map.get(cfg.category().trim().toLowerCase()).contains(configClass)).orElse(false)
+                                ? conf
+                                : null)
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
 
@@ -352,7 +354,7 @@ public class ConfigurationManager {
         if (langKey != null) return langKey.value();
 
         Config.LangKeyPattern pattern = getClassOrBaseAnnotation(configClass, Config.LangKeyPattern.class);
-        String name = Optional.ofNullable(fieldName).orElse(category.getName());
+        String name = Optional.ofNullable(fieldName).orElse(category.getQualifiedName());
         if (pattern == null) return name;
         String patternStr = pattern.pattern();
 
@@ -405,13 +407,13 @@ public class ConfigurationManager {
     private static @Nullable <A extends Annotation> A getClassOrBaseAnnotation(Class<?> clazz,
             Class<A> annotationClass) {
         A annotation = clazz.getAnnotation(annotationClass);
-        if (annotation != null || !clazz.isMemberClass()) return annotation;
 
-        while (clazz.isMemberClass()) {
+        while (annotation == null && clazz.isMemberClass()) {
             clazz = clazz.getDeclaringClass();
+            annotation = clazz.getAnnotation(annotationClass);
         }
 
-        return clazz.getAnnotation(annotationClass);
+        return annotation;
     }
 
     private static boolean isFieldSubCategory(@Nullable Field field) {
