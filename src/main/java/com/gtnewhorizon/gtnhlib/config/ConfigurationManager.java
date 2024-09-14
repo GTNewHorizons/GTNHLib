@@ -42,6 +42,7 @@ public class ConfigurationManager {
     private static final Map<String, Configuration> configs = new HashMap<>();
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
     private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
+    private static final Boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
 
     private static final ConfigurationManager instance = new ConfigurationManager();
 
@@ -58,7 +59,7 @@ public class ConfigurationManager {
         init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
-        val category = cfg.category().trim();
+        val category = cfg.category().trim().toLowerCase();
         val modid = cfg.modid();
         val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
 
@@ -92,7 +93,7 @@ public class ConfigurationManager {
             try {
                 val cfg = Optional.ofNullable(clazz.getAnnotation(Config.class)).orElseThrow(
                         () -> new ConfigException("Class " + clazz.getName() + " does not have a @Config annotation!"));
-                val category = cfg.category().trim();
+                val category = cfg.category().trim().toLowerCase();
                 Configuration rawConfig = configs.get(getConfigKey(cfg));
                 save(clazz, null, rawConfig, category);
                 savedConfigs.add(rawConfig);
@@ -131,19 +132,15 @@ public class ConfigurationManager {
 
     private static void processSubCategory(Object instance, Configuration config, Field subCategoryField,
             String category) throws ConfigException {
-        var comment = Optional.ofNullable(subCategoryField.getAnnotation(Config.Comment.class))
-                .map(Config.Comment::value).map((lines) -> String.join("\n", lines)).orElse("");
         val name = ConfigFieldParser.getFieldName(subCategoryField);
         val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name.toLowerCase();
         ConfigCategory subCat = config.getCategory(cat);
-        val langKey = getLangKey(
-                subCategoryField.getType(),
-                subCategoryField.getAnnotation(Config.LangKey.class),
-                null,
-                subCat);
 
-        subCat.setComment(comment);
-        subCat.setLanguageKey(langKey);
+        Optional.ofNullable(subCategoryField.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
+                .map((lines) -> String.join("\n", lines)).ifPresent(subCat::setComment);
+        Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
+                .ifPresent(subCat::setLanguageKey);
+
         if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)) {
             subCat.setRequiresMcRestart(true);
         }
@@ -224,10 +221,15 @@ public class ConfigurationManager {
         }
 
         if (category.isEmpty()) return;
-        val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
-        cat.setLanguageKey(langKey);
+        if (cat.getLanguagekey().equals(category)) {
+            val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
+            cat.setLanguageKey(langKey);
+        }
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
+
+        Optional.ofNullable(configClass.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
+                .map((lines) -> String.join("\n", lines)).ifPresent(cat::setComment);
     }
 
     /**
@@ -257,7 +259,9 @@ public class ConfigurationManager {
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
         val rawConfig = Optional.ofNullable(configs.get(getConfigKey(cfg))).map(
                 (conf) -> Optional.ofNullable(configToCategoryClassMap.get(conf))
-                        .map((map) -> map.get(cfg.category().trim()).contains(configClass)).orElse(false) ? conf : null)
+                        .map((map) -> map.get(cfg.category().trim().toLowerCase()).contains(configClass)).orElse(false)
+                                ? conf
+                                : null)
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
 
@@ -350,7 +354,7 @@ public class ConfigurationManager {
         if (langKey != null) return langKey.value();
 
         Config.LangKeyPattern pattern = getClassOrBaseAnnotation(configClass, Config.LangKeyPattern.class);
-        String name = Optional.ofNullable(fieldName).orElse(category.getName());
+        String name = Optional.ofNullable(fieldName).orElse(category.getQualifiedName());
         if (pattern == null) return name;
         String patternStr = pattern.pattern();
 
@@ -363,7 +367,17 @@ public class ConfigurationManager {
         assert cfg != null;
 
         String categoryName = pattern.fullyQualified() ? category.getQualifiedName() : category.getName();
-        return buildKeyFromPattern(patternStr, cfg.modid(), cfg.filename(), categoryName, name);
+        if (fieldName == null) name = categoryName;
+        String key = buildKeyFromPattern(patternStr, cfg.modid(), cfg.filename(), categoryName, name);
+
+        if (PRINT_KEYS) {
+            if (fieldName != null) {
+                LOGGER.info("Lang key for field {} in category {}: {}", fieldName, category.getName(), key);
+            } else {
+                LOGGER.info("Lang key for category {}: {}", category.getName(), key);
+            }
+        }
+        return key;
     }
 
     private static String buildKeyFromPattern(String pattern, String modId, String fileName, String categoryName,
@@ -393,13 +407,13 @@ public class ConfigurationManager {
     private static @Nullable <A extends Annotation> A getClassOrBaseAnnotation(Class<?> clazz,
             Class<A> annotationClass) {
         A annotation = clazz.getAnnotation(annotationClass);
-        if (annotation != null || !clazz.isMemberClass()) return annotation;
 
-        while (clazz.isMemberClass()) {
+        while (annotation == null && clazz.isMemberClass()) {
             clazz = clazz.getDeclaringClass();
+            annotation = clazz.getAnnotation(annotationClass);
         }
 
-        return clazz.getAnnotation(annotationClass);
+        return annotation;
     }
 
     private static boolean isFieldSubCategory(@Nullable Field field) {

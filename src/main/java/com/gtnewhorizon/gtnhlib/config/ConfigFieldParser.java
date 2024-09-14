@@ -445,7 +445,7 @@ public class ConfigFieldParser {
                 stringValues[i] = Double.toString(defaultValue[i]);
             }
             comment = comment + " [default: " + Arrays.toString(stringValues) + "]";
-            double[] value = config.get(category, name, defaultValue, comment).getDoubleList();
+            double[] value = config.get(category, name, defaultValue, comment).setLanguageKey(langKey).getDoubleList();
 
             field.set(instance, value);
         }
@@ -484,7 +484,7 @@ public class ConfigFieldParser {
                 stringValues[i] = Integer.toString(defaultValue[i]);
             }
             comment = comment + " [default: " + Arrays.toString(stringValues) + "]";
-            int[] value = config.get(category, name, defaultValue, comment).getIntList();
+            int[] value = config.get(category, name, defaultValue, comment).setLanguageKey(langKey).getIntList();
 
             field.set(instance, value);
         }

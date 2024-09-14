@@ -49,7 +49,8 @@ public @interface Config {
      * {@code %field} - field name <b>(required)</b> <br>
      * </p>
      * Default pattern: {@code %mod.%cat.%field}. Categories use the pattern without {@code %field}. Can be overridden
-     * for fields with {@link Config.LangKey}.
+     * for fields with {@link Config.LangKey}. <br>
+     * The generated keys can be printed to log by setting the {@code -Dgtnhlib.printkeys=true} JVM flag.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
@@ -66,7 +67,7 @@ public @interface Config {
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
+    @Target({ ElementType.FIELD, ElementType.TYPE })
     @interface Comment {
 
         String[] value();
