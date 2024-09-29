@@ -120,10 +120,8 @@ public class WorldUtil {
     public static Fluid getFluid(Block b) {
         if (b instanceof IFluidBlock fluidBlock) return fluidBlock.getFluid();
         if (b instanceof BlockLiquid) {
-            if (b.getMaterial() == Material.water)
-                return FluidRegistry.WATER;
-            if (b.getMaterial() == Material.lava)
-                return FluidRegistry.LAVA;
+            if (b.getMaterial() == Material.water) return FluidRegistry.WATER;
+            if (b.getMaterial() == Material.lava) return FluidRegistry.LAVA;
         }
         return null;
     }
