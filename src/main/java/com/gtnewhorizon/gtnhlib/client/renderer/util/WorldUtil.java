@@ -6,6 +6,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
 
 import org.joml.Vector3d;
@@ -112,8 +113,19 @@ public class WorldUtil {
         return !block.getMaterial().isOpaque() || block.getMaterial() == Material.leaves;
     }
 
+    public static boolean isFluidBlock(Block block) {
+        return block instanceof IFluidBlock || block instanceof BlockLiquid;
+    }
+
     public static Fluid getFluid(Block b) {
-        return b instanceof IFluidBlock ? ((IFluidBlock) b).getFluid() : null;
+        if (b instanceof IFluidBlock fluidBlock) return fluidBlock.getFluid();
+        if (b instanceof BlockLiquid) {
+            if (b.getMaterial() == Material.water)
+                return FluidRegistry.WATER;
+            if (b.getMaterial() == Material.lava)
+                return FluidRegistry.LAVA;
+        }
+        return null;
     }
 
     /**
