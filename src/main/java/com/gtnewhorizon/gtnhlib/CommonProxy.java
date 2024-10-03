@@ -4,6 +4,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
+import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 
@@ -24,6 +25,7 @@ public class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         NetworkHandler.init();
+        ConfigurationManager.onInit();
     }
 
     public void postInit(FMLPostInitializationEvent event) {}
