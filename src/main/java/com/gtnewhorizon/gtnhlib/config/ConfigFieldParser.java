@@ -353,14 +353,20 @@ public class ConfigFieldParser {
                     langKey);
 
             try {
+                boolean saveOnExit = false;
                 if (!Arrays.asList(possibleValues).contains(value)) {
-                    throw new NoSuchFieldException();
+                    value = Optional.ofNullable(getEnumIgnoredCase(value, possibleValues))
+                            .orElseThrow(NoSuchFieldException::new);
+                    saveOnExit = true;
                 }
                 Field enumField = fieldClass.getDeclaredField(value);
                 if (!enumField.isEnumConstant()) {
                     throw new NoSuchFieldException();
                 }
                 field.set(instance, enumField.get(instance));
+                if (saveOnExit) {
+                    save(instance, field, config, category, name);
+                }
             } catch (NoSuchFieldException e) {
                 ConfigurationManager.LOGGER.warn(
                         "Invalid value {} for enum configuration field {} of type {} in config class {}! Using default value of {}!",
@@ -370,6 +376,7 @@ public class ConfigFieldParser {
                         field.getDeclaringClass().getName(),
                         defaultValue);
                 field.set(instance, defaultValue);
+                save(instance, field, config, category, name);
             }
         }
 
@@ -398,6 +405,15 @@ public class ConfigFieldParser {
             }
 
             return value;
+        }
+
+        private @Nullable String getEnumIgnoredCase(String value, String[] validValues) {
+            for (String valid : validValues) {
+                if (valid.equalsIgnoreCase(value)) {
+                    return valid;
+                }
+            }
+            return null;
         }
     }
 
