@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -23,6 +24,7 @@ import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +45,8 @@ public class ConfigurationManager {
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
     private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
     private static final Boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
+    private static final Boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
+    private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
 
@@ -51,7 +55,7 @@ public class ConfigurationManager {
     private static Path configDir;
 
     /**
-     * Registers a configuration class to be loaded. This should be done in preInit.
+     * Registers a configuration class to be loaded. This should be done before or during preInit.
      *
      * @param configClass The class to register.
      */
@@ -377,6 +381,10 @@ public class ConfigurationManager {
                 LOGGER.info("Lang key for category {}: {}", category.getName(), key);
             }
         }
+
+        if (DUMP_KEYS) {
+            generatedLangKeys.computeIfAbsent(cfg.modid(), k -> new ArrayList<>()).add(key + "=");
+        }
         return key;
     }
 
@@ -438,5 +446,26 @@ public class ConfigurationManager {
         }
         configDir = minecraftHome().toPath().resolve("config");
         initialized = true;
+    }
+
+    public static void onInit() {
+        if (DUMP_KEYS) {
+            writeLangKeysToFile();
+        }
+    }
+
+    private static void writeLangKeysToFile() {
+        for (Map.Entry<String, List<String>> entry : generatedLangKeys.entrySet()) {
+            val langFile = new File("generated_keys_" + entry.getKey() + ".txt");
+            try {
+                FileUtils.writeLines(langFile, entry.getValue());
+            } catch (IOException e) {
+                LOGGER.error(
+                        "Failed to write lang keys for {} to file {}",
+                        entry.getKey(),
+                        langFile.getAbsolutePath(),
+                        e);
+            }
+        }
     }
 }

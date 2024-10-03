@@ -24,6 +24,7 @@ public class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         NetworkHandler.init();
+        ConfigurationManager.onInit();
     }
 
     public void postInit(FMLPostInitializationEvent event) {}

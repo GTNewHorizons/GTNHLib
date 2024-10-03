@@ -50,7 +50,8 @@ public @interface Config {
      * </p>
      * Default pattern: {@code %mod.%cat.%field}. Categories use the pattern without {@code %field}. Can be overridden
      * for fields with {@link Config.LangKey}. <br>
-     * The generated keys can be printed to log by setting the {@code -Dgtnhlib.printkeys=true} JVM flag.
+     * The generated keys can be printed to log by setting the {@code -Dgtnhlib.printkeys=true} JVM flag or dumped to a
+     * file in the base minecraft directory by setting the {@code -Dgtnhlib.dumpkeys=true} JVM flag.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
