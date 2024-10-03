@@ -456,7 +456,7 @@ public class ConfigurationManager {
 
     private static void writeLangKeysToFile() {
         for (Map.Entry<String, List<String>> entry : generatedLangKeys.entrySet()) {
-            val langFile = new File("generated_keys_" + entry.getKey() + ".txt");
+            val langFile = new File("generated-lang-keys", entry.getKey() + ".txt");
             try {
                 FileUtils.writeLines(langFile, entry.getValue());
             } catch (IOException e) {
