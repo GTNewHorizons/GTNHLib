@@ -43,6 +43,7 @@ public class ConfigurationManager {
     static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
     private static final Map<String, Configuration> configs = new HashMap<>();
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
+    private static final Map<String, Set<Class<?>>> modIdToConfigClasses = new HashMap<>();
     private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
     private static final Boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
     private static final Boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
@@ -66,6 +67,10 @@ public class ConfigurationManager {
         val category = cfg.category().trim().toLowerCase();
         val modid = cfg.modid();
         val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
+
+        if (!configClass.isAnnotationPresent(Config.ExcludeFromAutoGui.class)) {
+            modIdToConfigClasses.computeIfAbsent(modid, (ignored) -> new HashSet<>()).add(configClass);
+        }
 
         Configuration rawConfig = configs.computeIfAbsent(getConfigKey(cfg), (ignored) -> {
             Path newConfigDir = configDir;
@@ -438,6 +443,14 @@ public class ConfigurationManager {
 
     private static File minecraftHome() {
         return Launch.minecraftHome != null ? Launch.minecraftHome : new File(".");
+    }
+
+    public static boolean isModRegistered(String modid) {
+        return modIdToConfigClasses.containsKey(modid);
+    }
+
+    static Class<?>[] getConfigClasses(String modid) {
+        return modIdToConfigClasses.getOrDefault(modid, Collections.emptySet()).toArray(new Class<?>[0]);
     }
 
     private static void init() {
