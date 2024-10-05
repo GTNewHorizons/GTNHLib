@@ -216,4 +216,12 @@ public @interface Config {
 
         ModDetectedDefault[] values() default {};
     }
+
+    /**
+     * Excludes this class from the auto config GUI, only applicable to a {@link Config} annotated class. Has no effect
+     * if a gui factory is registered for the mod.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface ExcludeFromAutoGui {}
 }
