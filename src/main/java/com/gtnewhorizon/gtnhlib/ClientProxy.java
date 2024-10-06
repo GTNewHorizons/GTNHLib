@@ -6,17 +6,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
-import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
-import com.gtnewhorizon.gtnhlib.util.AnimatedTooltipHandler;
 
 import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.relauncher.Side;
 
 @SuppressWarnings("unused")
+@EventBusSubscriber(side = Side.CLIENT)
 public class ClientProxy extends CommonProxy {
 
     private static boolean modelsBaked = false;
@@ -36,7 +37,6 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
-        MinecraftForge.EVENT_BUS.register(new AnimatedTooltipHandler());
 
         if (shouldLoadModels()) {
             Minecraft.getMinecraft().refreshResources();
@@ -131,7 +131,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) {
+    public static void onTick(TickEvent.ClientTickEvent event) {
         if (!modelsBaked) {
             ModelLoader.bakeModels();
             modelsBaked = true;

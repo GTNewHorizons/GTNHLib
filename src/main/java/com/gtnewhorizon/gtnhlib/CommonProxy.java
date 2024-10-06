@@ -5,6 +5,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
+import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 
@@ -20,10 +21,12 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event) {
+        AutoEventBus.setDataTable(event.getAsmData());
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
     }
 
     public void init(FMLInitializationEvent event) {
+        AutoEventBus.registerSubscribers();
         NetworkHandler.init();
         ConfigurationManager.onInit();
     }
