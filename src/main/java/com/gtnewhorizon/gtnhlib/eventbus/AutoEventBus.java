@@ -1,11 +1,11 @@
 package com.gtnewhorizon.gtnhlib.eventbus;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -20,13 +20,15 @@ import javax.annotation.Nullable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.OreGenEvent;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.SetMultimap;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.reflect.Fields;
+import com.gtnewhorizon.gtnhlib.mixins.early.fml.EventBusAccessor;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -37,14 +39,15 @@ import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventBus;
 import cpw.mods.fml.common.eventhandler.IEventListener;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
-import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
-import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectSets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -53,10 +56,18 @@ public class AutoEventBus {
 
     private static final Boolean DEBUG = Boolean.getBoolean("gtnhlib.debug.eventbus");
     private static final Logger LOGGER = LogManager.getLogger("GTNHLib EventBus");
-    private static final Object2BooleanMap<String> validEventsForSide = new Object2BooleanOpenHashMap<>();
+    private static final DummyEvent INVALID_EVENT = new DummyEvent();
     private static final ObjectSet<String> registeredClasses = new ObjectOpenHashSet<>();
+    private static final Object2ObjectMap<String, ModContainer> classPathToModLookup;
+    private static final Object2ObjectMap<Class<?>, Event> eventCache = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<String, Class<?>> eventClassCache = new Object2ObjectOpenHashMap<>();
+    private static final Object2IntMap<Class<?>> eventsRegistered = new Object2IntOpenHashMap<>();
     private static boolean hasRegistered;
     private static ASMDataTable asmDataTable;
+
+    static {
+        classPathToModLookup = getModContainerPackageMap();
+    }
 
     private enum EventBusType {
 
@@ -73,12 +84,12 @@ public class AutoEventBus {
 
         EventBusType(EventBus instance, Predicate<Class<?>> canRegister) {
             this.canRegister = canRegister;
-            this.listeners = ReflectionHelper.getPrivateValue(EventBus.class, instance, "listeners");
-            this.listenerOwners = ReflectionHelper.getPrivateValue(EventBus.class, instance, "listenerOwners");
-            this.busID = ReflectionHelper.getPrivateValue(EventBus.class, instance, "busID");
+            EventBusAccessor accessor = (EventBusAccessor) instance;
+            this.listeners = accessor.getListeners();
+            this.listenerOwners = accessor.getListenerOwners();
+            this.busID = accessor.getBusID();
         }
 
-        @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         private boolean canRegister(Class<?> clazz) {
             return canRegister.test(clazz);
         }
@@ -91,26 +102,15 @@ public class AutoEventBus {
     public static void registerSubscribers() {
         if (hasRegistered) return;
         hasRegistered = true;
-        Fields.ofClass(EventBus.class).getField(Fields.LookupType.DECLARED, "listeners", ConcurrentHashMap.class);
-        Object2ObjectMap<String, ModContainer> classToModLookup = getModContainerPackageMap();
         for (ModContainer mod : Loader.instance().getModList()) {
             SetMultimap<String, ASMDataTable.ASMData> annotations = asmDataTable.getAnnotationsFor(mod);
             if (annotations == null) continue;
-            Set<ASMDataTable.ASMData> subscribers = annotations.get(EventBusSubscriber.class.getName());
-            if (subscribers == null || subscribers.isEmpty()) continue;
-
-            Set<ASMDataTable.ASMData> conditionAnnotations = annotations
-                    .get(EventBusSubscriber.Condition.class.getName());
-
-            if (annotations.get(Mod.class.getName()).size() > 1) {
-                subscribers = subscribers.stream().filter(
-                        data -> Objects.equals(getOwningModContainer(classToModLookup, data.getClassName()), mod))
-                        .collect(Collectors.toSet());
-                conditionAnnotations = conditionAnnotations.stream().filter(
-                        data -> Objects.equals(getOwningModContainer(classToModLookup, data.getClassName()), mod))
-                        .collect(Collectors.toSet());
-            }
-
+            Set<ASMDataTable.ASMData> subscribers = getOwningModAnnotation(annotations, mod, EventBusSubscriber.class);
+            if (subscribers.isEmpty()) continue;
+            Set<ASMDataTable.ASMData> conditionAnnotations = getOwningModAnnotation(
+                    annotations,
+                    mod,
+                    EventBusSubscriber.Condition.class);
             Object2ObjectMap<String, String> conditions = null;
             if (!conditionAnnotations.isEmpty()) {
                 conditions = new Object2ObjectOpenHashMap<>();
@@ -119,6 +119,7 @@ public class AutoEventBus {
                 }
             }
 
+            Object2ObjectMap<String, ObjectSet<String>> methods = getMethodsForMod(annotations, mod);
             for (ASMDataTable.ASMData data : subscribers) {
                 try {
                     Class<?> clazz = Class.forName(data.getClassName(), false, Loader.instance().getModClassLoader());
@@ -148,31 +149,23 @@ public class AutoEventBus {
                             continue;
                         }
                     }
-
-                    register(clazz, mod);
+                    ObjectSet<Method> methodsForClass = getMethodsToSubscribe(clazz, methods.get(data.getClassName()));
+                    register(clazz, mod, methodsForClass);
                 } catch (ClassNotFoundException | IllegalAccessException e) {
                     if (DEBUG) LOGGER.error("Failed to load class for annotation", e);
                 }
             }
         }
+        if (DEBUG) {
+            printFailedEvents();
+            printRegisteredEvents();
+        }
     }
 
-    private static void register(Class<?> target, ModContainer classOwner) {
+    private static void register(Class<?> target, ModContainer classOwner, ObjectSet<Method> methods) {
         Set<Class<?>> registeredEvents = new HashSet<>();
-        for (Method method : target.getMethods()) {
-            if (!Modifier.isStatic(method.getModifiers()) || !method.isAnnotationPresent(SubscribeEvent.class)) {
-                continue;
-            }
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length != 1 || !Event.class.isAssignableFrom(parameterTypes[0])) {
-                throw new IllegalArgumentException(
-                        "Method " + method
-                                + " has @SubscribeEvent annotation, but requires invalid parameters. "
-                                + "Event handler methods must take a single parameter of type Event.");
-            }
-
-            Class<?> eventType = parameterTypes[0];
-            if (!isEventSafeToRegister(eventType)) continue;
+        for (Method method : methods) {
+            Class<?> eventType = method.getParameterTypes()[0];
 
             if (registerEvent(eventType, target, method, classOwner)) {
                 if (DEBUG) {
@@ -191,19 +184,22 @@ public class AutoEventBus {
 
     private static boolean registerEvent(Class<?> eventClass, Class<?> target, Method method, ModContainer owner) {
         try {
-            Constructor<?> ctr = eventClass.getConstructor();
-            ctr.setAccessible(true);
-            Event event = (Event) ctr.newInstance();
-            StaticASMEventHandler listener = new StaticASMEventHandler(target, method, owner);
+            Event event = getCachedEvent(eventClass);
+            if (INVALID_EVENT.equals(event)) return false;
 
+            StaticASMEventHandler listener = new StaticASMEventHandler(target, method, owner);
             boolean registered = false;
             for (EventBusType bus : EventBusType.VALUES) {
-                if (bus.isRegistered(event.getClass()) || !bus.canRegister(event.getClass())) {
+                if (bus.isRegistered(eventClass) || !bus.canRegister(eventClass)) {
                     continue;
                 }
                 event.getListenerList().register(bus.busID, listener.getPriority(), listener);
                 bus.listeners.computeIfAbsent(target, k -> new ArrayList<>()).add(listener);
                 registered = true;
+
+                if(DEBUG) {
+                    eventsRegistered.merge(eventClass, 1, Integer::sum);
+                }
             }
 
             return registered;
@@ -225,55 +221,14 @@ public class AutoEventBus {
         }
     }
 
-    private static boolean isValidSide(Class<?> subscribedClass) throws IllegalAccessException {
-        Side currentSide = FMLCommonHandler.instance().getSide();
-        if (currentSide.isClient()) return true;
-
-        EventBusSubscriber subscriber = subscribedClass.getAnnotation(EventBusSubscriber.class);
-        Side[] sides = subscriber.side();
-        if (sides.length == 1) {
-            return currentSide == sides[0];
-        }
-
-        return !subscribedClass.getName().contains("client");
-    }
-
-    private static boolean isEventSafeToRegister(Class<?> eventClass) {
-        if (FMLCommonHandler.instance().getSide().isClient()) {
-            return true;
-        }
-
-        if (validEventsForSide.containsKey(eventClass.getName())) {
-            return validEventsForSide.getBoolean(eventClass.getName());
-        }
-
-        try {
-            // noinspection ResultOfMethodCallIgnored
-            eventClass.getDeclaredFields();
-            validEventsForSide.put(eventClass.getName(), true);
-            return true;
-        } catch (NoClassDefFoundError e) {
-            validEventsForSide.put(eventClass.getName(), false);
-            return false;
-        }
-    }
-
-    private static Object2ObjectMap<String, ModContainer> getModContainerPackageMap() {
-        Object2ObjectMap<String, ModContainer> classToModContainer = new Object2ObjectOpenHashMap<>();
-        for (ModContainer container : Loader.instance().getActiveModList()) {
-            Object modObject = container.getMod();
-            if (modObject == null) continue;
-            Package modPackage = modObject.getClass().getPackage();
-            if (modPackage == null) continue;
-            classToModContainer.put(modPackage.getName(), container);
-        }
-        return classToModContainer;
-    }
-
-    private static @Nonnull ModContainer getOwningModContainer(Object2ObjectMap<String, ModContainer> lookupMap,
-            String className) {
-        return lookupMap.object2ObjectEntrySet().stream().filter(e -> className.startsWith(e.getKey()))
-                .map(Map.Entry::getValue).findFirst().orElse(Loader.instance().getMinecraftModContainer());
+    private static @Nonnull Event getCachedEvent(Class<?> eventClass) {
+        return eventCache.computeIfAbsent(eventClass, e -> {
+            try {
+                return (Event) ConstructorUtils.invokeConstructor(eventClass);
+            } catch (NoClassDefFoundError | ExceptionInInitializerError | Exception ex) {
+                return INVALID_EVENT;
+            }
+        });
     }
 
     private static boolean isConditionMet(@NotNull Class<?> clazz, @Nullable String condition) {
@@ -294,11 +249,128 @@ public class AutoEventBus {
         }
     }
 
+    private static ObjectSet<Method> getMethodsToSubscribe(Class<?> clazz, ObjectSet<String> methodDescs) {
+        if (methodDescs.isEmpty()) return ObjectSets.emptySet();
+        ObjectSet<Method> methodsToSub = new ObjectOpenHashSet<>();
+        for (String methodDesc : methodDescs) {
+            Class<?> eventClass = getCachedEventClass(methodDesc);
+            if (INVALID_EVENT.getClass().equals(eventClass)) continue;
+            String methodName = methodDesc.substring(0, methodDesc.indexOf("("));
+            try {
+                Method method = clazz.getMethod(methodName, eventClass);
+                if (!Modifier.isStatic(method.getModifiers()) || !method.isAnnotationPresent(SubscribeEvent.class)) {
+                    continue;
+                }
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                if (parameterTypes.length != 1 || !Event.class.isAssignableFrom(parameterTypes[0])) {
+                    throw new IllegalArgumentException(
+                            "Method " + method
+                                    + " has @SubscribeEvent annotation, but requires invalid parameters. "
+                                    + "Event handler methods must take a single parameter of type Event.");
+                }
+                methodsToSub.add(method);
+            } catch (NoSuchMethodException ignored) {
+                if (DEBUG) {
+                    LOGGER.error("Failed to register method {} for class {}", methodName, clazz);
+                }
+            }
+            return methodsToSub;
+        }
+        return ObjectSets.emptySet();
+    }
+
+    private static Object2ObjectMap<String, ObjectSet<String>> getMethodsForMod(
+            SetMultimap<String, ASMDataTable.ASMData> annotationTable, ModContainer mod) {
+        Set<ASMDataTable.ASMData> methodAnnotations = getOwningModAnnotation(
+                annotationTable,
+                mod,
+                SubscribeEvent.class);
+        if (methodAnnotations.isEmpty()) return Object2ObjectMaps.emptyMap();
+
+        Object2ObjectMap<String, ObjectSet<String>> methods = new Object2ObjectOpenHashMap<>();
+        for (ASMDataTable.ASMData data : methodAnnotations) {
+            methods.computeIfAbsent(data.getClassName(), k -> new ObjectOpenHashSet<>()).add(data.getObjectName());
+        }
+        return methods;
+    }
+
+    private static @Nonnull Class<?> getCachedEventClass(String methodDesc) {
+        String className = methodDesc.substring(methodDesc.indexOf("(L") + 2, methodDesc.indexOf(";)"))
+                .replaceAll("/", ".");
+        return eventClassCache.computeIfAbsent(className, a -> {
+            try {
+                return Class.forName(className);
+            } catch (NoClassDefFoundError | ClassNotFoundException e) {
+                if (DEBUG) {
+                    LOGGER.error("Failed to register method {} for class {}", methodDesc, className, e);
+                }
+                return INVALID_EVENT.getClass();
+            }
+        });
+    }
+
+    private static Object2ObjectMap<String, ModContainer> getModContainerPackageMap() {
+        Object2ObjectMap<String, ModContainer> classToModContainer = new Object2ObjectOpenHashMap<>();
+        for (ModContainer container : Loader.instance().getActiveModList()) {
+            Object modObject = container.getMod();
+            if (modObject == null) continue;
+            Package modPackage = modObject.getClass().getPackage();
+            if (modPackage == null) continue;
+            classToModContainer.put(modPackage.getName(), container);
+        }
+        return classToModContainer;
+    }
+
+    private static @Nonnull ModContainer getOwningModContainer(String className) {
+        return classPathToModLookup.object2ObjectEntrySet().stream().filter(e -> className.startsWith(e.getKey()))
+            .map(Map.Entry::getValue).findFirst().orElse(Loader.instance().getMinecraftModContainer());
+    }
+
+    private static @Nonnull Set<ASMDataTable.ASMData> getOwningModAnnotation(
+        SetMultimap<String, ASMDataTable.ASMData> dataTable, ModContainer mod, Class<?> annotationClass) {
+        Set<ASMDataTable.ASMData> annotationData = dataTable.get(annotationClass.getName());
+        if (annotationData == null || annotationData.isEmpty()) return Collections.emptySet();
+        if (dataTable.get(Mod.class.getName()).size() > 1) {
+            annotationData = annotationData.stream()
+                .filter(data -> Objects.equals(getOwningModContainer(data.getClassName()), mod))
+                .collect(Collectors.toSet());
+        }
+        return annotationData;
+    }
+
+    private static boolean isValidSide(Class<?> subscribedClass) throws IllegalAccessException {
+        Side currentSide = FMLCommonHandler.instance().getSide();
+        if (currentSide.isClient()) return true;
+
+        EventBusSubscriber subscriber = subscribedClass.getAnnotation(EventBusSubscriber.class);
+        Side[] sides = subscriber.side();
+        if (sides.length == 1) {
+            return currentSide == sides[0];
+        }
+
+        return !StringUtils.containsIgnoreCase(subscribedClass.getName(), "client");
+    }
+
     public static void setDataTable(ASMDataTable dataTable) {
         if (!Loader.instance().activeModContainer().getModId().equals(GTNHLib.MODID)) {
             return;
         }
         asmDataTable = dataTable;
+    }
+
+    private static void printFailedEvents() {
+        Side side = FMLCommonHandler.instance().getSide();
+        for (Map.Entry<Class<?>, Event> entry : eventCache.object2ObjectEntrySet()) {
+            if (entry.getValue() == null) {
+                LOGGER.error("Failed to register event {} for side {}", entry.getKey(), side);
+            }
+        }
+    }
+
+    private static void printRegisteredEvents() {
+        for (Object2IntMap.Entry<Class<?>> entry : eventsRegistered.object2IntEntrySet()) {
+            LOGGER.info("Event {} was registered {} times", entry.getKey().getSimpleName(), entry.getIntValue());
+        }
     }
 
     private static boolean isFMLEvent(Class<?> event) {
@@ -316,4 +388,6 @@ public class AutoEventBus {
     private static boolean isForgeEvent(Class<?> event) {
         return !isFMLEvent(event) && !isTerrainEvent(event) && !isOreGenEvent(event);
     }
+
+    private static class DummyEvent extends Event {}
 }
