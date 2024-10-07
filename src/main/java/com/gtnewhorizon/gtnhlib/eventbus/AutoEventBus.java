@@ -197,7 +197,7 @@ public class AutoEventBus {
                 bus.listeners.computeIfAbsent(target, k -> new ArrayList<>()).add(listener);
                 registered = true;
 
-                if(DEBUG) {
+                if (DEBUG) {
                     eventsRegistered.merge(eventClass, 1, Integer::sum);
                 }
             }
@@ -323,17 +323,17 @@ public class AutoEventBus {
 
     private static @Nonnull ModContainer getOwningModContainer(String className) {
         return classPathToModLookup.object2ObjectEntrySet().stream().filter(e -> className.startsWith(e.getKey()))
-            .map(Map.Entry::getValue).findFirst().orElse(Loader.instance().getMinecraftModContainer());
+                .map(Map.Entry::getValue).findFirst().orElse(Loader.instance().getMinecraftModContainer());
     }
 
     private static @Nonnull Set<ASMDataTable.ASMData> getOwningModAnnotation(
-        SetMultimap<String, ASMDataTable.ASMData> dataTable, ModContainer mod, Class<?> annotationClass) {
+            SetMultimap<String, ASMDataTable.ASMData> dataTable, ModContainer mod, Class<?> annotationClass) {
         Set<ASMDataTable.ASMData> annotationData = dataTable.get(annotationClass.getName());
         if (annotationData == null || annotationData.isEmpty()) return Collections.emptySet();
         if (dataTable.get(Mod.class.getName()).size() > 1) {
             annotationData = annotationData.stream()
-                .filter(data -> Objects.equals(getOwningModContainer(data.getClassName()), mod))
-                .collect(Collectors.toSet());
+                    .filter(data -> Objects.equals(getOwningModContainer(data.getClassName()), mod))
+                    .collect(Collectors.toSet());
         }
         return annotationData;
     }
@@ -389,5 +389,6 @@ public class AutoEventBus {
         return !isFMLEvent(event) && !isTerrainEvent(event) && !isOreGenEvent(event);
     }
 
-    private static class DummyEvent extends Event {}
+    private static class DummyEvent extends Event {
+    }
 }
