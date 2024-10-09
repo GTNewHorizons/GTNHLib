@@ -21,7 +21,7 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event) {
-        AutoEventBus.setDataTable(event.getAsmData());
+        AutoEventBus.init(event.getAsmData());
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
     }
 

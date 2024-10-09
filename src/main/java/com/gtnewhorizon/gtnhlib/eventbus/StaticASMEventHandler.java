@@ -2,21 +2,18 @@ package com.gtnewhorizon.gtnhlib.eventbus;
 
 import static org.objectweb.asm.Opcodes.*;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-
 import org.apache.logging.log4j.ThreadContext;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-import com.google.common.collect.Maps;
-
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.IEventListener;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import lombok.Getter;
 
 public class StaticASMEventHandler implements IEventListener {
 
@@ -25,19 +22,22 @@ public class StaticASMEventHandler implements IEventListener {
     private static final String HANDLER_FUNC_DESC = Type
             .getMethodDescriptor(IEventListener.class.getDeclaredMethods()[0]);
     private static final ASMClassLoader LOADER = new ASMClassLoader();
-    private static final HashMap<Method, Class<?>> cache = Maps.newHashMap();
+    private static final Object2ObjectMap<String, Class<?>> cache = new Object2ObjectOpenHashMap<>();
     private static final boolean GETCONTEXT = Boolean.parseBoolean(System.getProperty("fml.LogContext", "false"));
 
     private final IEventListener handler;
-    private final SubscribeEvent subInfo;
     private final ModContainer owner;
     private final String readable;
+    private final boolean receiveCanceled;
+    @Getter
+    private final EventPriority priority;
 
-    StaticASMEventHandler(Object target, Method method, ModContainer owner) throws Exception {
+    StaticASMEventHandler(ModContainer owner, MethodInfo method) throws Exception {
         this.owner = owner;
         handler = (IEventListener) createWrapper(method).getDeclaredConstructor().newInstance();
-        subInfo = method.getAnnotation(SubscribeEvent.class);
-        readable = "ASM: " + target + " " + method.getName() + Type.getMethodDescriptor(method);
+        readable = "ASM: " + method.getDeclaringClass() + " " + method.getName() + method.getDesc();
+        receiveCanceled = method.receiveCanceled;
+        priority = method.getPriority();
     }
 
     @Override
@@ -48,29 +48,24 @@ public class StaticASMEventHandler implements IEventListener {
             ThreadContext.put("mod", "");
         }
         if (handler != null) {
-            if (!event.isCancelable() || !event.isCanceled() || subInfo.receiveCanceled()) {
+            if (!event.isCancelable() || !event.isCanceled() || receiveCanceled) {
                 handler.invoke(event);
             }
         }
         if (GETCONTEXT) ThreadContext.remove("mod");
     }
 
-    public EventPriority getPriority() {
-        return subInfo.priority();
-    }
-
-    public Class<?> createWrapper(Method callback) {
-        if (cache.containsKey(callback)) {
-            return cache.get(callback);
-        }
+    public Class<?> createWrapper(MethodInfo method) {
+        Class<?> cached = cache.get(method.getKey());
+        if (cached != null) return cached;
 
         ClassWriter cw = new ClassWriter(0);
         MethodVisitor mv;
 
-        String name = getUniqueName(callback);
+        String name = getUniqueName(method);
         String desc = name.replace('.', '/');
-        String instType = Type.getInternalName(callback.getDeclaringClass());
-        String eventType = Type.getInternalName(callback.getParameterTypes()[0]);
+        String instType = method.getDeclaringClass().replace('.', '/');
+        String eventType = EventBusUtil.getParameterClassInternal(method.getDesc());
 
         cw.visit(V1_6, ACC_PUBLIC | ACC_SUPER, desc, null, "java/lang/Object", new String[] { HANDLER_DESC });
 
@@ -90,25 +85,27 @@ public class StaticASMEventHandler implements IEventListener {
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, eventType);
-            mv.visitMethodInsn(INVOKESTATIC, instType, callback.getName(), Type.getMethodDescriptor(callback), false);
+            mv.visitMethodInsn(INVOKESTATIC, instType, method.name, method.desc, false);
             mv.visitInsn(RETURN);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
         }
         cw.visitEnd();
         Class<?> ret = LOADER.define(name, cw.toByteArray());
-        cache.put(callback, ret);
+        cache.put(method.getKey(), ret);
         return ret;
     }
 
-    private String getUniqueName(Method callback) {
+    private String getUniqueName(MethodInfo method) {
+        String param = EventBusUtil.getParameterClassName(method.getDesc());
+        String declaring = method.getDeclaringClass();
         return String.format(
                 "%s_%d_%s_%s_%s",
                 getClass().getName(),
                 IDs++,
-                callback.getDeclaringClass().getSimpleName(),
-                callback.getName(),
-                callback.getParameterTypes()[0].getSimpleName());
+                EventBusUtil.getSimpleClassName(declaring),
+                method.getName(),
+                EventBusUtil.getSimpleClassName(param));
     }
 
     private static class ASMClassLoader extends ClassLoader {
