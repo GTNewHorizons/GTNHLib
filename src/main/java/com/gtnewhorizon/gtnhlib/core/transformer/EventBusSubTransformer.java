@@ -10,6 +10,7 @@ import net.minecraft.launchwrapper.IClassTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -72,6 +73,11 @@ public class EventBusSubTransformer implements IClassTransformer {
                 if (DEBUG_EVENT_BUS) {
                     LOGGER.info("Skipping method {} due to side mismatch", transformedName);
                 }
+                continue;
+            }
+
+            if ((mn.access & Opcodes.ACC_STATIC) == 0) {
+                EventBusUtil.addInvalidMethod(transformedName, mn.name + mn.desc);
                 continue;
             }
 

@@ -39,6 +39,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.AccessLevel;
@@ -149,6 +150,17 @@ public class AutoEventBus {
                     if (DEBUG_EVENT_BUS) LOGGER.error("Failed to load class {}", className, e);
                 }
             }
+        }
+
+        ObjectList<String> invalidMethods = EventBusUtil.getInvalidMethods();
+        if (invalidMethods.size() == 1) {
+            throw new IllegalArgumentException(invalidMethods.get(0));
+        } else if (invalidMethods.size() > 1) {
+            int i;
+            for (i = 0; i < invalidMethods.size() - 1; i++) {
+                LOGGER.error(invalidMethods.get(i));
+            }
+            throw new IllegalArgumentException(invalidMethods.get(i));
         }
     }
 
