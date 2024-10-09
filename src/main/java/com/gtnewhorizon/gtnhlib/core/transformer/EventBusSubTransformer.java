@@ -76,19 +76,22 @@ public class EventBusSubTransformer implements IClassTransformer {
                 continue;
             }
 
+            AnnotationNode subscribe = usableAnnotations.get(SUBSCRIBE_DESC);
+            boolean condition = usableAnnotations.containsKey(CONDITION_DESC);
             if ((mn.access & Opcodes.ACC_STATIC) == 0) {
-                EventBusUtil.addInvalidMethod(transformedName, mn.name + mn.desc);
+                if (!condition && subscribe != null) {
+                    EventBusUtil.addInvalidMethod(transformedName, mn.name + mn.desc);
+                }
                 continue;
             }
 
-            if (usableAnnotations.containsKey(CONDITION_DESC)) {
+            if (condition) {
                 if (mn.desc.equals("()Z")) {
                     EventBusUtil.getConditionsToCheck().put(transformedName, mn.name + mn.desc);
                 }
                 continue;
             }
 
-            AnnotationNode subscribe = usableAnnotations.get(SUBSCRIBE_DESC);
             if (subscribe == null) continue;
             Object[] subscribeInfo = getSubscribeInfo(subscribe);
             MethodInfo methodInfo = new MethodInfo(
