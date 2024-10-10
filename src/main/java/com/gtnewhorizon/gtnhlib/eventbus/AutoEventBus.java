@@ -160,7 +160,8 @@ public class AutoEventBus {
             for (i = 0; i < invalidMethods.size() - 1; i++) {
                 LOGGER.error(invalidMethods.get(i));
             }
-            throw new IllegalArgumentException(invalidMethods.get(i));
+            throw new IllegalArgumentException(
+                    "Encountered" + invalidMethods.size() + "invalid methods. " + invalidMethods.get(i));
         }
     }
 

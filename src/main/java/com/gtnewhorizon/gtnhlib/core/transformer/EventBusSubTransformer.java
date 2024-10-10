@@ -80,7 +80,8 @@ public class EventBusSubTransformer implements IClassTransformer {
             boolean condition = usableAnnotations.containsKey(CONDITION_DESC);
             if ((mn.access & Opcodes.ACC_STATIC) == 0) {
                 if (!condition && subscribe != null) {
-                    EventBusUtil.addInvalidMethod(transformedName, mn.name + mn.desc);
+                    EventBusUtil.getInvalidMethods().add(
+                            "Encountered unexpected non-static method: " + transformedName + " " + mn.name + mn.desc);
                 }
                 continue;
             }
@@ -88,11 +89,26 @@ public class EventBusSubTransformer implements IClassTransformer {
             if (condition) {
                 if (mn.desc.equals("()Z")) {
                     EventBusUtil.getConditionsToCheck().put(transformedName, mn.name + mn.desc);
+                } else {
+                    EventBusUtil.getInvalidMethods().add(
+                            "Invalid condition method: " + transformedName
+                                    + " "
+                                    + mn.name
+                                    + mn.desc
+                                    + ". Condition method must have no parameters and return a boolean.");
                 }
                 continue;
             }
 
-            if (subscribe == null) continue;
+            if (subscribe == null) {
+                if (DEBUG_EVENT_BUS) {
+                    LOGGER.info(
+                            "Skipping method {} with annotations {}. No @SubscribeEvent found.",
+                            transformedName,
+                            usableAnnotations.keySet());
+                }
+                continue;
+            }
             Object[] subscribeInfo = getSubscribeInfo(subscribe);
             MethodInfo methodInfo = new MethodInfo(
                     transformedName,
@@ -104,10 +120,19 @@ public class EventBusSubTransformer implements IClassTransformer {
             if (optional != null) {
                 List<Object> values = optional.values;
                 methodInfo.setOptionalMod((String) values.get(1));
+                if (DEBUG_EVENT_BUS) {
+                    LOGGER.info(
+                            "Found optional mod {} for method {}",
+                            methodInfo.getOptionalMod(),
+                            methodInfo.getKey());
+                }
             }
 
             EventBusUtil.getMethodsToSubscribe().computeIfAbsent(transformedName, k -> new ObjectOpenHashSet<>())
                     .add(methodInfo);
+            if (DEBUG_EVENT_BUS) {
+                LOGGER.info("Found subscribed method {}", methodInfo.getKey());
+            }
         }
 
         return basicClass;

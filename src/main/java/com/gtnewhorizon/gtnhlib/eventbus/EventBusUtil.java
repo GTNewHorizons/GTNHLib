@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import lombok.AccessLevel;
 import lombok.Getter;
 
 public final class EventBusUtil {
@@ -19,7 +18,7 @@ public final class EventBusUtil {
     private static final Object2ObjectMap<String, ObjectSet<MethodInfo>> methodsToSubscribe = new Object2ObjectOpenHashMap<>();
     @Getter
     private static final Object2ObjectMap<String, String> conditionsToCheck = new Object2ObjectOpenHashMap<>();
-    @Getter(AccessLevel.PACKAGE)
+    @Getter
     private static final ObjectList<String> invalidMethods = new ObjectArrayList<>();
 
     static String getParameterClassInternal(String desc) {
@@ -32,9 +31,5 @@ public final class EventBusUtil {
 
     static String getSimpleClassName(String desc) {
         return desc.substring(desc.lastIndexOf(".") + 1);
-    }
-
-    public static void addInvalidMethod(String className, String method) {
-        invalidMethods.add("Encountered unexpected non-static method: " + className + " " + method);
     }
 }
