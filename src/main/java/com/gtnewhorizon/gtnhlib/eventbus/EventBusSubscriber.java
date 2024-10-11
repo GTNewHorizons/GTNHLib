@@ -22,14 +22,16 @@ public @interface EventBusSubscriber {
      */
     Side[] side() default { Side.CLIENT, Side.SERVER };
 
+    Phase phase() default Phase.INIT;
+
     /**
-     * Can be applied to a boolean field/method in the annotated class that provides a condition for registering the
-     * subscriber. It is expected that the field/method is static, returns a boolean, and takes no parameters. <br>
+     * Can be applied to a boolean method in the annotated class that provides a condition for registering the
+     * subscriber. It is expected that the method is static, returns a boolean, and takes no parameters. <br>
      * There is expected to be at most one condition for a class. Config values can be used as the return value since
      * registration happens during init.
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ ElementType.FIELD, ElementType.METHOD })
+    @Target(ElementType.METHOD)
     @interface Condition {}
 
 }
