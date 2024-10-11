@@ -19,7 +19,9 @@ public enum Mixins {
     WAVEFRONT_VBO(new Builder("WavefrontObject").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)
             .setPhase(Phase.EARLY).setApplyIf(() -> true).addMixinClasses("MixinWavefrontObject")),
     EVENT_BUS_ACCESSOR(new Builder("EventBusAccessor").addTargetedMod(TargetedMod.VANILLA).setSide(Side.BOTH)
-            .setPhase(Phase.EARLY).addMixinClasses("fml.EventBusAccessor", "fml.EnumHolderAccessor")),;
+            .setPhase(Phase.EARLY).addMixinClasses("fml.EventBusAccessor", "fml.EnumHolderAccessor")),
+    TOOLTIP_RENDER(new Builder("TooltipRenderer").addMixinClasses("MixinGuiScreen").addTargetedMod(TargetedMod.VANILLA)
+            .setApplyIf(() -> true).setPhase(Phase.EARLY).setSide(Side.CLIENT));
 
     private final List<String> mixinClasses;
     private final Supplier<Boolean> applyIf;

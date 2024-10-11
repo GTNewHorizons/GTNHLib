@@ -22,7 +22,7 @@ public class StaticASMEventHandler implements IEventListener {
     private static final String HANDLER_FUNC_DESC = Type
             .getMethodDescriptor(IEventListener.class.getDeclaredMethods()[0]);
     private static final ASMClassLoader LOADER = new ASMClassLoader();
-    private static final Object2ObjectMap<String, Class<?>> cache = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<String, Class<?>> CACHE = new Object2ObjectOpenHashMap<>();
     private static final boolean GETCONTEXT = Boolean.parseBoolean(System.getProperty("fml.LogContext", "false"));
 
     private final IEventListener handler;
@@ -56,7 +56,7 @@ public class StaticASMEventHandler implements IEventListener {
     }
 
     public Class<?> createWrapper(MethodInfo method) {
-        Class<?> cached = cache.get(method.getKey());
+        Class<?> cached = CACHE.get(method.getKey());
         if (cached != null) return cached;
 
         ClassWriter cw = new ClassWriter(0);
@@ -92,7 +92,7 @@ public class StaticASMEventHandler implements IEventListener {
         }
         cw.visitEnd();
         Class<?> ret = LOADER.define(name, cw.toByteArray());
-        cache.put(method.getKey(), ret);
+        CACHE.put(method.getKey(), ret);
         return ret;
     }
 
