@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.eventbus;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,7 +9,6 @@ import com.gtnewhorizon.gtnhlib.mixins.early.fml.EnumHolderAccessor;
 
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.discovery.ModCandidate;
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -49,13 +46,7 @@ public final class EventBusUtil {
     }
 
     public static void harvestData(ASMDataTable table) {
-        List<ASMDataTable.ASMData> asmData = new ArrayList<>(table.getAll(EventBusSubscriber.class.getName()));
-        asmData.sort(((o1, o2) -> {
-            ModCandidate mod1 = o1.getCandidate();
-            ModCandidate mod2 = o2.getCandidate();
-            return mod1.getModContainer().getName().compareTo(mod2.getModContainer().getName());
-        }));
-
+        Set<ASMDataTable.ASMData> asmData = table.getAll(EventBusSubscriber.class.getName());
         ObjectSet<String> excludedClasses = getExcludedClasses(table);;
         for (ASMDataTable.ASMData data : asmData) {
             Map<String, Object> info = data.getAnnotationInfo();
