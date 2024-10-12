@@ -12,7 +12,7 @@ import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.gtnewhorizon.gtnhlib.Tags;
-import com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer;
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 
@@ -93,6 +93,6 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
 
     @Subscribe
     public void construct(FMLConstructionEvent event) {
-        EventBusSubTransformer.harvestData(event.getASMHarvestedData());
+        EventBusUtil.harvestData(event.getASMHarvestedData());
     }
 }

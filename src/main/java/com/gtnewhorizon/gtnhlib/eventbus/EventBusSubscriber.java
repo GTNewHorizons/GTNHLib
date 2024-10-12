@@ -9,7 +9,8 @@ import cpw.mods.fml.relauncher.Side;
 
 /**
  * Annotation to mark a class as an EventBus subscriber. Classes annotated with this will automatically be registered to
- * listen for events. Registration will happen during the init phase.<br>
+ * listen for events. Registration will happen during the specified {@link EventBusSubscriber#phase()} or during
+ * {@link Phase#INIT} if not specified. <br>
  * All methods annotated with {@link cpw.mods.fml.common.eventhandler.SubscribeEvent} are expected to be static.
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -23,13 +24,17 @@ public @interface EventBusSubscriber {
     Side[] side() default { Side.CLIENT, Side.SERVER };
 
     /**
-     * Can be applied to a boolean field/method in the annotated class that provides a condition for registering the
-     * subscriber. It is expected that the field/method is static, returns a boolean, and takes no parameters. <br>
-     * There is expected to be at most one condition for a class. Config values can be used as the return value since
-     * registration happens during init.
+     * Which equivalent {@link cpw.mods.fml.common.LoaderState} this subscriber should be registered during.
+     */
+    Phase phase() default Phase.INIT;
+
+    /**
+     * Can be applied to a boolean method in the annotated class that provides a condition for registering the
+     * subscriber. It is expected that the method is static, returns a boolean, and takes no parameters. <br>
+     * There is expected to be at most one condition for a class.
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ ElementType.FIELD, ElementType.METHOD })
+    @Target(ElementType.METHOD)
     @interface Condition {}
 
 }

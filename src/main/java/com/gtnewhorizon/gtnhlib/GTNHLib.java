@@ -24,6 +24,11 @@ public class GTNHLib {
     public static CommonProxy proxy;
 
     @Mod.EventHandler
+    public void construct(FMLConstructionEvent event) {
+        proxy.construct(event);
+    }
+
+    @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
     }

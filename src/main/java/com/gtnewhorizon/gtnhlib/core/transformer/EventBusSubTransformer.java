@@ -21,7 +21,6 @@ import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
 import com.gtnewhorizon.gtnhlib.eventbus.MethodInfo;
 
 import cpw.mods.fml.common.Optional;
-import cpw.mods.fml.common.discovery.ASMDataTable;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
@@ -42,21 +41,14 @@ public class EventBusSubTransformer implements IClassTransformer {
     private static final List<String> ANNOTATIONS = Arrays
             .asList(OPTIONAL_DESC, SIDEONLY_DESC, SUBSCRIBE_DESC, CONDITION_DESC);
     private static final String CURRENT_SIDE = FMLLaunchHandler.side().name();
-    private static ObjectSet<String> classesToVisit;
-
-    public static void harvestData(ASMDataTable table) {
-        classesToVisit = EventBusUtil.getClassesToVisit();
-        for (ASMDataTable.ASMData data : table.getAll(EventBusSubscriber.class.getName())) {
-            classesToVisit.add(data.getClassName());
-        }
-    }
+    private static final ObjectSet<String> classesToVisit = EventBusUtil.getClassesToVisit();
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (basicClass == null) return null;
 
         // It's either too early or this class isn't an @EventBusSubscriber
-        if (classesToVisit == null || !classesToVisit.contains(transformedName)) {
+        if (classesToVisit.isEmpty() || !classesToVisit.contains(transformedName)) {
             return basicClass;
         }
 
