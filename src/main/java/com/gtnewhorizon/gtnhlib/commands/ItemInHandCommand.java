@@ -43,7 +43,6 @@ public class ItemInHandCommand extends GTNHClientCommand {
             addChatMessage(String.format(GREEN + "ItemMeta:" + RESET + " [%s]", itemStack.getItemDamage()));
             printFluidContent(itemStack);
             addChatMessage(String.format(GREEN + "ClassName:" + RESET + " [%s]", itemStack.getItem().getClass()));
-            addChatMessage(String.format(GREEN + "NBT Tag:" + RESET + " [%s]", itemStack.stackTagCompound == null ? "null" : itemStack.stackTagCompound.toString()));
             printMTHand(itemStack);
             addChatMessage(GREEN.toString() + STRIKETHROUGH + "--------------------------------------------------");
         }
@@ -80,7 +79,7 @@ public class ItemInHandCommand extends GTNHClientCommand {
             result.append(")");
         }
         String msg = result.toString();
-        addChatMessage(GREEN + "MT Hand: " + RESET + msg);
+        addChatMessage(GREEN + "mt hand: " + RESET + msg);
         copyToClipboard(msg);
     }
 
