@@ -460,14 +460,6 @@ public class ConfigurationManager {
         return modIdToConfigClasses.getOrDefault(modid, Collections.emptySet()).toArray(new Class<?>[0]);
     }
 
-    private static void init() {
-        if (initialized) {
-            return;
-        }
-        configDir = minecraftHome().toPath().resolve("config");
-        initialized = true;
-    }
-
     public static void onInit() {
         cullDeadCategories();
         if (DUMP_KEYS) {
