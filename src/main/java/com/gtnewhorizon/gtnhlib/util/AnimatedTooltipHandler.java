@@ -12,11 +12,14 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.map.ItemStackMap;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.relauncher.Side;
 
+@EventBusSubscriber(side = Side.CLIENT)
 public class AnimatedTooltipHandler {
 
     private static final Map<ItemStack, Supplier<String>> tooltipMap = new ItemStackMap<>(false);
@@ -29,7 +32,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to concatenate multiple texts
-     * 
+     *
      * @author glowredman
      */
     @SafeVarargs
@@ -45,7 +48,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a static text
-     * 
+     *
      * @author glowredman
      */
     public static Supplier<String> text(String text) {
@@ -54,7 +57,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a formatted and static text
-     * 
+     *
      * @author glowredman
      */
     public static Supplier<String> text(String format, Object... args) {
@@ -63,7 +66,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a translated and static text
-     * 
+     *
      * @author glowredman
      */
     public static Supplier<String> translatedText(String translationKey) {
@@ -72,7 +75,7 @@ public class AnimatedTooltipHandler {
 
     /**
      * Helper method to create a translated, formatted and static text
-     * 
+     *
      * @author glowredman
      */
     public static Supplier<String> translatedText(String translationKey, Object... args) {
@@ -84,7 +87,7 @@ public class AnimatedTooltipHandler {
      * <p>
      * Taken and adapted from <a
      * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * 
+     *
      * @param text            The text to be animated
      * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
      * @param delay           How many milliseconds are between each shift of {@code formattingArray}
@@ -117,7 +120,7 @@ public class AnimatedTooltipHandler {
      * <p>
      * Taken and adapted from <a
      * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * 
+     *
      * @param format          The text to be formatted and animated
      * @param args            The formatting arguments
      * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
@@ -137,7 +140,7 @@ public class AnimatedTooltipHandler {
      * <p>
      * Taken and adapted from <a
      * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * 
+     *
      * @param translationKey  The key used to look up the translation
      * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
      * @param delay           How many milliseconds are between each shift of {@code formattingArray}
@@ -156,7 +159,7 @@ public class AnimatedTooltipHandler {
      * <p>
      * Taken and adapted from <a
      * href=https://github.com/GTNewHorizons/Avaritia/blob/7b7eaed652f6be320b10f33d8f8e6a04e66ca14f/src/main/java/fox/spiteful/avaritia/LudicrousText.java#L19>Avaritia</a>
-     * 
+     *
      * @param translationKey  The key used to look up the translation
      * @param args            The formatting arguments
      * @param posstep         How many steps {@code formattingArray} is shifted each {@code delay}
@@ -179,7 +182,7 @@ public class AnimatedTooltipHandler {
      * Add {@code tooltip} to all items with {@code oredictName}. <br>
      * <b>Note:</b> The items must be registered to the {@link OreDictionary} when this method is called. <br>
      * <b>Note:</b> Items with equal registry name and meta but different NBT are considered equal.
-     * 
+     *
      * @author glowredman
      */
     public static void addOredictTooltip(String oredictName, Supplier<String> tooltip) {
@@ -193,7 +196,7 @@ public class AnimatedTooltipHandler {
      * <b>Note:</b> The item must be registered to the {@link GameRegistry} when this method is called. <br>
      * <b>Note:</b> Items with equal registry name and meta but different NBT are considered equal. <br>
      * <b>Note:</b> Using {@link OreDictionary#WILDCARD_VALUE} as {@code meta} is allowed.
-     * 
+     *
      * @author glowredman
      */
     public static void addItemTooltip(String modID, String registryName, int meta, Supplier<String> tooltip) {
@@ -206,7 +209,7 @@ public class AnimatedTooltipHandler {
      * Add {@code tooltip} to {@code item}. <br>
      * <b>Note:</b> Items with equal registry name and meta but different NBT are considered equal. <br>
      * <b>Note:</b> Using {@link OreDictionary#WILDCARD_VALUE} as meta is allowed.
-     * 
+     *
      * @author glowredman
      */
     public static void addItemTooltip(ItemStack item, Supplier<String> tooltip) {
@@ -215,7 +218,8 @@ public class AnimatedTooltipHandler {
     }
 
     @SubscribeEvent
-    public void renderTooltip(ItemTooltipEvent event) {
+    @SuppressWarnings("unused")
+    public static void renderTooltip(ItemTooltipEvent event) {
         Supplier<String> tooltip = tooltipMap.get(event.itemStack);
         if (tooltip == null) return;
 
