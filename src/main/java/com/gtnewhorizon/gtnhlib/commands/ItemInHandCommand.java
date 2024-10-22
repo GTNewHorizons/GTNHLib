@@ -38,8 +38,8 @@ public class ItemInHandCommand extends GTNHClientCommand {
             }
             GameRegistry.UniqueIdentifier UID = GameRegistry.findUniqueIdentifierFor(itemStack.getItem());
             addChatMessage(GREEN.toString() + STRIKETHROUGH + "--------------------" + RESET + " Item info " + GREEN + STRIKETHROUGH + "--------------------");
-            addChatMessage(String.format(GREEN + "Unloc.Name:" + RESET + " [%s]", itemStack.getUnlocalizedName()));
-            if (UID != null) addChatMessage(String.format(GREEN + "ItemName:" + RESET + " [%s]", UID));
+            addChatMessage(String.format(GREEN + "UnlocalizedName:" + RESET + " [%s]", itemStack.getUnlocalizedName()));
+            if (UID != null) addChatMessage(String.format(GREEN + "RegistryName:" + RESET + " [%s]", UID));
             addChatMessage(String.format(GREEN + "ItemMeta:" + RESET + " [%s]", itemStack.getItemDamage()));
             printFluidContent(itemStack);
             addChatMessage(String.format(GREEN + "ClassName:" + RESET + " [%s]", itemStack.getItem().getClass()));
