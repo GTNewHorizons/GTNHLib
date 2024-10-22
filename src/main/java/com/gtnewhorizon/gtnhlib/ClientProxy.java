@@ -6,8 +6,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.client.ClientCommandHandler;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
+import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 
@@ -32,6 +34,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
+        ClientCommandHandler.instance.registerCommand(new ItemInHandCommand());
     }
 
     @Override
