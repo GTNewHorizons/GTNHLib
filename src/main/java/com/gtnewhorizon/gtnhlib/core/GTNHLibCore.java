@@ -82,12 +82,7 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
 
     @Override
     public List<String> getMixins(Set<String> loadedCoreMods) {
-        final List<String> mixins = Mixins.getEarlyMixins(loadedCoreMods);
-        if (Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false"))) {
-            mixins.add("debug.MixinDynamicTexture");
-            mixins.add("debug.MixinTextureAtlasSprite");
-        }
-        return mixins;
+        return Mixins.getEarlyMixins(loadedCoreMods);
     }
 
     @Override
