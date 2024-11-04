@@ -9,3 +9,9 @@ tasks.processResources {
         expand("version" to project.version.toString())
     }
 }
+
+// Shadow source jars too
+val shadowSources = configurations.getByName("shadowSources")
+tasks.sourcesJar {
+    from(shadowSources.map { zipTree(it) }) // idr what the operator here is, something that applies zipTree to all elements
+}
