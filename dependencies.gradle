@@ -1,8 +1,13 @@
 // Add your dependencies here
+configurations {
+    shadowSources
+}
 
 dependencies {
     shadowImplementation("it.unimi.dsi:fastutil:8.5.12") // Apache 2.0
     shadowImplementation("org.joml:joml:1.10.5") // MIT
+    shadowSources("it.unimi.dsi:fastutil:8.5.12:sources")
+    shadowSources("org.joml:joml:1.10.5:sources")
 
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
