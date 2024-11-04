@@ -13,5 +13,5 @@ tasks.processResources {
 // Shadow source jars too
 val shadowSources = configurations.getByName("shadowSources")
 tasks.sourcesJar {
-    from(shadowSources.map { zipTree(it) }) // idr what the operator here is, something that applies zipTree to all elements
+    from(shadowSources.map { zipTree(it) })
 }
