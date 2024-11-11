@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.mixins.early;
 
+import static com.gtnewhorizon.gtnhlib.ClientProxy.doThreadSafetyChecks;
+
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -18,8 +20,6 @@ import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 @Mixin(Tessellator.class)
 public abstract class MixinTessellator implements ITessellatorInstance {
 
-    @Shadow
-    public int vertexCount;
     @Shadow
     public boolean isDrawing;
 
@@ -40,7 +40,7 @@ public abstract class MixinTessellator implements ITessellatorInstance {
 
     @Inject(method = "draw", at = @At("HEAD"))
     private void preventOffMainThreadDrawing(CallbackInfoReturnable<Integer> cir) {
-        if (!TessellatorManager.isMainInstance(this)) {
+        if (doThreadSafetyChecks && !TessellatorManager.isMainInstance(this)) {
             throw new RuntimeException("Tried to draw on a tessellator that isn't on the main thread!");
         }
     }

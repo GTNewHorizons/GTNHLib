@@ -22,4 +22,7 @@ dependencies {
     compileOnly('org.jetbrains:annotations:24.0.1')
     compileOnly("org.projectlombok:lombok:1.18.22") {transitive = false }
     annotationProcessor("org.projectlombok:lombok:1.18.22")
+
+    // For CapturingTesselator compat
+    compileOnly("com.falsepattern:falsetweaks-mc1.7.10:3.3.2:api")
 }
