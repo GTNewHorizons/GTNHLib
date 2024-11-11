@@ -2,6 +2,8 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelLoader.shouldLoadModels;
 
+import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
+import com.gtnewhorizon.gtnhlib.compat.Mods;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -23,7 +25,7 @@ import cpw.mods.fml.relauncher.Side;
 public class ClientProxy extends CommonProxy {
 
     private static boolean modelsBaked = false;
-
+    public static boolean doThreadSafetyChecks = true;
     private final Minecraft mc = Minecraft.getMinecraft();
 
     @Override
@@ -40,6 +42,13 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+
+        if (Mods.FALSETWEAKS) {
+            doThreadSafetyChecks = FalseTweaks.doTessSafetyChecks();
+            if (!doThreadSafetyChecks) {
+                GTNHLib.info("FalseTweaks threaded rendering is enabled - disabling GTNHLib's thread safety checks");
+            }
+        }
 
         if (shouldLoadModels()) {
             Minecraft.getMinecraft().refreshResources();
