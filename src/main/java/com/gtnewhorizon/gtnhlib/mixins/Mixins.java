@@ -14,7 +14,7 @@ import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
 public enum Mixins {
 
-    TESSELLATOR(new Builder("Sodium").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT).setPhase(Phase.EARLY)
+    TESSELLATOR(new Builder("Thread safety checks for the Tesselator").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT).setPhase(Phase.EARLY)
             .setApplyIf(() -> true).addMixinClasses("MixinTessellator")),
     WAVEFRONT_VBO(new Builder("WavefrontObject").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)
             .setPhase(Phase.EARLY).setApplyIf(() -> true).addMixinClasses("MixinWavefrontObject")),

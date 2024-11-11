@@ -32,6 +32,10 @@ public class TessellatorManager {
         }
     }
 
+    public static boolean isCurrentlyCapturing() {
+        return currentlyCapturing.get();
+    }
+
     public static boolean isOnMainThread() {
         return Thread.currentThread() == mainThread;
     }
