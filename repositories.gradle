@@ -2,6 +2,10 @@
 
 repositories {
     maven {
-        url = uri("https://mvn.falsepattern.com/releases")
+        name = 'mavenpattern'
+        url = 'https://mvn.falsepattern.com/releases'
+        content {
+            includeGroup 'com.falsepattern'
+        }
     }
 }
