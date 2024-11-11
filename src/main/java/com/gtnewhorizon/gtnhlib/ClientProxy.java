@@ -2,8 +2,6 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelLoader.shouldLoadModels;
 
-import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
-import com.gtnewhorizon.gtnhlib.compat.Mods;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -12,6 +10,8 @@ import net.minecraftforge.client.ClientCommandHandler;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
+import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
+import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 
