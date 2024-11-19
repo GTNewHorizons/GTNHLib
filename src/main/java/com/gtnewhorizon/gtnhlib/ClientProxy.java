@@ -9,6 +9,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.ClientCommandHandler;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
+import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
@@ -54,6 +55,8 @@ public class ClientProxy extends CommonProxy {
             Minecraft.getMinecraft().refreshResources();
             ModelLoader.loadModels();
         }
+
+        LoreHandler.postInit();
     }
 
     @Override
