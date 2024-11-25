@@ -3,23 +3,28 @@
  */
 package com.gtnewhorizon.gtnhlib.client.lwjgl3;
 
-
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.NULL;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.UNSAFE;
 import static org.lwjgl.LWJGLUtil.CHECKS;
 
 import net.minecraft.util.Util;
+
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Pointer interface.
  *
- * <p>LWJGL can run on both 32bit and 64bit architectures. Since LWJGL applications deal with native memory directly, this interface provides necessary
- * information about the underlying architecture of the running JVM process.</p>
+ * <p>
+ * LWJGL can run on both 32bit and 64bit architectures. Since LWJGL applications deal with native memory directly, this
+ * interface provides necessary information about the underlying architecture of the running JVM process.
+ * </p>
  *
- * <p>When interacting with native functions, pointer values are mapped to Java {@code long}. LWJGL automatically converts long values to the correct pointer
- * addresses when used in native code. Native functions sometimes require arrays of pointer values; the {@link PointerBuffer} class may be used for that
- * purpose. It has an API similar to a {@link java.nio.LongBuffer} but handles pointer casts automatically.</p>
+ * <p>
+ * When interacting with native functions, pointer values are mapped to Java {@code long}. LWJGL automatically converts
+ * long values to the correct pointer addresses when used in native code. Native functions sometimes require arrays of
+ * pointer values; the {@link PointerBuffer} class may be used for that purpose. It has an API similar to a
+ * {@link java.nio.LongBuffer} but handles pointer casts automatically.
+ * </p>
  */
 @SuppressWarnings("unused")
 public interface Pointer {
@@ -31,7 +36,7 @@ public interface Pointer {
     int POINTER_SHIFT = POINTER_SIZE == 8 ? 3 : 2;
 
     /** The value of {@code sizeof(long)} for the current platform. */
-    int CLONG_SIZE  = POINTER_SIZE == 8 && Util.getOSType() == Util.EnumOS.WINDOWS ? 4 : POINTER_SIZE;
+    int CLONG_SIZE = POINTER_SIZE == 8 && Util.getOSType() == Util.EnumOS.WINDOWS ? 4 : POINTER_SIZE;
 
     /** The value of {@code sizeof(long)} as a power-of-two. */
     int CLONG_SHIFT = CLONG_SIZE == 8 ? 3 : 2;
@@ -79,7 +84,7 @@ public interface Pointer {
         }
 
         public int hashCode() {
-            return (int)(address ^ (address >>> 32));
+            return (int) (address ^ (address >>> 32));
         }
 
         @Override

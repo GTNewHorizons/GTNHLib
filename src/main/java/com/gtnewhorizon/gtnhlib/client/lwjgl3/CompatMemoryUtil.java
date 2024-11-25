@@ -3,30 +3,32 @@
  */
 package com.gtnewhorizon.gtnhlib.client.lwjgl3;
 
-
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.Pointer.BITS64;
 
-import it.unimi.dsi.fastutil.longs.LongPredicate;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+
 import org.lwjgl.BufferUtils;
 
+import it.unimi.dsi.fastutil.longs.LongPredicate;
+
 /**
- * Backported from LWJGL3 under the BSD 3-Clause "New" or "Revised" License
- *
- * <p>This class provides functionality for managing native memory.
- *
- * <p>All methods in this class will make use of {@link sun.misc.Unsafe} if it's available, for performance. If Unsafe is not available, the fallback
- * implementations make use of reflection and, in the worst-case, JNI.</p>
- *
- * <p>Method names in this class are prefixed with {@code mem} to avoid ambiguities when used with static imports.</p>
+ * This class provides functionality for managing native memory.
+ * <p>
+ * All methods in this class will make use of {@link sun.misc.Unsafe} if it's available, for performance. If Unsafe is
+ * not available, the fallback implementations make use of reflection and, in the worst-case, JNI.
+ * </p>
+ * <p>
+ * Method names in this class are prefixed with {@code mem} to avoid ambiguities when used with static imports.
+ * </p>
  */
-@SuppressWarnings({"unused", "SameParameterValue"})
+@SuppressWarnings({ "unused", "SameParameterValue" })
 public class CompatMemoryUtil {
+
     public static final long NULL = 0;
 
     static final sun.misc.Unsafe UNSAFE;
@@ -85,13 +87,11 @@ public class CompatMemoryUtil {
         return newBuf;
     }
 
-     /* -------------------------------------
-        -------------------------------------
-               UNSAFE MEMORY ACCESS API
-        -------------------------------------
-        ------------------------------------- */
+    /*
+     * UNSAFE MEMORY ACCESS API
+     */
 
-    private static final int  FILL_PATTERN_32 = Integer.divideUnsigned(-1, 255);
+    private static final int FILL_PATTERN_32 = Integer.divideUnsigned(-1, 255);
     private static final long FILL_PATTERN_64 = Long.divideUnsigned(-1L, 255L);
 
     /**
@@ -102,34 +102,37 @@ public class CompatMemoryUtil {
      * @param bytes the number of bytes to set
      */
     public static void memSet(long ptr, int value, long bytes) {
-        if (/*DEBUG*/ false && (ptr == NULL || bytes < 0)) {
+        if (/* DEBUG */ false && (ptr == NULL || bytes < 0)) {
             throw new IllegalArgumentException();
         }
 
+        // spotless:off
         /*
-        - Unsafe.setMemory is very slow.
-        - A custom Java loop is fastest at small sizes, approximately up to 256 bytes.
-        - The native memset becomes fastest at bigger sizes, when the JNI overhead becomes negligible.
-        TODO: verify this
+         * TODO: verify this on latest Java. We don't care care over-much about optimal performance on Java 8-11.
+         * - Unsafe.setMemory is very slow.
+         * - A custom Java loop is fastest at small sizes, approximately up to 256 bytes.
+         * - The native memset becomes fastest at bigger sizes, when the JNI overhead becomes negligible.
          */
+        //spotless:on
 
-        //UNSAFE.setMemory(ptr, bytes, (byte)(value & 0xFF));
-        //if (bytes < 256L) {
-        int p = (int)ptr;
+        // UNSAFE.setMemory(ptr, bytes, (byte)(value & 0xFF));
+        // if (bytes < 256L) {
+        int p = (int) ptr;
         if (BITS64) {
             if ((p & 7) == 0) {
-                memSet64(ptr, value, (int)bytes & 0xFF);
+                memSet64(ptr, value, (int) bytes & 0xFF);
                 return;
             }
         } else {
             if ((p & 3) == 0) {
-                memSet32(p, value, (int)bytes & 0xFF);
+                memSet32(p, value, (int) bytes & 0xFF);
                 return;
             }
         }
-        //}
-        //nmemset(ptr, value, bytes);
+        // }
+        // nmemset(ptr, value, bytes);
     }
+
     private static void memSet64(long ptr, int value, int bytes) {
         int aligned = bytes & ~7;
 
@@ -140,11 +143,12 @@ public class CompatMemoryUtil {
         }
 
         // Unaligned tail
-        byte valueb = (byte)(value & 0xFF);
+        byte valueb = (byte) (value & 0xFF);
         for (int i = aligned; i < bytes; i++) {
             UNSAFE.putByte(null, ptr + i, valueb);
         }
     }
+
     private static void memSet32(int ptr, int value, int bytes) {
         int aligned = bytes & ~3;
 
@@ -155,26 +159,63 @@ public class CompatMemoryUtil {
         }
 
         // Unaligned tail
-        byte vb = (byte)(value & 0xFF);
+        byte vb = (byte) (value & 0xFF);
         for (int i = aligned; i < bytes; i++) {
             UNSAFE.putByte(null, (ptr + i) & 0xFFFF_FFFFL, vb);
         }
     }
 
-    public static boolean memGetBoolean(long ptr) { return UNSAFE.getByte(null, ptr) != 0; }
-    public static byte memGetByte(long ptr)       { return UNSAFE.getByte(null, ptr); }
-    public static short memGetShort(long ptr)     { return UNSAFE.getShort(null, ptr); }
-    public static int memGetInt(long ptr)         { return UNSAFE.getInt(null, ptr); }
-    public static long memGetLong(long ptr)       { return UNSAFE.getLong(null, ptr); }
-    public static float memGetFloat(long ptr)     { return UNSAFE.getFloat(null, ptr); }
-    public static double memGetDouble(long ptr)   { return UNSAFE.getDouble(null, ptr); }
+    public static boolean memGetBoolean(long ptr) {
+        return UNSAFE.getByte(null, ptr) != 0;
+    }
 
-    public static void memPutByte(long ptr, byte value)     { UNSAFE.putByte(null, ptr, value); }
-    public static void memPutShort(long ptr, short value)   { UNSAFE.putShort(null, ptr, value); }
-    public static void memPutInt(long ptr, int value)       { UNSAFE.putInt(null, ptr, value); }
-    public static void memPutLong(long ptr, long value)     { UNSAFE.putLong(null, ptr, value); }
-    public static void memPutFloat(long ptr, float value)   { UNSAFE.putFloat(null, ptr, value); }
-    public static void memPutDouble(long ptr, double value) { UNSAFE.putDouble(null, ptr, value); }
+    public static byte memGetByte(long ptr) {
+        return UNSAFE.getByte(null, ptr);
+    }
+
+    public static short memGetShort(long ptr) {
+        return UNSAFE.getShort(null, ptr);
+    }
+
+    public static int memGetInt(long ptr) {
+        return UNSAFE.getInt(null, ptr);
+    }
+
+    public static long memGetLong(long ptr) {
+        return UNSAFE.getLong(null, ptr);
+    }
+
+    public static float memGetFloat(long ptr) {
+        return UNSAFE.getFloat(null, ptr);
+    }
+
+    public static double memGetDouble(long ptr) {
+        return UNSAFE.getDouble(null, ptr);
+    }
+
+    public static void memPutByte(long ptr, byte value) {
+        UNSAFE.putByte(null, ptr, value);
+    }
+
+    public static void memPutShort(long ptr, short value) {
+        UNSAFE.putShort(null, ptr, value);
+    }
+
+    public static void memPutInt(long ptr, int value) {
+        UNSAFE.putInt(null, ptr, value);
+    }
+
+    public static void memPutLong(long ptr, long value) {
+        UNSAFE.putLong(null, ptr, value);
+    }
+
+    public static void memPutFloat(long ptr, float value) {
+        UNSAFE.putFloat(null, ptr, value);
+    }
+
+    public static void memPutDouble(long ptr, double value) {
+        UNSAFE.putDouble(null, ptr, value);
+    }
 
     // -------------------------------------------------
     // -------------------------------------------------
@@ -183,14 +224,15 @@ public class CompatMemoryUtil {
     private static sun.misc.Unsafe getUnsafeInstance() {
         Field[] fields = sun.misc.Unsafe.class.getDeclaredFields();
 
+        // spotless:off
         /*
-        Different runtimes use different names for the Unsafe singleton,
-        so we cannot use .getDeclaredField and we scan instead. For example:
-
-        Oracle: theUnsafe
-        PERC : m_unsafe_instance
-        Android: THE_ONE
-        */
+         * Different runtimes use different names for the Unsafe singleton, so we cannot use .getDeclaredField and we
+         * scan instead. For example:
+         *  - Oracle: theUnsafe
+         *  - PERC : m_unsafe_instance
+         *  - Android: THE_ONE
+         */
+        //spotless:on
         for (Field field : fields) {
             if (!field.getType().equals(sun.misc.Unsafe.class)) {
                 continue;
@@ -203,9 +245,8 @@ public class CompatMemoryUtil {
 
             try {
                 field.setAccessible(true);
-                return (sun.misc.Unsafe)field.get(null);
-            } catch (Exception ignored) {
-            }
+                return (sun.misc.Unsafe) field.get(null);
+            } catch (Exception ignored) {}
             break;
         }
 
@@ -222,7 +263,8 @@ public class CompatMemoryUtil {
         while (c != Object.class) {
             Field[] fields = c.getDeclaredFields();
             for (Field field : fields) {
-                if (!field.getType().isAssignableFrom(fieldType) || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
+                if (!field.getType().isAssignableFrom(fieldType) || Modifier.isStatic(field.getModifiers())
+                        || field.isSynthetic()) {
                     continue;
                 }
 
@@ -241,7 +283,8 @@ public class CompatMemoryUtil {
         while (c != Object.class) {
             Field[] fields = c.getDeclaredFields();
             for (Field field : fields) {
-                if (!field.getType().isAssignableFrom(fieldType) || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
+                if (!field.getType().isAssignableFrom(fieldType) || Modifier.isStatic(field.getModifiers())
+                        || field.isSynthetic()) {
                     continue;
                 }
 
@@ -266,7 +309,7 @@ public class CompatMemoryUtil {
         // TODO: do this portably
         // long MAGIC_ADDRESS = 0xDEADBEEF8BADF00DL & (BITS32 ? 0xFFFF_FFFFL : 0xFFFF_FFFF_FFFF_FFFFL);
         // ByteBuffer bb = Objects.requireNonNull(NewDirectByteBuffer(MAGIC_ADDRESS, 0));
-        //return getFieldOffset(bb.getClass(), long.class, offset -> UNSAFE.getLong(bb, offset) == MAGIC_ADDRESS);
+        // return getFieldOffset(bb.getClass(), long.class, offset -> UNSAFE.getLong(bb, offset) == MAGIC_ADDRESS);
     }
 
     private static final int MAGIC_CAPACITY = 0x0D15EA5E;
@@ -301,7 +344,7 @@ public class CompatMemoryUtil {
     static IntBuffer wrapBufferInt(long address, int capacity) {
         IntBuffer buffer;
         try {
-            buffer = (IntBuffer)UNSAFE.allocateInstance(BUFFER_INT);
+            buffer = (IntBuffer) UNSAFE.allocateInstance(BUFFER_INT);
         } catch (InstantiationException e) {
             throw new UnsupportedOperationException(e);
         }
@@ -317,7 +360,7 @@ public class CompatMemoryUtil {
     static FloatBuffer wrapBufferFloat(long address, int capacity) {
         FloatBuffer buffer;
         try {
-            buffer = (FloatBuffer)UNSAFE.allocateInstance(BUFFER_FLOAT);
+            buffer = (FloatBuffer) UNSAFE.allocateInstance(BUFFER_FLOAT);
         } catch (InstantiationException e) {
             throw new UnsupportedOperationException(e);
         }

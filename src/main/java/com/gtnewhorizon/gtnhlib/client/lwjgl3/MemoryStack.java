@@ -4,8 +4,6 @@
 
 package com.gtnewhorizon.gtnhlib.client.lwjgl3;
 
-
-
 import static com.gtnewhorizon.gtnhlib.GTNHLib.LOG;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.memPutDouble;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.memPutFloat;
@@ -20,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.MemoryUtil;
@@ -27,15 +26,16 @@ import org.lwjgl.MemoryUtil;
 /**
  * An off-heap memory stack.
  *
- * <p>This class should be used in a thread-local manner for stack allocations.</p>
+ * <p>
+ * This class should be used in a thread-local manner for stack allocations.
+ * </p>
  *
- * @ see Configuration#STACK_SIZE
- * @ see Configuration#DEBUG_STACK
+ * @ see Configuration#STACK_SIZE @ see Configuration#DEBUG_STACK
  */
-@SuppressWarnings({"LombokGetterMayBeUsed", "unused"})
+@SuppressWarnings({ "LombokGetterMayBeUsed", "unused" })
 public class MemoryStack extends Pointer.Default implements AutoCloseable {
 
-    private static final int DEFAULT_STACK_SIZE   = /*Configuration.STACK_SIZE.get(64)*/ 64 * 1024;
+    private static final int DEFAULT_STACK_SIZE = /* Configuration.STACK_SIZE.get(64) */ 64 * 1024;
     private static final int DEFAULT_STACK_FRAMES = 8;
 
     private static final ThreadLocal<MemoryStack> TLS = ThreadLocal.withInitial(MemoryStack::create);
@@ -46,20 +46,23 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
         }
     }
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    @SuppressWarnings({ "FieldCanBeLocal", "unused" })
     private final @Nullable ByteBuffer container;
 
     private final int size;
 
     private int pointer;
 
-    private   int[] frames;
-    protected int   frameIndex;
+    private int[] frames;
+    protected int frameIndex;
 
     /**
      * Creates a new {@code MemoryStack} backed by the specified memory region.
      *
-     * <p>In the initial state, there is no active stack frame. The {@link #push} method must be used before any allocations.</p>
+     * <p>
+     * In the initial state, there is no active stack frame. The {@link #push} method must be used before any
+     * allocations.
+     * </p>
      *
      * @param container the backing memory buffer, may be null
      * @param address   the backing memory address
@@ -78,7 +81,10 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Creates a new {@code MemoryStack} with the default size.
      *
-     * <p>In the initial state, there is no active stack frame. The {@link #push} method must be used before any allocations.</p>
+     * <p>
+     * In the initial state, there is no active stack frame. The {@link #push} method must be used before any
+     * allocations.
+     * </p>
      */
     public static MemoryStack create() {
         return create(DEFAULT_STACK_SIZE);
@@ -87,7 +93,10 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Creates a new {@code MemoryStack} with the specified size.
      *
-     * <p>In the initial state, there is no active stack frame. The {@link #push} method must be used before any allocations.</p>
+     * <p>
+     * In the initial state, there is no active stack frame. The {@link #push} method must be used before any
+     * allocations.
+     * </p>
      *
      * @param capacity the maximum number of bytes that may be allocated on the stack
      */
@@ -98,20 +107,26 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Creates a new {@code MemoryStack} backed by the specified memory buffer.
      *
-     * <p>In the initial state, there is no active stack frame. The {@link #push} method must be used before any allocations.</p>
+     * <p>
+     * In the initial state, there is no active stack frame. The {@link #push} method must be used before any
+     * allocations.
+     * </p>
      *
      * @param buffer the backing memory buffer
      */
     public static MemoryStack create(ByteBuffer buffer) {
         long address = MemoryUtil.getAddress(buffer);
-        int  size    = buffer.remaining();
+        int size = buffer.remaining();
         return new MemoryStack(buffer, address, size);
     }
 
     /**
      * Creates a new {@code MemoryStack} backed by the specified memory region.
      *
-     * <p>In the initial state, there is no active stack frame. The {@link #push} method must be used before any allocations.</p>
+     * <p>
+     * In the initial state, there is no active stack frame. The {@link #push} method must be used before any
+     * allocations.
+     * </p>
      *
      * @param address the backing memory address
      * @param size    the backing memory size
@@ -123,10 +138,14 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Stores the current stack pointer and pushes a new frame to the stack.
      *
-     * <p>This method should be called when entering a method, before doing any stack allocations. When exiting a method, call the {@link #pop} method to
-     * restore the previous stack frame.</p>
+     * <p>
+     * This method should be called when entering a method, before doing any stack allocations. When exiting a method,
+     * call the {@link #pop} method to restore the previous stack frame.
+     * </p>
      *
-     * <p>Pairs of push/pop calls may be nested. Care must be taken to:</p>
+     * <p>
+     * Pairs of push/pop calls may be nested. Care must be taken to:
+     * </p>
      * <ul>
      * <li>match every push with a pop</li>
      * <li>not call pop before push has been called at least once</li>
@@ -145,7 +164,7 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     }
 
     private void frameOverflow() {
-        if (/*DEBUG*/ false) {
+        if (/* DEBUG */ false) {
             LOG.warn("[WARNING] Out of frame stack space (" + frames.length + ") in thread: " + Thread.currentThread());
         }
         frames = Arrays.copyOf(frames, frames.length * 3 / 2);
@@ -164,19 +183,24 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Calls {@link #pop} on this {@code MemoryStack}.
      *
-     * <p>This method should not be used directly. It is called automatically when the {@code MemoryStack} is used as a resource in a try-with-resources
-     * statement.</p>
+     * <p>
+     * This method should not be used directly. It is called automatically when the {@code MemoryStack} is used as a
+     * resource in a try-with-resources statement.
+     * </p>
      */
     @Override
     public void close() {
-        //noinspection resource
+        // noinspection resource
         pop();
     }
 
     /**
      * Returns the address of the backing off-heap memory.
      *
-     * <p>The stack grows "downwards", so the bottom of the stack is at {@code address + size}, while the top is at {@code address}.</p>
+     * <p>
+     * The stack grows "downwards", so the bottom of the stack is at {@code address + size}, while the top is at
+     * {@code address}.
+     * </p>
      */
     public long getAddress() {
         return address;
@@ -185,7 +209,9 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Returns the size of the backing off-heap memory.
      *
-     * <p>This is the maximum number of bytes that may be allocated on the stack.</p>
+     * <p>
+     * This is the maximum number of bytes that may be allocated on the stack.
+     * </p>
      */
     public int getSize() {
         return size;
@@ -194,7 +220,9 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Returns the current frame index.
      *
-     * <p>This is the current number of nested {@link #push} calls.</p>
+     * <p>
+     * This is the current number of nested {@link #push} calls.
+     * </p>
      */
     public int getFrameIndex() {
         return frameIndex;
@@ -208,10 +236,15 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Returns the current stack pointer.
      *
-     * <p>The stack grows "downwards", so when the stack is empty {@code pointer} is equal to {@code size}. On every allocation {@code pointer} is reduced by
-     * the allocated size (after alignment) and {@code address + pointer} points to the first byte of the last allocation.</p>
+     * <p>
+     * The stack grows "downwards", so when the stack is empty {@code pointer} is equal to {@code size}. On every
+     * allocation {@code pointer} is reduced by the allocated size (after alignment) and {@code address + pointer}
+     * points to the first byte of the last allocation.
+     * </p>
      *
-     * <p>Effectively, this methods returns how many more bytes may be allocated on the stack.</p>
+     * <p>
+     * Effectively, this methods returns how many more bytes may be allocated on the stack.
+     * </p>
      */
     public int getPointer() {
         return pointer;
@@ -220,11 +253,13 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     /**
      * Sets the current stack pointer.
      *
-     * <p>This method directly manipulates the stack pointer. Using it irresponsibly may break the internal state of the stack. It should only be used in rare
-     * cases or in auto-generated code.</p>
+     * <p>
+     * This method directly manipulates the stack pointer. Using it irresponsibly may break the internal state of the
+     * stack. It should only be used in rare cases or in auto-generated code.
+     * </p>
      */
     public void setPointer(int pointer) {
-        if (/*CHECKS*/ false) {
+        if (/* CHECKS */ false) {
             checkPointer(pointer);
         }
 
@@ -255,8 +290,8 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     }
 
     /**
-     * Allocates a block of {@code size} bytes of memory on the stack. The content of the newly allocated block of memory is not initialized, remaining with
-     * indeterminate values.
+     * Allocates a block of {@code size} bytes of memory on the stack. The content of the newly allocated block of
+     * memory is not initialized, remaining with indeterminate values.
      *
      * @param alignment the required alignment
      * @param size      the allocation size
@@ -267,8 +302,8 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
         // Align address to the specified alignment
         long address = (this.address + pointer - size) & ~Integer.toUnsignedLong(alignment - 1);
 
-        pointer = (int)(address - this.address);
-        if (/*CHECKS*/ false && pointer < 0) {
+        pointer = (int) (address - this.address);
+        if (/* CHECKS */ false && pointer < 0) {
             throw new OutOfMemoryError("Out of stack space.");
         }
 
@@ -276,17 +311,17 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     }
 
     /**
-     * Allocates a block of memory on the stack for an array of {@code num} elements, each of them {@code size} bytes long, and initializes all its bits to
-     * zero.
+     * Allocates a block of memory on the stack for an array of {@code num} elements, each of them {@code size} bytes
+     * long, and initializes all its bits to zero.
      *
      * @param alignment the required element alignment
-     * @param num       num  the number of elements to allocate
+     * @param num       num the number of elements to allocate
      * @param size      the size of each element
      *
      * @return the memory address on the stack for the requested allocation
      */
     public long ncalloc(int alignment, int num, int size) {
-        int  bytes   = num * size;
+        int bytes = num * size;
         long address = nmalloc(alignment, bytes);
         memSet(address, 0, bytes);
         return address;
@@ -304,7 +339,9 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     // -------------------------------------------------
 
     /** Int version of {@link #malloc(int)}. */
-    public IntBuffer mallocInt(int size) { return wrapBufferInt(nmalloc(4, size << 2), size); }
+    public IntBuffer mallocInt(int size) {
+        return wrapBufferInt(nmalloc(4, size << 2), size);
+    }
 
     /** Unsafe version of {@link #ints(int)}. */
     public long nint(int value) {
@@ -325,7 +362,9 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     // -------------------------------------------------
 
     /** Float version of {@link #malloc(int)}. */
-    public FloatBuffer mallocFloat(int size) { return wrapBufferFloat(nmalloc(4, size << 2), size); }
+    public FloatBuffer mallocFloat(int size) {
+        return wrapBufferFloat(nmalloc(4, size << 2), size);
+    }
 
     /** Unsafe version of {@link #floats(float)}. */
     public long nfloat(float value) {
@@ -346,7 +385,6 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     // -------------------------------------------------
     // -------------------------------------------------
     // -------------------------------------------------
-
 
     /** Returns the stack of the current thread. */
     public static MemoryStack stackGet() {
@@ -372,11 +410,19 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     }
 
     /** Thread-local version of {@link #nmalloc(int)}. */
-    public static long nstackMalloc(int size) { return stackGet().nmalloc(size); }
+    public static long nstackMalloc(int size) {
+        return stackGet().nmalloc(size);
+    }
+
     /** Thread-local version of {@link #nmalloc(int, int)}. */
-    public static long nstackMalloc(int alignment, int size) { return stackGet().nmalloc(alignment, size); }
+    public static long nstackMalloc(int alignment, int size) {
+        return stackGet().nmalloc(alignment, size);
+    }
+
     /** Thread-local version of {@link #ncalloc}. */
-    public static long nstackCalloc(int alignment, int num, int size) { return stackGet().ncalloc(alignment, num, size); }
+    public static long nstackCalloc(int alignment, int num, int size) {
+        return stackGet().ncalloc(alignment, num, size);
+    }
 
     // -------------------------------------------------
 
