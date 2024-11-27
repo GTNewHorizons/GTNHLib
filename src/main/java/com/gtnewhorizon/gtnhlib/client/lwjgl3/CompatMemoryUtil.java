@@ -33,6 +33,8 @@ public class CompatMemoryUtil {
 
     static final sun.misc.Unsafe UNSAFE;
 
+    static final ByteOrder NATIVE_ORDER = ByteOrder.nativeOrder();
+
     private static final Class<? extends ByteBuffer> BUFFER_BYTE;
     private static final Class<? extends IntBuffer> BUFFER_INT;
     private static final Class<? extends FloatBuffer> BUFFER_FLOAT;
@@ -339,6 +341,22 @@ public class CompatMemoryUtil {
         ByteBuffer bb = ByteBuffer.allocateDirect(MAGIC_CAPACITY);
         bb.limit(0);
         return getFieldOffsetInt(bb, MAGIC_CAPACITY);
+    }
+
+    static ByteBuffer wrapBufferByte(long address, int capacity) {
+        ByteBuffer buffer;
+        try {
+            buffer = (ByteBuffer)UNSAFE.allocateInstance(BUFFER_BYTE);
+        } catch (InstantiationException e) {
+            throw new UnsupportedOperationException(e);
+        }
+
+        UNSAFE.putLong(buffer, ADDRESS, address);
+        UNSAFE.putInt(buffer, MARK, -1);
+        UNSAFE.putInt(buffer, LIMIT, capacity);
+        UNSAFE.putInt(buffer, CAPACITY, capacity);
+
+        return buffer.order(NATIVE_ORDER);
     }
 
     static IntBuffer wrapBufferInt(long address, int capacity) {

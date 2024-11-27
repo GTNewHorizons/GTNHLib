@@ -11,6 +11,7 @@ import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.memPutInt;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.memPutLong;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.memPutShort;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.memSet;
+import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.wrapBufferByte;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.wrapBufferFloat;
 import static com.gtnewhorizon.gtnhlib.client.lwjgl3.CompatMemoryUtil.wrapBufferInt;
 
@@ -325,6 +326,23 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
         long address = nmalloc(alignment, bytes);
         memSet(address, 0, bytes);
         return address;
+    }
+
+    // -------------------------------------------------
+
+    /**
+     * Allocates an aligned {@link ByteBuffer} on the stack.
+     *
+     * @param alignment the required buffer alignment
+     * @param size      the number of elements in the buffer
+     *
+     * @return the allocated buffer
+     */
+    public ByteBuffer malloc(int alignment, int size) {
+        if (/*DEBUG*/ false) {
+            checkAlignment(alignment);
+        }
+        return wrapBufferByte(nmalloc(alignment, size), size);
     }
 
     // -------------------------------------------------
