@@ -339,7 +339,7 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
      * @return the allocated buffer
      */
     public ByteBuffer malloc(int alignment, int size) {
-        if (/*DEBUG*/ false) {
+        if (/* DEBUG */ false) {
             checkAlignment(alignment);
         }
         return wrapBufferByte(nmalloc(alignment, size), size);

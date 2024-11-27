@@ -346,7 +346,7 @@ public class CompatMemoryUtil {
     static ByteBuffer wrapBufferByte(long address, int capacity) {
         ByteBuffer buffer;
         try {
-            buffer = (ByteBuffer)UNSAFE.allocateInstance(BUFFER_BYTE);
+            buffer = (ByteBuffer) UNSAFE.allocateInstance(BUFFER_BYTE);
         } catch (InstantiationException e) {
             throw new UnsupportedOperationException(e);
         }
