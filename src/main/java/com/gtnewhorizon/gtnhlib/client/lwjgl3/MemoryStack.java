@@ -331,18 +331,14 @@ public class MemoryStack extends Pointer.Default implements AutoCloseable {
     // -------------------------------------------------
 
     /**
-     * Allocates an aligned {@link ByteBuffer} on the stack.
+     * Allocates a {@link ByteBuffer} on the stack with {@code alignment} equal to {@link Pointer#POINTER_SIZE POINTER_SIZE}.
      *
-     * @param alignment the required buffer alignment
-     * @param size      the number of elements in the buffer
+     * @param size the number of elements in the buffer
      *
      * @return the allocated buffer
      */
-    public ByteBuffer malloc(int alignment, int size) {
-        if (/*DEBUG*/ false) {
-            checkAlignment(alignment);
-        }
-        return wrapBufferByte(nmalloc(alignment, size), size);
+    public ByteBuffer malloc(int size) {
+        return wrapBufferByte(nmalloc(POINTER_SIZE, size), size);
     }
 
     // -------------------------------------------------
