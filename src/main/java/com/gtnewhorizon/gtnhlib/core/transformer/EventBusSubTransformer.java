@@ -10,6 +10,7 @@ import net.minecraft.launchwrapper.IClassTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -54,8 +55,9 @@ public class EventBusSubTransformer implements IClassTransformer {
 
         final ClassReader cr = new ClassReader(basicClass);
         final ClassNode cn = new ClassNode();
-        cr.accept(cn, ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE);
+        cr.accept(cn, 0);
 
+        boolean changed = false;
         // Processing all of this from the ASMDataTable is way too slow
         for (MethodNode mn : cn.methods) {
             Object2ObjectMap<String, AnnotationNode> usableAnnotations = getUsableAnnotations(mn.visibleAnnotations);
@@ -63,7 +65,7 @@ public class EventBusSubTransformer implements IClassTransformer {
 
             if (!matchesSide(usableAnnotations.get(SIDEONLY_DESC))) {
                 if (DEBUG_EVENT_BUS) {
-                    LOGGER.info("Skipping method {} due to side mismatch", transformedName);
+                    LOGGER.info("Skipping method {} due to side mismatch", getMethodKey(transformedName, mn));
                 }
                 continue;
             }
@@ -72,8 +74,8 @@ public class EventBusSubTransformer implements IClassTransformer {
             boolean condition = usableAnnotations.containsKey(CONDITION_DESC);
             if ((mn.access & Opcodes.ACC_STATIC) == 0) {
                 if (!condition && subscribe != null) {
-                    EventBusUtil.getInvalidMethods().add(
-                            "Encountered unexpected non-static method: " + transformedName + " " + mn.name + mn.desc);
+                    EventBusUtil.getInvalidMethods()
+                            .add("Encountered unexpected non-static method: " + getMethodKey(transformedName, mn));
                 }
                 continue;
             }
@@ -81,12 +83,10 @@ public class EventBusSubTransformer implements IClassTransformer {
             if (condition) {
                 if (mn.desc.equals("()Z")) {
                     EventBusUtil.getConditionsToCheck().put(transformedName, mn.name + mn.desc);
+                    changed |= changeAccess(transformedName, mn);
                 } else {
                     EventBusUtil.getInvalidMethods().add(
-                            "Invalid condition method: " + transformedName
-                                    + " "
-                                    + mn.name
-                                    + mn.desc
+                            "Invalid condition method: " + getMethodKey(transformedName, mn)
                                     + ". Condition method must have no parameters and return a boolean.");
                 }
                 continue;
@@ -96,11 +96,14 @@ public class EventBusSubTransformer implements IClassTransformer {
                 if (DEBUG_EVENT_BUS) {
                     LOGGER.info(
                             "Skipping method {} with annotations {}. No @SubscribeEvent found.",
-                            transformedName,
+                            getMethodKey(transformedName, mn),
                             usableAnnotations.keySet());
                 }
                 continue;
             }
+
+            changed |= changeAccess(transformedName, mn);
+
             Object[] subscribeInfo = getSubscribeInfo(subscribe);
             MethodInfo methodInfo = new MethodInfo(
                     transformedName,
@@ -125,6 +128,12 @@ public class EventBusSubTransformer implements IClassTransformer {
             if (DEBUG_EVENT_BUS) {
                 LOGGER.info("Found subscribed method {}", methodInfo.getKey());
             }
+        }
+
+        if (changed) {
+            final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            cn.accept(cw);
+            return cw.toByteArray();
         }
 
         return basicClass;
@@ -170,5 +179,23 @@ public class EventBusSubTransformer implements IClassTransformer {
             }
         }
         return info;
+    }
+
+    private static boolean changeAccess(String className, MethodNode mn) {
+        if ((mn.access & Opcodes.ACC_PUBLIC) == 0) {
+            if (DEBUG_EVENT_BUS) {
+                LOGGER.info(
+                        "Encountered condition or subscriber method with non-public access {}. Making it public.",
+                        getMethodKey(className, mn));
+            }
+            mn.access = (mn.access | Opcodes.ACC_PUBLIC) & ~(Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static String getMethodKey(String className, MethodNode mn) {
+        return className + " " + mn.name + mn.desc;
     }
 }
