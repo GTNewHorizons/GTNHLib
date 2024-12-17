@@ -11,18 +11,16 @@ public class SimpleGuiConfig extends GuiConfig {
 
     public SimpleGuiConfig(GuiScreen parent, Class<?> configClass, String modID, String modName)
             throws ConfigException {
-        super(
-                parent,
-                ConfigurationManager.getConfigElements(configClass),
-                modID,
-                false,
-                false,
-                modName + " Configuration");
+        this(parent, modID, modName, false, configClass);
     }
 
     public SimpleGuiConfig(GuiScreen parent, String modID, String modName, Class<?>... configClasses)
             throws ConfigException {
         this(parent, modID, modName, false, configClasses);
+    }
+
+    public SimpleGuiConfig(GuiScreen parent, String modID, String modName) throws ConfigException {
+        this(parent, modID, modName, true, ConfigurationManager.getConfigClasses(modID));
     }
 
     public SimpleGuiConfig(GuiScreen parent, String modID, String modName, boolean categorized,

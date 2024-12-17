@@ -43,16 +43,19 @@ public class ConfigurationManager {
     static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
     private static final Map<String, Configuration> configs = new HashMap<>();
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
+    private static final Map<String, Set<Class<?>>> modIdToConfigClasses = new HashMap<>();
     private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
     private static final Boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
     private static final Boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
+    private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
+    private final static Path configDir;
 
-    private static boolean initialized = false;
-
-    private static Path configDir;
+    static {
+        configDir = minecraftHome().toPath().resolve("config");
+    }
 
     /**
      * Registers a configuration class to be loaded. This should be done before or during preInit.
@@ -60,12 +63,15 @@ public class ConfigurationManager {
      * @param configClass The class to register.
      */
     public static void registerConfig(Class<?> configClass) throws ConfigException {
-        init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
         val category = cfg.category().trim().toLowerCase();
         val modid = cfg.modid();
         val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
+
+        if (!configClass.isAnnotationPresent(Config.ExcludeFromAutoGui.class)) {
+            modIdToConfigClasses.computeIfAbsent(modid, (ignored) -> new HashSet<>()).add(configClass);
+        }
 
         Configuration rawConfig = configs.computeIfAbsent(getConfigKey(cfg), (ignored) -> {
             Path newConfigDir = configDir;
@@ -171,6 +177,7 @@ public class ConfigurationManager {
         boolean requiresWorldRestart = getClassOrBaseAnnotation(configClass, Config.RequiresWorldRestart.class) != null
                 || foundCategory && cat.requiresWorldRestart();
 
+        List<String> observedValues = new ArrayList<>();
         for (val field : configClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(Config.Ignore.class)) {
                 continue;
@@ -204,12 +211,10 @@ public class ConfigurationManager {
 
             if (category.isEmpty()) continue;
 
-            val langKey = getLangKey(
-                    configClass,
-                    field.getAnnotation(Config.LangKey.class),
-                    ConfigFieldParser.getFieldName(field),
-                    cat);
+            val fieldName = ConfigFieldParser.getFieldName(field);
+            val langKey = getLangKey(configClass, field.getAnnotation(Config.LangKey.class), fieldName, cat);
             ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
+            observedValues.add(fieldName);
 
             if (!requiresMcRestart) {
                 requiresMcRestart = field.isAnnotationPresent(Config.RequiresMcRestart.class);
@@ -225,12 +230,20 @@ public class ConfigurationManager {
         }
 
         if (category.isEmpty()) return;
+
+        if (cat.keySet().size() != observedValues.size()) {
+            val properties = new ArrayList<>(cat.keySet());
+            properties.removeIf(observedValues::contains);
+            properties.forEach(cat::remove);
+        }
+
         if (cat.getLanguagekey().equals(category)) {
             val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
             cat.setLanguageKey(langKey);
         }
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
+        observedCategories.computeIfAbsent(rawConfig, k -> new HashSet<>()).add(cat.getQualifiedName());
 
         Optional.ofNullable(configClass.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
                 .map((lines) -> String.join("\n", lines)).ifPresent(cat::setComment);
@@ -258,7 +271,6 @@ public class ConfigurationManager {
     @SuppressWarnings("rawtypes")
     public static List<IConfigElement> getConfigElements(Class<?> configClass, boolean categorized)
             throws ConfigException {
-        init();
         val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
         val rawConfig = Optional.ofNullable(configs.get(getConfigKey(cfg))).map(
@@ -440,15 +452,16 @@ public class ConfigurationManager {
         return Launch.minecraftHome != null ? Launch.minecraftHome : new File(".");
     }
 
-    private static void init() {
-        if (initialized) {
-            return;
-        }
-        configDir = minecraftHome().toPath().resolve("config");
-        initialized = true;
+    public static boolean isModRegistered(String modid) {
+        return modIdToConfigClasses.containsKey(modid);
+    }
+
+    static Class<?>[] getConfigClasses(String modid) {
+        return modIdToConfigClasses.getOrDefault(modid, Collections.emptySet()).toArray(new Class<?>[0]);
     }
 
     public static void onInit() {
+        cullDeadCategories();
         if (DUMP_KEYS) {
             writeLangKeysToFile();
         }
@@ -467,5 +480,33 @@ public class ConfigurationManager {
                         e);
             }
         }
+    }
+
+    private static void cullDeadCategories() {
+        for (val entry : observedCategories.entrySet()) {
+            val config = entry.getKey();
+            val observedCategoryNames = entry.getValue();
+
+            if (config.getCategoryNames().size() == observedCategoryNames.size()) {
+                continue;
+            }
+
+            val savedCategoryNames = new ArrayList<>(config.getCategoryNames());
+            savedCategoryNames.removeIf(observedCategoryNames::contains);
+
+            // Only keep the top-level category that needs removal otherwise getCategory() for any subcategory will
+            // recreate it.
+            List<String> parentsToRemove = savedCategoryNames.stream()
+                    .filter(s -> savedCategoryNames.stream().noneMatch(existing -> s.startsWith(existing + ".")))
+                    .collect(Collectors.toList());
+
+            for (val category : parentsToRemove) {
+                ConfigCategory cat = config.getCategory(category);
+                config.removeCategory(cat);
+            }
+
+            config.save();
+        }
+        observedCategories.clear();
     }
 }
