@@ -56,14 +56,14 @@ public class MixinGuiScreen extends Gui {
     protected void drawHoveringText(List<String> textLines, int mouseX, int mouseY, FontRenderer font) {
         if (!textLines.isEmpty()) {
             // spotless:off
-            /****************************************************************************************************************************************
-             * IMPORTANT NOTE:                                                                                                                      *
-             * Thes int variables width, lineWidth, x, y and height must stay in this order and no other int variables may be inserted before them. *
-             * This due to compat with AppleCore.                                                                                                   *
-             *                                                                                                                                      *
-             * The potentially conflicting mixin can be found here:                                                                                 *
-             * https://github.com/GTNewHorizons/AppleCore/blob/master/src/main/java/squeek/applecore/mixins/early/minecraft/GuiScreenMixin.java     *
-             ****************************************************************************************************************************************/
+            /***************************************************************************************************************************************
+             * IMPORTANT NOTE:                                                                                                                     *
+             * The int variables width, lineWidth, x, y and height must stay in this order and no other int variables may be inserted before them. *
+             * This due to compat with AppleCore.                                                                                                  *
+             *                                                                                                                                     *
+             * The potentially conflicting mixin can be found here:                                                                                *
+             * https://github.com/GTNewHorizons/AppleCore/blob/master/src/main/java/squeek/applecore/mixins/early/minecraft/GuiScreenMixin.java    *
+             ***************************************************************************************************************************************/
             // spotless:on
 
             // create event
