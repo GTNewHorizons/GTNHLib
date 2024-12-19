@@ -22,6 +22,8 @@ public enum Mixins {
             .setPhase(Phase.EARLY).addMixinClasses("fml.MixinGuiModList")),
     EVENT_BUS_ACCESSOR(new Builder("EventBusAccessor").addTargetedMod(TargetedMod.VANILLA).setSide(Side.BOTH)
             .setPhase(Phase.EARLY).addMixinClasses("fml.EventBusAccessor", "fml.EnumHolderAccessor")),
+    TOOLTIP_RENDER(new Builder("TooltipRenderer").addMixinClasses("MixinGuiScreen").addTargetedMod(TargetedMod.VANILLA)
+            .setApplyIf(() -> true).setPhase(Phase.EARLY).setSide(Side.CLIENT)),
     DEBUG_TEXTURES(new Builder("Dump textures sizes").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)
             .setPhase(Phase.EARLY)
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))
