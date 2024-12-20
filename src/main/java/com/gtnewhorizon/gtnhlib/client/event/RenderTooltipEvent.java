@@ -103,7 +103,7 @@ public class RenderTooltipEvent extends Event {
     public FontRenderer font;
 
     /**
-     * Optional hook to completely replace the rendering code. Will be used instead of the vanilla code if no
+     * Optional hook to completely replace the rendering code. Will be used instead of the vanilla code if not
      * {@code null}. The provided argument is the text to render.
      * <p>
      * <b>Note:</b> The usage may break compat with other mods, for example AppleCore!
@@ -114,7 +114,8 @@ public class RenderTooltipEvent extends Event {
      *          {@link GL11#GL_LIGHTING}, {@link GL11#GL_LIGHT0}, {@link GL11#GL_LIGHT1},
      *          {@link GL11#GL_COLOR_MATERIAL}, {@link GL11#GL_DEPTH_TEST}. They will be re-enabled after the hook is
      *          called. {@link Gui#zLevel GuiScreen.zLevel} and {@link RenderItem#zLevel GuiScreen.itemRender.zLevel}
-     *          must be set/reset by the hook! An <a
+     *          are set to {@code 300} before calling {@link Consumer#accept(Object) alternativeRenderer.accept(List)}
+     *          and reset to {@code 0} afterwards. Any more complex behaviors must be handled by the hook. An <a
      *          href=https://forge.gemwire.uk/wiki/Access_Transformers>AccessTransformer</a> may be needed for this.
      */
     @Nullable

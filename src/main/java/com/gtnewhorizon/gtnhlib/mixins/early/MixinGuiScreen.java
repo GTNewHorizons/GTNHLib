@@ -164,7 +164,16 @@ public class MixinGuiScreen extends Gui {
                 this.zLevel = 0.0F;
                 itemRender.zLevel = 0.0F;
             } else {
+                // set Z level
+                this.zLevel = 300.0F;
+                itemRender.zLevel = 300.0F;
+
+                // render
                 event.alternativeRenderer.accept(textLines);
+
+                // reset Z level
+                this.zLevel = 0.0F;
+                itemRender.zLevel = 0.0F;
             }
 
             // reset GL states
