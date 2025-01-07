@@ -123,7 +123,7 @@ public class AutoEventBus {
             try {
                 if (method.getOptionalMod() != null) {
                     if (!optionalMods
-                            .computeIfAbsent(method.getOptionalMod(), (Predicate<String>) Loader::isModLoaded)) {
+                            .computeIfAbsent(method.getOptionalMod(), Loader::isModLoaded)) {
                         continue;
                     }
                 }
