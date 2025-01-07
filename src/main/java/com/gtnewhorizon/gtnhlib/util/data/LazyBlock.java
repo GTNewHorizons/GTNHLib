@@ -24,8 +24,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
  */
 public class LazyBlock extends Lazy<ImmutableBlockMeta> implements ImmutableBlockMeta {
 
-    public final IMod mod;
-    public final String blockName;
+    private final IMod mod;
 
     public LazyBlock(IMod mod, String blockName, int meta) {
         super(() -> {
@@ -40,16 +39,37 @@ public class LazyBlock extends Lazy<ImmutableBlockMeta> implements ImmutableBloc
         });
 
         this.mod = mod;
-        this.blockName = blockName;
     }
 
     public LazyBlock(IMod mod, String blockName) {
         this(mod, blockName, 0);
     }
 
+    public LazyBlock(IMod mod, BlockSupplier getter, int meta) {
+        super(() -> {
+            if (!mod.isModLoaded()) return null;
+
+            Block block = getter.get();
+
+            if (block == null) return null;
+
+            return new BlockMeta(block, meta);
+        });
+
+        this.mod = mod;
+    }
+
+    public LazyBlock(IMod mod, BlockSupplier getter) {
+        this(mod, getter, 0);
+    }
+
     /** Checks if the parent mod is loaded. */
     public boolean isPresent() {
         return mod.isModLoaded();
+    }
+
+    public IMod getMod() {
+        return mod;
     }
 
     @Override

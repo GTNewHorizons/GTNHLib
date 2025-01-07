@@ -27,8 +27,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
  */
 public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMeta {
 
-    public final IMod mod;
-    public final String itemName;
+    private final IMod mod;
 
     public LazyItem(IMod mod, String itemName, int meta) {
         super(() -> {
@@ -42,16 +41,51 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
         });
 
         this.mod = mod;
-        this.itemName = itemName;
     }
 
     public LazyItem(IMod mod, String itemName) {
         this(mod, itemName, 0);
     }
 
+    public LazyItem(IMod mod, ItemStackSupplier getter) {
+        super(() -> {
+            if (!mod.isModLoaded()) return null;
+
+            ItemStack stack = getter.get();
+
+            if (stack == null || stack.getItem() == null) return null;
+
+            return new ItemMeta(stack.getItem(), Items.feather.getDamage(stack));
+        });
+
+        this.mod = mod;
+    }
+
+    public LazyItem(IMod mod, ItemSupplier getter, int meta) {
+        super(() -> {
+            if (!mod.isModLoaded()) return null;
+
+            Item item = getter.get();
+
+            if (item == null) return null;
+
+            return new ItemMeta(item, meta);
+        });
+
+        this.mod = mod;
+    }
+
+    public LazyItem(IMod mod, ItemSupplier getter) {
+        this(mod, getter, 0);
+    }
+
     /** Checks if the parent mod is loaded. */
     public boolean isLoaded() {
         return mod.isModLoaded();
+    }
+
+    public IMod getMod() {
+        return mod;
     }
 
     @Override
@@ -83,5 +117,20 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
         if (stack == null) return false;
 
         return matches(stack.getItem(), Items.feather.getDamage(stack));
+    }
+
+    /**
+     * Converts this LazyItem to an ItemStack. Returns null if the parent mod isn't loaded, or if the contained
+     * ImmutableItemMeta is null.
+     */
+    @Override
+    public ItemStack toStack(int amount) {
+        if (!isLoaded()) return null;
+
+        ImmutableItemMeta bm = get();
+
+        if (bm == null) return null;
+
+        return bm.toStack(amount);
     }
 }

@@ -24,7 +24,7 @@ public interface ImmutableBlockMeta {
     /**
      * The value of this must not change while this object is exposed via an API.
      * 
-     * @return The block's metadata stored in this pair.
+     * @return The block's metadata stored in this pair. May be {@link OreDictionary#WILDCARD_VALUE}.
      */
     public int getBlockMeta();
 
@@ -39,7 +39,7 @@ public interface ImmutableBlockMeta {
      * Checks if this pair matches the given block & meta.
      * 
      * @param block The block.
-     * @param meta  The meta. If this parameter or {@link #getBlockMeta()} equals {@link OreDictionary.WILDCARD_VALUE}
+     * @param meta  The meta. If this parameter or {@link #getBlockMeta()} equals {@link OreDictionary#WILDCARD_VALUE}
      *              then meta checks are ignored.
      * @return Whether this pair matches or not.
      */

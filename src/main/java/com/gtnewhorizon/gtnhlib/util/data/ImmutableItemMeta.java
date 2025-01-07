@@ -26,7 +26,7 @@ public interface ImmutableItemMeta {
     /**
      * The value of this must not change while this object is exposed via an API.
      * 
-     * @return The item's metadata stored in this pair.
+     * @return The item's metadata stored in this pair. May be {@link OreDictionary#WILDCARD_VALUE}.
      */
     public int getItemMeta();
 
@@ -50,7 +50,7 @@ public interface ImmutableItemMeta {
      * Checks if this pair matches the given item & meta.
      * 
      * @param Item The item.
-     * @param meta The meta. If this parameter or {@link #getItemMeta()} equals {@link OreDictionary.WILDCARD_VALUE}
+     * @param meta The meta. If this parameter or {@link #getItemMeta()} equals {@link OreDictionary#WILDCARD_VALUE}
      *             then meta checks are ignored.
      * @return Whether this pair matches or not.
      */
@@ -58,5 +58,12 @@ public interface ImmutableItemMeta {
         return getItem() == item
                 && (meta == OreDictionary.WILDCARD_VALUE || getItemMeta() == OreDictionary.WILDCARD_VALUE
                         || getItemMeta() == meta);
+    }
+
+    /** Converts this pair to an ItemStack. */
+    public default ItemStack toStack(int amount) {
+        int meta = getItemMeta();
+
+        return new ItemStack(getItem(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
     }
 }
