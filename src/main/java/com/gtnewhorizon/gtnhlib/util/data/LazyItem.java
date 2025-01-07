@@ -17,7 +17,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
  * {@code
  * private static final LazyItem SOME_OPTIONAL_ITEM = new LazyItem(Mods.SomeMod, "foo");
  * 
- * {@literal @}Optional.Method(Names.SOME_MOD)
+ * {@literal @}Optional.Method(modid = Names.SOME_MOD)
  * public static void doSomething(ItemStack stack) {
  *   if (SOME_OPTIONAL_BLOCK.matches(stack)) {
  *      ...

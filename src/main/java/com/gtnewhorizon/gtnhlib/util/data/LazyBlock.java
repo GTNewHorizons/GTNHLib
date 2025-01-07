@@ -14,7 +14,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
  * {@code
  * private static final LazyBlock SOME_OPTIONAL_BLOCK = new LazyBlock(Mods.SomeMod, "foo");
  * 
- * {@literal @}Optional.Method(Names.SOME_MOD)
+ * {@literal @}Optional.Method(modid = Names.SOME_MOD)
  * public static void doSomething(World world, int x, int y, int z) {
  *   if (world.getBlock(x, y, z) == SOME_OPTIONAL_BLOCK.getBlock()) {
  *      ...
