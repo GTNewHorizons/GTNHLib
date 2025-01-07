@@ -3,7 +3,8 @@ package com.gtnewhorizon.gtnhlib.util.data;
 import java.util.function.Supplier;
 
 /**
- * Just a container that will lazy-load a value. Can be used in the place of a Supplier<T>
+ * Just a container that will lazy-load a value. Can be used in the place of a Supplier<T>. This is useful if you want a
+ * static final field that shouldn't be initialized when the class is loaded.
  */
 public class Lazy<T> implements Supplier<T> {
 
@@ -14,6 +15,15 @@ public class Lazy<T> implements Supplier<T> {
 
     public Lazy(Supplier<T> getter) {
         this.getter = getter;
+    }
+
+    /**
+     * Sets the value even if it's been initialized already.
+     */
+    public synchronized void set(T value) {
+        hasValue = true;
+        this.value = value;
+        getter = null;
     }
 
     /**
@@ -28,5 +38,12 @@ public class Lazy<T> implements Supplier<T> {
         }
 
         return value;
+    }
+
+    /**
+     * Initializes the value. {@link #get()}, but with a more readable method name.
+     */
+    public void initialize() {
+        get();
     }
 }
