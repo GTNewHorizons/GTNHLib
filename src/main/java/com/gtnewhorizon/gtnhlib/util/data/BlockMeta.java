@@ -23,6 +23,10 @@ public class BlockMeta implements ImmutableBlockMeta {
         this.meta = meta;
     }
 
+    public BlockMeta(Block block) {
+        this(block, 0);
+    }
+
     @Override
     @Nonnull
     public Block getBlock() {

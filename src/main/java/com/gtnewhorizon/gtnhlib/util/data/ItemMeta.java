@@ -22,6 +22,10 @@ public class ItemMeta implements ImmutableItemMeta {
         this.meta = meta;
     }
 
+    public ItemMeta(Item item) {
+        this(item, 0);
+    }
+
     @Override
     @Nonnull
     public Item getItem() {
