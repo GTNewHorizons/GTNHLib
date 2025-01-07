@@ -6,7 +6,8 @@ import net.minecraft.block.Block;
 
 /**
  * A mutable implementation of {@link ImmutableBlockMeta}. Must follow the same contracts as the immutable version. If
- * your API should return a mutable pair, return this instead.
+ * your API should return a mutable pair, return this instead. If this type is exposed instead of the immutable
+ * interface, assume that the contained values can change.
  */
 public class BlockMeta implements ImmutableBlockMeta {
 
