@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.util.data;
 
+import java.util.Objects;
+
 import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
@@ -12,10 +14,9 @@ import net.minecraft.block.Block;
  */
 public class BlockMeta implements ImmutableBlockMeta {
 
+    @Nonnull
     private Block block;
     private int meta;
-
-    public BlockMeta() {}
 
     public BlockMeta(Block block, int meta) {
         this.block = block;
@@ -23,7 +24,7 @@ public class BlockMeta implements ImmutableBlockMeta {
     }
 
     @Override
-    @SuppressWarnings("null")
+    @Nonnull
     public Block getBlock() {
         return block;
     }
@@ -37,7 +38,7 @@ public class BlockMeta implements ImmutableBlockMeta {
      * Note: see the header comment in {@link ImmutableBlockMeta} for this method's contract.
      */
     public BlockMeta setBlock(@Nonnull Block block) {
-        this.block = block;
+        this.block = Objects.requireNonNull(block);
 
         return this;
     }
@@ -66,9 +67,7 @@ public class BlockMeta implements ImmutableBlockMeta {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         BlockMeta other = (BlockMeta) obj;
-        if (block == null) {
-            if (other.block != null) return false;
-        } else if (!block.equals(other.block)) return false;
+        if (!block.equals(other.block)) return false;
         if (meta != other.meta) return false;
         return true;
     }

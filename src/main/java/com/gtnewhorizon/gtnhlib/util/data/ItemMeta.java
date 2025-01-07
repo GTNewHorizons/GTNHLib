@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.util.data;
 
+import java.util.Objects;
+
 import javax.annotation.Nonnull;
 
 import net.minecraft.item.Item;
@@ -11,10 +13,9 @@ import net.minecraft.item.Item;
  */
 public class ItemMeta implements ImmutableItemMeta {
 
+    @Nonnull
     private Item item;
     private int meta;
-
-    public ItemMeta() {}
 
     public ItemMeta(Item item, int meta) {
         this.item = item;
@@ -22,7 +23,7 @@ public class ItemMeta implements ImmutableItemMeta {
     }
 
     @Override
-    @SuppressWarnings("null")
+    @Nonnull
     public Item getItem() {
         return item;
     }
@@ -36,7 +37,7 @@ public class ItemMeta implements ImmutableItemMeta {
      * Note: see the header comment in {@link ImmutableItemMeta} for this method's contract.
      */
     public ItemMeta setItem(@Nonnull Item item) {
-        this.item = item;
+        this.item = Objects.requireNonNull(item);
 
         return this;
     }
@@ -65,9 +66,7 @@ public class ItemMeta implements ImmutableItemMeta {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         ItemMeta other = (ItemMeta) obj;
-        if (item == null) {
-            if (other.item != null) return false;
-        } else if (!item.equals(other.item)) return false;
+        if (!item.equals(other.item)) return false;
         if (meta != other.meta) return false;
         return true;
     }
