@@ -11,8 +11,8 @@ import net.minecraft.block.Block;
  */
 public class BlockMeta implements ImmutableBlockMeta {
 
-    public Block block;
-    public int meta;
+    private Block block;
+    private int meta;
 
     public BlockMeta() {}
 

@@ -11,8 +11,8 @@ import net.minecraft.item.Item;
  */
 public class ItemMeta implements ImmutableItemMeta {
 
-    public Item item;
-    public int meta;
+    private Item item;
+    private int meta;
 
     public ItemMeta() {}
 
