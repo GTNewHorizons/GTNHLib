@@ -2,6 +2,8 @@ package com.gtnewhorizon.gtnhlib.util.data;
 
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -89,7 +91,7 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
     }
 
     @Override
-    @SuppressWarnings("null")
+    @Nonnull
     public Item getItem() {
         return get().getItem();
     }

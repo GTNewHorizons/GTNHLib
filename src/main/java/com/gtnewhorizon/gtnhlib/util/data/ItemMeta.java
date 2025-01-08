@@ -17,12 +17,12 @@ public class ItemMeta implements ImmutableItemMeta {
     private Item item;
     private int meta;
 
-    public ItemMeta(Item item, int meta) {
+    public ItemMeta(@Nonnull Item item, int meta) {
         this.item = item;
         this.meta = meta;
     }
 
-    public ItemMeta(Item item) {
+    public ItemMeta(@Nonnull Item item) {
         this(item, 0);
     }
 
@@ -59,7 +59,7 @@ public class ItemMeta implements ImmutableItemMeta {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((item == null) ? 0 : item.hashCode());
+        result = prime * result + item.hashCode();
         result = prime * result + meta;
         return result;
     }

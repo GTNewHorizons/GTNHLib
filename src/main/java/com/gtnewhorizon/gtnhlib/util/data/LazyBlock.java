@@ -2,6 +2,8 @@ package com.gtnewhorizon.gtnhlib.util.data;
 
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.block.Block;
 
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -73,7 +75,7 @@ public class LazyBlock extends Lazy<ImmutableBlockMeta> implements ImmutableBloc
     }
 
     @Override
-    @SuppressWarnings("null")
+    @Nonnull
     public Block getBlock() {
         return get().getBlock();
     }

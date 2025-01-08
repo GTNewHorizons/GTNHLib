@@ -18,12 +18,12 @@ public class BlockMeta implements ImmutableBlockMeta {
     private Block block;
     private int meta;
 
-    public BlockMeta(Block block, int meta) {
+    public BlockMeta(@Nonnull Block block, int meta) {
         this.block = block;
         this.meta = meta;
     }
 
-    public BlockMeta(Block block) {
+    public BlockMeta(@Nonnull Block block) {
         this(block, 0);
     }
 
@@ -60,7 +60,7 @@ public class BlockMeta implements ImmutableBlockMeta {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((block == null) ? 0 : block.hashCode());
+        result = prime * result + block.hashCode();
         result = prime * result + meta;
         return result;
     }
