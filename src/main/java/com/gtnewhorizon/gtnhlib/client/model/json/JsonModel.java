@@ -4,31 +4,14 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil.ALL_DI
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.function.Supplier;
-
-import net.minecraft.block.Block;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.model.ModelVariant;
+import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
@@ -36,12 +19,25 @@ import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
-
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.function.Supplier;
 import lombok.Getter;
+import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.util.ForgeDirection;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class JsonModel implements QuadProvider {
 
@@ -236,6 +232,11 @@ public class JsonModel implements QuadProvider {
             return ret;
         }
 
+        private Vector3f loadVec3(JsonObject in, String name, Vector3f defaultv) {
+            if (!in.isJsonArray()) return defaultv;
+            return loadVec3(in, name);
+        }
+
         private Vector4f loadVec4(JsonObject in, String name) {
 
             final JsonArray arr = in.getAsJsonArray(name);
@@ -250,9 +251,9 @@ public class JsonModel implements QuadProvider {
 
         private ModelDisplay loadADisplay(JsonObject in) {
 
-            final Vector3f rotation = loadVec3(in, "rotation");
-            final Vector3f translation = loadVec3(in, "translation");
-            final Vector3f scale = loadVec3(in, "scale");
+            final Vector3f rotation = loadVec3(in, "rotation", new Vector3f(0, 0, 0));
+            final Vector3f translation = loadVec3(in, "translation", new Vector3f(0, 0, 0));
+            final Vector3f scale = loadVec3(in, "scale", new Vector3f(1, 1, 1));
 
             return new ModelDisplay(rotation, translation, scale);
         }
