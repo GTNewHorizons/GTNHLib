@@ -16,8 +16,9 @@ public class Model4Rot {
 
     public Model4Rot(ResourceLocation modelLoc) {
 
-        this.modelIds = new ModelVariant[] { new ModelVariant(modelLoc, 0, 0, 0, false), new ModelVariant(modelLoc, 0, 180, 0, false),
-                new ModelVariant(modelLoc, 0, 90, 0, false), new ModelVariant(modelLoc, 0, 270, 0, false) };
+        this.modelIds = new ModelVariant[] { new ModelVariant(modelLoc, 0, 0, 0, false),
+                new ModelVariant(modelLoc, 0, 180, 0, false), new ModelVariant(modelLoc, 0, 90, 0, false),
+                new ModelVariant(modelLoc, 0, 270, 0, false) };
 
         ModelLoader.registerModels(() -> loadModels(this), this.modelIds);
     }
