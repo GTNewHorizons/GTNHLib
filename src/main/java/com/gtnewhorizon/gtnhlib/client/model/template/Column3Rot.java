@@ -3,7 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.model.template;
 import net.minecraft.util.ResourceLocation;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
-import com.gtnewhorizon.gtnhlib.client.model.Variant;
+import com.gtnewhorizon.gtnhlib.client.model.ModelVariant;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 
 /**
@@ -11,14 +11,14 @@ import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
  */
 public class Column3Rot {
 
-    public final Variant[] variants = new Variant[3];
+    public final ModelVariant[] variants = new ModelVariant[3];
     public final QuadProvider[] models = new QuadProvider[3];
 
     public Column3Rot(ResourceLocation model) {
 
-        this.variants[0] = new Variant(model, 0, 0, 0, false);
-        this.variants[1] = new Variant(model, 90, 90, 0, false);
-        this.variants[2] = new Variant(model, 90, 0, 0, false);
+        this.variants[0] = new ModelVariant(model, 0, 0, 0, false);
+        this.variants[1] = new ModelVariant(model, 90, 90, 0, false);
+        this.variants[2] = new ModelVariant(model, 90, 0, 0, false);
 
         ModelLoader.registerModels(
                 () -> { for (int i = 0; i < 3; ++i) this.models[i] = ModelLoader.getModel(this.variants[i]); },
