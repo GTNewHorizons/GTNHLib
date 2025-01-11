@@ -27,7 +27,6 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.model.Variant;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
@@ -175,7 +174,7 @@ public class JsonModel implements QuadProvider {
     }
 
     @Override
-    public List<QuadView> getQuads(IBlockAccess world, IBlockPos pos, Block block, int meta, ForgeDirection dir,
+    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
             Random random, int color, Supplier<QuadView> quadPool) {
 
         return this.sidedQuadStore.getOrDefault(dir, EMPTY);
