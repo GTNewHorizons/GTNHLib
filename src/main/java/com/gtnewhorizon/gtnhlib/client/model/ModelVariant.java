@@ -11,7 +11,7 @@ import com.google.common.annotations.Beta;
 import lombok.Getter;
 
 @Beta
-public class Variant {
+public class ModelVariant {
 
     @Getter
     private final ResourceLocation model;
@@ -20,11 +20,11 @@ public class Variant {
     private final float z;
     private final boolean uvLock;
 
-    public Variant(ResourceLocation model, int x, int y, boolean uvLock) {
+    public ModelVariant(ResourceLocation model, int x, int y, boolean uvLock) {
         this(model, x, y, 0, uvLock);
     }
 
-    public Variant(ResourceLocation model, int x, int y, int z, boolean uvLock) {
+    public ModelVariant(ResourceLocation model, int x, int y, int z, boolean uvLock) {
         this.model = model;
         this.x = (float) toRadians(x);
         this.y = (float) toRadians(y);

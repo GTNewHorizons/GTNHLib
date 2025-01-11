@@ -41,7 +41,7 @@ public class ModelLoader {
             .registerTypeAdapter(JsonModel.class, new JsonModel.Deserializer()).create();
     private static final List<ResourceLocation> unloadedModels = new ObjectArrayList<>();
     private static final Map<ResourceLocation, JsonModel> loadedModels = new Object2ObjectOpenHashMap<>();
-    private static final Map<Variant, JsonModel> modelsToBake = new Object2ObjectOpenHashMap<>();
+    private static final Map<ModelVariant, JsonModel> modelsToBake = new Object2ObjectOpenHashMap<>();
     private static final List<Callback> postBakeCallbacks = new ObjectArrayList<>();
 
     /**
@@ -56,7 +56,7 @@ public class ModelLoader {
     /**
      * Convenience method to register multiple variants. See {@link #registerModels(Callback, Collection)}.
      */
-    public static void registerModels(Callback loader, Variant... variants) {
+    public static void registerModels(Callback loader, ModelVariant... variants) {
 
         registerModels(loader, Arrays.asList(variants));
     }
@@ -65,9 +65,9 @@ public class ModelLoader {
      * Pass the variant(s) you want to load, and if needed a callback which puts the models in a useful place, e.g.
      * saving them to a static field after baking.
      */
-    public static void registerModels(Callback loader, Collection<Variant> variants) {
+    public static void registerModels(Callback loader, Collection<ModelVariant> variants) {
 
-        for (Variant v : variants) {
+        for (ModelVariant v : variants) {
 
             unloadedModels.add(v.getModel());
             modelsToBake.put(v, null);
@@ -103,7 +103,7 @@ public class ModelLoader {
 
     public static void bakeModels() {
 
-        for (Map.Entry<Variant, JsonModel> l : modelsToBake.entrySet()) {
+        for (Map.Entry<ModelVariant, JsonModel> l : modelsToBake.entrySet()) {
 
             final JsonModel dough = new JsonModel(loadedModels.get(l.getKey().getModel()));
 
@@ -120,7 +120,7 @@ public class ModelLoader {
         for (Callback c : postBakeCallbacks) c.run();
     }
 
-    public static QuadProvider getModel(Variant loc) {
+    public static QuadProvider getModel(ModelVariant loc) {
         return modelsToBake.get(loc);
     }
 
