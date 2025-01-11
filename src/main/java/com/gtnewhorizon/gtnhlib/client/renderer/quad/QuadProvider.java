@@ -47,8 +47,7 @@ public interface QuadProvider {
 
     /**
      * Provide quads to render. If you need new quads, they should be obtained with the passed supplier,
-     * {@link #isDynamic} should be overridden to return true, and you should not keep references to the quads. The
-     * quads produced are not offset according to the passed xyz - that is up to the renderer.
+     * {@link #isDynamic} should be overridden to return true, and you should not keep references to the quads.
      *
      * @param world    The world the model is in. Null if not applicable, like in inventory rendering.
      * @param x        The x-position of the model.
@@ -61,7 +60,7 @@ public interface QuadProvider {
      * @param color    The ABGR packed color to use.
      * @param quadPool If {@link #isDynamic()}, the pool to obtain quads from and where the quads should be released
      *                 after use. Ignored otherwise.
-     * @return A list of quads from the model. These are *not* adjusted for location - that is up to the renderer.
+     * @return A list of quads from the model. These are *not* adjusted for the given xyz - that is up to the renderer.
      */
     List<QuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
             ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool);
