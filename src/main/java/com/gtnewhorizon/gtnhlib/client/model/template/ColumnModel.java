@@ -10,7 +10,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.joml.Matrix4f;
 
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
 import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
@@ -62,7 +61,7 @@ public class ColumnModel implements QuadProvider {
     }
 
     @Override
-    public List<QuadView> getQuads(IBlockAccess world, IBlockPos pos, Block block, int meta, ForgeDirection dir,
+    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
             Random random, int color, Supplier<QuadView> quadPool) {
         return this.store[dir.ordinal()];
     }

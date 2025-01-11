@@ -9,7 +9,6 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
@@ -40,7 +39,7 @@ public class DynamicCubeModel implements QuadProvider {
     }
 
     @Override
-    public List<QuadView> getQuads(IBlockAccess world, IBlockPos pos, Block block, int meta, ForgeDirection dir,
+    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
             Random random, int color, Supplier<QuadView> quadPool) {
 
         if (dir == ForgeDirection.UNKNOWN) return EMPTY;
