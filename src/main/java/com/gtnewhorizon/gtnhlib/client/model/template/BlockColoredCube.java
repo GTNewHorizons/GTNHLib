@@ -8,7 +8,6 @@ import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
@@ -47,12 +46,12 @@ public class BlockColoredCube extends BlockStaticCube {
     }
 
     @Override
-    public int getColor(IBlockAccess world, IBlockPos pos, Block block, int meta, Random random) {
-        return QuadProvider.getDefaultColor(world, pos, block);
+    public int getColor(IBlockAccess world, int x, int y, int z, Block block, int meta, Random random) {
+        return QuadProvider.getDefaultColor(world, x, y, z, block);
     }
 
     @Override
-    public List<QuadView> getQuads(IBlockAccess world, IBlockPos pos, Block block, int meta, ForgeDirection dir,
+    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
             Random random, int color, Supplier<QuadView> quadPool) {
 
         final List<QuadView> ret = this.threadedStore.get()[dir.ordinal()];
