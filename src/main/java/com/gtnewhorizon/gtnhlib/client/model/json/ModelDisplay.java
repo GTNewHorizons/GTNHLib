@@ -22,25 +22,25 @@ public class ModelDisplay {
 
     public enum Position {
 
-        thirdperson_righthand,
-        thirdperson_lefthand,
-        firstperson_righthand,
-        firstperson_lefthand,
-        gui,
-        head,
-        ground,
-        fixed;
+        THIRDPERSON_RIGHTHAND,
+        THIRDPERSON_LEFTHAND,
+        FIRSTPERSON_RIGHTHAND,
+        FIRSTPERSON_LEFTHAND,
+        GUI, // inventory
+        HEAD,
+        GROUND, // dropped item I think
+        FIXED; // item frames
 
         public static Position getByName(String name) {
             return switch (name) {
-                case "thirdperson_righthand" -> thirdperson_righthand;
-                case "thirdperson_lefthand" -> thirdperson_lefthand;
-                case "firstperson_righthand" -> firstperson_righthand;
-                case "firstperson_lefthand" -> firstperson_lefthand;
-                case "gui" -> gui;
-                case "head" -> head;
-                case "ground" -> ground;
-                case "fixed" -> fixed;
+                case "thirdperson_righthand" -> THIRDPERSON_RIGHTHAND;
+                case "thirdperson_lefthand" -> THIRDPERSON_LEFTHAND;
+                case "firstperson_righthand" -> FIRSTPERSON_RIGHTHAND;
+                case "firstperson_lefthand" -> FIRSTPERSON_LEFTHAND;
+                case "gui" -> GUI;
+                case "head" -> HEAD;
+                case "ground" -> GROUND;
+                case "fixed" -> FIXED;
                 default -> null;
             };
         }
