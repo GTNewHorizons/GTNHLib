@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.json.JsonModel;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 import com.gtnewhorizon.gtnhlib.util.Callback;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -120,7 +119,7 @@ public class ModelLoader {
         for (Callback c : postBakeCallbacks) c.run();
     }
 
-    public static QuadProvider getModel(ModelVariant loc) {
+    public static JsonModel getModel(ModelVariant loc) {
         return modelsToBake.get(loc);
     }
 
