@@ -27,9 +27,8 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
+import com.gtnewhorizon.gtnhlib.client.model.ModelVariant;
 import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.model.Variant;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
@@ -82,7 +81,7 @@ public class JsonModel implements QuadProvider {
         this.elements = og.elements;
     }
 
-    public void bake(Variant v) {
+    public void bake(ModelVariant v) {
 
         final Matrix4f vRot = v.getAffineMatrix();
         final NdQuadBuilder builder = new NdQuadBuilder();
@@ -175,7 +174,7 @@ public class JsonModel implements QuadProvider {
     }
 
     @Override
-    public List<QuadView> getQuads(IBlockAccess world, IBlockPos pos, Block block, int meta, ForgeDirection dir,
+    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
             Random random, int color, Supplier<QuadView> quadPool) {
 
         return this.sidedQuadStore.getOrDefault(dir, EMPTY);
@@ -237,6 +236,11 @@ public class JsonModel implements QuadProvider {
             return ret;
         }
 
+        private Vector3f loadVec3(JsonObject in, String name, Vector3f defaultv) {
+            if (!in.isJsonArray()) return defaultv;
+            return loadVec3(in, name);
+        }
+
         private Vector4f loadVec4(JsonObject in, String name) {
 
             final JsonArray arr = in.getAsJsonArray(name);
@@ -251,9 +255,9 @@ public class JsonModel implements QuadProvider {
 
         private ModelDisplay loadADisplay(JsonObject in) {
 
-            final Vector3f rotation = loadVec3(in, "rotation");
-            final Vector3f translation = loadVec3(in, "translation");
-            final Vector3f scale = loadVec3(in, "scale");
+            final Vector3f rotation = loadVec3(in, "rotation", new Vector3f(0, 0, 0));
+            final Vector3f translation = loadVec3(in, "translation", new Vector3f(0, 0, 0));
+            final Vector3f scale = loadVec3(in, "scale", new Vector3f(1, 1, 1));
 
             return new ModelDisplay(rotation, translation, scale);
         }
