@@ -36,7 +36,9 @@ public class LoreHolderDiscoverer {
             try {
                 field = Fields.ofClass(clazz).getField(LookupType.DECLARED, fieldName, String.class);
             } catch (ClassCastException e) {
-                GTNHLib.LOG.error("Field " + fieldName + " of class " + className + " is not of type java.lang.String!", e);
+                GTNHLib.LOG.error(
+                        "Field " + fieldName + " of class " + className + " is not of type java.lang.String!",
+                        e);
                 continue;
             }
             if (field == null) {
