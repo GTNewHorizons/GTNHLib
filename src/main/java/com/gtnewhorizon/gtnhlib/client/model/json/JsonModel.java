@@ -51,6 +51,7 @@ public class JsonModel implements QuadProvider {
     private JsonModel parent;
     @Getter
     private final boolean useAO;
+    @Getter
     private final Map<ModelDisplay.Position, ModelDisplay> display;
     private final Map<String, String> textures;
     private List<ModelElement> elements;
