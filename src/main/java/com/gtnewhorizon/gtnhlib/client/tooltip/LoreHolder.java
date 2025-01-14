@@ -7,7 +7,11 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation used to identify fields which should be updated on a resource refresh. Annotated fields must be static and
- * of type {@link String}. To use this, register the declaring class via {@link LoreHandler#registerLoreHolder(Class)}.
+ * of type {@link String}. When the resources are reloaded, the field(s) are updated with a random translation. The
+ * possible lines are defined via lang files, using the translation key defined by {@link #value()}, appended by an
+ * index (starting with 0). Blank translations are ignored. The translations may be weighted by using {@code <weight>:}
+ * as prefix, {@code <weight>} being a non-negative integer. If no weight is specified, a default value of 1 is used. To
+ * prevent ':' being used as delimiter, escape it using '\'.
  *
  * @since 0.5.21
  * @author glowredman

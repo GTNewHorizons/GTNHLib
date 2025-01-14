@@ -1,11 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.tooltip;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
@@ -27,10 +23,6 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  */
 public final class LoreHandler implements IResourceManagerReloadListener {
 
-    /**
-     * key: field to be updated; value: translation key to use
-     */
-    private static final Map<Field, String> LORE_HOLDERS = new HashMap<>();
     private static final Random RANDOM = new Random();
 
     public static void postInit() {
@@ -42,52 +34,27 @@ public final class LoreHandler implements IResourceManagerReloadListener {
 
     @Override
     public void onResourceManagerReload(IResourceManager p_110549_1_) {
-        updateLoreHolders();
-    }
-
-    /**
-     * Register a class containing one or more static fields of type {@link String} annotated with {@link LoreHolder}.
-     * When the resources are reloaded, the field(s) are updated with a random translation. The possible lines are
-     * defined via lang files, using the translation key defined by {@link LoreHolder#value()}, appended by an index
-     * (starting with 0). Blank translations are ignored. The translations may be weighted by using {@code <weight>:} as
-     * prefix, {@code <weight>} being a non-negative integer. If no weight is specified, a default value of 1 is used.
-     * To prevent ':' being used as delimiter, escape it using '\'.
-     *
-     * @param clazz The class containing the field(s) to be updated when the resources are reloaded
-     * @since 0.5.21
-     */
-    public static void registerLoreHolder(Class<?> clazz) {
-        try {
-            for (Field field : clazz.getDeclaredFields()) {
-                if (!field.getType().isAssignableFrom(String.class) || !Modifier.isStatic(field.getModifiers()))
-                    continue;
-
-                LoreHolder loreHolder = field.getDeclaredAnnotation(LoreHolder.class);
-                if (loreHolder == null) continue;
-
-                field.setAccessible(true);
-                LORE_HOLDERS.put(field, loreHolder.value());
-            }
-        } catch (Exception e) {
-            GTNHLib.LOG
-                    .error("An exception occured while looking for @LoreHolder annotations in " + clazz.toString(), e);
-        }
-    }
-
-    private static void updateLoreHolders() {
-        LORE_HOLDERS.forEach((field, keyPrefix) -> {
+        LoreHolderDiscoverer.LORE_HOLDERS.forEach((field, keyPrefix) -> {
             try {
-                field.set(null, getRandomLine(keyPrefix));
+                field.setValue(null, getRandomLine(keyPrefix));
             } catch (Exception e) {
                 GTNHLib.LOG.warn(
-                        "Unable to update LoreHolder in " + field.getDeclaringClass()
+                        "Unable to update LoreHolder in " + field.javaField.getDeclaringClass()
                                 + " (Field: "
-                                + field.getName()
+                                + field.javaField.getName()
                                 + ")",
                         e);
             }
         });
     }
+
+    /**
+     * @deprecated As of version 0.6.2, fields are discovered automatically.
+     * @param clazz The class containing the field(s) to be updated when the resources are reloaded
+     * @since 0.5.21
+     */
+    @Deprecated
+    public static void registerLoreHolder(Class<?> clazz) {}
 
     private static String getRandomLine(String keyPrefix) {
         List<WeightedRandom.Item> lines = getAllLines(keyPrefix);
