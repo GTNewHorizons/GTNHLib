@@ -10,7 +10,6 @@ import net.minecraft.server.integrated.IntegratedServer;
 
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
@@ -22,10 +21,6 @@ public final class ConfigSyncHandler {
 
     static final Map<String, SyncedConfigElement> syncedElements = new Object2ObjectOpenHashMap<>();
     private static boolean hasSyncedValues = false;
-
-    static {
-        FMLCommonHandler.instance().bus().register(new ConfigSyncHandler());
-    }
 
     @SubscribeEvent
     public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
