@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.network;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.config.PacketSyncConfig;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -16,5 +17,6 @@ public class NetworkHandler {
                 PacketMessageAboveHotbar.class,
                 0,
                 Side.CLIENT);
+        instance.registerMessage(PacketSyncConfig.Handler.class, PacketSyncConfig.class, 1, Side.CLIENT);
     }
 }

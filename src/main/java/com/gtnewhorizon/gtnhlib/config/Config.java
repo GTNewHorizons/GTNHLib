@@ -224,4 +224,21 @@ public @interface Config {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @interface ExcludeFromAutoGui {}
+
+    /**
+     * Fields or classes annotated with this will automatically be synced from server -> client. If applied to a class,
+     * all fields (including subcategories) in the class will be synced. All fields are restored to their original value
+     * when the player disconnects.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.FIELD, ElementType.TYPE })
+    @interface Sync {
+
+        /**
+         * Can be used to overwrite the sync behavior for fields in classes annotated with {@link Sync}.
+         * 
+         * @return Whether the field should be synced. Defaults to true.
+         */
+        boolean value() default true;
+    }
 }

@@ -142,6 +142,39 @@ public class ConfigFieldParser {
         });
     }
 
+    static String getValueAsString(@Nullable Object instance, Field field) throws ConfigException {
+        try {
+            val parser = getParser(field);
+            return parser.getAsString(instance, field);
+        } catch (Exception e) {
+            throw new ConfigException(
+                    "Failed to get value as string for field " + field.getName()
+                            + " of type "
+                            + field.getType().getSimpleName()
+                            + " in class "
+                            + field.getDeclaringClass().getName()
+                            + ". Caused by: "
+                            + e);
+        }
+    }
+
+    static void setValueFromString(@Nullable Object instance, Field field, String value) throws ConfigException {
+        try {
+            val parser = getParser(field);
+            parser.setFromString(instance, value, field);
+        } catch (Exception e) {
+            throw new ConfigException(
+                    "Failed to set value from string for field " + field.getName()
+                            + " of type "
+                            + field.getType().getSimpleName()
+                            + " in class "
+                            + field.getDeclaringClass().getName()
+                            + ". Caused by: "
+                            + e);
+        }
+
+    }
+
     @SneakyThrows
     private static Field extractField(Class<?> clazz, String field) {
         return clazz.getDeclaredField(field);
@@ -158,6 +191,10 @@ public class ConfigFieldParser {
                 String category, String name, String comment, String langKey);
 
         void save(@Nullable Object instance, Field field, Configuration config, String category, String name);
+
+        void setFromString(@Nullable Object instance, String value, Field field);
+
+        String getAsString(@Nullable Object instance, Field field);
     }
 
     private static class BooleanParser implements Parser {
@@ -194,6 +231,25 @@ public class ConfigFieldParser {
 
             return Boolean.parseBoolean(defValueString);
         }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            val boxed = field.getType().equals(Boolean.class);
+            if (boxed) {
+                field.set(instance, Boolean.parseBoolean(value));
+                return;
+            }
+
+            field.setBoolean(instance, Boolean.parseBoolean(value));
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            val boxed = field.getType().equals(Boolean.class);
+            return Boolean.toString(boxed ? (Boolean) field.get(instance) : field.getBoolean(instance));
+        }
     }
 
     private static class IntParser implements Parser {
@@ -228,6 +284,25 @@ public class ConfigFieldParser {
 
             return Integer.parseInt(defValueString);
         }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            val boxed = field.getType().equals(Integer.class);
+            if (boxed) {
+                field.set(instance, Integer.parseInt(value));
+                return;
+            }
+
+            field.setInt(instance, Integer.parseInt(value));
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            val boxed = field.getType().equals(Integer.class);
+            return Integer.toString(boxed ? (Integer) field.get(instance) : field.getInt(instance));
+        }
     }
 
     private static class FloatParser implements Parser {
@@ -261,6 +336,25 @@ public class ConfigFieldParser {
             }
 
             return Float.parseFloat(defValueString);
+        }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@org.jetbrains.annotations.Nullable Object instance, String value, Field field) {
+            val boxed = field.getType().equals(Float.class);
+            if (boxed) {
+                field.set(instance, Float.parseFloat(value));
+                return;
+            }
+
+            field.setFloat(instance, Float.parseFloat(value));
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            val boxed = field.getType().equals(Float.class);
+            return Float.toString(boxed ? (Float) field.get(instance) : field.getFloat(instance));
         }
     }
 
@@ -301,6 +395,25 @@ public class ConfigFieldParser {
 
             return Double.parseDouble(defValueString);
         }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            val boxed = field.getType().equals(Double.class);
+            if (boxed) {
+                field.set(instance, Double.parseDouble(value));
+                return;
+            }
+
+            field.setDouble(instance, Double.parseDouble(value));
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            val boxed = field.getType().equals(Double.class);
+            return Double.toString(boxed ? (Double) field.get(instance) : field.getDouble(instance));
+        }
     }
 
     private static class StringParser implements Parser {
@@ -330,6 +443,18 @@ public class ConfigFieldParser {
             }
 
             return defValueString;
+        }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            field.set(instance, value);
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            return (String) field.get(instance);
         }
     }
 
@@ -415,6 +540,22 @@ public class ConfigFieldParser {
             }
             return null;
         }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            Field enumField = field.getType().getDeclaredField(value);
+            if (!enumField.isEnumConstant()) {
+                throw new NoSuchFieldException();
+            }
+            field.set(instance, enumField.get(instance));
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@org.jetbrains.annotations.Nullable Object instance, Field field) {
+            return ((Enum<?>) field.get(instance)).name();
+        }
     }
 
     private static class StringArrayParser implements Parser {
@@ -445,6 +586,18 @@ public class ConfigFieldParser {
                 value = defValueString.split(",");
             }
             return value == null ? new String[0] : value;
+        }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            field.set(instance, value.split("|||"));
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            return String.join("|||", (String[]) field.get(instance));
         }
     }
 
@@ -486,6 +639,19 @@ public class ConfigFieldParser {
 
             return value == null ? new double[0] : value;
         }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            field.set(instance, Arrays.stream(value.split(",")).mapToDouble(Double::parseDouble).toArray());
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            return Arrays.stream((double[]) field.get(instance)).mapToObj(Double::toString)
+                    .collect(Collectors.joining(","));
+        }
     }
 
     private static class IntArrayParser implements Parser {
@@ -523,6 +689,19 @@ public class ConfigFieldParser {
             }
 
             return value == null ? new int[0] : value;
+        }
+
+        @Override
+        @SneakyThrows
+        public void setFromString(@Nullable Object instance, String value, Field field) {
+            field.set(instance, Arrays.stream(value.split(",")).mapToInt(Integer::parseInt).toArray());
+        }
+
+        @Override
+        @SneakyThrows
+        public String getAsString(@Nullable Object instance, Field field) {
+            return Arrays.stream((int[]) field.get(instance)).mapToObj(Integer::toString)
+                    .collect(Collectors.joining(","));
         }
     }
 }

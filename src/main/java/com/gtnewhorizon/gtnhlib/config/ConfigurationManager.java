@@ -38,6 +38,7 @@ import lombok.val;
  * Class for controlling the loading of configuration files.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("unused")
 public class ConfigurationManager {
 
     static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
@@ -122,6 +123,11 @@ public class ConfigurationManager {
                 continue;
             }
 
+            if (ConfigSyncHandler.hasSyncedValues()) {
+                SyncedConfigElement element = ConfigSyncHandler.syncedElements.get(field.toString());
+                if (element != null && element.isSynced()) continue;
+            }
+
             field.setAccessible(true);
 
             if (!ConfigFieldParser.canParse(field)) {
@@ -172,9 +178,12 @@ public class ConfigurationManager {
             NoSuchFieldException, ConfigException {
         boolean foundCategory = !category.isEmpty();
         ConfigCategory cat = foundCategory ? rawConfig.getCategory(category) : null;
+        Config.Sync sync = getClassOrBaseAnnotation(configClass, Config.Sync.class);
+        boolean syncCategory = sync != null && sync.value();
         boolean requiresMcRestart = getClassOrBaseAnnotation(configClass, Config.RequiresMcRestart.class) != null
                 || foundCategory && cat.requiresMcRestart();
-        boolean requiresWorldRestart = getClassOrBaseAnnotation(configClass, Config.RequiresWorldRestart.class) != null
+        boolean requiresWorldRestart = syncCategory
+                || getClassOrBaseAnnotation(configClass, Config.RequiresWorldRestart.class) != null
                 || foundCategory && cat.requiresWorldRestart();
 
         List<String> observedValues = new ArrayList<>();
@@ -215,6 +224,26 @@ public class ConfigurationManager {
             val langKey = getLangKey(configClass, field.getAnnotation(Config.LangKey.class), fieldName, cat);
             ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
             observedValues.add(fieldName);
+
+            Config.Sync fieldSync = field.getAnnotation(Config.Sync.class);
+            if (fieldSync != null && fieldSync.value() || syncCategory && fieldSync == null) {
+                SyncedConfigElement element = new SyncedConfigElement(instance, field, () -> {
+                    try {
+                        ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
+                    } catch (ConfigException e) {
+                        LOGGER.error(
+                                "Failed to restore synced field {} in class {}",
+                                fieldName,
+                                field.getDeclaringClass(),
+                                e);
+                    }
+                });
+                ConfigSyncHandler.syncedElements.put(field.toString(), element);
+
+                if (!requiresWorldRestart) {
+                    cat.get(fieldName).setRequiresWorldRestart(true);
+                }
+            }
 
             if (!requiresMcRestart) {
                 requiresMcRestart = field.isAnnotationPresent(Config.RequiresMcRestart.class);
