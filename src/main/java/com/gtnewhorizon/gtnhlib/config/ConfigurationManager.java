@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.common.FMLCommonHandler;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.val;
@@ -490,6 +491,7 @@ public class ConfigurationManager {
     }
 
     public static void onInit() {
+        FMLCommonHandler.instance().bus().register(new ConfigSyncHandler());
         cullDeadCategories();
         if (DUMP_KEYS) {
             writeLangKeysToFile();
