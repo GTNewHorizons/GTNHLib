@@ -8,26 +8,30 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 
-import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-@EventBusSubscriber
 @SuppressWarnings("unused")
 public final class ConfigSyncHandler {
 
     static final Map<String, SyncedConfigElement> syncedElements = new Object2ObjectOpenHashMap<>();
     private static boolean hasSyncedValues = false;
 
+    static {
+        FMLCommonHandler.instance().bus().register(new ConfigSyncHandler());
+    }
+
     @SubscribeEvent
-    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+    public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.player instanceof EntityPlayerMP playerMP)) return;
         MinecraftServer server = MinecraftServer.getServer();
+        // no point in syncing in from client -> client.
         if (server.isSinglePlayer() && !((IntegratedServer) server).getPublic()) {
             return;
         }
@@ -35,7 +39,7 @@ public final class ConfigSyncHandler {
     }
 
     @SubscribeEvent
-    public static void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+    public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         if (!hasSyncedValues) return;
         hasSyncedValues = false;
         for (SyncedConfigElement element : syncedElements.values()) {
