@@ -55,7 +55,8 @@ public final class SyncedKeybind {
     private boolean isKeyDown;
 
     private final WeakHashMap<EntityPlayerMP, Boolean> mapping = new WeakHashMap<>();
-    private final WeakHashMap<EntityPlayerMP, Set<IKeyPressedListener>> listeners = new WeakHashMap<>();
+    private final WeakHashMap<EntityPlayerMP, Set<IKeyPressedListener>> playerListeners = new WeakHashMap<>();
+    private final Set<IKeyPressedListener> globalListeners = Collections.newSetFromMap(new WeakHashMap<>());
 
     // Doubly-wrapped supplier for client-side only type
     private SyncedKeybind(Supplier<Supplier<KeyBinding>> keybindingGetter) {
@@ -135,23 +136,42 @@ public final class SyncedKeybind {
      * @param player   The player who owns this listener.
      * @param listener The handler for the key clicked event.
      */
-    public void registerListener(EntityPlayerMP player, IKeyPressedListener listener) {
-        Set<IKeyPressedListener> listenerSet = listeners
+    public void registerPlayerListener(EntityPlayerMP player, IKeyPressedListener listener) {
+        Set<IKeyPressedListener> listenerSet = playerListeners
                 .computeIfAbsent(player, k -> Collections.newSetFromMap(new WeakHashMap<>()));
         listenerSet.add(listener);
     }
 
     /**
-     * Remove a player's listener on this keybinding.
+     * Remove a player's listener on this keybinding for a provided player.
      *
      * @param player   The player who owns this listener.
      * @param listener The handler for the key clicked event.
      */
-    public void removeListener(EntityPlayerMP player, IKeyPressedListener listener) {
-        Set<IKeyPressedListener> listenerSet = listeners.get(player);
+    public void removePlayerListener(EntityPlayerMP player, IKeyPressedListener listener) {
+        Set<IKeyPressedListener> listenerSet = playerListeners.get(player);
         if (listenerSet != null) {
             listenerSet.remove(listener);
         }
+    }
+
+    /**
+     * Registers an {@link IKeyPressedListener} to this key, which will have its {@link IKeyPressedListener#onKeyPressed
+     * onKeyPressed} method called when any player presses this key.
+     *
+     * @param listener The handler for the key clicked event.
+     */
+    public void registerGlobalListener(IKeyPressedListener listener) {
+        globalListeners.add(listener);
+    }
+
+    /**
+     * Remove a global listener on this keybinding.
+     *
+     * @param listener The handler for the key clicked event.
+     */
+    public void removeGlobalListener(IKeyPressedListener listener) {
+        globalListeners.remove(listener);
     }
 
     static SyncedKeybind getFromSyncId(int id) {
@@ -215,11 +235,16 @@ public final class SyncedKeybind {
 
     // Updated by the packet handler
     void onKeyPressed(EntityPlayerMP player) {
-        Set<IKeyPressedListener> listenerSet = listeners.get(player);
+        // Player listeners
+        Set<IKeyPressedListener> listenerSet = playerListeners.get(player);
         if (listenerSet != null && !listenerSet.isEmpty()) {
             for (IKeyPressedListener listener : listenerSet) {
                 listener.onKeyPressed(player, this);
             }
+        }
+        // Global listeners
+        for (IKeyPressedListener listener : globalListeners) {
+            listener.onKeyPressed(player, this);
         }
     }
 }
