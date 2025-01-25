@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
  * Server-side listener interface for when a player presses a specific key.
  *
  * @author serenibyss
- * @since 0.6.4
+ * @since 0.6.5
  */
 public interface IKeyPressedListener {
 

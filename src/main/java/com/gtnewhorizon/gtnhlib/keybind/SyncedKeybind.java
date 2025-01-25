@@ -38,7 +38,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
  * </ul>
  *
  * @author serenibyss
- * @since 0.6.4
+ * @since 0.6.5
  */
 @SuppressWarnings("unused")
 @EventBusSubscriber(side = Side.CLIENT)
@@ -136,10 +136,11 @@ public final class SyncedKeybind {
      * @param player   The player who owns this listener.
      * @param listener The handler for the key clicked event.
      */
-    public void registerPlayerListener(EntityPlayerMP player, IKeyPressedListener listener) {
+    public SyncedKeybind registerPlayerListener(EntityPlayerMP player, IKeyPressedListener listener) {
         Set<IKeyPressedListener> listenerSet = playerListeners
                 .computeIfAbsent(player, k -> Collections.newSetFromMap(new WeakHashMap<>()));
         listenerSet.add(listener);
+        return this;
     }
 
     /**
@@ -161,8 +162,9 @@ public final class SyncedKeybind {
      *
      * @param listener The handler for the key clicked event.
      */
-    public void registerGlobalListener(IKeyPressedListener listener) {
+    public SyncedKeybind registerGlobalListener(IKeyPressedListener listener) {
         globalListeners.add(listener);
+        return this;
     }
 
     /**
