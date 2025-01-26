@@ -4,12 +4,12 @@ configurations {
 }
 
 dependencies {
-    shadowImplementation("it.unimi.dsi:fastutil:8.5.12") // Apache 2.0
-    shadowImplementation("org.joml:joml:1.10.5") // MIT
-    shadowSources("it.unimi.dsi:fastutil:8.5.12:sources")
-    shadowSources("org.joml:joml:1.10.5:sources")
+    shadowImplementation("it.unimi.dsi:fastutil:8.5.15") // Apache 2.0
+    shadowImplementation("org.joml:joml:1.10.8") { transitive = false } // MIT
+    shadowSources("it.unimi.dsi:fastutil:8.5.15:sources")
+    shadowSources("org.joml:joml:1.10.8:sources") { transitive = false }
 
-    testImplementation(platform("org.junit:junit-bom:5.9.2"))
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
         because("Only needed to run tests in a version of IntelliJ IDEA that bundles older versions")
@@ -17,12 +17,12 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
-    compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:0.4.0") { transitive = false }
+    compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.7") { transitive = false }
 
-    compileOnly('org.jetbrains:annotations:24.0.1')
-    compileOnly("org.projectlombok:lombok:1.18.22") {transitive = false }
-    annotationProcessor("org.projectlombok:lombok:1.18.22")
+    compileOnly('org.jetbrains:annotations:26.0.1')
+    compileOnly("org.projectlombok:lombok:1.18.36") {transitive = false }
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
 
     // For CapturingTesselator compat
-    compileOnly("com.falsepattern:falsetweaks-mc1.7.10:3.3.2:api")
+    compileOnly("com.falsepattern:falsetweaks-mc1.7.10:3.8.4:api")
 }
