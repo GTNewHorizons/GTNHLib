@@ -54,7 +54,7 @@ tasks.test {
     }
 }
 
-for (jarTask in listOf(tasks.jar, tasks.shadowJar)) {
+for (jarTask in listOf(tasks.jar, tasks.shadowJar, tasks.sourcesJar)) {
     jarTask.configure {
         manifest {
             attributes("Multi-Release" to true)
