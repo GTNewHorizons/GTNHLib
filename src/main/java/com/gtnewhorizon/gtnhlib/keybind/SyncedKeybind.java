@@ -50,7 +50,7 @@ public final class SyncedKeybind {
     @SideOnly(Side.CLIENT)
     private KeyBinding keybinding;
     @SideOnly(Side.CLIENT)
-    private int keyCode;
+    private int keyCode = -1;
     @SideOnly(Side.CLIENT)
     private boolean isKeyDown;
 
@@ -224,8 +224,10 @@ public final class SyncedKeybind {
         IntList updatingPressed = new IntArrayList();
         for (var entry : KEYBINDS.int2ObjectEntrySet()) {
             SyncedKeybind keybind = entry.getValue();
-            if (keybind.keybinding != null && keybind.keybinding.isPressed()) {
-                updatingPressed.add(entry.getIntKey());
+            if (keybind.keybinding != null) {
+                if (keybind.keybinding.isPressed()) {
+                    updatingPressed.add(entry.getIntKey());
+                }
             } else if (Keyboard.getEventKey() == keybind.keyCode) {
                 updatingPressed.add(entry.getIntKey());
             }
