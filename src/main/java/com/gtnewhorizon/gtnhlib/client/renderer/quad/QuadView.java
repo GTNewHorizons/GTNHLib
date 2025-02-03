@@ -22,6 +22,10 @@ public interface QuadView extends ModelQuadViewMutable {
 
     int[] getRawData();
 
+    void setShaderBlockId(int shaderBlockId);
+
+    int getShaderBlockId();
+
     /**
      * Present for compatibility with the Tesselator, not recommended for general use.
      */

@@ -46,6 +46,7 @@ public class Quad implements QuadView {
     @Getter
     private ForgeDirection face;
     private int colorIndex = -1;
+    private int shaderBlockId = -1;
     private TextureAtlasSprite sprite = null;
 
     /** Returns the face, forced to take one of 6 directions to mirror the behavior of baked quads in 1.16.5. */
@@ -107,6 +108,11 @@ public class Quad implements QuadView {
     @Override
     public int getColorIndex() {
         return this.colorIndex;
+    }
+
+    @Override
+    public int getShaderBlockId() {
+        return this.shaderBlockId;
     }
 
     @Override
@@ -172,6 +178,11 @@ public class Quad implements QuadView {
     @Override
     public void setSprite(TextureAtlasSprite sprite) {
         this.sprite = sprite;
+    }
+
+    @Override
+    public void setShaderBlockId(int shaderBlockId) {
+        this.shaderBlockId = shaderBlockId;
     }
 
     @Override
