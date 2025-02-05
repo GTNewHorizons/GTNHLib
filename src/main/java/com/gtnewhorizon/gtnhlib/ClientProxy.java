@@ -13,9 +13,11 @@ import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
+import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -44,6 +46,9 @@ public class ClientProxy extends CommonProxy {
             if (!doThreadSafetyChecks) {
                 GTNHLib.info("FalseTweaks threaded rendering is enabled - disabling GTNHLib's thread safety checks");
             }
+        }
+        if (Mods.NEI) {
+            FMLCommonHandler.instance().bus().register(new NotEnoughItemsVersionChecker());
         }
 
         if (shouldLoadModels()) {
