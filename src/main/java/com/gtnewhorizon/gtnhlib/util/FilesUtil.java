@@ -3,6 +3,8 @@ package com.gtnewhorizon.gtnhlib.util;
 import java.io.IOException;
 import java.net.URI;
 
+import net.minecraft.util.Util;
+
 import org.lwjgl.Sys;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
@@ -10,7 +12,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 public class FilesUtil {
 
     public static void openUri(URI uri) {
-        switch (net.minecraft.util.Util.getOSType()) {
+        switch (Util.getOSType()) {
             case OSX -> {
                 try {
                     Runtime.getRuntime().exec(new String[] { "/usr/bin/open", uri.toString() });
