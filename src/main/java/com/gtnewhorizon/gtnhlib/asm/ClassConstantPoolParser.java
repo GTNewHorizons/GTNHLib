@@ -32,6 +32,7 @@ import java.util.Arrays;
 public class ClassConstantPoolParser {
 
     enum ConstantTypes {
+
         INVALID, // 0 unused, if that ever changes shift this to the next unused index
         UTF8,
         // 2 unused
@@ -53,12 +54,9 @@ public class ClassConstantPoolParser {
         MODULE,
         PACKAGE;
 
-        static final ConstantTypes[] MAP = {
-            INVALID,
-            UTF8, INVALID,
-            INT, FLOAT, LONG, DOUBLE, CLASS_REF, STR_REF, FIELD, METH_REF, IMETH_REF, NAME_TYPE, INVALID, INVALID,
-            METH_HANDLE, METH_TYPE, DYNAMIC, INVOKE_DYNAMIC, MODULE, PACKAGE
-        };
+        static final ConstantTypes[] MAP = { INVALID, UTF8, INVALID, INT, FLOAT, LONG, DOUBLE, CLASS_REF, STR_REF,
+                FIELD, METH_REF, IMETH_REF, NAME_TYPE, INVALID, INVALID, METH_HANDLE, METH_TYPE, DYNAMIC,
+                INVOKE_DYNAMIC, MODULE, PACKAGE };
 
         static ConstantTypes toType(byte code) {
             var ret = MAP[Byte.toUnsignedInt(code)];
@@ -135,7 +133,10 @@ public class ClassConstantPoolParser {
                     }
                 }
                 case INT, FLOAT, FIELD, METH_REF, IMETH_REF, NAME_TYPE, DYNAMIC, INVOKE_DYNAMIC -> size = 5;
-                case LONG, DOUBLE -> { size = 9; ++i; }
+                case LONG, DOUBLE -> {
+                    size = 9;
+                    ++i;
+                }
                 case METH_HANDLE -> size = 4;
                 case CLASS_REF, STR_REF, METH_TYPE, MODULE, PACKAGE -> size = 3;
             }
