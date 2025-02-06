@@ -1,13 +1,12 @@
 package com.gtnewhorizon.gtnhlib.capability;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraftforge.common.util.ForgeDirection;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 // spotless:off
 /**
- * Classes implementing this interface indicates that it is able to offer certain {@link Capability}.
+ * By implementing this interface, classes indicate that they can offer certain {@link Capability Capabilities}.
  * Implementing this interface allows other systems to query and retrieve capabilities without relying on direct
  * interface implementations. This can be useful for extending or overriding behavior at runtime.
  * Typically implemented by TileEntities, Items or Entities.
@@ -35,17 +34,17 @@ public interface ICapabilityProvider {
      * <p>
      * This method should:
      * <ul>
-     * <li>Compare the requested capability with known capabilities using {@code ==}.</li>
+     * <li>Compare the requested capability with known capabilities using {@code ==} or do HashMap dispatch for a larger quantity of supported capability types.</li>
      * <li>If matched, use {@link Capability#cast} to return the implementation.</li>
      * <li>Return null if the capability is not supported.</li>
      * </ul>
      *
      * @param capability The capability instance being requested.
-     * @param side       The {@link ForgeDirection} from which the capability is requested. Can be UNKNOWN if direction
+     * @param side       The {@link ForgeDirection} from which the capability is requested. Can be {@link ForgeDirection#UNKNOWN UNKNOWN} if the direction
      *                   is not relevant.
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
     @Nullable
-    <T> T getCapability(@Nonnull Capability<T> capability, @Nonnull ForgeDirection side);
+    <T> T getCapability(@NotNull Capability<T> capability, @NotNull ForgeDirection side);
 }

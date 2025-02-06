@@ -6,10 +6,10 @@ import lombok.Getter;
 
 // spotless:off
 /**
- * {@link Capability} represents the ability of an object to expose a specific interface,
- * allowing for a more flexible and decoupled approach compared to traditional interface implementations.
+ * {@link Capability} represents the ability of an object to expose a specific interface without directly implementing it,
+ * allowing for a more flexible and decoupled approach compared to the traditional approach.
  * It is particularly useful when dealing with complex systems where objects may need to dynamically provide
- * different functionalities or when working with composite patterns.
+ * different functionalities or when working with complex patterns, like delegating responsibilities to another class.
  * <p>
  * Capabilities offer a way to avoid excessive boilerplate code associated with implementing multiple interfaces
  * and delegating method calls. Instead of directly implementing interfaces, objects can provide capabilities

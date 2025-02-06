@@ -1,13 +1,12 @@
 package com.gtnewhorizon.gtnhlib.capability;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 // spotless:off
 /**
@@ -39,8 +38,8 @@ public final class CapabilityUtil {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable TileEntity tileEntity, @Nonnull Capability<T> capability,
-            @Nonnull ForgeDirection side) {
+    public static <T> T getCapability(@Nullable TileEntity tileEntity, @NotNull Capability<T> capability,
+            @NotNull ForgeDirection side) {
         return getCapability((Object) tileEntity, capability, side);
     }
 
@@ -52,7 +51,7 @@ public final class CapabilityUtil {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable TileEntity tileEntity, @Nonnull Capability<T> capability) {
+    public static <T> T getCapability(@Nullable TileEntity tileEntity, @NotNull Capability<T> capability) {
         return getCapability((Object) tileEntity, capability, ForgeDirection.UNKNOWN);
     }
 
@@ -64,7 +63,7 @@ public final class CapabilityUtil {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable ItemStack itemStack, @Nonnull Capability<T> capability) {
+    public static <T> T getCapability(@Nullable ItemStack itemStack, @NotNull Capability<T> capability) {
         if (itemStack == null) {
             return null;
         }
@@ -80,7 +79,7 @@ public final class CapabilityUtil {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable Entity entity, @Nonnull Capability<T> capability) {
+    public static <T> T getCapability(@Nullable Entity entity, @NotNull Capability<T> capability) {
         return getCapability(entity, capability, ForgeDirection.UNKNOWN);
     }
 
@@ -95,8 +94,8 @@ public final class CapabilityUtil {
      * @return The capability implementation, or null if not available.
      */
     @SuppressWarnings("unchecked")
-    private static <T> T getCapability(@Nullable Object object, @Nonnull Capability<T> capability,
-            @Nonnull ForgeDirection side) {
+    private static <T> T getCapability(@Nullable Object object, @NotNull Capability<T> capability,
+            @NotNull ForgeDirection side) {
         if (object == null) {
             return null;
         }
