@@ -34,7 +34,7 @@ import lombok.Getter;
  * <pre>{@code
  *     class MyTileEntity implements ICapabilityProvider {
  *         private MyInterface delegate = new MyInterfaceImpl();
- *         public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable ForgeDirection side) {
+ *         public <T> T getCapability(@Nonnull Capability<T> capability, @Nonnull ForgeDirection side) {
  *             if (capability == MY_CAPABILITY) {
  *                 return MY_CAPABILITY.cast(delegate);
  *             }

@@ -40,7 +40,7 @@ public final class CapabilityUtil {
      * @return The capability implementation, or null if not available.
      */
     public static <T> T getCapability(@Nullable TileEntity tileEntity, @Nonnull Capability<T> capability,
-            @Nullable ForgeDirection side) {
+            @Nonnull ForgeDirection side) {
         return getCapability((Object) tileEntity, capability, side);
     }
 
@@ -53,7 +53,7 @@ public final class CapabilityUtil {
      * @return The capability implementation, or null if not available.
      */
     public static <T> T getCapability(@Nullable TileEntity tileEntity, @Nonnull Capability<T> capability) {
-        return getCapability((Object) tileEntity, capability, null);
+        return getCapability((Object) tileEntity, capability, ForgeDirection.UNKNOWN);
     }
 
     /**
@@ -69,7 +69,7 @@ public final class CapabilityUtil {
             return null;
         }
         Item item = itemStack.getItem();
-        return getCapability(item, capability, null);
+        return getCapability(item, capability, ForgeDirection.UNKNOWN);
     }
 
     /**
@@ -81,7 +81,7 @@ public final class CapabilityUtil {
      * @return The capability implementation, or null if not available.
      */
     public static <T> T getCapability(@Nullable Entity entity, @Nonnull Capability<T> capability) {
-        return getCapability(entity, capability, null);
+        return getCapability(entity, capability, ForgeDirection.UNKNOWN);
     }
 
     /**
@@ -96,7 +96,7 @@ public final class CapabilityUtil {
      */
     @SuppressWarnings("unchecked")
     private static <T> T getCapability(@Nullable Object object, @Nonnull Capability<T> capability,
-            @Nullable ForgeDirection side) {
+            @Nonnull ForgeDirection side) {
         if (object == null) {
             return null;
         }

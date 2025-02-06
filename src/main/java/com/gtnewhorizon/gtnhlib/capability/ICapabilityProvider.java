@@ -18,7 +18,7 @@ import net.minecraftforge.common.util.ForgeDirection;
  *         private MyCapabilityImplementation myCapability = new MyCapabilityImplementation();
  *
  *         @Override
- *         public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable ForgeDirection side) {
+ *         public <T> T getCapability(@Nonnull Capability<T> capability, @Nonnull ForgeDirection side) {
  *             if (capability == MyCapability.CAPABILITY) {
  *                 return MyCapability.CAPABILITY.cast(myCapability);
  *             }
@@ -41,11 +41,11 @@ public interface ICapabilityProvider {
      * </ul>
      *
      * @param capability The capability instance being requested.
-     * @param side       The {@link ForgeDirection} from which the capability is requested. Can be null if direction is
-     *                   not relevant.
+     * @param side       The {@link ForgeDirection} from which the capability is requested. Can be UNKNOWN if direction
+     *                   is not relevant.
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
     @Nullable
-    <T> T getCapability(@Nonnull Capability<T> capability, @Nullable ForgeDirection side);
+    <T> T getCapability(@Nonnull Capability<T> capability, @Nonnull ForgeDirection side);
 }
