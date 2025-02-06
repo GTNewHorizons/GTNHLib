@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.capability;
 
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,14 +35,15 @@ public interface ICapabilityProvider {
      * <p>
      * This method should:
      * <ul>
-     * <li>Compare the requested capability with known capabilities using {@code ==} or do HashMap dispatch for a larger quantity of supported capability types.</li>
+     * <li>Compare the requested capability with known capabilities using {@code ==} or do HashMap dispatch for a larger
+     * quantity of supported capability types.</li>
      * <li>If matched, use {@link Capability#cast} to return the implementation.</li>
      * <li>Return null if the capability is not supported.</li>
      * </ul>
      *
      * @param capability The capability instance being requested.
-     * @param side       The {@link ForgeDirection} from which the capability is requested. Can be {@link ForgeDirection#UNKNOWN UNKNOWN} if the direction
-     *                   is not relevant.
+     * @param side       The {@link ForgeDirection} from which the capability is requested. Can be
+     *                   {@link ForgeDirection#UNKNOWN UNKNOWN} if the direction is not relevant.
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
