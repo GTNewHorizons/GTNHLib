@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
  *         private MyCapability myCapability = new MyCapabilityImplementation();
  *
  *         @Override
- *         public <T> T getCapability(@NotNull Capability<T> capability, @NotNull ForgeDirection side) {
+ *         public <T> T getCapability(@NotNull Class<T> capability, @NotNull ForgeDirection side) {
  *             if (capability == MyCapability.class) {
  *                 return capability.cast(myCapability);
  *             }
@@ -58,5 +58,5 @@ public interface CapabilityProvider {
      * @return The capability implementation, or null if not available.
      */
     @Nullable
-    <T> T getCapability(@NotNull Class<? extends T> capability, @NotNull ForgeDirection side);
+    <T> T getCapability(@NotNull Class<T> capability, @NotNull ForgeDirection side);
 }

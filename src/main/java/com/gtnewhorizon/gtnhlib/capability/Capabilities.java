@@ -41,7 +41,7 @@ public final class Capabilities {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable TileEntity tileEntity, @NotNull Class<? extends T> capability,
+    public static <T> T getCapability(@Nullable TileEntity tileEntity, @NotNull Class<T> capability,
             @NotNull ForgeDirection side) {
         return getCapability((Object) tileEntity, capability, side);
     }
@@ -54,7 +54,7 @@ public final class Capabilities {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable TileEntity tileEntity, @NotNull Class<? extends T> capability) {
+    public static <T> T getCapability(@Nullable TileEntity tileEntity, @NotNull Class<T> capability) {
         return getCapability((Object) tileEntity, capability, ForgeDirection.UNKNOWN);
     }
 
@@ -66,7 +66,7 @@ public final class Capabilities {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable ItemStack itemStack, @NotNull Class<? extends T> capability) {
+    public static <T> T getCapability(@Nullable ItemStack itemStack, @NotNull Class<T> capability) {
         if (itemStack == null) {
             return null;
         }
@@ -81,7 +81,7 @@ public final class Capabilities {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    public static <T> T getCapability(@Nullable Entity entity, @NotNull Class<? extends T> capability) {
+    public static <T> T getCapability(@Nullable Entity entity, @NotNull Class<T> capability) {
         return getCapability(entity, capability, ForgeDirection.UNKNOWN);
     }
 
@@ -95,7 +95,7 @@ public final class Capabilities {
      * @param <T>        The type of the capability interface.
      * @return The capability implementation, or null if not available.
      */
-    private static <T> T getCapability(@Nullable Object object, @NotNull Class<? extends T> capability,
+    private static <T> T getCapability(@Nullable Object object, @NotNull Class<T> capability,
             @NotNull ForgeDirection side) {
         if (object == null) {
             return null;
