@@ -22,6 +22,7 @@ import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
+import lombok.Getter;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(side = Side.CLIENT)
@@ -29,6 +30,8 @@ public class ClientProxy extends CommonProxy {
 
     private static boolean modelsBaked = false;
     public static boolean doThreadSafetyChecks = true;
+    @Getter
+    public static int currentServerViewDistance = 12;
     private final Minecraft mc = Minecraft.getMinecraft();
 
     @Override
