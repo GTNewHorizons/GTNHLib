@@ -22,5 +22,6 @@ public class NetworkHandler {
         instance.registerMessage(PacketSyncConfig.Handler.class, PacketSyncConfig.class, 1, Side.CLIENT);
         instance.registerMessage(PacketKeyDown.HandlerKeyDown.class, PacketKeyDown.class, 2, Side.SERVER);
         instance.registerMessage(PacketKeyPressed.HandlerKeyPressed.class, PacketKeyPressed.class, 3, Side.SERVER);
+        instance.registerMessage(PacketViewDistance.Handler.class, PacketViewDistance.class, 4, Side.CLIENT);
     }
 }
