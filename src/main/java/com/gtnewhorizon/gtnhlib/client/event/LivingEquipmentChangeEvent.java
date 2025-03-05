@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingEvent;
 
 public class LivingEquipmentChangeEvent extends LivingEvent {
+
     /*
      * Backported from github.com/MinecraftForge/MinecraftForge/pull/3411
      */
@@ -19,7 +20,8 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
      * This event is fired on server-side only. <br>
      * <br>
      * {@link #slot} contains the index of the affected inventory slot. <br>
-     * {@link #from} contains the {@link ItemStack} that was equipped previously. <br>
+     * -0: Equipped in main hand -1: Boots -2: Leggings -3: Leggings -4: Helmet {@link #from} contains the
+     * {@link ItemStack} that was equipped previously. <br>
      * {@link #to} contains the {@link ItemStack} that is equipped now. <br>
      * <br>
      * This event is not {@link cpw.mods.fml.common.eventhandler.Cancelable}. <br>
@@ -29,15 +31,22 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
      * This event is fired on the {@link net.minecraftforge.common.MinecraftForge#EVENT_BUS}.
      **/
 
-    public LivingEquipmentChangeEvent(EntityLivingBase entity, int slot, ItemStack from, ItemStack to)
-    {
+    public LivingEquipmentChangeEvent(EntityLivingBase entity, int slot, ItemStack from, ItemStack to) {
         super(entity);
         this.slot = slot;
         this.from = from;
         this.to = to;
     }
 
-    public int getSlot() { return this.slot; }
-    public ItemStack getFrom() { return this.from; }
-    public ItemStack getTo() { return this.to; }
+    public int getSlot() {
+        return this.slot;
+    }
+
+    public ItemStack getFrom() {
+        return this.from;
+    }
+
+    public ItemStack getTo() {
+        return this.to;
+    }
 }

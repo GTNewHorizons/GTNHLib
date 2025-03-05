@@ -24,8 +24,9 @@ public enum Mixins {
             .setPhase(Phase.EARLY).addMixinClasses("fml.EventBusAccessor", "fml.EnumHolderAccessor")),
     TOOLTIP_RENDER(new Builder("TooltipRenderer").addMixinClasses("MixinGuiScreen").addTargetedMod(TargetedMod.VANILLA)
             .setApplyIf(() -> true).setPhase(Phase.EARLY).setSide(Side.CLIENT)),
-    EQUIPMENT_CHANGE_EVENT(new Builder("Add equipment change Forge events").addTargetedMod(TargetedMod.VANILLA).setSide(Side.SERVER)
-        .setPhase(Phase.EARLY).addMixinClasses("MixinEntityLivingBase").setApplyIf(() -> true)),
+    EQUIPMENT_CHANGE_EVENT(
+            new Builder("Add equipment change Forge events").addTargetedMod(TargetedMod.VANILLA).setSide(Side.SERVER)
+                    .setPhase(Phase.EARLY).addMixinClasses("MixinEntityLivingBase").setApplyIf(() -> true)),
     DEBUG_TEXTURES(new Builder("Dump textures sizes").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)
             .setPhase(Phase.EARLY)
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))
