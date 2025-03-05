@@ -19,9 +19,15 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
      * This also includes entities joining the World, as well as being cloned. <br>
      * This event is fired on server-side only. <br>
      * <br>
-     * {@link #slot} contains the index of the affected inventory slot. <br>
-     * -0: Equipped in main hand -1: Boots -2: Leggings -3: Leggings -4: Helmet {@link #from} contains the
-     * {@link ItemStack} that was equipped previously. <br>
+     * {@link #slot} contains the index of the affected inventory slot.
+     * <ul>
+     * <li>0: Equipped in main hand
+     * <li>1: Boots
+     * <li>2: Leggings
+     * <li>3: Chestplate
+     * <li>4: Helmet
+     * </ul>
+     * {@link #from} contains the {@link ItemStack} that was equipped previously. <br>
      * {@link #to} contains the {@link ItemStack} that is equipped now. <br>
      * <br>
      * This event is not {@link cpw.mods.fml.common.eventhandler.Cancelable}. <br>
@@ -38,6 +44,16 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
         this.to = to;
     }
 
+    /**
+     * @return index of the affected inventory slot.
+     *         <ul>
+     *         <li>0: Equipped in main hand
+     *         <li>1: Boots
+     *         <li>2: Leggings
+     *         <li>3: Chestplate
+     *         <li>4: Helmet
+     *         </ul>
+     */
     public int getSlot() {
         return this.slot;
     }
