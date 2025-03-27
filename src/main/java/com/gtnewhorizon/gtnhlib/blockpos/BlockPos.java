@@ -45,6 +45,11 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
     }
 
     @Override
+    public BlockPos offset(int x, int y, int z) {
+        return new BlockPos(this.x + x, this.y + y, this.z + z);
+    }
+
+    @Override
     public BlockPos down() {
         return offset(ForgeDirection.DOWN);
     }
@@ -52,6 +57,11 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
     @Override
     public BlockPos up() {
         return offset(ForgeDirection.UP);
+    }
+
+    @Override
+    public BlockPos copy() {
+        return new BlockPos(this.x, this.y, this.z);
     }
 
     @Override

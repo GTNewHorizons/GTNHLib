@@ -14,9 +14,13 @@ public interface IBlockPos {
 
     IBlockPos offset(ForgeDirection d);
 
+    IBlockPos offset(int x, int y, int z);
+
     IBlockPos down();
 
     IBlockPos up();
+
+    IBlockPos copy();
 
     long asLong();
 
