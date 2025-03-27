@@ -29,7 +29,9 @@ public enum Mixins {
     DEBUG_TEXTURES(new Builder("Dump textures sizes").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)
             .setPhase(Phase.EARLY)
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))
-            .addMixinClasses("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite"));
+            .addMixinClasses("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite")),
+    SERVER_TICKING(new Builder("Backport MinecraftServer ticking methods").addTargetedMod(TargetedMod.VANILLA)
+            .setSide(Side.BOTH).setPhase(Phase.EARLY).addMixinClasses("MixinMinecraftServer").setApplyIf(() -> true));
 
     private final List<String> mixinClasses;
     private final Supplier<Boolean> applyIf;
