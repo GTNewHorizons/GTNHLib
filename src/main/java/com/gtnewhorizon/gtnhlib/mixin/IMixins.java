@@ -29,7 +29,8 @@ public interface IMixins {
         if (enumClass.isEnum() && IMixins.class.isAssignableFrom(enumClass)) {
             return Arrays.asList(enumClass.getEnumConstants());
         }
-        return Collections.emptyList();
+        throw new IllegalStateException(
+                "Tried to use IMixins enum with a class that doesn't inherit IMixins and/or isn't an enum.");
     }
 
     static <E extends Enum<E> & IMixins> List<String> getEarlyMixins(Class<E> enumClass, Set<String> loadedCoreMods) {
