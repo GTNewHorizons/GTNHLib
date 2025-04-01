@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.gtnewhorizon.gtnhlib.mixin.IMixins;
 import net.minecraft.launchwrapper.Launch;
 
 import org.spongepowered.asm.launch.GlobalProperties;
@@ -83,7 +84,7 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
 
     @Override
     public List<String> getMixins(Set<String> loadedCoreMods) {
-        return Mixins.getEarlyMixins(loadedCoreMods);
+        return IMixins.getEarlyMixins(Mixins.class, loadedCoreMods);
     }
 
     @Override
