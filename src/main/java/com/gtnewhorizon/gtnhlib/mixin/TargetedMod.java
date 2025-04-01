@@ -14,9 +14,9 @@ public enum TargetedMod implements ITargetedMod {
     CHICKENCHUNKS("ChickenChunks", null, "ChickenChunks"),
     COFHCORE("CoFHCore", "cofh.asm.LoadingPlugin", "CoFHCore"),
     DYNAMIC_SURROUNDINGS_MIST("Dynamic Surroundings",
-        "org.blockartistry.mod.DynSurround.mixinplugin.DynamicSurroundingsEarlyMixins", "dsurround"),
+            "org.blockartistry.mod.DynSurround.mixinplugin.DynamicSurroundingsEarlyMixins", "dsurround"),
     DYNAMIC_SURROUNDINGS_ORIGINAL("Dynamic Surroundings", "org.blockartistry.mod.DynSurround.asm.TransformLoader",
-        "dsurround"),
+            "dsurround"),
     EXTRAUTILS("ExtraUtilities", null, "ExtraUtilities"),
     MINEFACTORY_RELOADED("MineFactory Reloaded", null, "MineFactoryReloaded"),
     GTNHLIB("GTNHLib", "com.gtnewhorizon.gtnhlib.core.GTNHLibCore", "gtnhlib"),
@@ -56,4 +56,3 @@ public enum TargetedMod implements ITargetedMod {
     }
 
 }
-

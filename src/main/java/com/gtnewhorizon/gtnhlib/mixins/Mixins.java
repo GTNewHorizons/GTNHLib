@@ -18,8 +18,8 @@ public enum Mixins implements IMixins {
             .setPhase(Phase.EARLY).addMixinClasses("fml.MixinGuiModList")),
     EVENT_BUS_ACCESSOR(new MixinBuilder("EventBusAccessor").addTargetedMod(TargetedMod.VANILLA).setSide(Side.BOTH)
             .setPhase(Phase.EARLY).addMixinClasses("fml.EventBusAccessor", "fml.EnumHolderAccessor")),
-    TOOLTIP_RENDER(new MixinBuilder("TooltipRenderer").addMixinClasses("MixinGuiScreen").addTargetedMod(TargetedMod.VANILLA)
-            .setApplyIf(() -> true).setPhase(Phase.EARLY).setSide(Side.CLIENT)),
+    TOOLTIP_RENDER(new MixinBuilder("TooltipRenderer").addMixinClasses("MixinGuiScreen")
+            .addTargetedMod(TargetedMod.VANILLA).setApplyIf(() -> true).setPhase(Phase.EARLY).setSide(Side.CLIENT)),
     EQUIPMENT_CHANGE_EVENT(new MixinBuilder("Add equipment change Forge events").addTargetedMod(TargetedMod.VANILLA)
             .setSide(Side.BOTH).setPhase(Phase.EARLY).addMixinClasses("MixinEntityLivingBase").setApplyIf(() -> true)),
     DEBUG_TEXTURES(new MixinBuilder("Dump textures sizes").addTargetedMod(TargetedMod.VANILLA).setSide(Side.CLIENT)

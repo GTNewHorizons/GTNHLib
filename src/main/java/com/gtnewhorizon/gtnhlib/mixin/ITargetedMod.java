@@ -8,5 +8,4 @@ public interface ITargetedMod {
 
     String getModName();
 
-
 }

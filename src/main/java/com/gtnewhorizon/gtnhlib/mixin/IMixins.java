@@ -1,14 +1,15 @@
 package com.gtnewhorizon.gtnhlib.mixin;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-import cpw.mods.fml.relauncher.FMLLaunchHandler;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+
+import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
 public interface IMixins {
 
@@ -65,7 +66,7 @@ public interface IMixins {
 
     default boolean shouldLoadSide() {
         return getSide() == Side.BOTH || (getSide() == Side.SERVER && FMLLaunchHandler.side().isServer())
-            || (getSide() == Side.CLIENT && FMLLaunchHandler.side().isClient());
+                || (getSide() == Side.CLIENT && FMLLaunchHandler.side().isClient());
     }
 
     default boolean allModsLoaded(List<ITargetedMod> targetedMods, Set<String> loadedCoreMods, Set<String> loadedMods) {
@@ -76,9 +77,10 @@ public interface IMixins {
 
             // Check coremod first
             if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
-                && !loadedCoreMods.contains(target.getCoreModClass()))
+                    && !loadedCoreMods.contains(target.getCoreModClass()))
                 return false;
-            else if (!loadedMods.isEmpty() && target.getModId() != null && !loadedMods.contains(target.getModId())) return false;
+            else if (!loadedMods.isEmpty() && target.getModId() != null && !loadedMods.contains(target.getModId()))
+                return false;
         }
 
         return true;
@@ -92,9 +94,10 @@ public interface IMixins {
 
             // Check coremod first
             if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
-                && loadedCoreMods.contains(target.getCoreModClass()))
+                    && loadedCoreMods.contains(target.getCoreModClass()))
                 return false;
-            else if (!loadedMods.isEmpty() && target.getModId() != null && loadedMods.contains(target.getModId())) return false;
+            else if (!loadedMods.isEmpty() && target.getModId() != null && loadedMods.contains(target.getModId()))
+                return false;
         }
 
         return true;
@@ -102,8 +105,8 @@ public interface IMixins {
 
     default boolean shouldLoad(Set<String> loadedCoreMods, Set<String> loadedMods) {
         return (shouldLoadSide() && getApplyIf().get()
-            && allModsLoaded(getTargetedMods(), loadedCoreMods, loadedMods)
-            && noModsLoaded(getExcludedMods(), loadedCoreMods, loadedMods));
+                && allModsLoaded(getTargetedMods(), loadedCoreMods, loadedMods)
+                && noModsLoaded(getExcludedMods(), loadedCoreMods, loadedMods));
     }
 
 }

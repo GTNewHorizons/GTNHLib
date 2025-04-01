@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gtnewhorizon.gtnhlib.mixin.IMixins;
 import net.minecraft.launchwrapper.Launch;
 
 import org.spongepowered.asm.launch.GlobalProperties;
@@ -15,6 +14,7 @@ import com.google.common.eventbus.Subscribe;
 import com.gtnewhorizon.gtnhlib.Tags;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHolderDiscoverer;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
+import com.gtnewhorizon.gtnhlib.mixin.IMixins;
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 
