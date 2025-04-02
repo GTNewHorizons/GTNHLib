@@ -14,6 +14,7 @@ import com.google.common.eventbus.Subscribe;
 import com.gtnewhorizon.gtnhlib.Tags;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHolderDiscoverer;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
+import com.gtnewhorizon.gtnhlib.mixin.IMixins;
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 
@@ -83,7 +84,7 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
 
     @Override
     public List<String> getMixins(Set<String> loadedCoreMods) {
-        return Mixins.getEarlyMixins(loadedCoreMods);
+        return IMixins.getEarlyMixins(Mixins.class, loadedCoreMods);
     }
 
     @Override
