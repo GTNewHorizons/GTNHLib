@@ -47,6 +47,13 @@ public class ServerThreadUtil {
         ServerThreadUtil.serverThread = serverThread;
     }
 
+    @ApiStatus.Internal
+    public static void clear() {
+        futureTaskQueue.clear();
+        ServerThreadUtil.server = null;
+        ServerThreadUtil.serverThread = null;
+    }
+
     public static boolean isCallingFromMinecraftThread() {
         return Thread.currentThread() == serverThread;
     }

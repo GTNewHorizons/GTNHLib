@@ -30,4 +30,9 @@ public class MixinMinecraftServer {
         ServerThreadUtil.setup((MinecraftServer) (Object) this, Thread.currentThread());
     }
 
+    @Inject(method = "run", at = @At("RETURN"))
+    private void clearServerThreadReference(CallbackInfo ci) {
+        ServerThreadUtil.clear();
+    }
+
 }
