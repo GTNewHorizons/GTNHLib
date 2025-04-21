@@ -17,8 +17,8 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
-    compileOnly("com.github.GTNewHorizons:lwjgl3ify:2.1.6") { transitive = false }
-    compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.7") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:lwjgl3ify:2.1.11") { transitive = false }
+    compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.10") { transitive = false }
 
     compileOnly('org.jetbrains:annotations:26.0.1')
     compileOnly("org.projectlombok:lombok:1.18.36") {transitive = false }
