@@ -39,6 +39,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     private final Quad.Flags FLAGS = new Quad.Flags(true, true, true, true);
     private final ObjectPooler<QuadView> quadBuf = new ObjectPooler<>(Quad::new);
     private final List<QuadView> collectedQuads = new ObjectArrayList<>();
+    private int shaderBlockId = -1;
 
     // Any offset we need to the Tesselator's offset!
     private final BlockPos offset = new BlockPos();
@@ -101,6 +102,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
                     -offset.x,
                     -offset.y,
                     -offset.z);
+            quad.setShaderBlockId(shaderBlockId);
 
             if (quad.isDeleted()) {
                 quadBuf.releaseInstance(quad);
@@ -247,6 +249,17 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
                 rawBuffer = Arrays.copyOf(rawBuffer, rawBufferSize);
             }
         }
+    }
+
+    public void setShaderBlockId(int blockId) {
+        // Flush queue, so we capture the blockId in quads before we change it
+        if (isDrawing) {
+            draw();
+            isDrawing = true;
+        }
+
+        // Now set new blockId
+        shaderBlockId = blockId;
     }
 
 }
