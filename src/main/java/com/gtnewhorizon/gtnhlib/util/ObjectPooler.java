@@ -26,15 +26,12 @@ public class ObjectPooler<T> {
     }
 
     public void releaseInstance(T instance) {
+        if (instance == null) return;
         this.availableInstances.add(instance);
     }
 
     public void releaseInstances(Collection<T> instances) {
-        instances.forEach(i -> {
-            if (i != null) {
-                releaseInstance(i);
-            }
-        });
+        instances.forEach(this::releaseInstance);
         instances.clear();
     }
 
