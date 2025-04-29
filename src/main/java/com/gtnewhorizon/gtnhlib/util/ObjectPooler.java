@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.function.Supplier;
 
 public class ObjectPooler<T> {
@@ -22,5 +23,10 @@ public class ObjectPooler<T> {
 
     public void releaseInstance(T instance) {
         this.availableInstances.add(instance);
+    }
+
+    public void releaseInstances(Collection<T> instances) {
+        this.availableInstances.addAll(instances);
+        instances.clear();
     }
 }
