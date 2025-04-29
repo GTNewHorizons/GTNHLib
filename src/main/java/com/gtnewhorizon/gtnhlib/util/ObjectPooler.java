@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.NotNull;
 
 public class ObjectPooler<T> {
 
@@ -28,11 +29,14 @@ public class ObjectPooler<T> {
     }
 
     public void releaseInstances(Collection<T> instances) {
-        this.availableInstances.addAll(instances);
+        instances.forEach(i -> { if (i != null) { releaseInstance(i); }});
         instances.clear();
     }
 
-    public void releaseInstances(T[] instances) {
+    /**
+     * Uses arraycopy instead of a loop. Faster, but doesn't check that the input is nonnull. Use with care!
+     */
+    public void releaseInstances(@NotNull T[] instances) {
         this.availableInstances.addElements(availableInstances.size(), instances);
         Arrays.fill(instances, null);
     }
