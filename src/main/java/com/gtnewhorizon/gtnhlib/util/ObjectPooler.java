@@ -1,9 +1,10 @@
 package com.gtnewhorizon.gtnhlib.util;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class ObjectPooler<T> {
 
