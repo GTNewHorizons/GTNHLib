@@ -4,8 +4,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class ObjectPooler<T> {
 
@@ -29,7 +30,11 @@ public class ObjectPooler<T> {
     }
 
     public void releaseInstances(Collection<T> instances) {
-        instances.forEach(i -> { if (i != null) { releaseInstance(i); }});
+        instances.forEach(i -> {
+            if (i != null) {
+                releaseInstance(i);
+            }
+        });
         instances.clear();
     }
 
