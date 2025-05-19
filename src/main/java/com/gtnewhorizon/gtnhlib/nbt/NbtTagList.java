@@ -1,14 +1,16 @@
 package com.gtnewhorizon.gtnhlib.nbt;
 
+import java.util.AbstractList;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.AbstractList;
-
 /**
  * A wrapper view of a {@link NBTTagList}.
+ * 
  * @param <T>
  */
 @UnmodifiableView
@@ -18,11 +20,13 @@ public class NbtTagList<T> extends AbstractList<T> {
     protected final NBTTagListGetter<T> getter;
 
     @SuppressWarnings("MagicConstant")
-    protected NbtTagList(NBTTagList delegate, @MagicConstant(valuesFromClass = NbtUtils.class) int typeId, NBTTagListGetter<T> getter) {
+    protected NbtTagList(NBTTagList delegate, @MagicConstant(valuesFromClass = NbtUtils.class) int typeId,
+            NBTTagListGetter<T> getter) {
         this.delegate = delegate;
         this.getter = getter;
-        if(this.delegate.getId() != typeId) {
-            throw new IllegalArgumentException("Invalid tag list type, expected " + typeId + ", got " + delegate.getId());
+        if (this.delegate.getId() != typeId) {
+            throw new IllegalArgumentException(
+                    "Invalid tag list type, expected " + typeId + ", got " + delegate.getId());
         }
     }
 

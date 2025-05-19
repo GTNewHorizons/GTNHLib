@@ -1,5 +1,11 @@
 package com.gtnewhorizon.gtnhlib.nbt;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
@@ -8,14 +14,9 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 public class NbtUtils {
 
@@ -43,7 +44,7 @@ public class NbtUtils {
 
     @Nullable
     private static NBTBase getListElementRaw(@NotNull NBTTagList list, int index) {
-        if(index < 0 || index >= list.tagCount()) {
+        if (index < 0 || index >= list.tagCount()) {
             return getRawList(list).get(index);
         }
         return null;
@@ -57,16 +58,17 @@ public class NbtUtils {
     @NotNull
     public static NBTTagList getNbtTagListUnchecked(@NotNull NBTTagCompound tag, @NotNull String tagName) {
         NBTBase nbtTagList = getRawMap(tag).get(tagName);
-        if(nbtTagList == null || nbtTagList.getId() != TYPE_LIST) {
+        if (nbtTagList == null || nbtTagList.getId() != TYPE_LIST) {
             return new NBTTagList();
         }
         return (NBTTagList) nbtTagList;
     }
 
     @NotNull
-    public static <T> NBTTagList encodeToList(@NotNull Collection<T> values, @NotNull Function<T, ? extends NBTBase> encoder) {
+    public static <T> NBTTagList encodeToList(@NotNull Collection<T> values,
+            @NotNull Function<T, ? extends NBTBase> encoder) {
         NBTTagList list = new NBTTagList();
-        for(T value : values) {
+        for (T value : values) {
             list.appendTag(encoder.apply(value));
         }
         return list;
@@ -75,25 +77,28 @@ public class NbtUtils {
     @NotNull
     public static <T> List<T> decodeFromList(@NotNull NBTTagList list, @NotNull NBTTagListGetter<T> getter) {
         List<T> result = new ArrayList<>();
-        for(int i = 0; i < list.tagCount(); i++) {
+        for (int i = 0; i < list.tagCount(); i++) {
             T value = getter.get(list, i);
             result.add(value);
         }
         return result;
     }
 
-    public static <T> void writeList(@NotNull NBTTagCompound nbt, @NotNull String tagName, @NotNull List<T> values, @NotNull Function<T, ? extends NBTBase> func) {
+    public static <T> void writeList(@NotNull NBTTagCompound nbt, @NotNull String tagName, @NotNull List<T> values,
+            @NotNull Function<T, ? extends NBTBase> func) {
         nbt.setTag(tagName, encodeToList(values, func));
     }
 
     @NotNull
-    public static <T> List<T> readList(@NotNull NBTTagCompound nbt, @NotNull String tagName, @NotNull NBTTagListGetter<T> getter) {
+    public static <T> List<T> readList(@NotNull NBTTagCompound nbt, @NotNull String tagName,
+            @NotNull NBTTagListGetter<T> getter) {
         NBTTagList tagList = getNbtTagListUnchecked(nbt, tagName);
         return decodeFromList(tagList, getter);
     }
 
     @NotNull
-    public static <T> List<T> readList(@NotNull NBTTagCompound nbt, @NotNull String tagName, int type, @NotNull NBTTagListGetter<T> getter) {
+    public static <T> List<T> readList(@NotNull NBTTagCompound nbt, @NotNull String tagName, int type,
+            @NotNull NBTTagListGetter<T> getter) {
         NBTTagList tagList = nbt.getTagList(tagName, type);
         return decodeFromList(tagList, getter);
     }
@@ -120,7 +125,8 @@ public class NbtUtils {
 
     public static byte[] getByteArrayAtList(@NotNull NBTTagList list, int index) {
         NBTBase e = getListElementRaw(list, index);
-        return e != null && e.getId() == TYPE_BYTE_ARRAY && e instanceof NBTTagByteArray eba ? eba.func_150292_c() : new byte[0];
+        return e != null && e.getId() == TYPE_BYTE_ARRAY && e instanceof NBTTagByteArray eba ? eba.func_150292_c()
+                : new byte[0];
     }
 
     public static NBTTagList getNbtTagListAtList(@NotNull NBTTagList list, int index) {

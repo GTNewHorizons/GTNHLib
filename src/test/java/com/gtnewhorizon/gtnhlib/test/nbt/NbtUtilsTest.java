@@ -1,15 +1,17 @@
 package com.gtnewhorizon.gtnhlib.test.nbt;
 
-import com.gtnewhorizon.gtnhlib.nbt.NbtUtils;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.gtnewhorizon.gtnhlib.nbt.NbtUtils;
 
 public class NbtUtilsTest {
 
@@ -18,7 +20,7 @@ public class NbtUtilsTest {
         List<String> values = Arrays.asList("Hello", "World", "!");
         NBTTagList result = NbtUtils.encodeToList(values, NBTTagString::new);
         List<String> resultList = new ArrayList<>();
-        for(int i = 0; i < result.tagCount(); i++) {
+        for (int i = 0; i < result.tagCount(); i++) {
             resultList.add(result.getStringTagAt(i));
         }
         Assertions.assertEquals(values, resultList);
@@ -69,7 +71,8 @@ public class NbtUtilsTest {
         compound.setTag(key, list);
 
         List<String> result = NbtUtils.readList(compound, key, NbtUtils.TYPE_STRING, NBTTagList::getStringTagAt);
-        List<String> resultEmpty = NbtUtils.readList(compound, key, NbtUtils.TYPE_BYTE_ARRAY, NBTTagList::getStringTagAt);
+        List<String> resultEmpty = NbtUtils
+                .readList(compound, key, NbtUtils.TYPE_BYTE_ARRAY, NBTTagList::getStringTagAt);
 
         Assertions.assertEquals(values, result);
         Assertions.assertEquals(new ArrayList<>(), resultEmpty);

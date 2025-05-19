@@ -9,5 +9,6 @@ import net.minecraft.nbt.NBTTagList;
  */
 @FunctionalInterface
 public interface NBTTagListGetter<T> {
+
     T get(NBTTagList list, int index);
 }
