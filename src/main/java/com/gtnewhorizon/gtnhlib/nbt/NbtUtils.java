@@ -146,6 +146,40 @@ public class NbtUtils {
         return decodeFromList(tagList, getter);
     }
 
+    /**
+     * Gets the existing compound or create it.
+     *
+     * @param nbt     the parent compound
+     * @param tagName the tag name
+     * @return the compound
+     */
+    @NotNull
+    public static NBTTagCompound getOrCreateCompound(@NotNull NBTTagCompound nbt, @NotNull String tagName) {
+        if (!nbt.hasKey(tagName)) {
+            nbt.setTag(tagName, new NBTTagCompound());
+        }
+        return nbt.getCompoundTag(tagName);
+    }
+
+    /**
+     * Gets the existing list or create it.
+     * 
+     * @param nbt     the compound
+     * @param tagName the tag name
+     * @param type    the type of the values
+     * @return the list
+     */
+    @NotNull
+    public static NBTTagList getOrCreateList(@NotNull NBTTagCompound nbt, @NotNull String tagName, int type) {
+        if (!nbt.hasKey(tagName)) {
+            nbt.setTag(tagName, new NBTTagList());
+            // make type to 0, because the type of an new empty list is 0.
+            // otherwise, we won't get the correctly object ref because the types are mismatching.
+            type = 0;
+        }
+        return nbt.getTagList(tagName, type);
+    }
+
     @Nullable
     private static NBTBase getElementAtList(@NotNull NBTTagList list, int index) {
         if (index < 0 || index >= list.tagCount()) {
