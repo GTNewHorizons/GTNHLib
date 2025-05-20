@@ -10,7 +10,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 /**
  * A wrapper view of a {@link NBTTagList}.
- * 
+ *
  * @param <T>
  */
 @UnmodifiableView

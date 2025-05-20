@@ -10,5 +10,13 @@ import net.minecraft.nbt.NBTTagList;
 @FunctionalInterface
 public interface NBTTagListGetter<T> {
 
-    T get(NBTTagList list, int index);
+    /**
+     * Read the value from the {@link NBTTagList}.
+     *
+     * @param list  the list
+     * @param index the index
+     * @return the value
+     * @throws ClassCastException when the type is not valid.
+     */
+    T get(NBTTagList list, int index) throws ClassCastException;
 }

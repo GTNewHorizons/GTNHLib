@@ -15,39 +15,48 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 
+import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NbtUtils {
 
-    public static final int TYPE_BYTE = 1;
-    public static final int TYPE_SHORT = 2;
-    public static final int TYPE_INT = 3;
-    public static final int TYPE_LONG = 4;
-    public static final int TYPE_FLOAT = 5;
-    public static final int TYPE_DOUBLE = 6;
+    // @formatter:off
+    // spotless:off
+    public static final int TYPE_BYTE       = 1;
+    public static final int TYPE_SHORT      = 2;
+    public static final int TYPE_INT        = 3;
+    public static final int TYPE_LONG       = 4;
+    public static final int TYPE_FLOAT      = 5;
+    public static final int TYPE_DOUBLE     = 6;
     public static final int TYPE_BYTE_ARRAY = 7;
-    public static final int TYPE_STRING = 8;
-    public static final int TYPE_LIST = 9;
-    public static final int TYPE_COMPOUND = 10;
-    public static final int TYPE_INT_ARRAY = 11;
+    public static final int TYPE_STRING     = 8;
+    public static final int TYPE_LIST       = 9;
+    public static final int TYPE_COMPOUND   = 10;
+    public static final int TYPE_INT_ARRAY  = 11;
+    // spotless:on
+    // @formatter:on
 
+    /**
+     * Gets the internal map of the compound.
+     *
+     * @param tag the compound
+     * @return the internal map.
+     */
     @SuppressWarnings("unchecked")
-    private static Map<String, NBTBase> getRawMap(@NotNull NBTTagCompound tag) {
+    public static Map<String, NBTBase> getRawMap(@NotNull NBTTagCompound tag) {
         return tag.tagMap;
     }
 
+    /**
+     * Gets the internal list of the nbt list.
+     *
+     * @param list the nbt list
+     * @return the internal list.
+     */
     @SuppressWarnings("unchecked")
-    private static List<NBTBase> getRawList(@NotNull NBTTagList list) {
+    public static List<NBTBase> getRawList(@NotNull NBTTagList list) {
         return list.tagList;
-    }
-
-    @Nullable
-    private static NBTBase getListElementRaw(@NotNull NBTTagList list, int index) {
-        if (index < 0 || index >= list.tagCount()) {
-            return getRawList(list).get(index);
-        }
-        return null;
     }
 
     /**
@@ -64,6 +73,14 @@ public class NbtUtils {
         return (NBTTagList) nbtTagList;
     }
 
+    /**
+     * Create a nbt list with values that are transformed by the encoder.
+     *
+     * @param values  the values
+     * @param encoder the encoder
+     * @param <T>     the type of values
+     * @return the new created nbt list
+     */
     @NotNull
     public static <T> NBTTagList encodeToList(@NotNull Collection<T> values,
             @NotNull Function<T, ? extends NBTBase> encoder) {
@@ -74,8 +91,19 @@ public class NbtUtils {
         return list;
     }
 
+    /**
+     * Return a list with entries in the nbt list via the getter.
+     *
+     * @param list   the nbt list
+     * @param getter the entry getter
+     * @param <T>    the type of values
+     * @return the list with transformed entries
+     * @throws ClassCastException when the type is not valid.
+     * @see NBTTagListGetter
+     */
     @NotNull
-    public static <T> List<T> decodeFromList(@NotNull NBTTagList list, @NotNull NBTTagListGetter<T> getter) {
+    public static <T> List<T> decodeFromList(@NotNull NBTTagList list, @NotNull NBTTagListGetter<T> getter)
+            throws ClassCastException {
         List<T> result = new ArrayList<>();
         for (int i = 0; i < list.tagCount(); i++) {
             T value = getter.get(list, i);
@@ -84,11 +112,21 @@ public class NbtUtils {
         return result;
     }
 
+    /**
+     * Set the encoded list to the compound with given tag name.
+     *
+     * @see #encodeToList(Collection, Function)
+     */
     public static <T> void writeList(@NotNull NBTTagCompound nbt, @NotNull String tagName, @NotNull List<T> values,
             @NotNull Function<T, ? extends NBTBase> func) {
         nbt.setTag(tagName, encodeToList(values, func));
     }
 
+    /**
+     * Read the decoded list from the compound with given tag name, while the type is not checked.
+     *
+     * @see #decodeFromList(NBTTagList, NBTTagListGetter)
+     */
     @NotNull
     public static <T> List<T> readList(@NotNull NBTTagCompound nbt, @NotNull String tagName,
             @NotNull NBTTagListGetter<T> getter) {
@@ -96,42 +134,53 @@ public class NbtUtils {
         return decodeFromList(tagList, getter);
     }
 
+    /**
+     * Read the decoded list from the compound with given tag name.
+     *
+     * @see #decodeFromList(NBTTagList, NBTTagListGetter)
+     */
     @NotNull
-    public static <T> List<T> readList(@NotNull NBTTagCompound nbt, @NotNull String tagName, int type,
-            @NotNull NBTTagListGetter<T> getter) {
+    public static <T> List<T> readList(@NotNull NBTTagCompound nbt, @NotNull String tagName,
+            @MagicConstant(valuesFromClass = NbtUtils.class) int type, @NotNull NBTTagListGetter<T> getter) {
         NBTTagList tagList = nbt.getTagList(tagName, type);
         return decodeFromList(tagList, getter);
     }
 
-    public static byte getByteAtList(@NotNull NBTTagList list, int index) {
-        NBTBase e = getListElementRaw(list, index);
-        return e != null && e.getId() == TYPE_BYTE && e instanceof NBTTagByte eb ? eb.func_150290_f() : 0;
+    @Nullable
+    private static NBTBase getElementAtList(@NotNull NBTTagList list, int index) {
+        if (index < 0 || index >= list.tagCount()) {
+            return getRawList(list).get(index);
+        }
+        return null;
     }
 
-    public static short getShortAtList(@NotNull NBTTagList list, int index) {
-        NBTBase e = getListElementRaw(list, index);
-        return e != null && e.getId() == TYPE_SHORT && e instanceof NBTTagShort es ? es.func_150289_e() : 0;
+    public static byte getByteAtList(@NotNull NBTTagList list, int index) throws ClassCastException {
+        NBTBase e = getElementAtList(list, index);
+        return e != null && e.getId() == TYPE_BYTE ? ((NBTTagByte) e).func_150290_f() : 0;
     }
 
-    public static int getIntAtList(@NotNull NBTTagList list, int index) {
-        NBTBase e = getListElementRaw(list, index);
-        return e != null && e.getId() == TYPE_INT && e instanceof NBTTagInt ei ? ei.func_150287_d() : 0;
+    public static short getShortAtList(@NotNull NBTTagList list, int index) throws ClassCastException {
+        NBTBase e = getElementAtList(list, index);
+        return e != null && e.getId() == TYPE_SHORT ? ((NBTTagShort) e).func_150289_e() : 0;
     }
 
-    public static long getLongAtList(@NotNull NBTTagList list, int index) {
-        NBTBase e = getListElementRaw(list, index);
-        return e != null && e.getId() == TYPE_LONG && e instanceof NBTTagLong el ? el.func_150291_c() : 0;
+    public static int getIntAtList(@NotNull NBTTagList list, int index) throws ClassCastException {
+        NBTBase e = getElementAtList(list, index);
+        return e != null && e.getId() == TYPE_INT ? ((NBTTagInt) e).func_150287_d() : 0;
     }
 
-    public static byte[] getByteArrayAtList(@NotNull NBTTagList list, int index) {
-        NBTBase e = getListElementRaw(list, index);
-        return e != null && e.getId() == TYPE_BYTE_ARRAY && e instanceof NBTTagByteArray eba ? eba.func_150292_c()
-                : new byte[0];
+    public static long getLongAtList(@NotNull NBTTagList list, int index) throws ClassCastException {
+        NBTBase e = getElementAtList(list, index);
+        return e != null && e.getId() == TYPE_LONG ? ((NBTTagLong) e).func_150291_c() : 0;
     }
 
-    public static NBTTagList getNbtTagListAtList(@NotNull NBTTagList list, int index) {
-        NBTBase e = getListElementRaw(list, index);
-        return e != null && e.getId() == TYPE_LIST && e instanceof NBTTagList el ? el : null;
+    public static byte[] getByteArrayAtList(@NotNull NBTTagList list, int index) throws ClassCastException {
+        NBTBase e = getElementAtList(list, index);
+        return e != null && e.getId() == TYPE_BYTE_ARRAY ? ((NBTTagByteArray) e).func_150292_c() : new byte[0];
     }
 
+    public static NBTTagList getNbtTagListAtList(@NotNull NBTTagList list, int index) throws ClassCastException {
+        NBTBase e = getElementAtList(list, index);
+        return e != null && e.getId() == TYPE_LIST ? (NBTTagList) e : null;
+    }
 }
