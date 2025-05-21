@@ -3,6 +3,8 @@ package com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import org.joml.Vector3i;
+
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -17,11 +19,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public class SpatialHashGrid<T> {
 
     private final int cellSize;
-    private final BiConsumer<Int3, T> positionExtractor;
-    private final Int3 scratch = new Int3();
+    private final BiConsumer<Vector3i, T> positionExtractor;
+    private final Vector3i scratch = new Vector3i();
     private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid = new Long2ObjectOpenHashMap<>();
 
-    public SpatialHashGrid(int cellSize, BiConsumer<Int3, T> positionExtractor) {
+    public SpatialHashGrid(int cellSize, BiConsumer<Vector3i, T> positionExtractor) {
         this.cellSize = cellSize;
         this.positionExtractor = positionExtractor;
     }
