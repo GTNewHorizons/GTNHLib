@@ -72,7 +72,7 @@ public class SpatialHashGrid<T> {
         final int cellRad = (radius + cellSize - 1) / cellSize;
         final int radiusSquared = radius * radius;
 
-        final List<T> result = new ObjectArrayList<>();
+        final ObjectArrayList<T> result = new ObjectArrayList<>();
 
         for (int dx = -cellRad; dx <= cellRad; dx++) {
             for (int dy = -cellRad; dy <= cellRad; dy++) {
@@ -81,11 +81,18 @@ public class SpatialHashGrid<T> {
                     final ObjectArrayList<T> list = grid.get(key);
                     if (list == null) continue;
 
-                    for (T obj : list) {
-                        var pos = positionExtractor.apply(obj);
-                        if (distanceSquared(x, y, z, pos.x(), pos.y(), pos.z()) > radiusSquared) continue;
+                    boolean isEdge = (Math.abs(dx) == cellRad) || (Math.abs(dy) == cellRad)
+                            || (Math.abs(dz) == cellRad);
 
-                        result.add(obj);
+                    if (isEdge) {
+                        for (T obj : list) {
+                            var pos = positionExtractor.apply(obj);
+                            if (distanceSquared(x, y, z, pos.x(), pos.y(), pos.z()) > radiusSquared) continue;
+
+                            result.add(obj);
+                        }
+                    } else {
+                        result.addAll(list);
                     }
                 }
             }
