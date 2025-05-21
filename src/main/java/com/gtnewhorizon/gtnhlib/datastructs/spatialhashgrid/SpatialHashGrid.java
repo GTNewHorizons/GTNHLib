@@ -69,9 +69,10 @@ public class SpatialHashGrid<T> {
      * @return list of nearby objects
      */
     public List<T> findNearby(int x, int y, int z, int radius) {
-        final int cellX = x / cellSize;
-        final int cellY = y / cellSize;
-        final int cellZ = z / cellSize;
+        radius = Math.abs(radius); // just no
+        final int cellX = Math.floorDiv(x, cellSize);
+        final int cellY = Math.floorDiv(y, cellSize);
+        final int cellZ = Math.floorDiv(z, cellSize);
 
         // Make sure that cells which partially fall in the radius are still checked
         final int cellRad = (radius + cellSize - 1) / cellSize;
