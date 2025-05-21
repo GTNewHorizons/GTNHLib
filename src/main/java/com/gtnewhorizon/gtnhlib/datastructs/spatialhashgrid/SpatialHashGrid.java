@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
@@ -35,8 +34,6 @@ public class SpatialHashGrid<T> {
 
     /**
      * Insert an object into the grid
-     *
-     * @param obj
      */
     public void insert(T obj) {
         var pos = positionExtractor.getPosition(obj);
@@ -47,8 +44,6 @@ public class SpatialHashGrid<T> {
 
     /**
      * Remove an object for the grid
-     *
-     * @param obj
      */
     public void remove(T obj) {
         var pos = positionExtractor.getPosition(obj);
@@ -65,32 +60,31 @@ public class SpatialHashGrid<T> {
     /**
      * Search the grid for nearby objects
      *
-     * @param x
-     * @param y
-     * @param z
-     * @param radius
      * @return list of nearby objects
      */
     public List<T> findNearby(int x, int y, int z, int radius) {
-        int rCells = (int) Math.ceil((double) radius / cellSize);
-        int gx = x / cellSize;
-        int gy = y / cellSize;
-        int gz = z / cellSize;
+        final int cellX = x / cellSize;
+        final int cellY = y / cellSize;
+        final int cellZ = z / cellSize;
 
-        List<T> result = new ArrayList<>();
+        // Make sure that cells which partially fall in the radius are still checked
+        final int cellRad = (radius + cellSize - 1) / cellSize;
+        final int radiusSquared = radius * radius;
 
-        for (int dx = -rCells; dx <= rCells; dx++) {
-            for (int dy = -rCells; dy <= rCells; dy++) {
-                for (int dz = -rCells; dz <= rCells; dz++) {
-                    long key = pack(gx + dx, gy + dy, gz + dz);
-                    ObjectArrayList<T> list = grid.get(key);
-                    if (list != null) {
-                        for (T obj : list) {
-                            Int3 pos = positionExtractor.getPosition(obj);
-                            if (distanceSquared(x, y, z, pos.x(), pos.y(), pos.z()) <= radius * radius) {
-                                result.add(obj);
-                            }
-                        }
+        final List<T> result = new ObjectArrayList<>();
+
+        for (int dx = -cellRad; dx <= cellRad; dx++) {
+            for (int dy = -cellRad; dy <= cellRad; dy++) {
+                for (int dz = -cellRad; dz <= cellRad; dz++) {
+                    long key = pack(cellX + dx, cellY + dy, cellZ + dz);
+                    final ObjectArrayList<T> list = grid.get(key);
+                    if (list == null) continue;
+
+                    for (T obj : list) {
+                        Int3 pos = positionExtractor.getPosition(obj);
+                        if (distanceSquared(x, y, z, pos.x(), pos.y(), pos.z()) > radiusSquared) continue;
+
+                        result.add(obj);
                     }
                 }
             }
