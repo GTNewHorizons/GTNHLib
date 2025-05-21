@@ -64,7 +64,7 @@ public class SpatialHashGrid<T> {
     /**
      * Search the grid for nearby objects
      *
-     * @param radius
+     * @param radius distance in blocks to check (sphere)
      * @return list of nearby objects
      */
     public List<T> findNearby(int x, int y, int z, int radius) {
