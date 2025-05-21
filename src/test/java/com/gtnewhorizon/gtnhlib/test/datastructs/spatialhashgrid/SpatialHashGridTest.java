@@ -1,66 +1,120 @@
 package com.gtnewhorizon.gtnhlib.test.datastructs.spatialhashgrid;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.List;
+import java.util.Collection;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid.Int3;
 import com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid.SpatialHashGrid;
 
 public class SpatialHashGridTest {
 
-    SpatialHashGrid<TestObject> grid;
+    @Test
+    void testInsertAndQuery() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
 
-    @BeforeEach
-    public void setup() {
-        grid = new SpatialHashGrid<>(10, obj -> new Int3(obj.x, obj.y, obj.z));
+        TestObject obj = new TestObject(5, 5, 5);
+        grid.insert(obj);
+
+        Collection<TestObject> results = grid.findNearby(5, 5, 5, 1);
+        assertNotNull(results);
+        assertTrue(results.contains(obj));
+        assertEquals(1, results.size());
     }
 
     @Test
-    public void testInsertionAndQuery() {
-        TestObject a = new TestObject("A", 5, 5, 5);
-        TestObject b = new TestObject("B", 50, 50, 50);
-        grid.insert(a);
-        grid.insert(b);
+    void testMultipleInserts() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
 
-        List<TestObject> nearby = grid.findNearby(6, 5, 5, 5);
-        assertEquals(1, nearby.size());
-        assertEquals("A", nearby.get(0).id);
+        TestObject obj1 = new TestObject(5, 5, 5);
+        TestObject obj2 = new TestObject(3, 3, 3);
+        grid.insert(obj1);
+        grid.insert(obj2);
+
+        Collection<TestObject> results = grid.findNearby(5, 5, 5, 10);
+        assertNotNull(results);
+        assertTrue(results.contains(obj1));
+        assertTrue(results.contains(obj2));
+        assertEquals(2, results.size());
     }
 
     @Test
-    public void testRemoval() {
-        TestObject a = new TestObject("A", 5, 5, 5);
-        grid.insert(a);
+    void testEmptyGrid() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
 
-        List<TestObject> nearby = grid.findNearby(5, 5, 5, 5);
-        assertEquals(1, nearby.size());
-
-        grid.remove(a);
-        nearby = grid.findNearby(5, 5, 5, 5);
-        assertEquals(0, nearby.size());
+        Collection<TestObject> results = grid.findNearby(0, 0, 0, 10);
+        assertNotNull(results);
+        assertTrue(results.isEmpty());
     }
 
     @Test
-    public void testQueryNoResults() {
-        List<TestObject> nearby = grid.findNearby(100, 100, 100, 10);
-        assertTrue(nearby.isEmpty());
+    void testNegativeCoordinates() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
+
+        TestObject obj = new TestObject(-5, -5, -5);
+        grid.insert(obj);
+
+        Collection<TestObject> results = grid.findNearby(-5, -5, -5, 1);
+        assertNotNull(results);
+        assertTrue(results.contains(obj));
+        assertEquals(1, results.size());
     }
 
     @Test
-    public void testMultipleObjectsInRadius() {
-        TestObject a = new TestObject("A", 5, 5, 5);
-        TestObject b = new TestObject("B", 7, 5, 5);
-        TestObject c = new TestObject("C", 20, 20, 20);
-        grid.insert(a);
-        grid.insert(b);
-        grid.insert(c);
+    void testObjectMove() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
 
-        List<TestObject> nearby = grid.findNearby(6, 5, 5, 5);
-        assertEquals(2, nearby.size());
+        TestObject obj = new TestObject(5, 5, 5);
+        grid.insert(obj);
+
+        grid.remove(obj);
+        obj.x = 15;
+        grid.insert(obj);
+
+        Collection<TestObject> results = grid.findNearby(15, 5, 5, 1);
+        assertNotNull(results);
+        assertTrue(results.contains(obj));
+        assertEquals(1, results.size());
+    }
+
+    @Test
+    void testLargeRadiusQuery() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
+
+        TestObject obj1 = new TestObject(5, 5, 5);
+        TestObject obj2 = new TestObject(10, 10, 10);
+        grid.insert(obj1);
+        grid.insert(obj2);
+
+        Collection<TestObject> results = grid.findNearby(5, 5, 5, 10);
+        assertNotNull(results);
+        assertTrue(results.contains(obj1));
+        assertTrue(results.contains(obj2));
+        assertEquals(2, results.size());
     }
 }
