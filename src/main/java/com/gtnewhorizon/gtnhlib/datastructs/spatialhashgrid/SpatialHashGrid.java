@@ -83,7 +83,7 @@ public class SpatialHashGrid<T> {
                 for (int dz = -cellRad; dz <= cellRad; dz++) {
                     long key = pack(cellX + dx, cellY + dy, cellZ + dz);
                     final ObjectArrayList<T> list = grid.get(key);
-                    if (list == null) continue;
+                    if (list == null || list.isEmpty()) continue;
 
                     boolean isEdge = (Math.abs(dx) == cellRad) || (Math.abs(dy) == cellRad)
                             || (Math.abs(dz) == cellRad);
