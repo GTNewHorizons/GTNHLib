@@ -53,12 +53,12 @@ public class SpatialHashGrid<T> {
         positionExtractor.accept(scratch, obj);
         long key = hash(scratch.x, scratch.y, scratch.z);
         ObjectArrayList<T> list = grid.get(key);
-        if (list != null) {
-            list.remove(obj);
-            if (list.isEmpty()) {
-                grid.remove(key);
-            }
-        }
+        if (list == null) return;
+
+        list.remove(obj);
+        if (!list.isEmpty()) return;
+
+        grid.remove(key);
     }
 
     /**
