@@ -1,7 +1,7 @@
 package com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 
@@ -17,10 +17,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public class SpatialHashGrid<T> {
 
     private final int cellSize;
-    private final Function<T, Int3> positionExtractor;
+    private final BiConsumer<Int3, T> positionExtractor;
+    private final Int3 scratch = new Int3();
     private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid = new Long2ObjectOpenHashMap<>();
 
-    public SpatialHashGrid(int cellSize, Function<T, Int3> positionExtractor) {
+    public SpatialHashGrid(int cellSize, BiConsumer<Int3, T> positionExtractor) {
         this.cellSize = cellSize;
         this.positionExtractor = positionExtractor;
     }
@@ -37,8 +38,8 @@ public class SpatialHashGrid<T> {
      * Insert an object into the grid
      */
     public void insert(T obj) {
-        var pos = positionExtractor.apply(obj);
-        long key = hash(pos.x(), pos.y(), pos.z());
+        positionExtractor.accept(scratch, obj);
+        long key = hash(scratch.x, scratch.y, scratch.z);
         ObjectArrayList<T> list = grid.computeIfAbsent(key, k -> new ObjectArrayList<>());
         list.add(obj);
     }
@@ -47,8 +48,8 @@ public class SpatialHashGrid<T> {
      * Remove an object for the grid
      */
     public void remove(T obj) {
-        var pos = positionExtractor.apply(obj);
-        long key = hash(pos.x(), pos.y(), pos.z());
+        positionExtractor.accept(scratch, obj);
+        long key = hash(scratch.x, scratch.y, scratch.z);
         ObjectArrayList<T> list = grid.get(key);
         if (list != null) {
             list.remove(obj);
@@ -61,6 +62,7 @@ public class SpatialHashGrid<T> {
     /**
      * Search the grid for nearby objects
      *
+     * @param radius
      * @return list of nearby objects
      */
     public List<T> findNearby(int x, int y, int z, int radius) {
@@ -86,8 +88,9 @@ public class SpatialHashGrid<T> {
 
                     if (isEdge) {
                         for (T obj : list) {
-                            var pos = positionExtractor.apply(obj);
-                            if (distanceSquared(x, y, z, pos.x(), pos.y(), pos.z()) > radiusSquared) continue;
+                            positionExtractor.accept(scratch, obj);
+                            if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z) > radiusSquared)
+                                continue;
 
                             result.add(obj);
                         }
@@ -101,7 +104,7 @@ public class SpatialHashGrid<T> {
         return result;
     }
 
-    private double distanceSquared(double x1, double y1, double z1, double x2, double y2, double z2) {
+    private double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2) {
         double dx = x1 - x2;
         double dy = y1 - y2;
         double dz = z1 - z2;
