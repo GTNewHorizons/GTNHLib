@@ -129,8 +129,8 @@ public class SpatialHashGrid<T> {
 
     private double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2) {
         return switch (distanceFormula) {
-            case Chebyshev -> chebyshevDistance(x1, y1, z1, x2, y2, z2);
             case SquaredEuclidean -> squaredEuclideanDistance(x1, y1, z1, x2, y2, z2);
+            case Chebyshev -> chebyshevDistance(x1, y1, z1, x2, y2, z2);
             case Manhattan -> manhattanDistance(x1, y1, z1, x2, y2, z2);
         };
     }
