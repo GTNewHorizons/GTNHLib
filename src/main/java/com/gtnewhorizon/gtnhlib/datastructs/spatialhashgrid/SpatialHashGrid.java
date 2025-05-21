@@ -142,15 +142,11 @@ public class SpatialHashGrid<T> {
         return dx * dx + dy * dy + dz * dz;
     }
 
-    private double manhattanDistance(
-        double x1, double y1, double z1,
-        double x2, double y2, double z2) {
+    private double manhattanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
         return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
     }
 
-    private double chebyshevDistance(
-        double x1, double y1, double z1,
-        double x2, double y2, double z2) {
+    private double chebyshevDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
         return Math.max(Math.abs(x2 - x1), Math.max(Math.abs(y2 - y1), Math.abs(z2 - z1)));
     }
 }
