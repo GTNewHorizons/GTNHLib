@@ -24,6 +24,7 @@ public class SpatialHashGrid<T> {
     private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid = new Long2ObjectOpenHashMap<>();
 
     public SpatialHashGrid(int cellSize, BiConsumer<Vector3i, T> positionExtractor) {
+        if (cellSize <= 0) throw new IllegalArgumentException("cellSize can not be less than or equal to 0");
         this.cellSize = cellSize;
         this.positionExtractor = positionExtractor;
     }
