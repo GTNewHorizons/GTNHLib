@@ -22,11 +22,30 @@ public class SpatialHashGrid<T> {
     private final BiConsumer<Vector3i, T> positionExtractor;
     private final Vector3i scratch = new Vector3i();
     private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid = new Long2ObjectOpenHashMap<>();
+    private final DistanceFormula distanceFormula;
+
+    public enum DistanceFormula {
+        SquaredEuclidean,
+        /**
+         * Chessboard
+         */
+        Chebyshev,
+
+        /**
+         * Taxicab
+         */
+        Manhattan
+    }
 
     public SpatialHashGrid(int cellSize, BiConsumer<Vector3i, T> positionExtractor) {
+        this(cellSize, positionExtractor, DistanceFormula.SquaredEuclidean);
+    }
+
+    public SpatialHashGrid(int cellSize, BiConsumer<Vector3i, T> positionExtractor, DistanceFormula distanceFormula) {
         if (cellSize <= 0) throw new IllegalArgumentException("cellSize can not be less than or equal to 0");
         this.cellSize = cellSize;
         this.positionExtractor = positionExtractor;
+        this.distanceFormula = distanceFormula;
     }
 
     private long pack(int x, int y, int z) {
@@ -109,9 +128,29 @@ public class SpatialHashGrid<T> {
     }
 
     private double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2) {
+        return switch (distanceFormula) {
+            case Chebyshev -> chebyshevDistance(x1, y1, z1, x2, y2, z2);
+            case SquaredEuclidean -> squaredEuclideanDistance(x1, y1, z1, x2, y2, z2);
+            case Manhattan -> manhattanDistance(x1, y1, z1, x2, y2, z2);
+        };
+    }
+
+    private double squaredEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
         double dx = x1 - x2;
         double dy = y1 - y2;
         double dz = z1 - z2;
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    private double manhattanDistance(
+        double x1, double y1, double z1,
+        double x2, double y2, double z2) {
+        return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+    }
+
+    private double chebyshevDistance(
+        double x1, double y1, double z1,
+        double x2, double y2, double z2) {
+        return Math.max(Math.abs(x2 - x1), Math.max(Math.abs(y2 - y1), Math.abs(z2 - z1)));
     }
 }
