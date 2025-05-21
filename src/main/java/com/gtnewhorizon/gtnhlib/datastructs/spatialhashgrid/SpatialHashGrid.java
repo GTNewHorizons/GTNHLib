@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid;
 
 import java.util.List;
+import java.util.function.Function;
 
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 
@@ -16,10 +17,10 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public class SpatialHashGrid<T> {
 
     private final int cellSize;
-    private final Position3i<T> positionExtractor;
+    private final Function<T, Int3> positionExtractor;
     private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid = new Long2ObjectOpenHashMap<>();
 
-    public SpatialHashGrid(int cellSize, Position3i<T> positionExtractor) {
+    public SpatialHashGrid(int cellSize, Function<T, Int3> positionExtractor) {
         this.cellSize = cellSize;
         this.positionExtractor = positionExtractor;
     }
@@ -36,7 +37,7 @@ public class SpatialHashGrid<T> {
      * Insert an object into the grid
      */
     public void insert(T obj) {
-        var pos = positionExtractor.getPosition(obj);
+        var pos = positionExtractor.apply(obj);
         long key = hash(pos.x(), pos.y(), pos.z());
         ObjectArrayList<T> list = grid.computeIfAbsent(key, k -> new ObjectArrayList<>());
         list.add(obj);
@@ -46,7 +47,7 @@ public class SpatialHashGrid<T> {
      * Remove an object for the grid
      */
     public void remove(T obj) {
-        var pos = positionExtractor.getPosition(obj);
+        var pos = positionExtractor.apply(obj);
         long key = hash(pos.x(), pos.y(), pos.z());
         ObjectArrayList<T> list = grid.get(key);
         if (list != null) {
@@ -81,7 +82,7 @@ public class SpatialHashGrid<T> {
                     if (list == null) continue;
 
                     for (T obj : list) {
-                        Int3 pos = positionExtractor.getPosition(obj);
+                        var pos = positionExtractor.apply(obj);
                         if (distanceSquared(x, y, z, pos.x(), pos.y(), pos.z()) > radiusSquared) continue;
 
                         result.add(obj);
