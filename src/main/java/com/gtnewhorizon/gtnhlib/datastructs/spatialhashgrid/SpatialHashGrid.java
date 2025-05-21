@@ -1,27 +1,26 @@
 package com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
- * 3D Spatial Grid Per Dimension Objects are hashed using their position
+ * 3D Spatial Grid <br>
+ * Objects are hashed using their position
  *
  * @param <T> object type to store
  */
-public class DimSpatialHashGrid<T> {
+public class SpatialHashGrid<T> {
 
     private final int cellSize;
     private final Position3i<T> positionExtractor;
-    private final Int2ObjectOpenHashMap<Long2ObjectOpenHashMap<ObjectArrayList<T>>> gridByDimension = new Int2ObjectOpenHashMap<>();
+    private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid = new Long2ObjectOpenHashMap<>();
 
-    public DimSpatialHashGrid(int cellSize, Position3i<T> positionExtractor) {
+    public SpatialHashGrid(int cellSize, Position3i<T> positionExtractor) {
         this.cellSize = cellSize;
         this.positionExtractor = positionExtractor;
     }
@@ -36,53 +35,43 @@ public class DimSpatialHashGrid<T> {
 
     /**
      * Insert an object into the grid
-     * 
-     * @param dimensionId
+     *
      * @param obj
      */
-    public void insert(int dimensionId, T obj) {
+    public void insert(T obj) {
         var pos = positionExtractor.getPosition(obj);
         long key = hash(pos.x(), pos.y(), pos.z());
-        var grid = gridByDimension.computeIfAbsent(dimensionId, d -> new Long2ObjectOpenHashMap<>());
         ObjectArrayList<T> list = grid.computeIfAbsent(key, k -> new ObjectArrayList<>());
         list.add(obj);
     }
 
     /**
      * Remove an object for the grid
-     * 
-     * @param dimensionId
+     *
      * @param obj
      */
-    public void remove(int dimensionId, T obj) {
+    public void remove(T obj) {
         var pos = positionExtractor.getPosition(obj);
         long key = hash(pos.x(), pos.y(), pos.z());
-        var grid = gridByDimension.get(dimensionId);
-        if (grid != null) {
-            ObjectArrayList<T> list = grid.get(key);
-            if (list != null) {
-                list.remove(obj);
-                if (list.isEmpty()) {
-                    grid.remove(key);
-                }
+        ObjectArrayList<T> list = grid.get(key);
+        if (list != null) {
+            list.remove(obj);
+            if (list.isEmpty()) {
+                grid.remove(key);
             }
         }
     }
 
     /**
      * Search the grid for nearby objects
-     * 
-     * @param dimensionId
+     *
      * @param x
      * @param y
      * @param z
      * @param radius
      * @return list of nearby objects
      */
-    public List<T> findNearby(int dimensionId, int x, int y, int z, int radius) {
-        var dimMap = gridByDimension.get(dimensionId);
-        if (dimMap == null) return Collections.emptyList();
-
+    public List<T> findNearby(int x, int y, int z, int radius) {
         int rCells = (int) Math.ceil((double) radius / cellSize);
         int gx = x / cellSize;
         int gy = y / cellSize;
@@ -94,7 +83,7 @@ public class DimSpatialHashGrid<T> {
             for (int dy = -rCells; dy <= rCells; dy++) {
                 for (int dz = -rCells; dz <= rCells; dz++) {
                     long key = pack(gx + dx, gy + dy, gz + dz);
-                    ObjectArrayList<T> list = dimMap.get(key);
+                    ObjectArrayList<T> list = grid.get(key);
                     if (list != null) {
                         for (T obj : list) {
                             Int3 pos = positionExtractor.getPosition(obj);
