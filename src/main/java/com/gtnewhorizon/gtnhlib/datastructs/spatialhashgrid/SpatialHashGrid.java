@@ -34,7 +34,7 @@ public class SpatialHashGrid<T> {
     }
 
     private long hash(int x, int y, int z) {
-        return pack(x / cellSize, y / cellSize, z / cellSize);
+        return pack(Math.floorDiv(x, cellSize), Math.floorDiv(y, cellSize), Math.floorDiv(z, cellSize));
     }
 
     /**
