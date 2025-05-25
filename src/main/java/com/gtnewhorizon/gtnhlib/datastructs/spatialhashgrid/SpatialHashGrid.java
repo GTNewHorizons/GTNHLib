@@ -22,7 +22,6 @@ public class SpatialHashGrid<T> {
     private final BiConsumer<Vector3i, T> positionExtractor;
     private final Vector3i scratch = new Vector3i();
     private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid = new Long2ObjectOpenHashMap<>();
-    private final DistanceFormula distanceFormula;
 
     public enum DistanceFormula {
         SquaredEuclidean,
@@ -38,14 +37,9 @@ public class SpatialHashGrid<T> {
     }
 
     public SpatialHashGrid(int cellSize, BiConsumer<Vector3i, T> positionExtractor) {
-        this(cellSize, positionExtractor, DistanceFormula.SquaredEuclidean);
-    }
-
-    public SpatialHashGrid(int cellSize, BiConsumer<Vector3i, T> positionExtractor, DistanceFormula distanceFormula) {
         if (cellSize <= 0) throw new IllegalArgumentException("cellSize can not be less than or equal to 0");
         this.cellSize = cellSize;
         this.positionExtractor = positionExtractor;
-        this.distanceFormula = distanceFormula;
     }
 
     private long pack(int x, int y, int z) {
@@ -82,12 +76,23 @@ public class SpatialHashGrid<T> {
     }
 
     /**
-     * Search the grid for nearby objects
+     * Search the grid for nearby objects Default Distance Formula: Squared Euclidean
      *
      * @param radius distance in blocks to check (sphere)
      * @return list of nearby objects
      */
     public List<T> findNearby(int x, int y, int z, int radius) {
+        return findNearby(x, y, z, radius, DistanceFormula.SquaredEuclidean);
+    }
+
+    /**
+     * Search the grid for nearby objects
+     *
+     * @param radius          distance in blocks to check (sphere)
+     * @param distanceFormula Distance Formula to use
+     * @return list of nearby objects
+     */
+    public List<T> findNearby(int x, int y, int z, int radius, DistanceFormula distanceFormula) {
         radius = Math.abs(radius); // just no
         final int cellX = Math.floorDiv(x, cellSize);
         final int cellY = Math.floorDiv(y, cellSize);
@@ -112,7 +117,8 @@ public class SpatialHashGrid<T> {
                     if (isEdge) {
                         for (T obj : list) {
                             positionExtractor.accept(scratch, obj);
-                            if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z) > radiusSquared)
+                            if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
+                                    > radiusSquared)
                                 continue;
 
                             result.add(obj);
@@ -127,7 +133,8 @@ public class SpatialHashGrid<T> {
         return result;
     }
 
-    private double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2) {
+    private double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2,
+            DistanceFormula distanceFormula) {
         return switch (distanceFormula) {
             case SquaredEuclidean -> squaredEuclideanDistance(x1, y1, z1, x2, y2, z2);
             case Chebyshev -> chebyshevDistance(x1, y1, z1, x2, y2, z2);
