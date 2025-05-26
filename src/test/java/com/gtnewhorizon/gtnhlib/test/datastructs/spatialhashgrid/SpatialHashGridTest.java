@@ -28,6 +28,26 @@ public class SpatialHashGridTest {
     }
 
     @Test
+    void testInsertAndQueryForumula() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(1, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
+
+        TestObject obj = new TestObject(5, 5, 5);
+        TestObject obj2 = new TestObject(1, 1, 1);
+        grid.insert(obj);
+        grid.insert(obj2);
+
+        Collection<TestObject> results = grid.findNearby(5, 5, 5, 5, SpatialHashGrid.DistanceFormula.Manhattan);
+        assertNotNull(results);
+        assertEquals(2, results.size());
+        assertTrue(results.contains(obj));
+        assertTrue(results.contains(obj2));
+    }
+
+    @Test
     void testMultipleInserts() {
         SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
             pos.x = obj.x;
