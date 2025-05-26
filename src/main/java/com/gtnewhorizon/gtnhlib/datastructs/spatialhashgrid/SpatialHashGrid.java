@@ -77,23 +77,43 @@ public class SpatialHashGrid<T> {
     }
 
     /**
-     * Search the grid for nearby objects Default Distance Formula: Squared Euclidean
+     * Search the grid for nearby objects using Squared Euclidean Distance Formula.
      *
      * @param radius distance in blocks to check (sphere)
      * @return list of nearby objects
      */
-    public List<T> findNearby(int x, int y, int z, int radius) {
-        return findNearby(x, y, z, radius, DistanceFormula.SquaredEuclidean);
+    public List<T> findNearbySquaredEuclidean(int x, int y, int z, int radius) {
+        return findNearbyWithFormula(x, y, z, radius, DistanceFormula.SquaredEuclidean);
     }
 
     /**
-     * Search the grid for nearby objects
+     * Search the grid for nearby objects using Chebyshev (Chessboard) Distance Formula.
+     *
+     * @param radius distance in blocks to check (sphere)
+     * @return list of nearby objects
+     */
+    public List<T> findNearbyChebyshev(int x, int y, int z, int radius) {
+        return findNearbyWithFormula(x, y, z, radius, DistanceFormula.Chebyshev);
+    }
+
+    /**
+     * Search the grid for nearby objects using Manhattan (Taxicab) Distance Formula.
+     *
+     * @param radius distance in blocks to check (sphere)
+     * @return list of nearby objects
+     */
+    public List<T> findNearbyManhattan(int x, int y, int z, int radius) {
+        return findNearbyWithFormula(x, y, z, radius, DistanceFormula.Manhattan);
+    }
+
+    /**
+     * Search the grid for nearby objects using a specified distance formula.
      *
      * @param radius          distance in blocks to check (sphere)
      * @param distanceFormula Distance Formula to use
      * @return list of nearby objects
      */
-    public List<T> findNearby(int x, int y, int z, int radius, DistanceFormula distanceFormula) {
+    private List<T> findNearbyWithFormula(int x, int y, int z, int radius, DistanceFormula distanceFormula) {
         radius = Math.abs(radius); // just no
         final int cellX = Math.floorDiv(x, cellSize);
         final int cellY = Math.floorDiv(y, cellSize);
@@ -101,7 +121,7 @@ public class SpatialHashGrid<T> {
 
         // Make sure that cells which partially fall in the radius are still checked
         final int cellRad = (radius + cellSize - 1) / cellSize;
-        final int radiusSquared = radius * radius;
+        final int distanceCompared = (distanceFormula == DistanceFormula.SquaredEuclidean ? radius * radius : radius);
 
         final ObjectArrayList<T> result = new ObjectArrayList<>();
 
@@ -119,7 +139,7 @@ public class SpatialHashGrid<T> {
                         for (T obj : list) {
                             positionExtractor.accept(scratch, obj);
                             if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
-                                    > radiusSquared)
+                                    > distanceCompared)
                                 continue;
 
                             result.add(obj);
