@@ -83,7 +83,7 @@ public class SpatialHashGrid<T> {
      * @return list of nearby objects
      */
     public List<T> findNearby(int x, int y, int z, int radius) {
-        return findNearby(x, y, z, radius, DistanceFormula.SquaredEuclidean);
+        return findNearby(x, y, z, radius, DistanceFormula.Chebyshev);
     }
 
     /**
@@ -101,7 +101,7 @@ public class SpatialHashGrid<T> {
 
         // Make sure that cells which partially fall in the radius are still checked
         final int cellRad = (radius + cellSize - 1) / cellSize;
-        final int distanceCompared = distanceFormula == DistanceFormula.SquaredEuclidean ? radius * radius : radius;
+        final int distanceCompared = (distanceFormula == DistanceFormula.SquaredEuclidean ? radius * radius : radius);
 
         final ObjectArrayList<T> result = new ObjectArrayList<>();
 
