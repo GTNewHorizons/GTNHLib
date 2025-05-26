@@ -101,7 +101,7 @@ public class SpatialHashGrid<T> {
 
         // Make sure that cells which partially fall in the radius are still checked
         final int cellRad = (radius + cellSize - 1) / cellSize;
-        final int radiusSquared = radius * radius;
+        final int distanceCompared = distanceFormula == DistanceFormula.SquaredEuclidean ? radius * radius : radius;
 
         final ObjectArrayList<T> result = new ObjectArrayList<>();
 
@@ -119,7 +119,7 @@ public class SpatialHashGrid<T> {
                         for (T obj : list) {
                             positionExtractor.accept(scratch, obj);
                             if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
-                                    > radiusSquared)
+                                    > distanceCompared)
                                 continue;
 
                             result.add(obj);
