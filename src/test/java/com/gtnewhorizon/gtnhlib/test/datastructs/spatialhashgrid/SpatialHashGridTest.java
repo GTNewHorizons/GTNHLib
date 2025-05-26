@@ -21,7 +21,7 @@ public class SpatialHashGridTest {
         TestObject obj = new TestObject(5, 5, 5);
         grid.insert(obj);
 
-        Collection<TestObject> results = grid.findNearby(5, 5, 5, 1);
+        Collection<TestObject> results = grid.findNearbyChebyshev(5, 5, 5, 1);
         assertNotNull(results);
         assertTrue(results.contains(obj));
         assertEquals(1, results.size());
@@ -40,7 +40,7 @@ public class SpatialHashGridTest {
         grid.insert(obj);
         grid.insert(obj2);
 
-        Collection<TestObject> results = grid.findNearby(5, 5, 5, 5, SpatialHashGrid.DistanceFormula.Manhattan);
+        Collection<TestObject> results = grid.findNearbyManhattan(5, 5, 5, 5);
         assertNotNull(results);
         assertEquals(2, results.size());
         assertTrue(results.contains(obj));
@@ -60,7 +60,7 @@ public class SpatialHashGridTest {
         grid.insert(obj1);
         grid.insert(obj2);
 
-        Collection<TestObject> results = grid.findNearby(5, 5, 5, 10);
+        Collection<TestObject> results = grid.findNearbyChebyshev(5, 5, 5, 10);
         assertNotNull(results);
         assertTrue(results.contains(obj1));
         assertTrue(results.contains(obj2));
@@ -75,7 +75,7 @@ public class SpatialHashGridTest {
             pos.z = obj.z;
         });
 
-        Collection<TestObject> results = grid.findNearby(0, 0, 0, 10);
+        Collection<TestObject> results = grid.findNearbyChebyshev(0, 0, 0, 10);
         assertNotNull(results);
         assertTrue(results.isEmpty());
     }
@@ -91,7 +91,7 @@ public class SpatialHashGridTest {
         TestObject obj = new TestObject(-5, -5, -5);
         grid.insert(obj);
 
-        Collection<TestObject> results = grid.findNearby(-5, -5, -5, 1);
+        Collection<TestObject> results = grid.findNearbyChebyshev(-5, -5, -5, 1);
         assertNotNull(results);
         assertTrue(results.contains(obj));
         assertEquals(1, results.size());
@@ -112,7 +112,7 @@ public class SpatialHashGridTest {
         obj.x = 15;
         grid.insert(obj);
 
-        Collection<TestObject> results = grid.findNearby(15, 5, 5, 1);
+        Collection<TestObject> results = grid.findNearbyChebyshev(15, 5, 5, 1);
         assertNotNull(results);
         assertTrue(results.contains(obj));
         assertEquals(1, results.size());
@@ -131,7 +131,7 @@ public class SpatialHashGridTest {
         grid.insert(obj1);
         grid.insert(obj2);
 
-        Collection<TestObject> results = grid.findNearby(5, 5, 5, 10);
+        Collection<TestObject> results = grid.findNearbyChebyshev(5, 5, 5, 10);
         assertNotNull(results);
         assertTrue(results.contains(obj1));
         assertTrue(results.contains(obj2));
