@@ -77,7 +77,7 @@ public class SpatialHashGrid<T> {
     }
 
     /**
-     * Search the grid for nearby objects using Squared Euclidean Distance Formula by default.
+     * Search the grid for nearby objects using Squared Euclidean Distance Formula.
      *
      * @param radius distance in blocks to check (sphere)
      * @return list of nearby objects
