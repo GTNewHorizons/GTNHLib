@@ -131,7 +131,7 @@ public class SpatialHashGridTest {
         TestObject obj2 = new TestObject(10, 5, 5);
         grid.insert(obj2);
 
-        var result = grid.findClosestNearbyChebyshev(9, 5, 5, 10);
+        TestObject result = grid.findClosestNearbyChebyshev(9, 5, 5, 10);
         assertNotNull(result);
         assertEquals(result, obj2);
     }
@@ -149,7 +149,7 @@ public class SpatialHashGridTest {
         TestObject obj2 = new TestObject(10, 5, 5);
         grid.insert(obj2);
 
-        var result = grid.findFirstNearbyChebyshev(6, 5, 5, 10);
+        TestObject result = grid.findFirstNearbyChebyshev(6, 5, 5, 10);
         assertNotNull(result);
         assertEquals(result, obj);
     }
