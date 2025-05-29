@@ -47,11 +47,11 @@ public class SpatialHashGrid<T> {
         this.positionExtractor = positionExtractor;
     }
 
-    private long pack(int x, int y, int z) {
+    private static long pack(int x, int y, int z) {
         return CoordinatePacker.pack(x, y, z);
     }
 
-    private long hash(int x, int y, int z) {
+    private static long hash(int cellSize, int x, int y, int z) {
         return pack(Math.floorDiv(x, cellSize), Math.floorDiv(y, cellSize), Math.floorDiv(z, cellSize));
     }
 
@@ -60,7 +60,7 @@ public class SpatialHashGrid<T> {
      */
     public void insert(T obj) {
         positionExtractor.accept(scratch, obj);
-        long key = hash(scratch.x, scratch.y, scratch.z);
+        long key = hash(cellSize, scratch.x, scratch.y, scratch.z);
         ObjectArrayList<T> list = grid.computeIfAbsent(key, k -> new ObjectArrayList<>());
         list.add(obj);
     }
@@ -70,7 +70,7 @@ public class SpatialHashGrid<T> {
      */
     public void remove(T obj) {
         positionExtractor.accept(scratch, obj);
-        long key = hash(scratch.x, scratch.y, scratch.z);
+        long key = hash(cellSize, scratch.x, scratch.y, scratch.z);
         ObjectArrayList<T> list = grid.get(key);
         if (list == null) return;
 
@@ -301,64 +301,119 @@ public class SpatialHashGrid<T> {
         final int cellRad = (radius + cellSize - 1) / cellSize;
         final int distanceCompared = (distanceFormula == DistanceFormula.SquaredEuclidean ? radius * radius : radius);
 
-        return new Iterator<T>() {
-
-            private int dx = -cellRad, dy = -cellRad, dz = -cellRad;
-            private ObjectArrayList<T> currentList;
-
-            @Override
-            public boolean hasNext() {
-                if (currentList != null && !currentList.isEmpty()) {
-                    return true;
-                }
-
-                while (dx <= cellRad) {
-                    while (dy <= cellRad) {
-                        while (dz <= cellRad) {
-                            long key = pack(cellX + dx, cellY + dy, cellZ + dz);
-                            currentList = grid.get(key);
-                            if (currentList != null && !currentList.isEmpty()) {
-                                return true;
-                            }
-
-                            dz++;
-                        }
-                        dz = -cellRad; // Reset dz
-                        dy++;
-                    }
-                    dy = -cellRad; // Reset dy
-                    dx++;
-                }
-
-                return false;
-            }
-
-            @Override
-            public T next() {
-                if (currentList != null && !currentList.isEmpty()) {
-                    T obj = currentList.get(currentList.size() - 1);
-                    currentList.remove(obj);
-                    positionExtractor.accept(scratch, obj);
-                    boolean isEdge = (Math.abs(dx) == cellRad) || (Math.abs(dy) == cellRad)
-                            || (Math.abs(dz) == cellRad);
-                    if (isEdge && distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
-                            > distanceCompared) {
-                        return next(); // Skip this object and continue
-                    }
-                    return obj;
-                } else {
-                    throw new NoSuchElementException();
-                }
-            }
-        };
+        return new GridIterator<>(
+                grid,
+                x,
+                y,
+                z,
+                cellRad,
+                cellX,
+                cellY,
+                cellZ,
+                distanceCompared,
+                distanceFormula,
+                positionExtractor);
     }
 
-    private double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2,
+    protected static double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2,
             DistanceFormula distanceFormula) {
         return switch (distanceFormula) {
             case SquaredEuclidean -> DistanceUtil.squaredEuclideanDistance(x1, y1, z1, x2, y2, z2);
             case Chebyshev -> DistanceUtil.chebyshevDistance(x1, y1, z1, x2, y2, z2);
             case Manhattan -> DistanceUtil.manhattanDistance(x1, y1, z1, x2, y2, z2);
         };
+    }
+
+    public static class GridIterator<T> implements Iterator<T> {
+
+        private ObjectArrayList<T> currentList;
+        private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid;
+        private final int x;
+        private final int y;
+        private final int z;
+        private final int cellRad;
+        private int dx;
+        private int dy;
+        private int dz;
+        private final int cellX;
+        private final int cellY;
+        private final int cellZ;
+        private final int distanceCompared;
+        private final DistanceFormula distanceFormula;
+        private final BiConsumer<Vector3i, T> positionExtractor;
+        private final Vector3i scratch = new Vector3i();
+
+        public GridIterator(Long2ObjectOpenHashMap<ObjectArrayList<T>> grid, int x, int y, int z, int cellRad,
+                int cellX, int cellY, int cellZ, int distanceCompared, DistanceFormula distanceFormula,
+                BiConsumer<Vector3i, T> positionExtractor) {
+            this.grid = grid;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.cellRad = cellRad;
+            dx = -cellRad;
+            dy = -cellRad;
+            dz = -cellRad;
+            this.cellX = cellX;
+            this.cellY = cellY;
+            this.cellZ = cellZ;
+            this.distanceCompared = distanceCompared;
+            this.distanceFormula = distanceFormula;
+            this.positionExtractor = positionExtractor;
+            advance();
+        }
+
+        private void advance() {
+            while (dx <= cellRad) {
+                while (dy <= cellRad) {
+                    while (dz <= cellRad) {
+                        long key = pack(cellX + dx, cellY + dy, cellZ + dz);
+                        boolean isEdge = (Math.abs(dx) == cellRad) || (Math.abs(dy) == cellRad)
+                                || (Math.abs(dz) == cellRad);
+                        currentList = grid.get(key);
+                        if (currentList != null) {
+                            if (isEdge) {
+                                var iterator = currentList.iterator();
+                                while (iterator.hasNext()) {
+                                    T mte = iterator.next();
+                                    positionExtractor.accept(scratch, mte);
+                                    if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
+                                            > distanceCompared) {
+                                        iterator.remove();
+                                    }
+                                }
+                            }
+                            if (currentList != null && !currentList.isEmpty()) {
+                                return;
+                            }
+                        }
+                        dz++;
+                    }
+                    dz = -cellRad; // Reset dz
+                    dy++;
+                }
+                dy = -cellRad; // Reset dy
+                dx++;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currentList != null && !currentList.isEmpty();
+        }
+
+        @Override
+        public T next() {
+            if (currentList != null && !currentList.isEmpty()) {
+                T obj = currentList.get(currentList.size() - 1);
+                currentList.remove(obj);
+                if (currentList.isEmpty()) {
+                    advance();
+                }
+                return obj;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
     }
 }
