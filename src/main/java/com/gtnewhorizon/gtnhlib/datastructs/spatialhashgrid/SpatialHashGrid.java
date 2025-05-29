@@ -1,6 +1,9 @@
 package com.gtnewhorizon.gtnhlib.datastructs.spatialhashgrid;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 
 import org.joml.Vector3i;
@@ -17,6 +20,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
  *
  * @param <T> object type to store
  */
+@SuppressWarnings("unused")
 public class SpatialHashGrid<T> {
 
     private final int cellSize;
@@ -83,7 +87,15 @@ public class SpatialHashGrid<T> {
      * @return list of nearby objects
      */
     public List<T> findNearbySquaredEuclidean(int x, int y, int z, int radius) {
-        return findNearbyWithFormula(x, y, z, radius, DistanceFormula.SquaredEuclidean);
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.SquaredEuclidean);
+        List<T> resultList = new ArrayList<>();
+
+        while (iterator.hasNext()) {
+            T obj = iterator.next();
+            resultList.add(obj);
+        }
+
+        return resultList;
     }
 
     /**
@@ -93,7 +105,15 @@ public class SpatialHashGrid<T> {
      * @return list of nearby objects
      */
     public List<T> findNearbyChebyshev(int x, int y, int z, int radius) {
-        return findNearbyWithFormula(x, y, z, radius, DistanceFormula.Chebyshev);
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.Chebyshev);
+        List<T> resultList = new ArrayList<>();
+
+        while (iterator.hasNext()) {
+            T obj = iterator.next();
+            resultList.add(obj);
+        }
+
+        return resultList;
     }
 
     /**
@@ -103,17 +123,175 @@ public class SpatialHashGrid<T> {
      * @return list of nearby objects
      */
     public List<T> findNearbyManhattan(int x, int y, int z, int radius) {
-        return findNearbyWithFormula(x, y, z, radius, DistanceFormula.Manhattan);
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.Manhattan);
+        List<T> resultList = new ArrayList<>();
+
+        while (iterator.hasNext()) {
+            T obj = iterator.next();
+            resultList.add(obj);
+        }
+
+        return resultList;
+    }
+
+    /**
+     * Find the first nearby object using Squared Euclidean Distance Formula.
+     *
+     * @param x      position to check
+     * @param y      position to check
+     * @param z      position to check
+     * @param radius distance in blocks to check (sphere)
+     * @return the first nearby object or null if none found
+     */
+    public T findFirstNearbySquaredEuclidean(int x, int y, int z, int radius) {
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.SquaredEuclidean);
+        return (iterator.hasNext() ? iterator.next() : null);
+    }
+
+    /**
+     * Find the first nearby object using Chebyshev (Chessboard) Distance Formula.
+     *
+     * @param x      position to check
+     * @param y      position to check
+     * @param z      position to check
+     * @param radius distance in blocks to check (sphere)
+     * @return the first nearby object or null if none found
+     */
+    public T findFirstNearbyChebyshev(int x, int y, int z, int radius) {
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.Chebyshev);
+        return (iterator.hasNext() ? iterator.next() : null);
+    }
+
+    /**
+     * Find the first nearby object using Manhattan (Taxicab) Distance Formula.
+     *
+     * @param x      position to check
+     * @param y      position to check
+     * @param z      position to check
+     * @param radius distance in blocks to check (sphere)
+     * @return the first nearby object or null if none found
+     */
+    public T findFirstNearbyManhattan(int x, int y, int z, int radius) {
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.Manhattan);
+        return (iterator.hasNext() ? iterator.next() : null);
+    }
+
+    /**
+     * Find the closest nearby object using Squared Euclidean Distance Formula.
+     *
+     * @param x      position to check
+     * @param y      position to check
+     * @param z      position to check
+     * @param radius distance in blocks to check (sphere)
+     * @return the closest nearby object or null if none found
+     */
+    public T findClosestNearbySquaredEuclidean(int x, int y, int z, int radius) {
+        T closestObject = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.SquaredEuclidean);
+        while (iterator.hasNext()) {
+            T obj = iterator.next();
+            positionExtractor.accept(scratch, obj);
+            double distance = distanceBetweenPoints(
+                    x,
+                    y,
+                    z,
+                    scratch.x,
+                    scratch.y,
+                    scratch.z,
+                    DistanceFormula.SquaredEuclidean);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestObject = obj;
+            }
+        }
+
+        return closestObject;
+    }
+
+    /**
+     * Find the closest nearby object using Chebyshev (Chessboard) Distance Formula.
+     *
+     * @param x      position to check
+     * @param y      position to check
+     * @param z      position to check
+     * @param radius distance in blocks to check (sphere)
+     * @return the closest nearby object or null if none found
+     */
+    public T findClosestNearbyChebyshev(int x, int y, int z, int radius) {
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.Chebyshev);
+        T closestObject = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        while (iterator.hasNext()) {
+            T obj = iterator.next();
+            positionExtractor.accept(scratch, obj);
+            double distance = distanceBetweenPoints(
+                    x,
+                    y,
+                    z,
+                    scratch.x,
+                    scratch.y,
+                    scratch.z,
+                    DistanceFormula.Chebyshev);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestObject = obj;
+            }
+        }
+
+        return closestObject;
+    }
+
+    /**
+     * Find the closest nearby object using Manhattan (Taxicab) Distance Formula.
+     *
+     * @param x      position to check
+     * @param y      position to check
+     * @param z      position to check
+     * @param radius distance in blocks to check (sphere)
+     * @return the closest nearby object or null if none found
+     */
+    public T findClosestNearbyManhattan(int x, int y, int z, int radius) {
+        Iterator<T> iterator = findNearbyWithFormula(x, y, z, radius, DistanceFormula.Manhattan);
+        T closestObject = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        while (iterator.hasNext()) {
+            T obj = iterator.next();
+            positionExtractor.accept(scratch, obj);
+            double distance = distanceBetweenPoints(
+                    x,
+                    y,
+                    z,
+                    scratch.x,
+                    scratch.y,
+                    scratch.z,
+                    DistanceFormula.Manhattan);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestObject = obj;
+            }
+        }
+
+        return closestObject;
     }
 
     /**
      * Search the grid for nearby objects using a specified distance formula.
      *
+     * @param x               position to check
+     * @param y               position to check
+     * @param z               position to check
      * @param radius          distance in blocks to check (sphere)
      * @param distanceFormula Distance Formula to use
-     * @return list of nearby objects
+     * @return iterator of nearby objects
      */
-    private List<T> findNearbyWithFormula(int x, int y, int z, int radius, DistanceFormula distanceFormula) {
+    public Iterator<T> findNearbyWithFormula(int x, int y, int z, int radius, DistanceFormula distanceFormula) {
         radius = Math.abs(radius); // just no
         final int cellX = Math.floorDiv(x, cellSize);
         final int cellY = Math.floorDiv(y, cellSize);
@@ -123,35 +301,56 @@ public class SpatialHashGrid<T> {
         final int cellRad = (radius + cellSize - 1) / cellSize;
         final int distanceCompared = (distanceFormula == DistanceFormula.SquaredEuclidean ? radius * radius : radius);
 
-        final ObjectArrayList<T> result = new ObjectArrayList<>();
+        return new Iterator<T>() {
 
-        for (int dx = -cellRad; dx <= cellRad; dx++) {
-            for (int dy = -cellRad; dy <= cellRad; dy++) {
-                for (int dz = -cellRad; dz <= cellRad; dz++) {
-                    long key = pack(cellX + dx, cellY + dy, cellZ + dz);
-                    final ObjectArrayList<T> list = grid.get(key);
-                    if (list == null || list.isEmpty()) continue;
+            private int dx = -cellRad, dy = -cellRad, dz = -cellRad;
+            private ObjectArrayList<T> currentList;
 
+            @Override
+            public boolean hasNext() {
+                if (currentList != null && !currentList.isEmpty()) {
+                    return true;
+                }
+
+                while (dx <= cellRad) {
+                    while (dy <= cellRad) {
+                        while (dz <= cellRad) {
+                            long key = pack(cellX + dx, cellY + dy, cellZ + dz);
+                            currentList = grid.get(key);
+                            if (currentList != null && !currentList.isEmpty()) {
+                                return true;
+                            }
+
+                            dz++;
+                        }
+                        dz = -cellRad; // Reset dz
+                        dy++;
+                    }
+                    dy = -cellRad; // Reset dy
+                    dx++;
+                }
+
+                return false;
+            }
+
+            @Override
+            public T next() {
+                if (currentList != null && !currentList.isEmpty()) {
+                    T obj = currentList.get(currentList.size() - 1);
+                    currentList.remove(obj);
+                    positionExtractor.accept(scratch, obj);
                     boolean isEdge = (Math.abs(dx) == cellRad) || (Math.abs(dy) == cellRad)
                             || (Math.abs(dz) == cellRad);
-
-                    if (isEdge) {
-                        for (T obj : list) {
-                            positionExtractor.accept(scratch, obj);
-                            if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
-                                    > distanceCompared)
-                                continue;
-
-                            result.add(obj);
-                        }
-                    } else {
-                        result.addAll(list);
+                    if (isEdge && distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
+                            > distanceCompared) {
+                        return next(); // Skip this object and continue
                     }
+                    return obj;
+                } else {
+                    throw new NoSuchElementException();
                 }
             }
-        }
-
-        return result;
+        };
     }
 
     private double distanceBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2,
