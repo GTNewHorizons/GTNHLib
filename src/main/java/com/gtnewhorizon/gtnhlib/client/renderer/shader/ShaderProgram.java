@@ -16,7 +16,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.bytebuf.MemoryStack;
 
 @SuppressWarnings("unused")
-public class ShaderProgram {
+public class ShaderProgram implements AutoCloseable {
 
     final private int program;
 
