@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.shader;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.IntBuffer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -12,6 +13,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.bytebuf.MemoryStack;
 
 @SuppressWarnings("unused")
 public class ShaderProgram {
@@ -156,4 +158,14 @@ public class ShaderProgram {
         return index;
     }
 
+    public void close() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer shaders = stack.mallocInt(GL20.glGetProgrami(program, GL20.GL_ATTACHED_SHADERS));
+            GL20.glGetAttachedShaders(program, null, shaders);
+            GL20.glDeleteProgram(program);
+            for (int i : shaders.array()) {
+                GL20.glDeleteShader(shaders.get(i));
+            }
+        }
+    }
 }
