@@ -164,7 +164,7 @@ public class ShaderProgram implements AutoCloseable {
             GL20.glGetAttachedShaders(program, null, shaders);
             GL20.glDeleteProgram(program);
             for (int i : shaders.array()) {
-                GL20.glDeleteShader(shaders.get(i));
+                GL20.glDeleteShader(i));
             }
         }
     }
