@@ -119,22 +119,38 @@ public class SpatialHashGridTest {
     }
 
     @Test
-    void testLargeRadiusQuery() {
+    void testClosest() {
         SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
             pos.x = obj.x;
             pos.y = obj.y;
             pos.z = obj.z;
         });
 
-        TestObject obj1 = new TestObject(5, 5, 5);
-        TestObject obj2 = new TestObject(10, 10, 10);
-        grid.insert(obj1);
+        TestObject obj = new TestObject(5, 5, 5);
+        grid.insert(obj);
+        TestObject obj2 = new TestObject(10, 5, 5);
         grid.insert(obj2);
 
-        Collection<TestObject> results = grid.findNearbyChebyshev(5, 5, 5, 10);
-        assertNotNull(results);
-        assertTrue(results.contains(obj1));
-        assertTrue(results.contains(obj2));
-        assertEquals(2, results.size());
+        TestObject result = grid.findClosestNearbyChebyshev(9, 5, 5, 10);
+        assertNotNull(result);
+        assertEquals(result, obj2);
+    }
+
+    @Test
+    void testFirst() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
+
+        TestObject obj = new TestObject(5, 5, 5);
+        grid.insert(obj);
+        TestObject obj2 = new TestObject(10, 5, 5);
+        grid.insert(obj2);
+
+        TestObject result = grid.findFirstNearbyChebyshev(6, 5, 5, 10);
+        assertNotNull(result);
+        assertEquals(result, obj);
     }
 }
