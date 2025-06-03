@@ -405,13 +405,20 @@ public class SpatialHashGrid<T> {
         @Override
         public T next() {
             if (currentList != null && !currentList.isEmpty()) {
-                int lastIndex = currentList.size() - 1;
-                T obj = currentList.get(lastIndex);
-                currentList.remove(lastIndex);
+                T obj = currentList.get(0);
+                currentList.remove(0);
                 if (currentList.isEmpty()) {
                     advance();
                 }
                 return obj;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        public T peek() {
+            if (currentList != null && !currentList.isEmpty()) {
+                return currentList.get(0);
             } else {
                 throw new NoSuchElementException();
             }
