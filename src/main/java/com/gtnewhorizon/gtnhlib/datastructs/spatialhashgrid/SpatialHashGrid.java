@@ -405,8 +405,9 @@ public class SpatialHashGrid<T> {
         @Override
         public T next() {
             if (currentList != null && !currentList.isEmpty()) {
-                T obj = currentList.get(currentList.size() - 1);
-                currentList.remove(obj);
+                int lastIndex = currentList.size() - 1;
+                T obj = currentList.get(lastIndex);
+                currentList.remove(lastIndex);
                 if (currentList.isEmpty()) {
                     advance();
                 }
