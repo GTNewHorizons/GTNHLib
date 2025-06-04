@@ -327,14 +327,16 @@ public class SpatialHashGrid<T> {
     public static class GridIterator<T> implements Iterator<T> {
 
         private ObjectArrayList<T> currentList;
+        private int currentIndex;
+        private int currentX;
+        private int currentY;
+        private int currentZ;
+
         private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid;
         private final int x;
         private final int y;
         private final int z;
         private final int cellRad;
-        private int dx;
-        private int dy;
-        private int dz;
         private final int cellX;
         private final int cellY;
         private final int cellZ;
@@ -351,9 +353,9 @@ public class SpatialHashGrid<T> {
             this.y = y;
             this.z = z;
             this.cellRad = cellRad;
-            dx = -cellRad;
-            dy = -cellRad;
-            dz = -cellRad;
+            currentX = -cellRad;
+            currentY = -cellRad;
+            currentZ = -cellRad;
             this.cellX = cellX;
             this.cellY = cellY;
             this.cellZ = cellZ;
@@ -364,64 +366,82 @@ public class SpatialHashGrid<T> {
         }
 
         private void advance() {
-            while (dx <= cellRad) {
-                while (dy <= cellRad) {
-                    while (dz <= cellRad) {
-                        long key = pack(cellX + dx, cellY + dy, cellZ + dz);
-                        boolean isEdge = (Math.abs(dx) == cellRad) || (Math.abs(dy) == cellRad)
-                                || (Math.abs(dz) == cellRad);
-                        currentList = grid.get(key);
-                        if (currentList != null) {
-                            if (isEdge) {
-                                var iterator = currentList.iterator();
-                                while (iterator.hasNext()) {
-                                    T mte = iterator.next();
-                                    positionExtractor.accept(scratch, mte);
-                                    if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
-                                            > distanceCompared) {
-                                        iterator.remove();
-                                    }
+            currentIndex = 0;
+            currentList = null;
+
+            while (currentX <= cellRad) {
+                while (currentY <= cellRad) {
+                    while (currentZ <= cellRad) {
+                        long key = pack(cellX + currentX, cellY + currentY, cellZ + currentZ);
+
+                        var originalList = grid.get(key);
+                        if (originalList == null) {
+                            currentZ++;
+                            continue;
+                        }
+
+                        boolean isEdge = (Math.abs(currentX) == cellRad) || (Math.abs(currentY) == cellRad)
+                                || (Math.abs(currentZ) == cellRad);
+                        var newList = new ObjectArrayList<T>();
+                        if (isEdge) {
+                            for (T obj : originalList) {
+                                positionExtractor.accept(scratch, obj);
+                                if (distanceBetweenPoints(
+                                        currentX,
+                                        currentY,
+                                        currentZ,
+                                        scratch.x,
+                                        scratch.y,
+                                        scratch.z,
+                                        distanceFormula) <= distanceCompared) {
+                                    newList.add(obj);
                                 }
                             }
-                            if (currentList != null && !currentList.isEmpty()) {
-                                return;
-                            }
+                        } else {
+                            newList.addAll(originalList);
                         }
-                        dz++;
+
+                        currentZ++;
+
+                        if (!newList.isEmpty()) {
+                            currentList = newList;
+                            return;
+                        }
                     }
-                    dz = -cellRad; // Reset dz
-                    dy++;
+                    currentZ = -cellRad;
+                    currentY++;
                 }
-                dy = -cellRad; // Reset dy
-                dx++;
+                currentY = -cellRad;
+                currentX++;
             }
         }
 
         @Override
         public boolean hasNext() {
-            return currentList != null && !currentList.isEmpty();
+            return currentList != null && currentIndex < currentList.size();
         }
 
         @Override
         public T next() {
-            if (currentList != null && !currentList.isEmpty()) {
-                T obj = currentList.get(0);
-                currentList.remove(0);
-                if (currentList.isEmpty()) {
-                    advance();
-                }
-                return obj;
-            } else {
+            if (!hasNext()) {
                 throw new NoSuchElementException();
             }
+
+            T obj = currentList.get(currentIndex);
+            currentIndex++;
+            if (currentIndex >= currentList.size()) {
+                advance();
+            }
+
+            return obj;
         }
 
         public T peek() {
-            if (currentList != null && !currentList.isEmpty()) {
-                return currentList.get(0);
-            } else {
+            if (!hasNext()) {
                 throw new NoSuchElementException();
             }
+
+            return currentList.get(currentIndex);
         }
     }
 }
