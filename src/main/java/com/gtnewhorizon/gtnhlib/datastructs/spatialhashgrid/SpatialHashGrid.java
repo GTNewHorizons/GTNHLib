@@ -118,6 +118,15 @@ public class SpatialHashGrid<T> {
         grid.remove(key);
     }
 
+    public boolean contains(T obj) {
+        positionExtractor.accept(scratch, obj);
+        long key = hash(cellSize, scratch.x, scratch.y, scratch.z);
+        ObjectArrayList<T> list = grid.get(key);
+        if (list == null) return false;
+
+        return list.contains(obj);
+    }
+
     /**
      * Search the grid for nearby objects using Squared Euclidean Distance Formula.
      *
