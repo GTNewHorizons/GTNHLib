@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.test.datastructs.spatialhashgrid;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -165,7 +166,7 @@ public class SpatialHashGridTest {
         TestObject obj = new TestObject(5, 5, 5);
         grid.insert(obj);
 
-        var result = grid.findNearbySquaredEuclidean(5, 5, 5 + 2, 1); // too far (dist² = 4 > 1²)
+        List<TestObject> result = grid.findNearbySquaredEuclidean(5, 5, 5 + 2, 1); // too far (dist² = 4 > 1²)
         assertTrue(result.isEmpty());
     }
 }
