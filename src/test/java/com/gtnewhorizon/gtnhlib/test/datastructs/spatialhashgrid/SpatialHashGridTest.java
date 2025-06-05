@@ -175,7 +175,7 @@ public class SpatialHashGridTest {
         TestObject obj = new TestObject(1, 2, 3);
         grid.insert(obj);
 
-        var result = grid.collectNearbySquaredEuclidean(1, 2, 3, 0);
+        List<TestObject> result = grid.collectNearbySquaredEuclidean(1, 2, 3, 0);
         assertEquals(1, result.size());
         assertTrue(result.contains(obj));
     }
@@ -191,7 +191,7 @@ public class SpatialHashGridTest {
         TestObject obj = new TestObject(5, 5, 5);
         grid.insert(obj);
 
-        var result = grid.collectNearbySquaredEuclidean(5, 5, 5 + 2, 1); // too far (dist² = 4 > 1²)
+        List<TestObject> result = grid.collectNearbySquaredEuclidean(5, 5, 5 + 2, 1); // too far (dist² = 4 > 1²)
         assertTrue(result.isEmpty());
     }
 
