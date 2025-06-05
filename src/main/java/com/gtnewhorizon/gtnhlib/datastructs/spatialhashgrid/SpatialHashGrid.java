@@ -329,9 +329,9 @@ public class SpatialHashGrid<T> {
 
         private ObjectArrayList<T> currentList;
         private int currentIndex;
-        private int currentX;
-        private int currentY;
-        private int currentZ;
+        private int cellXOffset;
+        private int cellYOffeset;
+        private int cellZOffset;
 
         private final Long2ObjectOpenHashMap<ObjectArrayList<T>> grid;
         private final int x;
@@ -356,9 +356,9 @@ public class SpatialHashGrid<T> {
             this.z = z;
             this.cellSize = cellSize;
             this.cellRad = cellRad;
-            currentX = -cellRad;
-            currentY = -cellRad;
-            currentZ = -cellRad;
+            cellXOffset = -cellRad;
+            cellYOffeset = -cellRad;
+            cellZOffset = -cellRad;
             this.cellX = cellX;
             this.cellY = cellY;
             this.cellZ = cellZ;
@@ -372,19 +372,19 @@ public class SpatialHashGrid<T> {
             currentIndex = 0;
             currentList = null;
 
-            while (currentX <= cellRad) {
-                while (currentY <= cellRad) {
-                    while (currentZ <= cellRad) {
-                        long key = pack(cellX + currentX, cellY + currentY, cellZ + currentZ);
+            while (cellXOffset <= cellRad) {
+                while (cellYOffeset <= cellRad) {
+                    while (cellZOffset <= cellRad) {
+                        long key = pack(cellX + cellXOffset, cellY + cellYOffeset, cellZ + cellZOffset);
 
                         var originalList = grid.get(key);
                         if (originalList == null) {
-                            currentZ++;
+                            cellZOffset++;
                             continue;
                         }
 
-                        boolean isEdge = (Math.abs(currentX) == cellRad) || (Math.abs(currentY) == cellRad)
-                                || (Math.abs(currentZ) == cellRad);
+                        boolean isEdge = (Math.abs(cellXOffset) == cellRad) || (Math.abs(cellYOffeset) == cellRad)
+                                || (Math.abs(cellZOffset) == cellRad);
                         var newList = new ObjectArrayList<T>();
                         if (isEdge || distanceCompared <= cellSize) {
                             for (T obj : originalList) {
@@ -398,18 +398,18 @@ public class SpatialHashGrid<T> {
                             newList.addAll(originalList);
                         }
 
-                        currentZ++;
+                        cellZOffset++;
 
                         if (!newList.isEmpty()) {
                             currentList = newList;
                             return;
                         }
                     }
-                    currentZ = -cellRad;
-                    currentY++;
+                    cellZOffset = -cellRad;
+                    cellYOffeset++;
                 }
-                currentY = -cellRad;
-                currentX++;
+                cellYOffeset = -cellRad;
+                cellXOffset++;
             }
         }
 
