@@ -16,9 +16,9 @@ public class Column3Rot {
 
     public Column3Rot(ResourceLocation model) {
 
-        this.variants[0] = new Variant(model, 0, 0, false);
-        this.variants[1] = new Variant(model, 90, 90, false);
-        this.variants[2] = new Variant(model, 0, 90, false);
+        this.variants[0] = new Variant(model, 0, 0, 0, false);
+        this.variants[1] = new Variant(model, 90, 90, 0, false);
+        this.variants[2] = new Variant(model, 90, 0, 0, false);
 
         ModelLoader.registerModels(
                 () -> { for (int i = 0; i < 3; ++i) this.models[i] = ModelLoader.getModel(this.variants[i]); },
