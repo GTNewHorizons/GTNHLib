@@ -153,4 +153,19 @@ public class SpatialHashGridTest {
         assertNotNull(result);
         assertEquals(result, obj);
     }
+
+    @Test
+    void testOutsideRadiusExcluded() {
+        SpatialHashGrid<TestObject> grid = new SpatialHashGrid<>(5, (pos, obj) -> {
+            pos.x = obj.x;
+            pos.y = obj.y;
+            pos.z = obj.z;
+        });
+
+        TestObject obj = new TestObject(5, 5, 5);
+        grid.insert(obj);
+
+        var result = grid.findNearbySquaredEuclidean(5, 5, 5 + 2, 1); // too far (dist² = 4 > 1²)
+        assertTrue(result.isEmpty());
+    }
 }

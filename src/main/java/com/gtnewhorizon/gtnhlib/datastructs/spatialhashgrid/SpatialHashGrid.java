@@ -306,6 +306,7 @@ public class SpatialHashGrid<T> {
                 x,
                 y,
                 z,
+                cellSize,
                 cellRad,
                 cellX,
                 cellY,
@@ -336,6 +337,7 @@ public class SpatialHashGrid<T> {
         private final int x;
         private final int y;
         private final int z;
+        private final int cellSize;
         private final int cellRad;
         private final int cellX;
         private final int cellY;
@@ -345,13 +347,14 @@ public class SpatialHashGrid<T> {
         private final BiConsumer<Vector3i, T> positionExtractor;
         private final Vector3i scratch = new Vector3i();
 
-        public GridIterator(Long2ObjectOpenHashMap<ObjectArrayList<T>> grid, int x, int y, int z, int cellRad,
-                int cellX, int cellY, int cellZ, int distanceCompared, DistanceFormula distanceFormula,
+        public GridIterator(Long2ObjectOpenHashMap<ObjectArrayList<T>> grid, int x, int y, int z, int cellSize,
+                int cellRad, int cellX, int cellY, int cellZ, int distanceCompared, DistanceFormula distanceFormula,
                 BiConsumer<Vector3i, T> positionExtractor) {
             this.grid = grid;
             this.x = x;
             this.y = y;
             this.z = z;
+            this.cellSize = cellSize;
             this.cellRad = cellRad;
             currentX = -cellRad;
             currentY = -cellRad;
@@ -383,17 +386,11 @@ public class SpatialHashGrid<T> {
                         boolean isEdge = (Math.abs(currentX) == cellRad) || (Math.abs(currentY) == cellRad)
                                 || (Math.abs(currentZ) == cellRad);
                         var newList = new ObjectArrayList<T>();
-                        if (isEdge) {
+                        if (isEdge || distanceCompared <= cellSize) {
                             for (T obj : originalList) {
                                 positionExtractor.accept(scratch, obj);
-                                if (distanceBetweenPoints(
-                                        currentX,
-                                        currentY,
-                                        currentZ,
-                                        scratch.x,
-                                        scratch.y,
-                                        scratch.z,
-                                        distanceFormula) <= distanceCompared) {
+                                if (distanceBetweenPoints(x, y, z, scratch.x, scratch.y, scratch.z, distanceFormula)
+                                        <= distanceCompared) {
                                     newList.add(obj);
                                 }
                             }
