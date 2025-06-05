@@ -9,4 +9,9 @@ public class TestObject {
         this.y = y;
         this.z = z;
     }
+
+    @Override
+    public String toString() {
+        return "[" + x + ", " + y + ", " + z + "]";
+    }
 }
