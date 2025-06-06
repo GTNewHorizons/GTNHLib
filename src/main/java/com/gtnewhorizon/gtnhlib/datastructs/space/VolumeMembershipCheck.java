@@ -5,14 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This is a data structure that allows you
- * to quickly check if an arbitrary point in
- * space is contained within at least one
- * of the volumes defined.
+ * This is a data structure that allows you to quickly check if an arbitrary point in space is contained within at least
+ * one of the volumes defined.
  * <p>
- * When adding a volume to an existing position,
- * it won't add a second volume but will instead
- * update the radius of the element at that position.
+ * When adding a volume to an existing position, it won't add a second volume but will instead update the radius of the
+ * element at that position.
  */
 @SuppressWarnings("unused")
 public class VolumeMembershipCheck {
@@ -157,10 +154,10 @@ public class VolumeMembershipCheck {
                     final double centerZ = a[i + 2] + 0.5D;
                     final double radius = a[i + 3] + 0.5D;
                     if (centerX - radius < x && x < centerX + radius
-                        && centerY - radius < y
-                        && y < centerY + radius
-                        && centerZ - radius < z
-                        && z < centerZ + radius) {
+                            && centerY - radius < y
+                            && y < centerY + radius
+                            && centerZ - radius < z
+                            && z < centerZ + radius) {
                         return true;
                     }
                 }
