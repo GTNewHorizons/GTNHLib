@@ -5,14 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This is a data structure that allows you
- * to quickly check if an arbitrary point in
- * space is contained within at least one
- * of the volumes defined.
+ * This is a data structure that allows you to quickly check if an arbitrary point in space is contained within at least
+ * one of the volumes defined.
  * <p>
- * When adding a volume to an existing position,
- * it won't add a second volume but will instead
- * update the radius of the element at that position.
+ * When adding a volume to an existing position, it won't add a second volume but will instead update the radius of the
+ * element at that position.
  */
 @SuppressWarnings("unused")
 public class VolumeMembershipCheck {
@@ -163,10 +160,10 @@ public class VolumeMembershipCheck {
                     final double centerZ = a[i + 2];
                     final double radius = a[i + 3];
                     if (centerX - radius < x && x < centerX + radius
-                        && centerY - radius < y
-                        && y < centerY + radius
-                        && centerZ - radius < z
-                        && z < centerZ + radius) {
+                            && centerY - radius < y
+                            && y < centerY + radius
+                            && centerZ - radius < z
+                            && z < centerZ + radius) {
                         return true;
                     }
                 }
@@ -183,22 +180,15 @@ public class VolumeMembershipCheck {
             final int maxIndex = size * 4;
             final double[] a = data;
             final StringBuilder sb = new StringBuilder("DimensionData{");
-            sb.append(" dimId=")
-                .append(dimId);
-            sb.append(", size=")
-                .append(size);
+            sb.append(" dimId=").append(dimId);
+            sb.append(", size=").append(size);
             sb.append(", data={");
             for (int i = 0; i < maxIndex; i += 4) {
                 if (i != 0) sb.append(',');
-                sb.append(" {x=")
-                    .append(String.format("%.4f", a[i]));
-                sb.append(", y=")
-                    .append(String.format("%.4f", a[i + 1]));
-                sb.append(", z=")
-                    .append(String.format("%.4f", a[i + 2]));
-                sb.append(", radius=")
-                    .append(String.format("%.4f", a[i + 3]))
-                    .append('}');
+                sb.append(" {x=").append(String.format("%.4f", a[i]));
+                sb.append(", y=").append(String.format("%.4f", a[i + 1]));
+                sb.append(", z=").append(String.format("%.4f", a[i + 2]));
+                sb.append(", radius=").append(String.format("%.4f", a[i + 3])).append('}');
             }
             sb.append("}");
             return sb.toString();
