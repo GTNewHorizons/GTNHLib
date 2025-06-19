@@ -5,6 +5,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
+import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
@@ -51,13 +52,17 @@ public class CommonProxy {
 
     public void postInit(FMLPostInitializationEvent event) {}
 
-    public void serverAboutToStart(FMLServerAboutToStartEvent event) {}
+    public void serverAboutToStart(FMLServerAboutToStartEvent event) {
+        BrigadierApi.init();
+    }
 
     public void serverStarting(FMLServerStartingEvent event) {}
 
     public void serverStarted(FMLServerStartedEvent event) {}
 
-    public void serverStopping(FMLServerStoppingEvent event) {}
+    public void serverStopping(FMLServerStoppingEvent event) {
+        BrigadierApi.clear();
+    }
 
     public void serverStopped(FMLServerStoppedEvent event) {}
 
