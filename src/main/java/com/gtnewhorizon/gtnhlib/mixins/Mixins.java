@@ -27,7 +27,9 @@ public enum Mixins implements IMixins {
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))
             .addMixinClasses("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite")),
     SERVER_TICKING(new MixinBuilder("Backport MinecraftServer ticking methods").addTargetedMod(TargetedMod.VANILLA)
-            .setSide(Side.BOTH).setPhase(Phase.EARLY).addMixinClasses("MixinMinecraftServer").setApplyIf(() -> true));
+            .setSide(Side.BOTH).setPhase(Phase.EARLY).addMixinClasses("MixinMinecraftServer").setApplyIf(() -> true)),
+    BRIGADIER(new MixinBuilder("Brigadier").addTargetedMod(TargetedMod.VANILLA).setSide(Side.BOTH).setPhase(Phase.EARLY)
+            .addMixinClasses("MixinCommandHandler", "MixinCommandHelp").setApplyIf(() -> true));
 
     private final List<String> mixinClasses;
     private final Supplier<Boolean> applyIf;
