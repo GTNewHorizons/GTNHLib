@@ -123,14 +123,7 @@ public class MixinBuilder {
         // noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < requiredMods.size(); i++) {
             ITargetedMod target = requiredMods.get(i);
-            if (target == TargetedMod.VANILLA) continue;
-            // Check coremod first
-            if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
-                    && !loadedCoreMods.contains(target.getCoreModClass())) {
-                return false;
-            } else if (!loadedMods.isEmpty() && target.getModId() != null && !loadedMods.contains(target.getModId())) {
-                return false;
-            }
+            if (!isModPresent(target, loadedCoreMods, loadedMods)) return false;
         }
         return true;
     }
@@ -140,16 +133,18 @@ public class MixinBuilder {
         // noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < excludedMods.size(); i++) {
             ITargetedMod target = excludedMods.get(i);
-            if (target == TargetedMod.VANILLA) continue; // idiot check
-            // Check coremod first
-            if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
-                    && loadedCoreMods.contains(target.getCoreModClass())) {
-                return false;
-            } else if (!loadedMods.isEmpty() && target.getModId() != null && loadedMods.contains(target.getModId())) {
-                return false;
-            }
+            if (isModPresent(target, loadedCoreMods, loadedMods)) return false;
         }
         return true;
+    }
+
+    private static boolean isModPresent(ITargetedMod target, Set<String> loadedCoreMods, Set<String> loadedMods) {
+        // Check coremod first
+        if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
+                && loadedCoreMods.contains(target.getCoreModClass())) {
+            return true;
+        }
+        return !loadedMods.isEmpty() && target.getModId() != null && loadedMods.contains(target.getModId());
     }
 
     private void addMixinsForCurrentSide(List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
