@@ -1,113 +1,68 @@
 package com.gtnewhorizon.gtnhlib.mixin;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
-import cpw.mods.fml.relauncher.FMLLaunchHandler;
-
+/**
+ * This interface needs to be implemented on an enum that declares all your mixins
+ */
 public interface IMixins {
 
-    List<String> getMixinClasses();
+    MixinBuilder getBuilder();
 
-    Supplier<Boolean> getApplyIf();
-
-    Phase getPhase();
-
-    Side getSide();
-
-    List<ITargetedMod> getTargetedMods();
-
-    List<ITargetedMod> getExcludedMods();
-
-    static <E extends Enum<E> & IMixins> List<E> getAllValues(Class<E> enumClass) {
-        if (enumClass.isEnum() && IMixins.class.isAssignableFrom(enumClass)) {
-            return Arrays.asList(enumClass.getEnumConstants());
-        }
-        throw new IllegalStateException(
-                "Tried to use IMixins enum with a class that doesn't inherit IMixins and/or isn't an enum.");
-    }
-
+    // spotless:off
+    /**
+     * Returns the list of mixins that should be loaded early. This method needs to be called in a class that implements
+     * both {@link cpw.mods.fml.relauncher.IFMLLoadingPlugin} and {@link com.gtnewhorizon.gtnhlib.mixin.IMixins}. You
+     * may call it as such :
+     *
+     * <pre>
+     * {@code
+     *     @Override
+     *     public List<String> getMixins(Set<String> loadedCoreMods) {
+     *         return IMixins.getEarlyMixins(YourMixinEnum.class, loadedCoreMods);
+     *     }
+     * }
+     * </pre>
+     */
     static <E extends Enum<E> & IMixins> List<String> getEarlyMixins(Class<E> enumClass, Set<String> loadedCoreMods) {
-        final List<String> mixins = new ArrayList<>();
-        final List<String> notLoading = new ArrayList<>();
-        for (E mixin : getAllValues(enumClass)) {
-            if (mixin.getPhase() == Phase.EARLY) {
-                if (mixin.shouldLoad(loadedCoreMods, Collections.emptySet())) {
-                    mixins.addAll(mixin.getMixinClasses());
-                } else {
-                    notLoading.addAll(mixin.getMixinClasses());
-                }
-            }
+        final List<String> mixinsToLoad = new ArrayList<>();
+        final List<String> mixinsToNotLoad = new ArrayList<>();
+        for (E mixin : enumClass.getEnumConstants()) {
+            mixin.getBuilder().validateBuilder(mixin);
+            mixin.getBuilder().loadEarlyMixins(loadedCoreMods, mixinsToLoad, mixinsToNotLoad);
         }
-        GTNHLib.LOG.info("Not loading the following EARLY mixins: {}", notLoading);
-        return mixins;
+        GTNHLib.LOG.info("Not loading the following EARLY mixins: {}", mixinsToNotLoad);
+        return mixinsToLoad;
     }
 
+    /**
+     * Returns the list of mixins that should be loaded late. This method needs to be called in a class annotated with
+     * {@link com.gtnewhorizon.gtnhmixins.LateMixin} and implementing
+     * {@link com.gtnewhorizon.gtnhmixins.ILateMixinLoader}. You may call it as such :
+     *
+     * <pre>
+     * {@code
+     *     @Override
+     *     public List<String> getMixins(Set<String> loadedMods) {
+     *         return IMixins.getLateMixins(YourMixinEnum.class, loadedMods);
+     *     }
+     * }
+     * </pre>
+     */
     static <E extends Enum<E> & IMixins> List<String> getLateMixins(Class<E> enumClass, Set<String> loadedMods) {
-        final List<String> mixins = new ArrayList<>();
-        final List<String> notLoading = new ArrayList<>();
-        for (E mixin : getAllValues(enumClass)) {
-            if (mixin.getPhase() == Phase.LATE) {
-                if (mixin.shouldLoad(Collections.emptySet(), loadedMods)) {
-                    mixins.addAll(mixin.getMixinClasses());
-                } else {
-                    notLoading.addAll(mixin.getMixinClasses());
-                }
-            }
+        final List<String> mixinsToLoad = new ArrayList<>();
+        final List<String> mixinsToNotLoad = new ArrayList<>();
+        for (E mixin : enumClass.getEnumConstants()) {
+            mixin.getBuilder().validateBuilder(mixin);
+            mixin.getBuilder().loadLateMixins(loadedMods, mixinsToLoad, mixinsToNotLoad);
         }
-        GTNHLib.LOG.info("Not loading the following LATE mixins: {}", notLoading.toString());
-        return mixins;
+        GTNHLib.LOG.info("Not loading the following LATE mixins: {}", mixinsToNotLoad.toString());
+        return mixinsToLoad;
     }
-
-    default boolean shouldLoadSide() {
-        return getSide() == Side.BOTH || (getSide() == Side.SERVER && FMLLaunchHandler.side().isServer())
-                || (getSide() == Side.CLIENT && FMLLaunchHandler.side().isClient());
-    }
-
-    default boolean allModsLoaded(List<ITargetedMod> targetedMods, Set<String> loadedCoreMods, Set<String> loadedMods) {
-        if (targetedMods.isEmpty()) return false;
-
-        for (ITargetedMod target : targetedMods) {
-            if (target == TargetedMod.VANILLA) continue;
-
-            // Check coremod first
-            if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
-                    && !loadedCoreMods.contains(target.getCoreModClass()))
-                return false;
-            else if (!loadedMods.isEmpty() && target.getModId() != null && !loadedMods.contains(target.getModId()))
-                return false;
-        }
-
-        return true;
-    }
-
-    default boolean noModsLoaded(List<ITargetedMod> targetedMods, Set<String> loadedCoreMods, Set<String> loadedMods) {
-        if (targetedMods.isEmpty()) return true;
-
-        for (ITargetedMod target : targetedMods) {
-            if (target == TargetedMod.VANILLA) continue;
-
-            // Check coremod first
-            if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
-                    && loadedCoreMods.contains(target.getCoreModClass()))
-                return false;
-            else if (!loadedMods.isEmpty() && target.getModId() != null && loadedMods.contains(target.getModId()))
-                return false;
-        }
-
-        return true;
-    }
-
-    default boolean shouldLoad(Set<String> loadedCoreMods, Set<String> loadedMods) {
-        return (shouldLoadSide() && getApplyIf().get()
-                && allModsLoaded(getTargetedMods(), loadedCoreMods, loadedMods)
-                && noModsLoaded(getExcludedMods(), loadedCoreMods, loadedMods));
-    }
+    // spotless:on
 
 }
