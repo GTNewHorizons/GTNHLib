@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.service.MixinService;
 
+import com.gtnewhorizon.gtnhlib.mixin.IMixins.Phase;
+
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
 @SuppressWarnings({ "unused", "ForLoopReplaceableByForEach" })
@@ -109,6 +111,9 @@ public class MixinBuilder {
     }
 
     private static void validateTargetedMod(ITargetedMod target, Enum<?> entry) {
+        if (target == null) {
+            throw new NullPointerException();
+        }
         if (target.modId() == null && target.coreModClassName() == null
                 && target.anyClassName() == null
                 && target.classNodeTest() == null

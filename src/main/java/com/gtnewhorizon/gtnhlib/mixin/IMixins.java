@@ -15,7 +15,7 @@ public interface IMixins {
 
     // spotless:off
     /**
-     * Returns the list of mixins that should be loaded early. This method needs to be called in a class that implements
+     * Returns the list of mixins that should be loaded early by GTNH mixins. This method needs to be called in a class that implements
      * both {@link cpw.mods.fml.relauncher.IFMLLoadingPlugin} and {@link com.gtnewhorizon.gtnhlib.mixin.IMixins}. You
      * may call it as such :
      *
@@ -40,7 +40,7 @@ public interface IMixins {
     }
 
     /**
-     * Returns the list of mixins that should be loaded late. This method needs to be called in a class annotated with
+     * Returns the list of mixins that should be loaded late by GTNH mixins. This method needs to be called in a class annotated with
      * {@link com.gtnewhorizon.gtnhmixins.LateMixin} and implementing
      * {@link com.gtnewhorizon.gtnhmixins.ILateMixinLoader}. You may call it as such :
      *
@@ -64,5 +64,13 @@ public interface IMixins {
         return mixinsToLoad;
     }
     // spotless:on
+
+    /**
+     * Phase is used for GTNH mixins
+     */
+    enum Phase {
+        EARLY,
+        LATE
+    }
 
 }

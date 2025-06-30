@@ -2,7 +2,6 @@ package com.gtnewhorizon.gtnhlib.mixins;
 
 import com.gtnewhorizon.gtnhlib.mixin.IMixins;
 import com.gtnewhorizon.gtnhlib.mixin.MixinBuilder;
-import com.gtnewhorizon.gtnhlib.mixin.Phase;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
