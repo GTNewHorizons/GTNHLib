@@ -226,7 +226,8 @@ public class MixinBuilder {
         }
         // 5 find jar files and test jar name
         if (target.getJarNameTest() != null) {
-            // TODO
+            // TODO implement jar name matching
+            throw new UnsupportedOperationException("Jar name matching isn't implemented yet");
         }
         return false;
     }
