@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
 /**
@@ -11,6 +13,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  */
 public interface IMixins {
 
+    @Nonnull
     MixinBuilder getBuilder();
 
     // spotless:off
@@ -28,12 +31,10 @@ public interface IMixins {
      * }
      * </pre>
      */
-    static <E extends Enum<E> & IMixins> List<String> getMixins(Class<E> enumClass) {
+    static <E extends Enum<E> & IMixins> List<String> getMixins(Class<E> mixinsEnum) {
         final List<String> mixinsToLoad = new ArrayList<>();
         final List<String> mixinsToNotLoad = new ArrayList<>();
-        for (E mixin : enumClass.getEnumConstants()) {
-            mixin.getBuilder().loadMixins(mixin, mixinsToLoad, mixinsToNotLoad);
-        }
+        MixinBuilder.loadMixins(mixinsEnum, mixinsToLoad, mixinsToNotLoad);
         GTNHLib.LOG.info("Not loading the following mixins: {}", mixinsToNotLoad);
         return mixinsToLoad;
     }
@@ -52,12 +53,10 @@ public interface IMixins {
      * }
      * </pre>
      */
-    static <E extends Enum<E> & IMixins> List<String> getEarlyMixins(Class<E> enumClass, Set<String> loadedCoreMods) {
+    static <E extends Enum<E> & IMixins> List<String> getEarlyMixins(Class<E> mixinsEnum, Set<String> loadedCoreMods) {
         final List<String> mixinsToLoad = new ArrayList<>();
         final List<String> mixinsToNotLoad = new ArrayList<>();
-        for (E mixin : enumClass.getEnumConstants()) {
-            mixin.getBuilder().loadEarlyMixins(mixin, loadedCoreMods, mixinsToLoad, mixinsToNotLoad);
-        }
+        MixinBuilder.loadEarlyMixins(mixinsEnum, loadedCoreMods, mixinsToLoad, mixinsToNotLoad);
         GTNHLib.LOG.info("Not loading the following EARLY mixins: {}", mixinsToNotLoad);
         return mixinsToLoad;
     }
@@ -76,19 +75,17 @@ public interface IMixins {
      * }
      * </pre>
      */
-    static <E extends Enum<E> & IMixins> List<String> getLateMixins(Class<E> enumClass, Set<String> loadedMods) {
+    static <E extends Enum<E> & IMixins> List<String> getLateMixins(Class<E> mixinsEnum, Set<String> loadedMods) {
         final List<String> mixinsToLoad = new ArrayList<>();
         final List<String> mixinsToNotLoad = new ArrayList<>();
-        for (E mixin : enumClass.getEnumConstants()) {
-            mixin.getBuilder().loadLateMixins(mixin, loadedMods, mixinsToLoad, mixinsToNotLoad);
-        }
+        MixinBuilder.loadLateMixins(mixinsEnum, loadedMods, mixinsToLoad, mixinsToNotLoad);
         GTNHLib.LOG.info("Not loading the following LATE mixins: {}", mixinsToNotLoad.toString());
         return mixinsToLoad;
     }
     // spotless:on
 
     /**
-     * Phase is only used by early and late mixins from gtnh mixins
+     * Phase is only used for early and late mixins from gtnh mixins
      */
     enum Phase {
         EARLY,

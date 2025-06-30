@@ -3,6 +3,8 @@ package com.gtnewhorizon.gtnhlib.mixin;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -59,6 +61,16 @@ public class MixinBuilder {
         return this;
     }
 
+    /**
+     * Mixins registered from a {@link com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader} need to set this to
+     * {@link com.gtnewhorizon.gtnhlib.mixin.IMixins.Phase#EARLY}.
+     * <p>
+     * Mixins registered from a {@link com.gtnewhorizon.gtnhmixins.ILateMixinLoader} need to set this to
+     * {@link com.gtnewhorizon.gtnhlib.mixin.IMixins.Phase#LATE}.
+     * <p>
+     * Mixins registered from a {@link org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin} need to leave this
+     * null.
+     */
     public MixinBuilder setPhase(Phase phase) {
         this.phase = phase;
         return this;
@@ -87,6 +99,30 @@ public class MixinBuilder {
         return this;
     }
 
+    private void addMixinsForCurrentSide(List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
+        final boolean isClient = FMLLaunchHandler.side().isClient();
+        if (commonMixins != null) mixinsToLoad.addAll(commonMixins);
+        if (clientMixins != null) {
+            if (isClient) mixinsToLoad.addAll(clientMixins);
+            else mixinsToNotLoad.addAll(clientMixins);
+        }
+        if (serverMixins != null) {
+            if (!isClient) mixinsToLoad.addAll(serverMixins);
+            else mixinsToNotLoad.addAll(serverMixins);
+        }
+    }
+
+    private void addAllMixinsTo(List<String> list) {
+        if (commonMixins != null) list.addAll(commonMixins);
+        if (clientMixins != null) list.addAll(clientMixins);
+        if (serverMixins != null) list.addAll(serverMixins);
+    }
+
+    private void addAllTargetsTo(Set<ITargetedMod> set) {
+        if (requiredMods != null) set.addAll(requiredMods);
+        if (excludedMods != null) set.addAll(excludedMods);
+    }
+
     private void validateBuilder(Enum<?> mixin) {
         int count = 0;
         if (commonMixins != null) count += commonMixins.size();
@@ -95,103 +131,136 @@ public class MixinBuilder {
         if (count == 0) {
             throw new RuntimeException("No mixin class registered for IMixins : " + mixin.name());
         }
-        if (requiredMods != null) {
-            for (int i = 0; i < requiredMods.size(); i++) {
-                validateTargetedMod(requiredMods.get(i), mixin);
-            }
-        }
-        if (excludedMods != null) {
-            for (int i = 0; i < excludedMods.size(); i++) {
-                validateTargetedMod(excludedMods.get(i), mixin);
-            }
-        }
     }
 
-    private void validateTargetedMod(ITargetedMod target, Enum<?> entry) {
+    private boolean shouldLoadMixin(Set<ITargetedMod> loadedTargets) {
+        return allRequiredModsPresent(loadedTargets) && noExcludedModsPresent(loadedTargets);
+    }
+
+    private boolean allRequiredModsPresent(Set<ITargetedMod> loadedTargets) {
+        if (requiredMods == null) return true;
+        for (int i = 0; i < requiredMods.size(); i++) {
+            if (!loadedTargets.contains(requiredMods.get(i))) return false;
+        }
+        return true;
+    }
+
+    private boolean noExcludedModsPresent(Set<ITargetedMod> loadedTargets) {
+        if (excludedMods == null) return true;
+        for (int i = 0; i < excludedMods.size(); i++) {
+            if (loadedTargets.contains(excludedMods.get(i))) return false;
+        }
+        return true;
+    }
+
+    private static void validateTargetedMod(ITargetedMod target, Phase phaseIn) {
+        if (target == null) {
+            throw new NullPointerException("ITargetedMod is null!");
+        }
         if (target.getModId() == null && target.getCoreModClass() == null
                 && target.getTargetClass() == null
                 && target.getClassNodeTest() == null
                 && target.getJarNameTest() == null) {
-            throw new RuntimeException(
-                    "No information at all provided by ITargetedMod used by IMixins : " + entry.name());
+            throw new RuntimeException("No information at all provided by ITargetedMod " + target);
         }
-        if (phase == Phase.EARLY) {
+        if (phaseIn == Phase.EARLY) {
             if (target.getCoreModClass() == null && target.getTargetClass() == null
                     && target.getClassNodeTest() == null
                     && target.getJarNameTest() == null) {
                 throw new RuntimeException(
-                        "Not enough information provided by ITargetedMod used by early IMixins : " + entry.name());
+                        "Not enough information provided by ITargetedMod " + target + " used by early mixins");
             }
-        } else if (phase == Phase.LATE) {
+        } else if (phaseIn == Phase.LATE) {
             if (target.getModId() == null && target.getTargetClass() == null
                     && target.getClassNodeTest() == null
                     && target.getJarNameTest() == null) {
                 throw new RuntimeException(
-                        "Not enough information provided by ITargetedMod used by late IMixins : " + entry.name());
+                        "Not enough information provided by ITargetedMod " + target + " used by late mixins");
             }
         }
         if (target.getClassNodeTest() != null && target.getTargetClass() == null) {
             throw new RuntimeException(
-                    "ITargetedMod used by IMixins : " + entry.name()
-                            + " uses a ClassNode test but doesn't specify the target class");
+                    "ITargetedMod " + target + " uses a ClassNode test but doesn't specify the target class");
         }
     }
 
-    protected void loadMixins(Enum<?> mixin, List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
-        validateBuilder(mixin);
-        if (shouldLoadMixin(Collections.emptySet(), Collections.emptySet())) {
-            addMixinsForCurrentSide(mixinsToLoad, mixinsToNotLoad);
-        } else {
-            addAllMixinsTo(mixinsToNotLoad);
-        }
-    }
-
-    protected void loadEarlyMixins(Enum<?> mixin, Set<String> loadedCoreMods, List<String> mixinsToLoad,
+    protected static <E extends Enum<E> & IMixins> void loadMixins(Class<E> mixinsEnum, List<String> mixinsToLoad,
             List<String> mixinsToNotLoad) {
-        if (phase != Phase.EARLY) return;
-        validateBuilder(mixin);
-        if (shouldLoadMixin(loadedCoreMods, Collections.emptySet())) {
-            addMixinsForCurrentSide(mixinsToLoad, mixinsToNotLoad);
-        } else {
-            addAllMixinsTo(mixinsToNotLoad);
+        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, null);
+        Set<ITargetedMod> loadedTargets = getLoadedTargetedMods(
+                builders,
+                null,
+                Collections.emptySet(),
+                Collections.emptySet());
+        loadMixins(builders, loadedTargets, mixinsToLoad, mixinsToNotLoad);
+    }
+
+    protected static <E extends Enum<E> & IMixins> void loadEarlyMixins(Class<E> mixinsEnum, Set<String> loadedCoreMods,
+            List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
+        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, Phase.EARLY);
+        Set<ITargetedMod> loadedTargets = getLoadedTargetedMods(
+                builders,
+                Phase.EARLY,
+                loadedCoreMods,
+                Collections.emptySet());
+        loadMixins(builders, loadedTargets, mixinsToLoad, mixinsToNotLoad);
+    }
+
+    protected static <E extends Enum<E> & IMixins> void loadLateMixins(Class<E> mixinsEnum, Set<String> loadedMods,
+            List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
+        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, Phase.LATE);
+        Set<ITargetedMod> loadedTargets = getLoadedTargetedMods(
+                builders,
+                Phase.LATE,
+                Collections.emptySet(),
+                loadedMods);
+        loadMixins(builders, loadedTargets, mixinsToLoad, mixinsToNotLoad);
+    }
+
+    private static void loadMixins(List<MixinBuilder> builders, Set<ITargetedMod> loadedTargets,
+            List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
+        for (int i = 0; i < builders.size(); i++) {
+            MixinBuilder builder = builders.get(i);
+            if (builder.shouldLoadMixin(loadedTargets)) {
+                builder.addMixinsForCurrentSide(mixinsToLoad, mixinsToNotLoad);
+            } else {
+                builder.addAllMixinsTo(mixinsToNotLoad);
+            }
         }
     }
 
-    protected void loadLateMixins(Enum<?> mixin, Set<String> loadedMods, List<String> mixinsToLoad,
-            List<String> mixinsToNotLoad) {
-        if (phase != Phase.LATE) return;
-        validateBuilder(mixin);
-        if (shouldLoadMixin(Collections.emptySet(), loadedMods)) {
-            addMixinsForCurrentSide(mixinsToLoad, mixinsToNotLoad);
-        } else {
-            addAllMixinsTo(mixinsToNotLoad);
+    private static <E extends Enum<E> & IMixins> List<MixinBuilder> getEnabledBuildersForPhase(Class<E> mixinsEnum,
+            Phase phase) {
+        final E[] constants = mixinsEnum.getEnumConstants();
+        List<MixinBuilder> list = new ArrayList<>(constants.length + 1);
+        for (E mixin : constants) {
+            MixinBuilder builder = mixin.getBuilder();
+            if (builder.phase == phase && builder.applyIf.get()) {
+                builder.validateBuilder(mixin);
+                list.add(builder);
+            }
         }
+        return list;
     }
 
-    private boolean shouldLoadMixin(Set<String> loadedCoreMods, Set<String> loadedMods) {
-        return applyIf.get() && noExcludedModsPresent(loadedCoreMods, loadedMods)
-                && allRequiredModsPresent(loadedCoreMods, loadedMods);
-    }
-
-    private boolean allRequiredModsPresent(Set<String> loadedCoreMods, Set<String> loadedMods) {
-        if (requiredMods == null) return true;
-        for (int i = 0; i < requiredMods.size(); i++) {
-            ITargetedMod target = requiredMods.get(i);
-            if (!isModPresent(target, loadedCoreMods, loadedMods)) return false;
+    private static Set<ITargetedMod> getLoadedTargetedMods(List<MixinBuilder> builders, Phase phase,
+            Set<String> loadedCoreMods, Set<String> loadedMods) {
+        Set<ITargetedMod> targets = new HashSet<>();
+        for (int i = 0; i < builders.size(); i++) {
+            builders.get(i).addAllTargetsTo(targets);
         }
-        return true;
-    }
-
-    private boolean noExcludedModsPresent(Set<String> loadedCoreMods, Set<String> loadedMods) {
-        if (excludedMods == null) return true;
-        for (int i = 0; i < excludedMods.size(); i++) {
-            ITargetedMod target = excludedMods.get(i);
-            if (isModPresent(target, loadedCoreMods, loadedMods)) return false;
+        Iterator<ITargetedMod> iterator = targets.iterator();
+        while (iterator.hasNext()) {
+            ITargetedMod target = iterator.next();
+            validateTargetedMod(target, phase);
+            if (!isTargetPresent(target, loadedCoreMods, loadedMods)) {
+                iterator.remove();
+            }
         }
-        return true;
+        return targets;
     }
 
-    private static boolean isModPresent(ITargetedMod target, Set<String> loadedCoreMods, Set<String> loadedMods) {
+    private static boolean isTargetPresent(ITargetedMod target, Set<String> loadedCoreMods, Set<String> loadedMods) {
         // 1. check coremod class
         if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
                 && loadedCoreMods.contains(target.getCoreModClass())) {
@@ -220,25 +289,6 @@ public class MixinBuilder {
             throw new UnsupportedOperationException("Jar name matching isn't implemented yet");
         }
         return false;
-    }
-
-    private void addMixinsForCurrentSide(List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
-        final boolean isClient = FMLLaunchHandler.side().isClient();
-        if (commonMixins != null) mixinsToLoad.addAll(commonMixins);
-        if (clientMixins != null) {
-            if (isClient) mixinsToLoad.addAll(clientMixins);
-            else mixinsToNotLoad.addAll(clientMixins);
-        }
-        if (serverMixins != null) {
-            if (!isClient) mixinsToLoad.addAll(serverMixins);
-            else mixinsToNotLoad.addAll(serverMixins);
-        }
-    }
-
-    private void addAllMixinsTo(List<String> list) {
-        if (commonMixins != null) list.addAll(commonMixins);
-        if (clientMixins != null) list.addAll(clientMixins);
-        if (serverMixins != null) list.addAll(serverMixins);
     }
 
 }
