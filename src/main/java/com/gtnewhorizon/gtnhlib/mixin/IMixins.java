@@ -11,6 +11,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 /**
  * This interface needs to be implemented on an enum that declares all your mixins
  */
+@SuppressWarnings("unused")
 public interface IMixins {
 
     @Nonnull
