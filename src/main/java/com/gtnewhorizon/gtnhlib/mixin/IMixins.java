@@ -14,11 +14,35 @@ public interface IMixins {
     MixinBuilder getBuilder();
 
     // spotless:off
+
     /**
-     * Returns the list of mixins that should be loaded early by GTNH mixins. This method needs to be called in a class that implements
-     * both {@link cpw.mods.fml.relauncher.IFMLLoadingPlugin} and {@link com.gtnewhorizon.gtnhlib.mixin.IMixins}. You
-     * may call it as such :
-     *
+     * Returns the list of mixins that should be loaded from your {@link org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin} implementation.
+     * <p>
+     * You may call it as such :
+     * <pre>
+     * {@code
+     *     @Override
+     *     public List<String> getMixins() {
+     *         return IMixins.getMixins(YourMixinEnum.class);
+     *     }
+     * }
+     * </pre>
+     */
+    static <E extends Enum<E> & IMixins> List<String> getMixins(Class<E> enumClass) {
+        final List<String> mixinsToLoad = new ArrayList<>();
+        final List<String> mixinsToNotLoad = new ArrayList<>();
+        for (E mixin : enumClass.getEnumConstants()) {
+            mixin.getBuilder().loadMixins(mixin, mixinsToLoad, mixinsToNotLoad);
+        }
+        GTNHLib.LOG.info("Not loading the following mixins: {}", mixinsToNotLoad);
+        return mixinsToLoad;
+    }
+
+    /**
+     * Returns the list of mixins that should be loaded from your {@link com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader} implementation.
+     * Note that you also need to implement {@link cpw.mods.fml.relauncher.IFMLLoadingPlugin} for early mixins to work.
+     * <p>
+     * You may call it as such :
      * <pre>
      * {@code
      *     @Override
@@ -32,18 +56,17 @@ public interface IMixins {
         final List<String> mixinsToLoad = new ArrayList<>();
         final List<String> mixinsToNotLoad = new ArrayList<>();
         for (E mixin : enumClass.getEnumConstants()) {
-            mixin.getBuilder().validateBuilder(mixin);
-            mixin.getBuilder().loadEarlyMixins(loadedCoreMods, mixinsToLoad, mixinsToNotLoad);
+            mixin.getBuilder().loadEarlyMixins(mixin, loadedCoreMods, mixinsToLoad, mixinsToNotLoad);
         }
         GTNHLib.LOG.info("Not loading the following EARLY mixins: {}", mixinsToNotLoad);
         return mixinsToLoad;
     }
 
     /**
-     * Returns the list of mixins that should be loaded late by GTNH mixins. This method needs to be called in a class annotated with
-     * {@link com.gtnewhorizon.gtnhmixins.LateMixin} and implementing
-     * {@link com.gtnewhorizon.gtnhmixins.ILateMixinLoader}. You may call it as such :
-     *
+     * Returns the list of mixins that should be loaded from your {@link com.gtnewhorizon.gtnhmixins.ILateMixinLoader} implementation.
+     * Note that you also need to annotate your class with {@link com.gtnewhorizon.gtnhmixins.LateMixin} for late mixins to work.
+     * <p>
+     * You may call it as such :
      * <pre>
      * {@code
      *     @Override
@@ -57,8 +80,7 @@ public interface IMixins {
         final List<String> mixinsToLoad = new ArrayList<>();
         final List<String> mixinsToNotLoad = new ArrayList<>();
         for (E mixin : enumClass.getEnumConstants()) {
-            mixin.getBuilder().validateBuilder(mixin);
-            mixin.getBuilder().loadLateMixins(loadedMods, mixinsToLoad, mixinsToNotLoad);
+            mixin.getBuilder().loadLateMixins(mixin, loadedMods, mixinsToLoad, mixinsToNotLoad);
         }
         GTNHLib.LOG.info("Not loading the following LATE mixins: {}", mixinsToNotLoad.toString());
         return mixinsToLoad;
@@ -66,7 +88,7 @@ public interface IMixins {
     // spotless:on
 
     /**
-     * Phase is used for GTNH mixins
+     * Phase is only used by early and late mixins from gtnh mixins
      */
     enum Phase {
         EARLY,

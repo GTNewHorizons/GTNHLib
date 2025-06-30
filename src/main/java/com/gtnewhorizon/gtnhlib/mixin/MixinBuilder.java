@@ -25,7 +25,7 @@ public class MixinBuilder {
     private @Nullable List<String> serverMixins;
     private @Nullable List<ITargetedMod> requiredMods;
     private @Nullable List<ITargetedMod> excludedMods;
-    private Phase phase;
+    private @Nullable Phase phase;
     private Supplier<Boolean> applyIf = () -> true;
 
     public MixinBuilder() {}
@@ -64,7 +64,7 @@ public class MixinBuilder {
         return this;
     }
 
-    public MixinBuilder setApplyIf(Supplier<Boolean> applyIf) {
+    public MixinBuilder setApplyIf(@Nullable Supplier<Boolean> applyIf) {
         this.applyIf = applyIf;
         return this;
     }
@@ -87,25 +87,22 @@ public class MixinBuilder {
         return this;
     }
 
-    protected void validateBuilder(Enum<?> entry) {
+    private void validateBuilder(Enum<?> mixin) {
         int count = 0;
         if (commonMixins != null) count += commonMixins.size();
         if (clientMixins != null) count += clientMixins.size();
         if (serverMixins != null) count += serverMixins.size();
         if (count == 0) {
-            throw new RuntimeException("No mixin class registered for IMixins : " + entry.name());
-        }
-        if (phase == null) {
-            throw new RuntimeException("No Phase specified for IMixins : " + entry.name());
+            throw new RuntimeException("No mixin class registered for IMixins : " + mixin.name());
         }
         if (requiredMods != null) {
             for (int i = 0; i < requiredMods.size(); i++) {
-                validateTargetedMod(requiredMods.get(i), entry);
+                validateTargetedMod(requiredMods.get(i), mixin);
             }
         }
         if (excludedMods != null) {
             for (int i = 0; i < excludedMods.size(); i++) {
-                validateTargetedMod(excludedMods.get(i), entry);
+                validateTargetedMod(excludedMods.get(i), mixin);
             }
         }
     }
@@ -121,12 +118,22 @@ public class MixinBuilder {
             throw new RuntimeException(
                     "No information at all provided by ITargetedMod used by IMixins : " + entry.name());
         }
-        // TODO check if phase is early or late the info
+        // TODO check if phase is early or late the info or phase == null for IMixins
     }
 
-    protected void loadEarlyMixins(Set<String> loadedCoreMods, List<String> mixinsToLoad,
+    protected void loadMixins(Enum<?> mixin, List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
+        validateBuilder(mixin);
+        if (shouldLoadMixin(Collections.emptySet(), Collections.emptySet())) {
+            addMixinsForCurrentSide(mixinsToLoad, mixinsToNotLoad);
+        } else {
+            addAllMixinsTo(mixinsToNotLoad);
+        }
+    }
+
+    protected void loadEarlyMixins(Enum<?> mixin, Set<String> loadedCoreMods, List<String> mixinsToLoad,
             List<String> mixinsToNotLoad) {
         if (phase != Phase.EARLY) return;
+        validateBuilder(mixin);
         if (shouldLoadMixin(loadedCoreMods, Collections.emptySet())) {
             addMixinsForCurrentSide(mixinsToLoad, mixinsToNotLoad);
         } else {
@@ -134,8 +141,10 @@ public class MixinBuilder {
         }
     }
 
-    protected void loadLateMixins(Set<String> loadedMods, List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
+    protected void loadLateMixins(Enum<?> mixin, Set<String> loadedMods, List<String> mixinsToLoad,
+            List<String> mixinsToNotLoad) {
         if (phase != Phase.LATE) return;
+        validateBuilder(mixin);
         if (shouldLoadMixin(Collections.emptySet(), loadedMods)) {
             addMixinsForCurrentSide(mixinsToLoad, mixinsToNotLoad);
         } else {
