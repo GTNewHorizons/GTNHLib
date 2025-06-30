@@ -3,32 +3,17 @@ package com.gtnewhorizon.gtnhlib.mixin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
 /**
  * This interface needs to be implemented on an enum that declares all your mixins
  */
-@SuppressWarnings("unused")
 public interface IMixins {
 
-    @Nonnull
-    default MixinBuilder getBuilder() {
-        return new MixinBuilder(this);
-    }
+    MixinBuilder getBuilder();
 
     // spotless:off
-    default @Nullable List<String> getCommonMixins() {return null;}
-    default @Nullable List<String> getClientMixins() {return null;}
-    default @Nullable List<String> getServerMixins() {return null;}
-    default @Nullable List<ITargetedMod> getRequiredMods() {return null;}
-    default @Nullable List<ITargetedMod> getExcludedMods() {return null;}
-    default @Nullable Phase getPhase() {return null;}
-    default Supplier<Boolean> getApplyIf() {return null;}
 
     /**
      * Returns the list of mixins that should be loaded from your {@link org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin} implementation.
