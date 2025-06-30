@@ -28,7 +28,7 @@ public class MixinBuilder {
     private @Nullable List<ITargetedMod> requiredMods;
     private @Nullable List<ITargetedMod> excludedMods;
     private @Nullable Phase phase;
-    private Supplier<Boolean> applyIf = () -> true;
+    private @Nonnull Supplier<Boolean> applyIf = () -> true;
 
     public MixinBuilder() {}
 
@@ -76,7 +76,7 @@ public class MixinBuilder {
         return this;
     }
 
-    public MixinBuilder setApplyIf(@Nullable Supplier<Boolean> applyIf) {
+    public MixinBuilder setApplyIf(@Nonnull Supplier<Boolean> applyIf) {
         this.applyIf = applyIf;
         return this;
     }
@@ -186,7 +186,7 @@ public class MixinBuilder {
 
     protected static <E extends Enum<E> & IMixins> void loadMixins(Class<E> mixinsEnum, List<String> mixinsToLoad,
             List<String> mixinsToNotLoad) {
-        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, null);
+        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, null, mixinsToNotLoad);
         Set<ITargetedMod> loadedTargets = getLoadedTargetedMods(
                 builders,
                 null,
@@ -197,7 +197,7 @@ public class MixinBuilder {
 
     protected static <E extends Enum<E> & IMixins> void loadEarlyMixins(Class<E> mixinsEnum, Set<String> loadedCoreMods,
             List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
-        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, Phase.EARLY);
+        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, Phase.EARLY, mixinsToNotLoad);
         Set<ITargetedMod> loadedTargets = getLoadedTargetedMods(
                 builders,
                 Phase.EARLY,
@@ -208,7 +208,7 @@ public class MixinBuilder {
 
     protected static <E extends Enum<E> & IMixins> void loadLateMixins(Class<E> mixinsEnum, Set<String> loadedMods,
             List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
-        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, Phase.LATE);
+        List<MixinBuilder> builders = getEnabledBuildersForPhase(mixinsEnum, Phase.LATE, mixinsToNotLoad);
         Set<ITargetedMod> loadedTargets = getLoadedTargetedMods(
                 builders,
                 Phase.LATE,
@@ -230,14 +230,17 @@ public class MixinBuilder {
     }
 
     private static <E extends Enum<E> & IMixins> List<MixinBuilder> getEnabledBuildersForPhase(Class<E> mixinsEnum,
-            Phase phase) {
+            Phase phase, List<String> mixinsToNotLoad) {
         final E[] constants = mixinsEnum.getEnumConstants();
         List<MixinBuilder> list = new ArrayList<>(constants.length + 1);
         for (E mixin : constants) {
             MixinBuilder builder = mixin.getBuilder();
-            if (builder.phase == phase && builder.applyIf.get()) {
-                builder.validateBuilder(mixin);
+            if (builder.phase != phase) continue;
+            builder.validateBuilder(mixin);
+            if (builder.applyIf.get()) {
                 list.add(builder);
+            } else {
+                builder.addAllMixinsTo(mixinsToNotLoad);
             }
         }
         return list;
