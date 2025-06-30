@@ -111,10 +111,10 @@ public class MixinBuilder {
         if (target == null) {
             throw new NullPointerException();
         }
-        if (target.modId() == null && target.coreModClassName() == null
-                && target.anyClassName() == null
-                && target.classNodeTest() == null
-                && target.jarNameTest() == null) {
+        if (target.getModId() == null && target.getCoreModClass() == null
+                && target.getTargetClass() == null
+                && target.getClassNodeTest() == null
+                && target.getJarNameTest() == null) {
             throw new RuntimeException(
                     "No information at all provided by ITargetedMod used by IMixins : " + entry.name());
         }
@@ -177,29 +177,29 @@ public class MixinBuilder {
 
     private static boolean isModPresent(ITargetedMod target, Set<String> loadedCoreMods, Set<String> loadedMods) {
         // 1. check coremod class
-        if (!loadedCoreMods.isEmpty() && target.coreModClassName() != null
-                && loadedCoreMods.contains(target.coreModClassName())) {
+        if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
+                && loadedCoreMods.contains(target.getCoreModClass())) {
             return true;
         }
         // 2. check modID
-        if (!loadedMods.isEmpty() && target.modId() != null && loadedMods.contains(target.modId())) {
+        if (!loadedMods.isEmpty() && target.getModId() != null && loadedMods.contains(target.getModId())) {
             return true;
         }
         // 3. check class
-        if (target.anyClassName() != null) {
+        if (target.getTargetClass() != null) {
             try {
                 ClassNode classNode = MixinService.getService().getBytecodeProvider()
-                        .getClassNode(target.anyClassName(), false);
-                if (target.classNodeTest() == null) {
+                        .getClassNode(target.getTargetClass(), false);
+                if (target.getClassNodeTest() == null) {
                     return true;
                 } else {
                     // 4. test bytecode of target class
-                    return target.classNodeTest().test(classNode);
+                    return target.getClassNodeTest().test(classNode);
                 }
             } catch (ClassNotFoundException | IOException ignored) {}
         }
         // 5 find jar files and test jar name
-        if (target.jarNameTest() != null) {
+        if (target.getJarNameTest() != null) {
             // TODO
         }
         return false;

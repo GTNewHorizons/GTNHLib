@@ -7,33 +7,37 @@ import org.spongepowered.asm.lib.tree.ClassNode;
 public interface ITargetedMod {
 
     /**
-     * The "modid" of the targeted mod, found in the @Mod(modid=) annotation.
+     * The "modid" of the targeted mod, found in the @Mod(modid=) annotation. This can only be used by GTNH mixins late
+     * mixins system.
      */
-    default String modId() {
+    default String getModId() {
         return null;
     }
 
     /**
-     * Fully qualified name of the class that implements the IFMLLoadingPlugin interface in this targeted mod. For
-     * example : "com.gtnewhorizons.angelica.loading.AngelicaTweaker"
+     * Fully qualified name of the class that implements the IFMLLoadingPlugin interface in this targeted mod. This can
+     * only be used by GTNH mixins early mixins system.
+     * <p>
+     * For example : "com.gtnewhorizons.angelica.loading.AngelicaTweaker"
      */
-    default String coreModClassName() {
+    default String getCoreModClass() {
         return null;
     }
 
     /**
-     * Fully qualified name of a class of your choice contained in the targeted mod. Typically, its main mod class. For
-     * example : "com.gtnewhorizons.angelica.AngelicaMod"
+     * Fully qualified name of a class of your choice contained in the targeted mod. Typically, its main mod class.
+     * <p>
+     * For example : "com.gtnewhorizons.angelica.AngelicaMod"
      */
-    default String anyClassName() {
+    default String getTargetClass() {
         return null;
     }
 
     /**
-     * A conditional check that will test the raw (un-transformed) bytecode of the class specified by
-     * {@link ITargetedMod#anyClassName()}. Requires you to implement {@link ITargetedMod#anyClassName()}.
+     * A conditional check that will test the raw (un-transformed) bytecode of the class specified in
+     * {@link ITargetedMod#getTargetClass()}. Requires you to implement {@link ITargetedMod#getTargetClass()}.
      */
-    default Predicate<ClassNode> classNodeTest() {
+    default Predicate<ClassNode> getClassNodeTest() {
         return null;
     }
 
@@ -41,7 +45,7 @@ public interface ITargetedMod {
      * A conditional check that will test the name of the jar files. !!! This mod identification method should only be
      * used as a last resort if you cannot identify your targeted mod with the other methods !!!
      */
-    default Predicate<String> jarNameTest() {
+    default Predicate<String> getJarNameTest() {
         return null;
     }
 
