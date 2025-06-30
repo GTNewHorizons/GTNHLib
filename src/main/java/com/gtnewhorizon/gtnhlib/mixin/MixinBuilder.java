@@ -107,10 +107,7 @@ public class MixinBuilder {
         }
     }
 
-    private static void validateTargetedMod(ITargetedMod target, Enum<?> entry) {
-        if (target == null) {
-            throw new NullPointerException();
-        }
+    private void validateTargetedMod(ITargetedMod target, Enum<?> entry) {
         if (target.getModId() == null && target.getCoreModClass() == null
                 && target.getTargetClass() == null
                 && target.getClassNodeTest() == null
@@ -118,7 +115,26 @@ public class MixinBuilder {
             throw new RuntimeException(
                     "No information at all provided by ITargetedMod used by IMixins : " + entry.name());
         }
-        // TODO check if phase is early or late the info or phase == null for IMixins
+        if (phase == Phase.EARLY) {
+            if (target.getCoreModClass() == null && target.getTargetClass() == null
+                    && target.getClassNodeTest() == null
+                    && target.getJarNameTest() == null) {
+                throw new RuntimeException(
+                        "Not enough information provided by ITargetedMod used by early IMixins : " + entry.name());
+            }
+        } else if (phase == Phase.LATE) {
+            if (target.getModId() == null && target.getTargetClass() == null
+                    && target.getClassNodeTest() == null
+                    && target.getJarNameTest() == null) {
+                throw new RuntimeException(
+                        "Not enough information provided by ITargetedMod used by late IMixins : " + entry.name());
+            }
+        }
+        if (target.getClassNodeTest() != null && target.getTargetClass() == null) {
+            throw new RuntimeException(
+                    "ITargetedMod used by IMixins : " + entry.name()
+                            + " uses a ClassNode test but doesn't specify the target class");
+        }
     }
 
     protected void loadMixins(Enum<?> mixin, List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
