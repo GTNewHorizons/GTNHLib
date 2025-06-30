@@ -32,6 +32,16 @@ public class MixinBuilder {
 
     public MixinBuilder(String description) {}
 
+    public MixinBuilder(IMixins iMixin) {
+        commonMixins = iMixin.getCommonMixins();
+        clientMixins = iMixin.getClientMixins();
+        serverMixins = iMixin.getServerMixins();
+        requiredMods = iMixin.getRequiredMods();
+        excludedMods = iMixin.getExcludedMods();
+        phase = iMixin.getPhase();
+        applyIf = iMixin.getApplyIf();
+    }
+
     /**
      * Add mixin classes that should be loaded both on the client and server
      */
