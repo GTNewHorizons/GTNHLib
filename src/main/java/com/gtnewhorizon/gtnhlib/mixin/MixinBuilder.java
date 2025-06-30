@@ -277,10 +277,10 @@ public class MixinBuilder {
                         .getClassNode(target.getTargetClass(), false);
                 if (target.getClassNodeTest() == null) {
                     return true;
-                } else {
-                    // 4. test bytecode of target class
-                    return target.getClassNodeTest().test(classNode);
                 }
+                // 4. test bytecode of target class
+                final boolean test = target.getClassNodeTest().test(classNode);
+                if (test) return true;
             } catch (ClassNotFoundException | IOException ignored) {}
         }
         // 5 find jar files and test jar name
