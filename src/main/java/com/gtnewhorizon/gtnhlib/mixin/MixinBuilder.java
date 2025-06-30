@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.mixin;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,9 +10,12 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.spongepowered.asm.lib.tree.ClassNode;
+import org.spongepowered.asm.service.MixinService;
+
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({ "unused", "ForLoopReplaceableByForEach" })
 public class MixinBuilder {
 
     private @Nullable List<String> commonMixins;
@@ -92,6 +96,27 @@ public class MixinBuilder {
         if (phase == null) {
             throw new RuntimeException("No Phase specified for IMixins : " + entry.name());
         }
+        if (requiredMods != null) {
+            for (int i = 0; i < requiredMods.size(); i++) {
+                validateTargetedMod(requiredMods.get(i), entry);
+            }
+        }
+        if (excludedMods != null) {
+            for (int i = 0; i < excludedMods.size(); i++) {
+                validateTargetedMod(excludedMods.get(i), entry);
+            }
+        }
+    }
+
+    private static void validateTargetedMod(ITargetedMod target, Enum<?> entry) {
+        if (target.modId() == null && target.coreModClassName() == null
+                && target.anyClassName() == null
+                && target.classNodeTest() == null
+                && target.jarNameTest() == null) {
+            throw new RuntimeException(
+                    "No information at all provided by ITargetedMod used by IMixins : " + entry.name());
+        }
+        // TODO check if phase is early or late the info
     }
 
     protected void loadEarlyMixins(Set<String> loadedCoreMods, List<String> mixinsToLoad,
@@ -120,7 +145,6 @@ public class MixinBuilder {
 
     private boolean allRequiredModsPresent(Set<String> loadedCoreMods, Set<String> loadedMods) {
         if (requiredMods == null) return true;
-        // noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < requiredMods.size(); i++) {
             ITargetedMod target = requiredMods.get(i);
             if (!isModPresent(target, loadedCoreMods, loadedMods)) return false;
@@ -130,7 +154,6 @@ public class MixinBuilder {
 
     private boolean noExcludedModsPresent(Set<String> loadedCoreMods, Set<String> loadedMods) {
         if (excludedMods == null) return true;
-        // noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < excludedMods.size(); i++) {
             ITargetedMod target = excludedMods.get(i);
             if (isModPresent(target, loadedCoreMods, loadedMods)) return false;
@@ -139,12 +162,33 @@ public class MixinBuilder {
     }
 
     private static boolean isModPresent(ITargetedMod target, Set<String> loadedCoreMods, Set<String> loadedMods) {
-        // Check coremod first
-        if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
-                && loadedCoreMods.contains(target.getCoreModClass())) {
+        // 1. check coremod class
+        if (!loadedCoreMods.isEmpty() && target.coreModClassName() != null
+                && loadedCoreMods.contains(target.coreModClassName())) {
             return true;
         }
-        return !loadedMods.isEmpty() && target.getModId() != null && loadedMods.contains(target.getModId());
+        // 2. check modID
+        if (!loadedMods.isEmpty() && target.modId() != null && loadedMods.contains(target.modId())) {
+            return true;
+        }
+        // 3. check class
+        if (target.anyClassName() != null) {
+            try {
+                ClassNode classNode = MixinService.getService().getBytecodeProvider()
+                        .getClassNode(target.anyClassName(), false);
+                if (target.classNodeTest() == null) {
+                    return true;
+                } else {
+                    // 4. test bytecode of target class
+                    return target.classNodeTest().test(classNode);
+                }
+            } catch (ClassNotFoundException | IOException ignored) {}
+        }
+        // 5 find jar files and test jar name
+        if (target.jarNameTest() != null) {
+            // TODO
+        }
+        return false;
     }
 
     private void addMixinsForCurrentSide(List<String> mixinsToLoad, List<String> mixinsToNotLoad) {
