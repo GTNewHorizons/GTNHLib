@@ -76,6 +76,9 @@ public class MixinBuilder {
         return this;
     }
 
+    /**
+     * Specify a condition that needs to be true for this mixin to load, such as checking for a config boolean.
+     */
     public MixinBuilder setApplyIf(@Nonnull Supplier<Boolean> applyIf) {
         this.applyIf = applyIf;
         return this;
