@@ -7,20 +7,20 @@ import org.spongepowered.asm.lib.tree.ClassNode;
 public interface ITargetedMod {
 
     /**
-     * The "modid" of the targeted mod, found in the @Mod(modid=) annotation. This can only be used by GTNH mixins late
-     * mixins system.
-     */
-    default String getModId() {
-        return null;
-    }
-
-    /**
      * Fully qualified name of the class that implements the IFMLLoadingPlugin interface in this targeted mod. This can
      * only be used by GTNH mixins early mixins system.
      * <p>
      * For example : "com.gtnewhorizons.angelica.loading.AngelicaTweaker"
      */
     default String getCoreModClass() {
+        return null;
+    }
+
+    /**
+     * The "modid" of the targeted mod, found in the @Mod(modid=) annotation. This can only be used by GTNH mixins late
+     * mixins system.
+     */
+    default String getModId() {
         return null;
     }
 
