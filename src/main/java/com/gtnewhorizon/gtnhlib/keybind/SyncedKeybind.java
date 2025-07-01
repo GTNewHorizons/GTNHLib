@@ -233,6 +233,7 @@ public final class SyncedKeybind {
         onInputEvent();
     }
 
+    @SideOnly(Side.CLIENT)
     private static void onInputEvent() {
         IntList updatingPressed = new IntArrayList();
         for (var entry : KEYBINDS.int2ObjectEntrySet()) {
