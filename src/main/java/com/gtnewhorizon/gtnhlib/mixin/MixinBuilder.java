@@ -138,13 +138,16 @@ public class MixinBuilder {
         if (excludedMods != null) set.addAll(excludedMods);
     }
 
-    private void validateBuilder(Enum<?> mixin) {
+    private void validateBuilder(Enum<?> mixin, boolean requirePhase) {
         int count = 0;
         if (commonMixins != null) count += commonMixins.size();
         if (clientMixins != null) count += clientMixins.size();
         if (serverMixins != null) count += serverMixins.size();
         if (count == 0) {
             throw new RuntimeException("No mixin class registered for IMixins : " + mixin.name());
+        }
+        if (requirePhase && phase == null) {
+            throw new RuntimeException("No Phase specified for IMixins : " + mixin.name());
         }
     }
 
@@ -245,13 +248,13 @@ public class MixinBuilder {
     }
 
     private static <E extends Enum<E> & IMixins> List<MixinBuilder> getEnabledBuildersForPhase(Class<E> mixinsEnum,
-            Phase phase, List<String> mixinsToNotLoad) {
+            Phase loadingPhase, List<String> mixinsToNotLoad) {
         final E[] constants = mixinsEnum.getEnumConstants();
         List<MixinBuilder> list = new ArrayList<>(constants.length + 1);
         for (E mixin : constants) {
             MixinBuilder builder = mixin.getBuilder();
-            if (builder.phase != phase) continue;
-            builder.validateBuilder(mixin);
+            builder.validateBuilder(mixin, loadingPhase != null);
+            if (builder.phase != loadingPhase) continue;
             if (builder.applyIf.get()) {
                 list.add(builder);
             } else {
