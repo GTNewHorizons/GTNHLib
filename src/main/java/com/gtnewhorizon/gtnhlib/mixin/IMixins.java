@@ -93,4 +93,9 @@ public interface IMixins {
         LATE
     }
 
+    enum Side {
+        COMMON,
+        CLIENT,
+        SERVER
+    }
 }

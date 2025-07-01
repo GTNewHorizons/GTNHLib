@@ -16,6 +16,7 @@ import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.service.MixinService;
 
 import com.gtnewhorizon.gtnhlib.mixin.IMixins.Phase;
+import com.gtnewhorizon.gtnhlib.mixin.IMixins.Side;
 
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
@@ -59,6 +60,17 @@ public class MixinBuilder {
         if (serverMixins == null) serverMixins = new ArrayList<>(4);
         Collections.addAll(serverMixins, mixins);
         return this;
+    }
+
+    /**
+     * Add mixins classes that should be loaded on the specified side
+     */
+    public MixinBuilder addSidedMixins(Side side, @Nonnull String... mixins) {
+        return switch (side) {
+            case COMMON -> addCommonMixins(mixins);
+            case CLIENT -> addClientMixins(mixins);
+            case SERVER -> addServerMixins(mixins);
+        };
     }
 
     /**
