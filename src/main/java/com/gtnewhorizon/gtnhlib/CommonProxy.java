@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
@@ -10,6 +11,7 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
+import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
@@ -47,6 +49,11 @@ public class CommonProxy {
         AutoEventBus.executePhase(Phase.INIT);
         NetworkHandler.init();
         ConfigurationManager.onInit();
+
+        if ((boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
+            SyncedKeybind.createConfigurable("gtnhlib.test_keybind", "debug", 0)
+                    .registerGlobalListener((p, l) -> { GTNHLib.LOG.info("GTNHLib test keybind pressed"); });
+        }
     }
 
     public void postInit(FMLPostInitializationEvent event) {}
