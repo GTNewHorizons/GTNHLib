@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
@@ -221,6 +222,19 @@ public final class SyncedKeybind {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onInputEvent(InputEvent.KeyInputEvent event) {
+        onInputEvent();
+    }
+
+    // separate from the keyboard handler to prevent mouse movement triggers when holding a key
+    @SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    public static void onInputEvent(InputEvent.MouseInputEvent event) {
+        if (!Mouse.getEventButtonState()) return;
+        onInputEvent();
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void onInputEvent() {
         IntList updatingPressed = new IntArrayList();
         for (var entry : KEYBINDS.int2ObjectEntrySet()) {
             SyncedKeybind keybind = entry.getValue();
