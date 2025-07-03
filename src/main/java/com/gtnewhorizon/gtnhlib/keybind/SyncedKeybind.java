@@ -51,7 +51,7 @@ public final class SyncedKeybind {
     @SideOnly(Side.CLIENT)
     private KeyBinding keybinding;
     @SideOnly(Side.CLIENT)
-    private int keyCode;
+    public int keyCode;
     @SideOnly(Side.CLIENT)
     private boolean isKeyDown;
 
