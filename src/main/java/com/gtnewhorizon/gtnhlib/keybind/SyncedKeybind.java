@@ -51,7 +51,7 @@ public final class SyncedKeybind {
     @SideOnly(Side.CLIENT)
     private KeyBinding keybinding;
     @SideOnly(Side.CLIENT)
-    public int keyCode;
+    private int keyCode;
     @SideOnly(Side.CLIENT)
     private boolean isKeyDown;
 
@@ -264,5 +264,10 @@ public final class SyncedKeybind {
         for (IKeyPressedListener listener : globalListeners) {
             listener.onKeyPressed(player, this);
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public int getKeyCode() {
+        return keyCode;
     }
 }
