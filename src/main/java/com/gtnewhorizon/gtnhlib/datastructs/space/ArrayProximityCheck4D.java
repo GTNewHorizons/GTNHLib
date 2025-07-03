@@ -5,14 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This is a data structure that allows you to quickly check if an arbitrary point in space is contained within at least
+ * This is a data structure that allows you to quickly check if an arbitrary point in space (dim, x, y, z) is contained within at least
  * one of the volumes defined.
  * <p>
  * When adding a volume to an existing position, it won't add a second volume but will instead update the radius of the
  * element at that position.
  */
 @SuppressWarnings("unused")
-public class VolumeMembershipCheck {
+public class ArrayProximityCheck4D {
 
     // optimization idea : this can be dynamically
     // replaced with a map if the amount of dims gets too big
@@ -25,7 +25,7 @@ public class VolumeMembershipCheck {
         CUBE
     }
 
-    public VolumeMembershipCheck(VolumeShape shape) {
+    public ArrayProximityCheck4D(VolumeShape shape) {
         this.shape = shape;
     }
 
