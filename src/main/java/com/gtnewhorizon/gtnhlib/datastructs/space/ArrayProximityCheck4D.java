@@ -3,10 +3,13 @@ package com.gtnewhorizon.gtnhlib.datastructs.space;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
 
 /**
- * This is a data structure that allows you to quickly check if an arbitrary point in space (dim, x, y, z) is contained within at least
- * one of the volumes defined.
+ * This is a data structure that allows you to quickly check if an arbitrary point in space (dim, x, y, z) is contained
+ * within at least one of the volumes defined.
  * <p>
  * When adding a volume to an existing position, it won't add a second volume but will instead update the radius of the
  * element at that position.
@@ -25,12 +28,16 @@ public class ArrayProximityCheck4D {
         CUBE
     }
 
-    public ArrayProximityCheck4D(VolumeShape shape) {
+    public ArrayProximityCheck4D(@Nonnull VolumeShape shape) {
+        Objects.requireNonNull(shape);
         this.shape = shape;
     }
 
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     private DimensionData getDataForDim(int dim) {
-        for (DimensionData dimData : dimList) {
+        final int size = dimList.size();
+        for (int i = 0; i < size; i++) {
+            final DimensionData dimData = dimList.get(i);
             if (dimData.getDimId() == dim) {
                 return dimData;
             }
@@ -38,7 +45,7 @@ public class ArrayProximityCheck4D {
         return null;
     }
 
-    public void putVolume(int dim, int x, int y, int z, int radius) {
+    public void put(int dim, int x, int y, int z, int radius) {
         DimensionData dimData = getDataForDim(dim);
         if (dimData == null) {
             dimData = new DimensionData(dim);
@@ -47,7 +54,7 @@ public class ArrayProximityCheck4D {
         dimData.put(x, y, z, radius);
     }
 
-    public void removeVolume(int dim, int x, int y, int z) {
+    public void remove(int dim, int x, int y, int z) {
         final DimensionData dimData = getDataForDim(dim);
         if (dimData == null) {
             return;
@@ -63,10 +70,29 @@ public class ArrayProximityCheck4D {
         if (dimData == null) {
             return false;
         }
-        return dimData.isInVolume(x, y, z);
+        if (shape == VolumeShape.SPHERE) {
+            return dimData.isInSphere(x, y, z);
+        } else if (shape == VolumeShape.CUBE) {
+            return dimData.isInCube(x, y, z);
+        }
+        throw new IllegalArgumentException("Invalid shape");
     }
 
-    private class DimensionData {
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    public int size() {
+        int size = 0;
+        final int listSize = dimList.size();
+        for (int i = 0; i < listSize; i++) {
+            size += dimList.get(i).size();
+        }
+        return size;
+    }
+
+    public boolean isEmpty() {
+        return dimList.isEmpty();
+    }
+
+    private static class DimensionData {
 
         // optimization idea : the data array can be
         // dynamically replaced with a different
@@ -97,6 +123,10 @@ public class ArrayProximityCheck4D {
             return dimId;
         }
 
+        public int size() {
+            return size;
+        }
+
         public void put(int x, int y, int z, int radius) {
             final int maxIndex = size * 4;
             final int[] a = data;
@@ -123,6 +153,9 @@ public class ArrayProximityCheck4D {
                 if (x == a[i] && y == a[i + 1] && z == a[i + 2]) {
                     int numMoved = maxIndex - i - 4;
                     if (numMoved > 0) {
+                        // if it's not the last element that got removed,
+                        // move the last element to the removed index
+                        // to keep all data packed at the start of the array
                         System.arraycopy(data, maxIndex - 4, data, i, 4);
                     }
                     size--;
@@ -134,32 +167,35 @@ public class ArrayProximityCheck4D {
             }
         }
 
-        public boolean isInVolume(double x, double y, double z) {
+        public boolean isInSphere(double x, double y, double z) {
             final int maxIndex = size * 4;
             final int[] a = data;
-            if (shape == VolumeShape.SPHERE) {
-                for (int i = 0; i < maxIndex; i += 4) {
-                    final double dx = x - a[i] - 0.5D;
-                    final double dy = y - a[i + 1] - 0.5D;
-                    final double dz = z - a[i + 2] - 0.5D;
-                    final double radius = a[i + 3];
-                    if (dx * dx + dy * dy + dz * dz < radius * radius) {
-                        return true;
-                    }
+            for (int i = 0; i < maxIndex; i += 4) {
+                final double dx = x - a[i] - 0.5D;
+                final double dy = y - a[i + 1] - 0.5D;
+                final double dz = z - a[i + 2] - 0.5D;
+                final double radius = a[i + 3];
+                if (dx * dx + dy * dy + dz * dz < radius * radius) {
+                    return true;
                 }
-            } else if (shape == VolumeShape.CUBE) {
-                for (int i = 0; i < maxIndex; i += 4) {
-                    final double centerX = a[i] + 0.5D;
-                    final double centerY = a[i + 1] + 0.5D;
-                    final double centerZ = a[i + 2] + 0.5D;
-                    final double radius = a[i + 3] + 0.5D;
-                    if (centerX - radius < x && x < centerX + radius
-                            && centerY - radius < y
-                            && y < centerY + radius
-                            && centerZ - radius < z
-                            && z < centerZ + radius) {
-                        return true;
-                    }
+            }
+            return false;
+        }
+
+        public boolean isInCube(double x, double y, double z) {
+            final int maxIndex = size * 4;
+            final int[] a = data;
+            for (int i = 0; i < maxIndex; i += 4) {
+                final double centerX = a[i] + 0.5D;
+                final double centerY = a[i + 1] + 0.5D;
+                final double centerZ = a[i + 2] + 0.5D;
+                final double radius = a[i + 3] + 0.5D;
+                if (centerX - radius < x && x < centerX + radius
+                        && centerY - radius < y
+                        && y < centerY + radius
+                        && centerZ - radius < z
+                        && z < centerZ + radius) {
+                    return true;
                 }
             }
             return false;
