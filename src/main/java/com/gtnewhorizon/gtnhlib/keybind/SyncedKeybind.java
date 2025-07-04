@@ -51,7 +51,6 @@ public final class SyncedKeybind {
     @SideOnly(Side.CLIENT)
     private boolean isKeyDown;
 
-    @SideOnly(Side.CLIENT)
     private static final Int2BooleanMap updatingKeyDown = new Int2BooleanOpenHashMap();
 
     private final WeakHashMap<EntityPlayerMP, Boolean> serverMapping = new WeakHashMap<>();
