@@ -44,7 +44,7 @@ public class PacketKeyDown implements IMessage {
             if (ctx.side == Side.SERVER) {
                 for (var entry : message.updateKeys.int2BooleanEntrySet()) {
                     SyncedKeybind keybind = SyncedKeybind.getFromSyncId(entry.getIntKey());
-                    keybind.updateKeyDown(entry.getBooleanValue(), ctx.getServerHandler().playerEntity);
+                    keybind.serverActivate(entry.getBooleanValue(), ctx.getServerHandler().playerEntity);
                 }
             }
             return null;

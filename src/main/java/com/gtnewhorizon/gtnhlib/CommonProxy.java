@@ -51,8 +51,8 @@ public class CommonProxy {
         ConfigurationManager.onInit();
 
         if ((boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
-            SyncedKeybind.createConfigurable("gtnhlib.test_keybind", "debug", 0)
-                    .registerGlobalListener((p, l) -> { GTNHLib.LOG.info("GTNHLib test keybind pressed"); });
+            SyncedKeybind.createConfigurable("gtnhlib.test_keybind", "debug", 0).registerGlobalListener(
+                    (p, l, keyDown) -> { GTNHLib.LOG.info("GTNHLib test keybind down: {}", keyDown); });
         }
     }
 

@@ -10,7 +10,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
@@ -18,7 +17,6 @@ import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -26,8 +24,6 @@ import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
  * Server-backed keybindings, allowing you to read the state of a key press on the server per-player. <br>
@@ -55,7 +51,9 @@ public final class SyncedKeybind {
     @SideOnly(Side.CLIENT)
     private boolean isKeyDown;
 
-    private final WeakHashMap<EntityPlayerMP, Boolean> mapping = new WeakHashMap<>();
+    private static final Int2BooleanMap updatingKeyDown = new Int2BooleanOpenHashMap();
+
+    private final WeakHashMap<EntityPlayerMP, Boolean> serverMapping = new WeakHashMap<>();
     private final WeakHashMap<EntityPlayerMP, Set<IKeyPressedListener>> playerListeners = new WeakHashMap<>();
     private final Set<IKeyPressedListener> globalListeners = Collections.newSetFromMap(new WeakHashMap<>());
 
@@ -126,7 +124,7 @@ public final class SyncedKeybind {
             }
             return Keyboard.isKeyDown(keyCode);
         }
-        Boolean isKeyDown = mapping.get((EntityPlayerMP) player);
+        Boolean isKeyDown = serverMapping.get((EntityPlayerMP) player);
         return isKeyDown != null ? isKeyDown : false;
     }
 
@@ -193,7 +191,7 @@ public final class SyncedKeybind {
     @SideOnly(Side.CLIENT)
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            Int2BooleanMap updatingKeyDown = new Int2BooleanOpenHashMap();
+            updatingKeyDown.clear();
             for (var entry : KEYBINDS.int2ObjectEntrySet()) {
                 SyncedKeybind keybind = entry.getValue();
                 boolean previousKeyDown = keybind.isKeyDown;
@@ -215,54 +213,19 @@ public final class SyncedKeybind {
     }
 
     // Updated by the packet handler
-    void updateKeyDown(boolean keyDown, EntityPlayerMP player) {
-        this.mapping.put(player, keyDown);
-    }
+    void serverActivate(boolean keyDown, EntityPlayerMP player) {
+        this.serverMapping.put(player, keyDown);
 
-    @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    public static void onInputEvent(InputEvent.KeyInputEvent event) {
-        onInputEvent();
-    }
-
-    // separate from the keyboard handler to prevent mouse movement triggers when holding a key
-    @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    public static void onInputEvent(InputEvent.MouseInputEvent event) {
-        if (!Mouse.getEventButtonState()) return;
-        onInputEvent();
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static void onInputEvent() {
-        IntList updatingPressed = new IntArrayList();
-        for (var entry : KEYBINDS.int2ObjectEntrySet()) {
-            SyncedKeybind keybind = entry.getValue();
-            if (keybind.keybinding != null) {
-                if (keybind.keybinding.isPressed()) {
-                    updatingPressed.add(entry.getIntKey());
-                }
-            } else if (Keyboard.getEventKey() == keybind.keyCode) {
-                updatingPressed.add(entry.getIntKey());
-            }
-        }
-        if (!updatingPressed.isEmpty()) {
-            NetworkHandler.instance.sendToServer(new PacketKeyPressed(updatingPressed));
-        }
-    }
-
-    // Updated by the packet handler
-    void onKeyPressed(EntityPlayerMP player) {
         // Player listeners
         Set<IKeyPressedListener> listenerSet = playerListeners.get(player);
         if (listenerSet != null && !listenerSet.isEmpty()) {
             for (IKeyPressedListener listener : listenerSet) {
-                listener.onKeyPressed(player, this);
+                listener.onKeyPressed(player, this, keyDown);
             }
         }
         // Global listeners
         for (IKeyPressedListener listener : globalListeners) {
-            listener.onKeyPressed(player, this);
+            listener.onKeyPressed(player, this, keyDown);
         }
     }
 
