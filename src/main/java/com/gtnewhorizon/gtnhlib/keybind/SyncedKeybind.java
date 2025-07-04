@@ -265,4 +265,9 @@ public final class SyncedKeybind {
             listener.onKeyPressed(player, this);
         }
     }
+
+    @SideOnly(Side.CLIENT)
+    public int getKeyCode() {
+        return keybinding != null ? keybinding.getKeyCode() : keyCode;
+    }
 }
