@@ -268,6 +268,6 @@ public final class SyncedKeybind {
 
     @SideOnly(Side.CLIENT)
     public int getKeyCode() {
-        return keyCode;
+        return keybinding != null ? keybinding.getKeyCode() : keyCode;
     }
 }
