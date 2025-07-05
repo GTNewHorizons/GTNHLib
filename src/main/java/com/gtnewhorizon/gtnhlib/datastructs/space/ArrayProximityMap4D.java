@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -88,6 +89,20 @@ public class ArrayProximityMap4D<T> {
             return dimData.closestCube(x, y, z);
         }
         throw new IllegalArgumentException("Invalid shape");
+    }
+
+    public void forEachInVolume(int dim, double x, double y, double z, Consumer<T> action) {
+        final DimensionData<T> dimData = getDataForDim(dim);
+        if (dimData == null) {
+            return;
+        }
+        if (shape == VolumeShape.SPHERE) {
+            dimData.forEachInSphere(x, y, z, action);
+        } else if (shape == VolumeShape.CUBE) {
+            dimData.forEachInCube(x, y, z, action);
+        } else {
+            throw new IllegalArgumentException("Invalid shape");
+        }
     }
 
     @SuppressWarnings("ForLoopReplaceableByForEach")
@@ -277,6 +292,41 @@ public class ArrayProximityMap4D<T> {
             }
             if (closestIndex == -1) return null;
             return (T) objects[closestIndex / 4];
+        }
+
+        @SuppressWarnings("unchecked")
+        public void forEachInSphere(double x, double y, double z, Consumer<T> action) {
+            final int maxIndex = size * 4;
+            final int[] a = data;
+            for (int i = 0; i < maxIndex; i += 4) {
+                final double dx = x - a[i] - 0.5D;
+                final double dy = y - a[i + 1] - 0.5D;
+                final double dz = z - a[i + 2] - 0.5D;
+                final double radius = a[i + 3];
+                final double distSq = dx * dx + dy * dy + dz * dz;
+                if (distSq < radius * radius) {
+                    action.accept((T) objects[i / 4]);
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        public void forEachInCube(double x, double y, double z, Consumer<T> action) {
+            final int maxIndex = size * 4;
+            final int[] a = data;
+            for (int i = 0; i < maxIndex; i += 4) {
+                final double centerX = a[i] + 0.5D;
+                final double centerY = a[i + 1] + 0.5D;
+                final double centerZ = a[i + 2] + 0.5D;
+                final double radius = a[i + 3] + 0.5D;
+                if (centerX - radius < x && x < centerX + radius
+                        && centerY - radius < y
+                        && y < centerY + radius
+                        && centerZ - radius < z
+                        && z < centerZ + radius) {
+                    action.accept((T) objects[i / 4]);
+                }
+            }
         }
 
         public boolean isEmpty() {
