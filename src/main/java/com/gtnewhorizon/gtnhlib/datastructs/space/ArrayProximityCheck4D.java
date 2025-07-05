@@ -63,7 +63,7 @@ public class ArrayProximityCheck4D {
         }
     }
 
-    public boolean isInVolume(int dim, double x, double y, double z) {
+    public boolean isInRange(int dim, double x, double y, double z) {
         final DimensionData dimData = getDataForDim(dim);
         if (dimData == null) {
             return false;
@@ -101,7 +101,7 @@ public class ArrayProximityCheck4D {
         // data structure if the size gets too big
 
         // implementation note : since we want fast
-        // isInVolume() checks, when removing volumes,
+        // isInRange() checks, when removing volumes,
         // we move the last element to the removed index
         // so that all the "alive data" in the array
         // remains at the start

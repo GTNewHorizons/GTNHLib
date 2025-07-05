@@ -27,38 +27,38 @@ class ArrayProximityTest {
     @Test
     void testPutAndIsInVolume() {
         sphereCheck.put(0, 10, 10, 10, 5);
-        assertTrue(sphereCheck.isInVolume(0, 10.0, 10.0, 10.0));
-        assertFalse(sphereCheck.isInVolume(0, 20.0, 20.0, 20.0));
+        assertTrue(sphereCheck.isInRange(0, 10.0, 10.0, 10.0));
+        assertFalse(sphereCheck.isInRange(0, 20.0, 20.0, 20.0));
 
         cubeCheck.put(1, 0, 0, 0, 1);
-        assertTrue(cubeCheck.isInVolume(1, 0.5, 0.5, 0.5));
-        assertFalse(cubeCheck.isInVolume(1, 3.0, 3.0, 3.0));
+        assertTrue(cubeCheck.isInRange(1, 0.5, 0.5, 0.5));
+        assertFalse(cubeCheck.isInRange(1, 3.0, 3.0, 3.0));
     }
 
     @Test
     void testOverwriteRadius() {
         sphereCheck.put(0, 5, 5, 5, 3);
-        assertTrue(sphereCheck.isInVolume(0, 7.0, 5.0, 5.0));
+        assertTrue(sphereCheck.isInRange(0, 7.0, 5.0, 5.0));
         sphereCheck.put(0, 5, 5, 5, 1);
-        assertFalse(sphereCheck.isInVolume(0, 7.0, 5.0, 5.0));
+        assertFalse(sphereCheck.isInRange(0, 7.0, 5.0, 5.0));
 
         cubeCheck.put(0, 5, 5, 5, 3);
-        assertTrue(cubeCheck.isInVolume(0, 7.0, 5.0, 5.0));
+        assertTrue(cubeCheck.isInRange(0, 7.0, 5.0, 5.0));
         cubeCheck.put(0, 5, 5, 5, 1);
-        assertFalse(cubeCheck.isInVolume(0, 7.0, 5.0, 5.0));
+        assertFalse(cubeCheck.isInRange(0, 7.0, 5.0, 5.0));
     }
 
     @Test
     void testRemoveVolume() {
         sphereCheck.put(0, 2, 2, 2, 2);
-        assertTrue(sphereCheck.isInVolume(0, 2.0, 2.0, 2.0));
+        assertTrue(sphereCheck.isInRange(0, 2.0, 2.0, 2.0));
         sphereCheck.remove(0, 2, 2, 2);
-        assertFalse(sphereCheck.isInVolume(0, 2.0, 2.0, 2.0));
+        assertFalse(sphereCheck.isInRange(0, 2.0, 2.0, 2.0));
 
         cubeCheck.put(0, 2, 2, 2, 2);
-        assertTrue(cubeCheck.isInVolume(0, 2.0, 2.0, 2.0));
+        assertTrue(cubeCheck.isInRange(0, 2.0, 2.0, 2.0));
         cubeCheck.remove(0, 2, 2, 2);
-        assertFalse(cubeCheck.isInVolume(0, 2.0, 2.0, 2.0));
+        assertFalse(cubeCheck.isInRange(0, 2.0, 2.0, 2.0));
     }
 
     @Test
@@ -91,9 +91,9 @@ class ArrayProximityTest {
         sphereCheck.put(0, 0, 0, 0, 2);
         sphereCheck.put(1, 10, 10, 10, 3);
 
-        assertTrue(sphereCheck.isInVolume(0, 0.0, 0.0, 0.0));
-        assertTrue(sphereCheck.isInVolume(1, 10.0, 10.0, 10.0));
-        assertFalse(sphereCheck.isInVolume(2, 10.0, 10.0, 10.0));
+        assertTrue(sphereCheck.isInRange(0, 0.0, 0.0, 0.0));
+        assertTrue(sphereCheck.isInRange(1, 10.0, 10.0, 10.0));
+        assertFalse(sphereCheck.isInRange(2, 10.0, 10.0, 10.0));
 
         assertEquals(2, sphereCheck.size());
     }
@@ -138,15 +138,15 @@ class ArrayProximityTest {
     @Test
     void testIsInVolumeSphere() {
         mapSphere.put("Center", 0, 10, 10, 10, 5);
-        assertTrue(mapSphere.isInVolume(0, 10.5, 10.5, 10.5));
-        assertFalse(mapSphere.isInVolume(0, 20.0, 20.0, 20.0));
+        assertTrue(mapSphere.isInRange(0, 10.5, 10.5, 10.5));
+        assertFalse(mapSphere.isInRange(0, 20.0, 20.0, 20.0));
     }
 
     @Test
     void testIsInVolumeCube() {
         mapCube.put("Center", 0, 10, 10, 10, 5);
-        assertTrue(mapCube.isInVolume(0, 11.0, 10.0, 9.0));
-        assertFalse(mapCube.isInVolume(0, 20.0, 20.0, 20.0));
+        assertTrue(mapCube.isInRange(0, 11.0, 10.0, 9.0));
+        assertFalse(mapCube.isInRange(0, 20.0, 20.0, 20.0));
     }
 
     @Test
@@ -168,8 +168,8 @@ class ArrayProximityTest {
     @Test
     void testMultipleDimensionsMap() {
         mapSphere.put("Dim0", 0, 1, 1, 1, 20);
-        assertTrue(mapSphere.isInVolume(0, 1.5, 1.5, 1.5));
-        assertFalse(mapSphere.isInVolume(1, 1.5, 1.5, 1.5));
+        assertTrue(mapSphere.isInRange(0, 1.5, 1.5, 1.5));
+        assertFalse(mapSphere.isInRange(1, 1.5, 1.5, 1.5));
         mapSphere.put("Dim1", 1, 1, 1, 1, 20);
         assertEquals("Dim1", mapSphere.getClosest(1, 1.5, 1.5, 1.5));
     }

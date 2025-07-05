@@ -9,8 +9,9 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 
 /**
- * This is a data structure that allows you to quickly check if an arbitrary point in space (dim, x, y, z) is contained
- * within at least one of the volumes defined. You can also retrieve the closest stored object from that point if any.
+ * This is a data structure that allows you to quickly check if an arbitrary point in space (dim, x, y, z) is in range
+ * of at least one of the objects defined. You can also retrieve the closest stored object from that point if any. Or
+ * perform an action for each object in range.
  * <p>
  * When adding an object to an existing position, it won't add a second object but will instead replace the element at
  * this position and update the radius.
@@ -65,7 +66,7 @@ public class ArrayProximityMap4D<T> {
         return obj;
     }
 
-    public boolean isInVolume(int dim, double x, double y, double z) {
+    public boolean isInRange(int dim, double x, double y, double z) {
         final DimensionData<T> dimData = getDataForDim(dim);
         if (dimData == null) {
             return false;
@@ -91,7 +92,7 @@ public class ArrayProximityMap4D<T> {
         throw new IllegalArgumentException("Invalid shape");
     }
 
-    public void forEachInVolume(int dim, double x, double y, double z, Consumer<T> action) {
+    public void forEachInRange(int dim, double x, double y, double z, Consumer<T> action) {
         final DimensionData<T> dimData = getDataForDim(dim);
         if (dimData == null) {
             return;
@@ -130,7 +131,7 @@ public class ArrayProximityMap4D<T> {
         // data structure if the size gets too big
 
         // implementation note : since we want fast
-        // isInVolume() checks, when removing volumes,
+        // isInRange() checks, when removing volumes,
         // we move the last element to the removed index
         // so that all the "alive data" in the array
         // remains at the start
