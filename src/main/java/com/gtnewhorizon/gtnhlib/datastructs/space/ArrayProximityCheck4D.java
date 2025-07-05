@@ -23,11 +23,6 @@ public class ArrayProximityCheck4D {
     private final List<DimensionData> dimList = new ArrayList<>();
     private final VolumeShape shape;
 
-    public enum VolumeShape {
-        SPHERE,
-        CUBE
-    }
-
     public ArrayProximityCheck4D(@Nonnull VolumeShape shape) {
         Objects.requireNonNull(shape);
         this.shape = shape;

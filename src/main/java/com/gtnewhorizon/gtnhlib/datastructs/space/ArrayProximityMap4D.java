@@ -23,11 +23,6 @@ public class ArrayProximityMap4D<T> {
     private final List<DimensionData<T>> dimList = new ArrayList<>();
     private final VolumeShape shape;
 
-    public enum VolumeShape {
-        SPHERE,
-        CUBE
-    }
-
     public ArrayProximityMap4D(@Nonnull VolumeShape shape) {
         Objects.requireNonNull(shape);
         this.shape = shape;
