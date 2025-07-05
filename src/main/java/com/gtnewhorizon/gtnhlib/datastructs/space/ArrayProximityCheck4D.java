@@ -41,6 +41,9 @@ public class ArrayProximityCheck4D {
     }
 
     public void put(int dim, int x, int y, int z, int radius) {
+        if (radius < 0) {
+            throw new IllegalArgumentException("Radius must be strictly positive");
+        }
         DimensionData dimData = getDataForDim(dim);
         if (dimData == null) {
             dimData = new DimensionData(dim);

@@ -41,6 +41,9 @@ public class ArrayProximityMap4D<T> {
     }
 
     public void put(T obj, int dim, int x, int y, int z, int radius) {
+        if (radius < 0) {
+            throw new IllegalArgumentException("Radius must be strictly positive");
+        }
         DimensionData<T> dimData = getDataForDim(dim);
         if (dimData == null) {
             dimData = new DimensionData<>(dim);
