@@ -92,6 +92,10 @@ public class ArrayProximityCheck4D {
         return dimList.isEmpty();
     }
 
+    public void clear() {
+        dimList.clear();
+    }
+
     private static class DimensionData {
 
         // optimization idea : the data array can be

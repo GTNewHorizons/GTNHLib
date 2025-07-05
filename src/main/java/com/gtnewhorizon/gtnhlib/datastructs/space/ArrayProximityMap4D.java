@@ -106,6 +106,10 @@ public class ArrayProximityMap4D<T> {
         return dimList.isEmpty();
     }
 
+    public void clear() {
+        dimList.clear();
+    }
+
     private static class DimensionData<T> {
 
         // optimization idea : the data array can be
