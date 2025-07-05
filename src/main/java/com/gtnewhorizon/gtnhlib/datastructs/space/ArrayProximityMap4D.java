@@ -269,7 +269,7 @@ public class ArrayProximityMap4D<T> {
                     final double dy = y - centerY;
                     final double dz = z - centerZ;
                     final double distSq = dx * dx + dy * dy + dz * dz;
-                    if (distSq < radius * radius && distSq < closestDistSq) {
+                    if (distSq < closestDistSq) {
                         closestIndex = i;
                         closestDistSq = distSq;
                     }
