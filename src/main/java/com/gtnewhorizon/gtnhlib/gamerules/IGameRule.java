@@ -7,4 +7,5 @@ public interface IGameRule {
     String defaultValue();
 
     void onValueUpdated(String value);
+
 }

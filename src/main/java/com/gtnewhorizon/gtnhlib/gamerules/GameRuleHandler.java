@@ -1,27 +1,13 @@
 package com.gtnewhorizon.gtnhlib.gamerules;
 
-import net.minecraftforge.event.world.WorldEvent;
+import java.util.Map;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class GameRuleHandler {
 
-    public static final GameRuleHandler INSTANCE = new GameRuleHandler();
-
     private static final Object2ObjectMap<String, IGameRule> gameRulesMap = new Object2ObjectOpenHashMap<>();
-
-    @SubscribeEvent
-    public void loadWorldEvent(WorldEvent.Load event) {
-        if (!event.world.isRemote) {
-            for (IGameRule rule : GameRuleHandler.gameRulesMap.values()) {
-                if (!event.world.getGameRules().hasRule(rule.getName())) {
-                    event.world.getGameRules().setOrCreateGameRule(rule.getName(), rule.defaultValue());
-                }
-            }
-        }
-    }
 
     public static void registerGameRule(IGameRule rule) {
         if (gameRulesMap.containsKey(rule.getName())) {
@@ -35,5 +21,9 @@ public class GameRuleHandler {
         if (rule != null) {
             rule.onValueUpdated(value);
         }
+    }
+
+    public static Map<String, IGameRule> getGameRulesMap() {
+        return gameRulesMap;
     }
 }
