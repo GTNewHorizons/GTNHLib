@@ -14,8 +14,6 @@ public class MixinGameRules {
 
     @Inject(method = "setOrCreateGameRule", at = @At("RETURN"))
     private void GTNHLib$onGameRuleChanged(String ruleName, String value, CallbackInfo ci) {
-        if (GameRuleHandler.hasRule(ruleName)) {
-            GameRuleHandler.updateCachedRule(ruleName, value);
-        }
+        GameRuleHandler.notifyGameRuleUpdate(ruleName, value);
     }
 }

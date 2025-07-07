@@ -13,34 +13,30 @@ public class GameRuleHandler {
 
     public static final GameRuleHandler INSTANCE = new GameRuleHandler();
 
-    private static final Object2ObjectMap<String, String> gameRulesCache = new Object2ObjectOpenHashMap<>();
-    private static final List<IGameRule> gameRules = new ArrayList<>();
+    private static final Object2ObjectMap<String, IGameRule> gameRulesMap = new Object2ObjectOpenHashMap<>();
 
     @SubscribeEvent
     public void loadWorldEvent(WorldEvent.Load event) {
         if (!event.world.isRemote) {
-            for (IGameRule rule : GameRuleHandler.gameRules) {
+            for (IGameRule rule : GameRuleHandler.gameRulesMap.values()) {
                 if (!event.world.getGameRules().hasRule(rule.getName())) {
-                    event.world.getGameRules().addGameRule(rule.getName(), rule.defaultValue());
+                    event.world.getGameRules().setOrCreateGameRule(rule.getName(), rule.defaultValue());
                 }
             }
         }
     }
 
     public static void registerGameRule(IGameRule rule) {
-        gameRulesCache.put(rule.getName(), rule.defaultValue());
-        gameRules.add(rule);
+        if (gameRulesMap.containsKey(rule.getName())) {
+            throw new RuntimeException("Duplicate GameRule Name: " + rule.getName());
+        }
+        gameRulesMap.put(rule.getName(), rule);
     }
 
-    public static String getCachedValue(String key) {
-        return gameRulesCache.get(key);
-    }
-
-    public static boolean hasRule(String key) {
-        return gameRulesCache.containsKey(key);
-    }
-
-    public static void updateCachedRule(String key, String value) {
-        gameRulesCache.put(key, value);
+    public static void notifyGameRuleUpdate(String name, String value) {
+        IGameRule rule = gameRulesMap.get(name);
+        if (rule != null) {
+            rule.onValueUpdated(value);
+        }
     }
 }

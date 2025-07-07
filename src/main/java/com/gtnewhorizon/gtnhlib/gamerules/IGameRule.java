@@ -6,7 +6,5 @@ public interface IGameRule {
 
     String defaultValue();
 
-    default String getValue() {
-        return GameRuleHandler.getCachedValue(getName());
-    }
+    void onValueUpdated(String value);
 }
