@@ -1,8 +1,5 @@
 package com.gtnewhorizon.gtnhlib.gamerules;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraftforge.event.world.WorldEvent;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
