@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.gamerules;
 
+import net.minecraft.world.World;
+
 /**
  * This interface can be implemented and then registered with {@link GameRuleRegistry} to easily create a new game rule.
  */
@@ -17,11 +19,33 @@ public interface IGameRule {
 
     /**
      * This method will be called when the underlying value of a GameRule is updated. This can be used to update a
-     * locally cached value.
+     * locally cached value. By default this method will do nothing, in which case to know the value of the game rule
+     * you will need to query it through traditional Minecraft/Forge means.
      *
      * @param value     The newly updated raw String value.
      * @param boolValue The String value parsed as a boolean.
+     * @param world     The World that the rule was updated in.
      */
-    void onValueUpdated(String value, boolean boolValue);
+    default void onValueUpdated(String value, boolean boolValue, World world) {}
+
+    /**
+     * Queries a value from the underlying MC GameRule's system. This is guaranteed to be the currently set value.
+     *
+     * @param world The world in which to make the GameRule query.
+     * @return The current String value of the game rule.
+     */
+    default String queryStringValue(World world) {
+        return world.getGameRules().getGameRuleStringValue(getName());
+    }
+
+    /**
+     * Queries a value from the underlying MC GameRule's system. This is guaratneed to be the currently set value.
+     *
+     * @param world The world in which to make the GameRule query.
+     * @return The current value of the game rule as a boolean.
+     */
+    default boolean queryBooleanValue(World world) {
+        return world.getGameRules().getGameRuleBooleanValue(getName());
+    }
 
 }
