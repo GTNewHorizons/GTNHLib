@@ -4,6 +4,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
@@ -11,6 +12,7 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
+import com.gtnewhorizon.gtnhlib.gamerules.GameRuleHandler;
 import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
@@ -43,6 +45,9 @@ public class CommonProxy {
         } catch (ConfigException e) {
             GTNHLib.LOG.error("Failed to register GTNHLib config!", e);
         }
+
+        MinecraftForge.EVENT_BUS.register(GameRuleHandler.INSTANCE);
+
     }
 
     public void init(FMLInitializationEvent event) {
