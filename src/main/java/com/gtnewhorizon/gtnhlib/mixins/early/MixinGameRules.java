@@ -8,8 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.gtnewhorizon.gtnhlib.gamerules.GameRuleHandler;
-import com.gtnewhorizon.gtnhlib.gamerules.IGameRule;
+import com.gtnewhorizon.gtnhlib.gamerules.GameRuleRegistry;
 
 @Mixin(GameRules.class)
 public abstract class MixinGameRules {
@@ -19,13 +18,17 @@ public abstract class MixinGameRules {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void gtnhlib$initGameRules(CallbackInfo ci) {
-        for (IGameRule rule : GameRuleHandler.getGameRulesMap().values()) {
-            this.addGameRule(rule.getName(), rule.defaultValue());
-        }
+        GameRuleRegistry.injectGameRules((GameRules) (Object) this);
+
     }
 
-    @Inject(method = "setOrCreateGameRule", at = @At("RETURN"))
+    @Inject(
+            method = "setOrCreateGameRule",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/GameRules$Value;setValue(Ljava/lang/String;)V",
+                    shift = At.Shift.AFTER))
     private void GTNHLib$onGameRuleChanged(String ruleName, String value, CallbackInfo ci) {
-        GameRuleHandler.notifyGameRuleUpdate(ruleName, value);
+        GameRuleRegistry.notifyGameRuleUpdate(ruleName, value);
     }
 }
