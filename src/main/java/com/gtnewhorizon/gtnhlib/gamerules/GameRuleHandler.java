@@ -19,7 +19,7 @@ public class GameRuleHandler {
     public static void notifyGameRuleUpdate(String name, String value) {
         IGameRule rule = gameRulesMap.get(name);
         if (rule != null) {
-            rule.onValueUpdated(value);
+            rule.onValueUpdated(value, Boolean.parseBoolean(value));
         }
     }
 

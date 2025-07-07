@@ -6,6 +6,6 @@ public interface IGameRule {
 
     String defaultValue();
 
-    void onValueUpdated(String value);
+    void onValueUpdated(String value, boolean boolValue);
 
 }
