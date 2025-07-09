@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.gamerules;
 
 import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -28,14 +27,14 @@ public class GameRuleRegistry {
      * the underlying MC game rules system via a mixin to notify the registered {@link IGameRule} of updates to the
      * value.
      *
-     * @param name  The name of the GameRule that has been updated.
-     * @param value The new value of the GameRule.
-     * @param world The World this GameRule was updated in.
+     * @param name      The name of the GameRule that has been updated.
+     * @param value     The new value of the GameRule.
+     * @param gameRules The underlying MC GameRules instance that was updated.
      */
-    public static void notifyGameRuleUpdate(String name, String value, World world) {
+    public static void notifyGameRuleUpdate(String name, String value, GameRules gameRules) {
         IGameRule rule = gameRulesMap.get(name);
         if (rule != null) {
-            rule.onValueUpdated(value, Boolean.parseBoolean(value), world);
+            rule.onValueUpdated(value, Boolean.parseBoolean(value), gameRules);
         }
     }
 

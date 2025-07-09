@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.gamerules;
 
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
 /**
@@ -24,9 +25,9 @@ public interface IGameRule {
      *
      * @param value     The newly updated raw String value.
      * @param boolValue The String value parsed as a boolean.
-     * @param world     The World that the rule was updated in.
+     * @param gameRules The underlying MC GameRules instance was updated.
      */
-    default void onValueUpdated(String value, boolean boolValue, World world) {}
+    default void onValueUpdated(String value, boolean boolValue, GameRules gameRules) {}
 
     /**
      * Queries a value from the underlying MC GameRule's system. This is guaranteed to be the currently set value.
@@ -39,7 +40,7 @@ public interface IGameRule {
     }
 
     /**
-     * Queries a value from the underlying MC GameRule's system. This is guaratneed to be the currently set value.
+     * Queries a value from the underlying MC GameRule's system. This is guaranteed to be the currently set value.
      *
      * @param world The world in which to make the GameRule query.
      * @return The current value of the game rule as a boolean.

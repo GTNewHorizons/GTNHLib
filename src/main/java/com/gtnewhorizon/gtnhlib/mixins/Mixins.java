@@ -33,9 +33,9 @@ public enum Mixins implements IMixins {
             .addMixinClasses("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite")),
     SERVER_TICKING(new MixinBuilder("Backport MinecraftServer ticking methods").addTargetedMod(TargetedMod.VANILLA)
             .setSide(Side.BOTH).setPhase(Phase.EARLY).addMixinClasses("MixinMinecraftServer").setApplyIf(() -> true)),
-    GAME_RULES(new MixinBuilder("Mixins to support the IGameRule/GameRuleRegistry API")
-            .addTargetedMod(TargetedMod.VANILLA).setSide(Side.BOTH).setPhase(Phase.EARLY).setApplyIf(() -> true)
-            .addMixinClasses("MixinGameRules", "MixinWorld"));
+    GAME_RULES(
+            new MixinBuilder("Mixins to support the IGameRule/GameRuleRegistry API").addTargetedMod(TargetedMod.VANILLA)
+                    .setSide(Side.BOTH).setPhase(Phase.EARLY).setApplyIf(() -> true).addMixinClasses("MixinGameRules"));
 
     private final List<String> mixinClasses;
     private final Supplier<Boolean> applyIf;
