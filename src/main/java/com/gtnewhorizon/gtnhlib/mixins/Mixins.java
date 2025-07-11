@@ -3,7 +3,12 @@ package com.gtnewhorizon.gtnhlib.mixins;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.gtnewhorizon.gtnhlib.mixin.*;
+import com.gtnewhorizon.gtnhlib.mixin.IMixins;
+import com.gtnewhorizon.gtnhlib.mixin.ITargetedMod;
+import com.gtnewhorizon.gtnhlib.mixin.MixinBuilder;
+import com.gtnewhorizon.gtnhlib.mixin.Phase;
+import com.gtnewhorizon.gtnhlib.mixin.Side;
+import com.gtnewhorizon.gtnhlib.mixin.TargetedMod;
 
 import lombok.Getter;
 
@@ -27,7 +32,10 @@ public enum Mixins implements IMixins {
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))
             .addMixinClasses("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite")),
     SERVER_TICKING(new MixinBuilder("Backport MinecraftServer ticking methods").addTargetedMod(TargetedMod.VANILLA)
-            .setSide(Side.BOTH).setPhase(Phase.EARLY).addMixinClasses("MixinMinecraftServer").setApplyIf(() -> true));
+            .setSide(Side.BOTH).setPhase(Phase.EARLY).addMixinClasses("MixinMinecraftServer").setApplyIf(() -> true)),
+    GAME_RULES(
+            new MixinBuilder("Mixins to support the IGameRule/GameRuleRegistry API").addTargetedMod(TargetedMod.VANILLA)
+                    .setSide(Side.BOTH).setPhase(Phase.EARLY).setApplyIf(() -> true).addMixinClasses("MixinGameRules"));
 
     private final List<String> mixinClasses;
     private final Supplier<Boolean> applyIf;
