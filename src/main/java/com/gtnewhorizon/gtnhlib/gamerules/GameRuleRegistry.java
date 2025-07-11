@@ -1,13 +1,13 @@
 package com.gtnewhorizon.gtnhlib.gamerules;
 
-import net.minecraft.world.GameRules;
+import java.util.HashMap;
+import java.util.Map;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.world.GameRules;
 
 public class GameRuleRegistry {
 
-    private static final Object2ObjectMap<String, IGameRule> gameRulesMap = new Object2ObjectOpenHashMap<>();
+    private static final Map<String, IGameRule> gameRulesMap = new HashMap<>();
 
     /**
      * Registers a new {@link IGameRule} into the registry. New rules should be registered during the mod's
