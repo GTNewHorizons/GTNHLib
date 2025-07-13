@@ -11,6 +11,10 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 
+/**
+ * This is deprecated and replaced by {@link com.gtnewhorizon.gtnhmixins.builders.IMixins}
+ */
+@Deprecated
 public interface IMixins {
 
     List<String> getMixinClasses();
@@ -74,8 +78,6 @@ public interface IMixins {
         if (targetedMods.isEmpty()) return false;
 
         for (ITargetedMod target : targetedMods) {
-            if (target == TargetedMod.VANILLA) continue;
-
             // Check coremod first
             if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
                     && !loadedCoreMods.contains(target.getCoreModClass()))
@@ -91,8 +93,6 @@ public interface IMixins {
         if (targetedMods.isEmpty()) return true;
 
         for (ITargetedMod target : targetedMods) {
-            if (target == TargetedMod.VANILLA) continue;
-
             // Check coremod first
             if (!loadedCoreMods.isEmpty() && target.getCoreModClass() != null
                     && loadedCoreMods.contains(target.getCoreModClass()))

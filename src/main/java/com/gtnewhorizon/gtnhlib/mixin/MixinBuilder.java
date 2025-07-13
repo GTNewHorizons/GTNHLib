@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * This is deprecated and replaced by {@link com.gtnewhorizon.gtnhmixins.builders.MixinBuilder}
+ */
+@Deprecated
 public class MixinBuilder {
 
     public final List<String> mixinClasses = new ArrayList<>();
