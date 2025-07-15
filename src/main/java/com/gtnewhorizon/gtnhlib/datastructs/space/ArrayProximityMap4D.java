@@ -196,8 +196,8 @@ public class ArrayProximityMap4D<T> {
                         // move the last element to the removed index
                         // to keep all data packed at the start of the array
                         System.arraycopy(data, maxIndex - 4, data, i, 4);
-                        objects[i / 4] = objects[size];
-                        objects[size] = null;
+                        objects[i / 4] = objects[size - 1];
+                        objects[size - 1] = null;
                     }
                     size--;
                     if (data.length >= INITIAL_CAPACITY * 4 * 2 && size * 4 < data.length / 4) {

@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.test.datastructs.space;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -187,8 +188,8 @@ class ArrayProximityTest {
 
         mapSphere.remove(0, 10, -10, 10);
         assertEquals("C", mapSphere.getClosest(0, 11, -10, 10));
-        mapSphere.remove(0, -10, -10, -10);
-        assertEquals(3, mapSphere.size());
+
+        mapSphere.forEachInRange(0, 0, 0, 0, Assertions::assertNotNull);
     }
 
     @Test
