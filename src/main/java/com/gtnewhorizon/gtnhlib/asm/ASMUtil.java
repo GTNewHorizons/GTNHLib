@@ -149,6 +149,8 @@ public class ASMUtil {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
+        // Replace $->. because otherwise the files are invisible in IntelliJ
+        fileName = fileName.replace('$', '.');
         final File classFile = new File(outputDir, fileName + ".class");
         final File outDir = classFile.getParentFile();
         if (!outDir.exists()) {
@@ -203,6 +205,8 @@ public class ASMUtil {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
+        // Replace $->. because otherwise the files are invisible in IntelliJ
+        fileName = fileName.replace('$', '.');
         final File bytecodeFile = new File(outputDir, fileName + "_BYTECODE.txt");
         final File outDir = bytecodeFile.getParentFile();
         if (!outDir.exists()) {
@@ -258,6 +262,8 @@ public class ASMUtil {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
+        // Replace $->. because otherwise the files are invisible in IntelliJ
+        fileName = fileName.replace('$', '.');
         final File asmifiedFile = new File(outputDir, fileName + "_ASM.txt");
         final File outDir = asmifiedFile.getParentFile();
         if (!outDir.exists()) {
