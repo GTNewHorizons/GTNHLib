@@ -23,7 +23,9 @@ public class ASMUtil {
     private static File outputDir = null;
 
     private static void emptyClassOutputFolder() {
-        outputDir = new File(Launch.minecraftHome, "ASM_GTNH");
+        outputDir = new File(
+                Launch.minecraftHome,
+                "ASM_GTNH" + File.separatorChar + stripClassName(ASMUtil.class.getClassLoader().getClass().getName()));
         try {
             FileUtils.deleteDirectory(outputDir);
         } catch (IOException ignored) {}
