@@ -79,7 +79,7 @@ public class ASMUtil {
         }
     }
 
-    private static String stripClassName(String classname) {
+    public static String stripClassName(String classname) {
         final String[] split = classname.split("\\.");
         return split[split.length - 1];
     }
