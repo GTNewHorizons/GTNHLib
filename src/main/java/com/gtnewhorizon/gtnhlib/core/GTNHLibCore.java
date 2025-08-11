@@ -24,6 +24,21 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public String[] getASMTransformerClass() {
+        return new String[] { "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
+    }
+
+    @Override
+    public String getModContainerClass() {
+        return "com.gtnewhorizon.gtnhlib.core.GTNHLibCoreModContainer";
+    }
+
+    @Override
+    public String getSetupClass() {
+        return null;
+    }
+
+    @Override
+    public void injectData(Map<String, Object> data) {
         if (FMLLaunchHandler.side().isClient()) {
             boolean isGTNHLibRFBLoaded = (boolean) Launch.blackboard
                     .getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE);
@@ -39,21 +54,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
                 }
             }
         }
-        return new String[] { "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
     }
-
-    @Override
-    public String getModContainerClass() {
-        return "com.gtnewhorizon.gtnhlib.core.GTNHLibCoreModContainer";
-    }
-
-    @Override
-    public String getSetupClass() {
-        return null;
-    }
-
-    @Override
-    public void injectData(Map<String, Object> data) {}
 
     @Override
     public String getAccessTransformerClass() {
