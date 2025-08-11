@@ -46,8 +46,8 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
                 // If rfb isn't loaded we need to register the TessellatorRedirectorTransformer
                 // transformer, however this transformer needs to run late in the transformer
                 // chain, after mixins but before LWJGl3ify. If we were to register it normally
-                // in this method it would be sorted at index 0 which we do not want. So we
-                // instead register it inside an ITweaker that gets run by mixins.
+                // in getASMTransformerClass() it would be sorted at index 0 which we do not want.
+                // So we instead register it inside an ITweaker that gets run by mixins.
                 List<String> tweaks = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
                 if (tweaks != null) {
                     tweaks.add("com.gtnewhorizon.gtnhlib.core.tweaks.LateTransformerRegistrationTweaker");
