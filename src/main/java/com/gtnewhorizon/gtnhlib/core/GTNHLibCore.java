@@ -35,7 +35,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
                 // instead register it inside an ITweaker that gets run by mixins.
                 List<String> tweaks = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
                 if (tweaks != null) {
-                    tweaks.add("com.gtnewhorizon.gtnhlib.core.tweaks.MixinCompatHackTweaker");
+                    tweaks.add("com.gtnewhorizon.gtnhlib.core.tweaks.LateTransformerRegistrationTweaker");
                 }
             }
         }

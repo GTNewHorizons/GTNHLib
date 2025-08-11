@@ -13,7 +13,7 @@ import cpw.mods.fml.relauncher.FMLRelaunchLog;
 // because FML adds the whole package to the class
 // loader exclusion and that causes really hard to
 // find bugs, approximately 2 hours since last commit....
-public class MixinCompatHackTweaker implements ITweaker {
+public class LateTransformerRegistrationTweaker implements ITweaker {
 
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
