@@ -29,7 +29,6 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 @IFMLLoadingPlugin.TransformerExclusions({ "com.gtnewhorizon.gtnhlib.asm.", "com.gtnewhorizon.gtnhlib.core.transformer",
         "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
-@IFMLLoadingPlugin.SortingIndex(-1000)
 public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     public static final String[] DEFAULT_TRANSFORMERS = new String[] {
