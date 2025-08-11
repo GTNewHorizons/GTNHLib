@@ -28,7 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
  * <li>Models to load are registered in PREINIT or INIT. See {@link #registerModels(Callback, Collection)}.</li>
  * <li>A resource rebuild is triggered, then registered models and their parents are recursively loaded in POSTINIT.
  * </li>
- * <li>Models registered for baking are baked on the first client tick.</li>
+ * <li>Models registered for baking are baked whenever convenient, and may be discarded and rebaked as needed.</li>
  * </ul>
  * <p>
  * As for icons, register them in {@link Block#registerBlockIcons}. Whatever gets them in the block texture atlas.
