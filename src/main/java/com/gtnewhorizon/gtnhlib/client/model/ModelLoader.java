@@ -95,7 +95,7 @@ public class ModelLoader {
             return GSON.fromJson(new InputStreamReader(is), clazz);
         } catch (IOException e) {
 
-            GTNHLib.LOG.fatal("Could not find " + path.getResourceDomain() + " " + path.getResourcePath());
+            GTNHLib.LOG.fatal("Could not find {} {}", path.getResourceDomain(), path.getResourcePath());
             throw new RuntimeException(e);
         }
     }
