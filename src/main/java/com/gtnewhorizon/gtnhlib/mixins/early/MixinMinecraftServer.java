@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
@@ -33,6 +34,16 @@ public class MixinMinecraftServer {
     @Inject(method = "run", at = @At("RETURN"))
     private void clearServerThreadReference(CallbackInfo ci) {
         ServerThreadUtil.clear();
+    }
+
+    @ModifyArg(method = "run", at = @At(value = "INVOKE", target = "Ljava/lang/Thread;sleep(J)V"))
+    private long runWorkStealingJobs(long msRemaining) {
+        if (msRemaining <= 1) { // there is no time to steal :(
+            ServerThreadUtil.skipRemainingWorkStealingQueue();
+            return msRemaining;
+        }
+
+        return ServerThreadUtil.runWorkStealingJobs(msRemaining);
     }
 
 }
