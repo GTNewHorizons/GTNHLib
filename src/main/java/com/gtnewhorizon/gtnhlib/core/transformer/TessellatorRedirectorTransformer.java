@@ -1,9 +1,5 @@
 package com.gtnewhorizon.gtnhlib.core.transformer;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import net.minecraft.launchwrapper.IClassTransformer;
 
 import org.objectweb.asm.ClassReader;
@@ -17,27 +13,24 @@ import org.objectweb.asm.tree.MethodNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
 
-import lombok.val;
-
-public class TessellatorRedirectorTransformer implements IClassTransformer {
+// This transformer can be instantiated both by RFB or FML,
+// since RFB uses a different ClassLoader, this transformer
+// should depend on a minimal amount of classes to avoid
+// cascading classloading on the wrong ClassLoader which can
+// created un-intended behaviors and make debugging harder.
+public final class TessellatorRedirectorTransformer implements IClassTransformer {
 
     private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
-
     private static final ClassConstantPoolParser cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
+    private static final String[] exclusions = { "org.lwjgl", "com.gtnewhorizons.angelica.glsm.",
+            "com.gtnewhorizons.angelica.transform", "me.eigenraven.lwjgl3ify", "com.gtnewhorizon.gtnhlib",
+            "net.minecraft.client.renderer.Tessellator" };
 
-    private static final List<String> TransformerExclusions = Arrays.asList(
-            "org.lwjgl",
-            "com.gtnewhorizons.angelica.glsm.",
-            "com.gtnewhorizons.angelica.transform",
-            "me.eigenraven.lwjgl3ify",
-            "com.gtnewhorizon.gtnhlib",
-            "net.minecraft.client.renderer.Tessellator");
-
-    public static List<String> getTransformerExclusions() {
-        return Collections.unmodifiableList(TransformerExclusions);
+    public static String[] getTransformerExclusions() {
+        return exclusions.clone();
     }
 
-    public boolean shouldRfbTransform(byte[] basicClass) {
+    public static boolean shouldRfbTransform(byte[] basicClass) {
         return cstPoolParser.find(basicClass, true);
     }
 
@@ -45,7 +38,7 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (basicClass == null) return null;
 
-        for (val exclusion : TransformerExclusions) {
+        for (String exclusion : exclusions) {
             if (transformedName.startsWith(exclusion)) return basicClass;
         }
 
@@ -96,10 +89,7 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
                     }
                 }
             }
-
         }
-
         return changed;
     }
-
 }

@@ -14,7 +14,7 @@ import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
 /** RFB wrapper for {@link TessellatorRedirectorTransformer} */
 public class TessellatorRedirectorTransformerWrapper implements RfbClassTransformer {
 
-    public final TessellatorRedirectorTransformer inner = new TessellatorRedirectorTransformer();
+    private final TessellatorRedirectorTransformer inner = new TessellatorRedirectorTransformer();
 
     @Pattern("[a-z0-9-]+")
     @Override
@@ -34,7 +34,7 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
 
     @Override
     public @NotNull String @Nullable [] additionalExclusions() {
-        return TessellatorRedirectorTransformer.getTransformerExclusions().toArray(new String[0]);
+        return TessellatorRedirectorTransformer.getTransformerExclusions();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
             // If a class is already a transformed ClassNode, conservatively continue processing.
             return true;
         }
-        return inner.shouldRfbTransform(classNode.getOriginalBytes());
+        return TessellatorRedirectorTransformer.shouldRfbTransform(classNode.getOriginalBytes());
     }
 
     @Override

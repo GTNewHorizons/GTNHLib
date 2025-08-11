@@ -31,9 +31,6 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
-    public static final String[] DEFAULT_TRANSFORMERS = new String[] {
-            "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
-
     public GTNHLibCore() {
         super(new ModMetadata());
         ModMetadata md = getMetadata();
@@ -45,17 +42,22 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
 
     @Override
     public String[] getASMTransformerClass() {
-        if (!FMLLaunchHandler.side().isClient()
-                || Launch.blackboard.getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE) == Boolean.TRUE) {
-            // Don't need any transformers if we're not on the client, or the RFB Plugin was loaded
-            return DEFAULT_TRANSFORMERS;
+        if (FMLLaunchHandler.side().isClient()) {
+            boolean isGTNHLibRFBLoaded = (boolean) Launch.blackboard
+                    .getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE);
+            if (!isGTNHLibRFBLoaded) {
+                // If rfb isn't loaded we need to register the TessellatorRedirectorTransformer
+                // transformer, however this transformer needs to run late in the transformer
+                // chain, after mixins but before LWJGl3ify. If we were to register it normally
+                // in this method it would be sorted at index 0 which we do not want. So we
+                // instead register it inside an ITweaker that gets run by mixins.
+                List<String> tweaks = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
+                if (tweaks != null) {
+                    tweaks.add("com.gtnewhorizon.gtnhlib.core.MixinCompatHackTweaker");
+                }
+            }
         }
-        // Directly add this to the MixinServiceLaunchWrapper tweaker's list of Tweak Classes
-        List<String> mixinTweakClasses = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
-        if (mixinTweakClasses != null) {
-            mixinTweakClasses.add(MixinCompatHackTweaker.class.getName());
-        }
-        return DEFAULT_TRANSFORMERS;
+        return new String[] { "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
     }
 
     @Override

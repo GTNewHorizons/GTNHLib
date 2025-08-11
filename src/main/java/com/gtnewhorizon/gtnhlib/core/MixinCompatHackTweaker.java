@@ -7,9 +7,7 @@ import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
-import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer;
-
-import cpw.mods.fml.relauncher.FMLLaunchHandler;
+import cpw.mods.fml.relauncher.FMLRelaunchLog;
 
 public class MixinCompatHackTweaker implements ITweaker {
 
@@ -30,16 +28,11 @@ public class MixinCompatHackTweaker implements ITweaker {
 
     @Override
     public String[] getLaunchArguments() {
-        if (FMLLaunchHandler.side().isClient()) {
-            final boolean rfbLoaded = Launch.blackboard.getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE)
-                    == Boolean.TRUE;
-
-            if (!rfbLoaded) {
-                // Run after Mixins, but before LWJGl3ify
-                Launch.classLoader.registerTransformer(TessellatorRedirectorTransformer.class.getName());
-            }
-        }
-
+        // We register this transformer here so that it
+        // runs after Mixins, but before LWJGl3ify
+        String transformer = "com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer";
+        FMLRelaunchLog.finer("Registering transformer %s", transformer);
+        Launch.classLoader.registerTransformer(transformer);
         return new String[0];
     }
 }
