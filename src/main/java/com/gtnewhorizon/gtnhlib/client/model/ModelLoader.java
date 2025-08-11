@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.json.JsonModel;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 import com.gtnewhorizon.gtnhlib.util.Callback;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -29,7 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
  * <li>Models to load are registered in PREINIT or INIT. See {@link #registerModels(Callback, Collection)}.</li>
  * <li>A resource rebuild is triggered, then registered models and their parents are recursively loaded in POSTINIT.
  * </li>
- * <li>Models registered for baking are baked on the first client tick.</li>
+ * <li>Models registered for baking are baked whenever convenient, and may be discarded and rebaked as needed.</li>
  * </ul>
  * <p>
  * As for icons, register them in {@link Block#registerBlockIcons}. Whatever gets them in the block texture atlas.
@@ -96,7 +95,7 @@ public class ModelLoader {
             return GSON.fromJson(new InputStreamReader(is), clazz);
         } catch (IOException e) {
 
-            GTNHLib.LOG.fatal("Could not find " + path.getResourceDomain() + " " + path.getResourcePath());
+            GTNHLib.LOG.fatal("Could not find {} {}", path.getResourceDomain(), path.getResourcePath());
             throw new RuntimeException(e);
         }
     }
@@ -120,7 +119,7 @@ public class ModelLoader {
         for (Callback c : postBakeCallbacks) c.run();
     }
 
-    public static QuadProvider getModel(Variant loc) {
+    public static JsonModel getModel(Variant loc) {
         return modelsToBake.get(loc);
     }
 
