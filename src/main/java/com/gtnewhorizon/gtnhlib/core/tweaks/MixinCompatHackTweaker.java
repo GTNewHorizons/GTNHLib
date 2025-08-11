@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.core;
+package com.gtnewhorizon.gtnhlib.core.tweaks;
 
 import java.io.File;
 import java.util.List;
@@ -9,6 +9,10 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 
+// The ITweaker needs to be in a standalone package
+// because FML adds the whole package to the class
+// loader exclusion and that causes really hard to
+// find bugs, approximately 2 hours since last commit....
 public class MixinCompatHackTweaker implements ITweaker {
 
     @Override
