@@ -1,8 +1,9 @@
-package com.gtnewhorizon.gtnhlib.mixins;
+package com.gtnewhorizon.gtnhlib.mixin;
 
 import lombok.Getter;
 
-public enum TargetedMod {
+@Getter
+public enum TargetedMod implements ITargetedMod {
 
     VANILLA("Minecraft", null),
     FASTCRAFT("FastCraft", "fastcraft.Tweaker"),
@@ -33,14 +34,11 @@ public enum TargetedMod {
     WITCHERY("Witchery", null, "witchery");
 
     /** The "name" in the @Mod annotation */
-    @Getter
-    public final String modName;
+    private final String modName;
     /** Class that implements the IFMLLoadingPlugin interface */
-    @Getter
-    public final String coreModClass;
+    private final String coreModClass;
     /** The "modid" in the @Mod annotation */
-    @Getter
-    public final String modId;
+    private final String modId;
 
     TargetedMod(String modName, String coreModClass) {
         this(modName, coreModClass, null);
@@ -56,4 +54,5 @@ public enum TargetedMod {
     public String toString() {
         return "TargetedMod{modName='" + modName + "', coreModClass='" + coreModClass + "', modId='" + modId + "'}";
     }
+
 }

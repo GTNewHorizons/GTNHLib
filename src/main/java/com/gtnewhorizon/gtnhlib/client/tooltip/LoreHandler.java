@@ -26,6 +26,7 @@ public final class LoreHandler implements IResourceManagerReloadListener {
     private static final Random RANDOM = new Random();
 
     public static void postInit() {
+        LoreHolderDiscoverer.register();
         ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager())
                 .registerReloadListener(new LoreHandler());
     }
@@ -59,7 +60,7 @@ public final class LoreHandler implements IResourceManagerReloadListener {
     private static String getRandomLine(String keyPrefix) {
         List<WeightedRandom.Item> lines = getAllLines(keyPrefix);
 
-        if (lines.size() == 0) {
+        if (lines.isEmpty()) {
             return null;
         }
 
