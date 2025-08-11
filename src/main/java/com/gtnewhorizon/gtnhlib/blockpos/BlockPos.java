@@ -81,6 +81,11 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + z + ")";
+    }
+
     /**
      * Returns an iterable of all BlockPos objects within the specified box. The range is inclusive.
      *

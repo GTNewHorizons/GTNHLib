@@ -16,5 +16,5 @@ public interface IKeyPressedListener {
      * @param player     The player who pressed the key.
      * @param keyPressed The key the player pressed.
      */
-    void onKeyPressed(EntityPlayerMP player, SyncedKeybind keyPressed);
+    void onKeyPressed(EntityPlayerMP player, SyncedKeybind keyPressed, boolean isDown);
 }

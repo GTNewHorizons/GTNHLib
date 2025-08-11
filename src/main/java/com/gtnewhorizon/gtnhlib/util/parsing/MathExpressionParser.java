@@ -19,7 +19,8 @@ public class MathExpressionParser {
      * strings that do not evaluate to a valid value. See {@link #parse(String, Context)} for an explanation of the
      * syntax.
      */
-    public static final Pattern EXPRESSION_PATTERN = Pattern.compile("[0-9., \u202F_’+\\-*/^()eEkKmMgGbBtTsSiI%]*");
+    public static final Pattern EXPRESSION_PATTERN = Pattern
+            .compile("[0-9., \u202F_’+\\-*/^()eEеЕkKкКmMмМgGгГbBtTтТsSсСiI%]*");
     // Character \u202F (' ') (non-breaking space) to support French locale thousands separator.
 
     private static final Context defaultContext = new Context();
@@ -156,31 +157,43 @@ public class MathExpressionParser {
                     break;
                 case 'e':
                 case 'E':
+                case 'е':
+                case 'Е':
                     handleOperator(stack, Operator.SCIENTIFIC, ctx);
                     break;
 
                 // Suffixes:
                 case 'k':
                 case 'K':
+                case 'к':
+                case 'К':
                     handleSuffix(stack, Suffix.THOUSAND, c, ctx);
                     break;
                 case 'm':
                 case 'M':
+                case 'м':
+                case 'М':
                     handleSuffix(stack, Suffix.MILLION, c, ctx);
                     break;
                 case 'b':
                 case 'B':
                 case 'g':
                 case 'G':
+                case 'г':
+                case 'Г':
                     handleSuffix(stack, Suffix.BILLION, c, ctx);
                     break;
                 case 't':
                 case 'T':
+                case 'т':
+                case 'Т':
                     handleSuffix(stack, Suffix.TRILLION, c, ctx);
                     break;
 
                 case 's':
                 case 'S':
+                case 'с':
+                case 'С':
                     handleSuffix(stack, Suffix.STACK, c, ctx);
                     break;
                 case 'i':
