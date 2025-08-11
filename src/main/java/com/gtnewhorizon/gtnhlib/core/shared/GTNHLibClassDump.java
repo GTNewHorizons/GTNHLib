@@ -3,8 +3,6 @@ package com.gtnewhorizon.gtnhlib.core.shared;
 import com.gtnewhorizon.gtnhlib.asm.ASMUtil;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 
-// This is a separate class because it will be class loaded
-// twice by both RFB and FLM on different classloaders
 public class GTNHLibClassDump {
 
     private static final boolean DUMP_CLASS = Boolean.getBoolean("gtnhlib.dumpClass");

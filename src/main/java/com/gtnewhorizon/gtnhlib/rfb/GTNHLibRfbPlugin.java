@@ -19,11 +19,13 @@ public class GTNHLibRfbPlugin implements RfbPlugin {
 
     @Override
     public @NotNull RfbClassTransformer @Nullable [] makeTransformers() {
-        final boolean isServer = (null
-                == RetroFuturaBootstrap.API.launchClassLoader().findClassMetadata("net.minecraft.client.main.Main"));
+        boolean isServer = RetroFuturaBootstrap.API.launchClassLoader()
+                .findClassMetadata("net.minecraft.client.main.Main") == null;
         if (isServer) {
             return null;
         }
-        return new RfbClassTransformer[] { new RFBTessellatorRedirector() };
+        boolean isObf = RetroFuturaBootstrap.API.launchClassLoader().findClassMetadata("net.minecraft.world.World")
+                == null;
+        return new RfbClassTransformer[] { new RFBTessellatorRedirector(isObf) };
     }
 }

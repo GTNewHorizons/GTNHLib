@@ -12,8 +12,14 @@ import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
 
-/** RFB wrapper for {@link TessellatorRedirector} */
+/** RfbClassTransformer wrapper for {@link TessellatorRedirector} */
 public class RFBTessellatorRedirector implements RfbClassTransformer {
+
+    private final TessellatorRedirector inner;
+
+    public RFBTessellatorRedirector(boolean isObf) {
+        inner = new TessellatorRedirector(isObf);
+    }
 
     @Pattern("[a-z0-9-]+")
     @Override
@@ -33,7 +39,7 @@ public class RFBTessellatorRedirector implements RfbClassTransformer {
 
     @Override
     public @NotNull String @Nullable [] additionalExclusions() {
-        return TessellatorRedirector.getTransformerExclusions();
+        return inner.getTransformerExclusions();
     }
 
     @Override
@@ -47,13 +53,13 @@ public class RFBTessellatorRedirector implements RfbClassTransformer {
             // If a class is already a transformed ClassNode, conservatively continue processing.
             return true;
         }
-        return TessellatorRedirector.shouldTransform(classNode.getOriginalBytes());
+        return inner.shouldTransform(classNode.getOriginalBytes());
     }
 
     @Override
     public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
             @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
-        final boolean changed = TessellatorRedirector.transformClassNode(className, classNode.getNode());
+        final boolean changed = inner.transformClassNode(className, classNode.getNode());
         if (changed) {
             classNode.computeMaxs();
             GTNHLibClassDump.dumpRFBClass(className, classNode, this);

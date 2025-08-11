@@ -22,6 +22,8 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
+    private static boolean isObf;
+
     @Override
     public String[] getASMTransformerClass() {
         return new String[] { "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
@@ -39,6 +41,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public void injectData(Map<String, Object> data) {
+        isObf = (boolean) data.get("runtimeDeobfuscationEnabled");
         if (FMLLaunchHandler.side().isClient()) {
             boolean isGTNHLibRFBLoaded = (boolean) Launch.blackboard
                     .getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE);
@@ -76,5 +79,9 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
         // Needed because the EarlyMixins loader uses the
         // Object.toString() method to indentify coremods...
         return "GTNHLib Core";
+    }
+
+    public static boolean isObf() {
+        return isObf;
     }
 }

@@ -9,40 +9,45 @@ import org.objectweb.asm.tree.MethodNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
 
-public class TessellatorRedirector {
+public final class TessellatorRedirector {
 
     private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
-    private static final ClassConstantPoolParser cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
-    private static final String[] exclusions = { "org.lwjgl", "com.gtnewhorizons.angelica.glsm.",
-            "com.gtnewhorizons.angelica.transform", "me.eigenraven.lwjgl3ify", "com.gtnewhorizon.gtnhlib",
-            "net.minecraft.client.renderer.Tessellator" };
 
-    public static String[] getTransformerExclusions() {
-        return exclusions.clone();
+    private final ClassConstantPoolParser cstPoolParser;
+    private final String OpenGlHelper$glBlendFunc;
+    private final String Tessellator$instance;
+
+    public TessellatorRedirector(boolean isObf) {
+        cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
+        OpenGlHelper$glBlendFunc = isObf ? "func_148821_a" : "glBlendFunc";
+        Tessellator$instance = isObf ? "field_78398_a" : "instance";
     }
 
-    public static boolean shouldTransform(byte[] basicClass) {
+    public String[] getTransformerExclusions() {
+        return new String[] { "org.lwjgl", "com.gtnewhorizons.angelica.glsm.", "com.gtnewhorizons.angelica.transform",
+                "me.eigenraven.lwjgl3ify", "com.gtnewhorizon.gtnhlib", "net.minecraft.client.renderer.Tessellator" };
+    }
+
+    public boolean shouldTransform(byte[] basicClass) {
         return cstPoolParser.find(basicClass, true);
     }
 
     /**
      * @return Was the class changed?
      */
-    public static boolean transformClassNode(String transformedName, ClassNode cn) {
+    public boolean transformClassNode(String className, ClassNode cn) {
         if (cn == null) {
             return false;
         }
         boolean changed = false;
         for (MethodNode mn : cn.methods) {
-            if (transformedName.equals("net.minecraft.client.renderer.OpenGlHelper")
-                    && (mn.name.equals("glBlendFunc") || mn.name.equals("func_148821_a"))) {
+            if ("net.minecraft.client.renderer.OpenGlHelper".equals(className)
+                    && mn.name.equals(OpenGlHelper$glBlendFunc)) {
                 continue;
             }
             for (AbstractInsnNode node : mn.instructions.toArray()) {
                 if (node.getOpcode() == Opcodes.GETSTATIC && node instanceof FieldInsnNode fNode) {
-                    if ((fNode.name.equals("field_78398_a") || fNode.name.equals("instance"))
-                            && fNode.owner.equals(TessellatorClass)) {
-                        // package com.gtnewhorizon.gtnhlib.client.renderer;
+                    if (TessellatorClass.equals(fNode.owner) && fNode.name.equals(Tessellator$instance)) {
                         mn.instructions.set(
                                 node,
                                 new MethodInsnNode(
