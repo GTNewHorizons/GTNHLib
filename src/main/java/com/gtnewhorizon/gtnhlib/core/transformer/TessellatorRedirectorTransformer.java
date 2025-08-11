@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
+import com.gtnewhorizon.gtnhlib.core.GTNHLibClassDump;
 
 // This transformer can be instantiated both by RFB or FML,
 // since RFB uses a different ClassLoader, this transformer
@@ -54,7 +55,9 @@ public final class TessellatorRedirectorTransformer implements IClassTransformer
         if (changed) {
             final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             cn.accept(cw);
-            return cw.toByteArray();
+            final byte[] transformedBytes = cw.toByteArray();
+            GTNHLibClassDump.dumpClass(transformedName, basicClass, transformedBytes, this);
+            return transformedBytes;
         }
         return basicClass;
     }

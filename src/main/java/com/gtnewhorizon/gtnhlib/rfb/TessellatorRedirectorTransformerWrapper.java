@@ -6,6 +6,7 @@ import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.core.GTNHLibClassDump;
 import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
@@ -57,6 +58,7 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
         final boolean changed = inner.transformClassNode(className, classNode.getNode());
         if (changed) {
             classNode.computeMaxs();
+            GTNHLibClassDump.dumpRFBClass(className, classNode, this);
         }
     }
 }
