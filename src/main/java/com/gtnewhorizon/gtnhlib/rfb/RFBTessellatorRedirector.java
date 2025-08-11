@@ -6,16 +6,14 @@ import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.core.GTNHLibClassDump;
-import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer;
+import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
+import com.gtnewhorizon.gtnhlib.core.shared.TessellatorRedirector;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
 
-/** RFB wrapper for {@link TessellatorRedirectorTransformer} */
-public class TessellatorRedirectorTransformerWrapper implements RfbClassTransformer {
-
-    private final TessellatorRedirectorTransformer inner = new TessellatorRedirectorTransformer();
+/** RFB wrapper for {@link TessellatorRedirector} */
+public class RFBTessellatorRedirector implements RfbClassTransformer {
 
     @Pattern("[a-z0-9-]+")
     @Override
@@ -35,7 +33,7 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
 
     @Override
     public @NotNull String @Nullable [] additionalExclusions() {
-        return TessellatorRedirectorTransformer.getTransformerExclusions();
+        return TessellatorRedirector.getTransformerExclusions();
     }
 
     @Override
@@ -49,13 +47,13 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
             // If a class is already a transformed ClassNode, conservatively continue processing.
             return true;
         }
-        return TessellatorRedirectorTransformer.shouldRfbTransform(classNode.getOriginalBytes());
+        return TessellatorRedirector.shouldTransform(classNode.getOriginalBytes());
     }
 
     @Override
     public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
             @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
-        final boolean changed = inner.transformClassNode(className, classNode.getNode());
+        final boolean changed = TessellatorRedirector.transformClassNode(className, classNode.getNode());
         if (changed) {
             classNode.computeMaxs();
             GTNHLibClassDump.dumpRFBClass(className, classNode, this);

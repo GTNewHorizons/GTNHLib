@@ -20,7 +20,7 @@ import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import com.gtnewhorizon.gtnhlib.core.GTNHLibClassDump;
+import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
 import com.gtnewhorizon.gtnhlib.eventbus.MethodInfo;

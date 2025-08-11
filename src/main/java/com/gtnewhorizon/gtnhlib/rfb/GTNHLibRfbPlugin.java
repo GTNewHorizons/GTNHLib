@@ -24,6 +24,6 @@ public class GTNHLibRfbPlugin implements RfbPlugin {
         if (isServer) {
             return null;
         }
-        return new RfbClassTransformer[] { new TessellatorRedirectorTransformerWrapper() };
+        return new RfbClassTransformer[] { new RFBTessellatorRedirector() };
     }
 }

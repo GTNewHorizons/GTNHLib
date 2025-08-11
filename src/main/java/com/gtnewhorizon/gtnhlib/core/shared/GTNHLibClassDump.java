@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.core;
+package com.gtnewhorizon.gtnhlib.core.shared;
 
 import com.gtnewhorizon.gtnhlib.asm.ASMUtil;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
