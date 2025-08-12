@@ -17,8 +17,8 @@ import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
-@IFMLLoadingPlugin.TransformerExclusions({ "com.gtnewhorizon.gtnhlib.asm", "com.gtnewhorizon.gtnhlib.core",
-        "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
+@IFMLLoadingPlugin.TransformerExclusions({ "it.unimi.dsi.fastutil", "com.gtnewhorizon.gtnhlib.asm",
+        "com.gtnewhorizon.gtnhlib.core", "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
