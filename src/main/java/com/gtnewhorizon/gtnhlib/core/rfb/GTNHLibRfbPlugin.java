@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.rfb;
+package com.gtnewhorizon.gtnhlib.core.rfb;
 
 import net.minecraft.launchwrapper.Launch;
 

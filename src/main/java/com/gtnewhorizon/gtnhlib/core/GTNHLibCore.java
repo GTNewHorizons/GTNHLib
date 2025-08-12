@@ -17,7 +17,7 @@ import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
-@IFMLLoadingPlugin.TransformerExclusions({ "com.gtnewhorizon.gtnhlib.asm.", "com.gtnewhorizon.gtnhlib.core",
+@IFMLLoadingPlugin.TransformerExclusions({ "com.gtnewhorizon.gtnhlib.asm", "com.gtnewhorizon.gtnhlib.core",
         "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
@@ -26,7 +26,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[] { "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
+        return new String[] { "com.gtnewhorizon.gtnhlib.core.fml.transformers.EventBusSubTransformer" };
     }
 
     @Override
@@ -53,7 +53,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
                 // So we instead register it inside an ITweaker that gets run by mixins.
                 List<String> tweaks = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
                 if (tweaks != null) {
-                    tweaks.add("com.gtnewhorizon.gtnhlib.core.tweaks.LateTransformerRegistrationTweaker");
+                    tweaks.add("com.gtnewhorizon.gtnhlib.core.fml.tweakers.LateTransformerRegistrationTweaker");
                 }
             }
         }

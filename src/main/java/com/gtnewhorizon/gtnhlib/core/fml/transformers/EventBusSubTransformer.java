@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.core.transformer;
+package com.gtnewhorizon.gtnhlib.core.fml.transformers;
 
 import static com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil.DEBUG_EVENT_BUS;
 

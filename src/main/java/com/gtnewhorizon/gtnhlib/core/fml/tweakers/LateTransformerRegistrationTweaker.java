@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.core.tweaks;
+package com.gtnewhorizon.gtnhlib.core.fml.tweakers;
 
 import java.io.File;
 import java.util.List;
@@ -34,7 +34,7 @@ public class LateTransformerRegistrationTweaker implements ITweaker {
     public String[] getLaunchArguments() {
         // We register this transformer here so that it
         // runs after Mixins, but before LWJGl3ify
-        String transformer = "com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer";
+        String transformer = "com.gtnewhorizon.gtnhlib.core.fml.transformers.TessellatorRedirectorTransformer";
         FMLRelaunchLog.finer("Registering transformer %s", transformer);
         Launch.classLoader.registerTransformer(transformer);
         return new String[0];

@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.core.transformer;
+package com.gtnewhorizon.gtnhlib.core.fml.transformers;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
