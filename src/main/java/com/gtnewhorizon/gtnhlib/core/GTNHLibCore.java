@@ -22,7 +22,7 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
-    private static boolean isObf;
+    private static Boolean isObf;
 
     @Override
     public String[] getASMTransformerClass() {
@@ -41,7 +41,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public void injectData(Map<String, Object> data) {
-        isObf = (boolean) data.get("runtimeDeobfuscationEnabled");
+        isObf = (Boolean) data.get("runtimeDeobfuscationEnabled");
         if (FMLLaunchHandler.side().isClient()) {
             boolean isGTNHLibRFBLoaded = (boolean) Launch.blackboard
                     .getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE);
@@ -82,6 +82,9 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
     }
 
     public static boolean isObf() {
+        if (isObf == null) {
+            throw new IllegalStateException("Obfuscation state has been accessed too early!");
+        }
         return isObf;
     }
 }
