@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
-import com.gtnewhorizon.gtnhlib.core.shared.TessellatorRedirector;
+import com.gtnewhorizon.gtnhlib.core.shared.transformers.TessellatorRedirector;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;

@@ -8,7 +8,7 @@ import org.objectweb.asm.tree.ClassNode;
 
 import com.gtnewhorizon.gtnhlib.core.GTNHLibCore;
 import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
-import com.gtnewhorizon.gtnhlib.core.shared.TessellatorRedirector;
+import com.gtnewhorizon.gtnhlib.core.shared.transformers.TessellatorRedirector;
 
 /** IClassTransformer wrapper for {@link TessellatorRedirector} */
 public class TessellatorRedirectorTransformer implements IClassTransformer {

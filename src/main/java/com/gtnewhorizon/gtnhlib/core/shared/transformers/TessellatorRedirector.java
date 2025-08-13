@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.core.shared;
+package com.gtnewhorizon.gtnhlib.core.shared.transformers;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
