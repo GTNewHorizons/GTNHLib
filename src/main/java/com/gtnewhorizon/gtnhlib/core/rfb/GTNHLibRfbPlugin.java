@@ -5,6 +5,7 @@ import net.minecraft.launchwrapper.Launch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.core.rfb.transformers.RFBTessellatorRedirector;
 import com.gtnewhorizons.retrofuturabootstrap.api.PluginContext;
 import com.gtnewhorizons.retrofuturabootstrap.api.RetroFuturaBootstrap;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;

@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.core.rfb;
+package com.gtnewhorizon.gtnhlib.core.rfb.transformers;
 
 import java.util.jar.Manifest;
 
