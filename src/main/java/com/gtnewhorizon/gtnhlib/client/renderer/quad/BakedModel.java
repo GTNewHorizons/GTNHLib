@@ -10,7 +10,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
-public interface QuadProvider {
+public interface BakedModel {
 
     int R_MASK = 0xFF << 16;
     int G_MASK = 0xFF << 8;
