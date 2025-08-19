@@ -10,13 +10,13 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
-public class DynamicCubeModel implements QuadProvider {
+public class DynamicCubeModel implements BakedModel {
 
     /*
      * By the power of ~~theft~~ inspiration, this class is wayyy simpler. It's also a basic example of dynamic model
