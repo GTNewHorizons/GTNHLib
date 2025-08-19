@@ -12,12 +12,12 @@ import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
 import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
-public class BlockStaticCube implements QuadProvider {
+public class BlockStaticCube implements BakedModel {
 
     private final String textureName;
     protected final List<QuadView>[] store = new List[7];
