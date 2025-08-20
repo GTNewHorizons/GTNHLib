@@ -19,17 +19,23 @@ public class Variant {
     private final float y;
     private final float z;
     private final boolean uvLock;
+    private final int weight;
 
     public Variant(ResourceLocation model, int x, int y, boolean uvLock) {
-        this(model, x, y, 0, uvLock);
+        this(model, x, y, 0, uvLock, 1);
     }
 
     public Variant(ResourceLocation model, int x, int y, int z, boolean uvLock) {
+        this(model, x, y, z, uvLock, 1);
+    }
+
+    public Variant(ResourceLocation model, int x, int y, int z, boolean uvLock, int weight) {
         this.model = model;
         this.x = (float) toRadians(x);
         this.y = (float) toRadians(y);
         this.z = (float) toRadians(z);
         this.uvLock = uvLock;
+        this.weight = weight;
     }
 
     public Matrix4f getAffineMatrix() {
