@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
+import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,7 +38,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public class ModelLoader {
 
     private static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(JsonModel.class, new JsonModel.Deserializer()).create();
+            .registerTypeAdapter(JsonModel.class, new ModelDeserializer()).create();
     private static final List<ResourceLocation> unloadedModels = new ObjectArrayList<>();
     private static final Map<ResourceLocation, JsonModel> loadedModels = new Object2ObjectOpenHashMap<>();
     private static final Map<Variant, JsonModel> modelsToBake = new Object2ObjectOpenHashMap<>();
