@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.json;
 
+import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.Variant;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -46,29 +47,16 @@ public class BlockStateDef {
         }
     }
 
-    static class Case {
-        private final ObjectList<Variant> apply;
-        private final Condition when;
-
-        Case(ObjectList<Variant> apply, Condition when) {
-            this.apply = apply;
-            this.when = when;
-        }
+    record Case(ObjectList<Variant> apply, BlockStateDef.Case.Condition when) {
 
         interface Condition {
             Condition TRUE = (Map<String, String> state) -> true;
+
             boolean matches(Map<String, String> state);
         }
 
-        static class MultiCon implements Condition {
-            private final boolean requireAll;
-            private final ObjectList<Condition> matches;
-
-            MultiCon(boolean requireAll, ObjectList<Condition> matches) {
-                this.requireAll = requireAll;
-                this.matches = ObjectLists.unmodifiable(matches);
-            }
-
+        @Desugar
+        record MultiCon(boolean requireAll, ObjectList<Condition> matches) implements Condition {
             @Override
             public boolean matches(Map<String, String> state) {
                 if (requireAll) {
@@ -85,15 +73,8 @@ public class BlockStateDef {
             }
         }
 
-        static class StateCon implements Condition {
-            final String key;
-            final ObjectList<String> values;
-
-            StateCon(String key, ObjectList<String> values) {
-                this.key = key;
-                this.values = ObjectLists.unmodifiable(values);
-            }
-
+        @Desugar
+        record StateCon(String key, ObjectList<String> values) implements Condition {
             @Override
             public boolean matches(Map<String, String> state) {
                 final var val = state.get(key);
