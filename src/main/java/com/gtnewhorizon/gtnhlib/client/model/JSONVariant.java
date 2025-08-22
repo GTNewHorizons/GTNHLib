@@ -2,10 +2,12 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import static java.lang.Math.toRadians;
 
-import lombok.Getter;
 import net.minecraft.util.ResourceLocation;
+
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
+
+import lombok.Getter;
 
 @Internal
 public class JSONVariant {

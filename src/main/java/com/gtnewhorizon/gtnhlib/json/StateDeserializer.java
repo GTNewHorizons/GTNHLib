@@ -5,6 +5,12 @@ import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
 
+import java.lang.reflect.Type;
+
+import net.minecraft.util.ResourceLocation;
+
+import org.jetbrains.annotations.NotNull;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -16,17 +22,17 @@ import com.gtnewhorizon.gtnhlib.json.Multipart.Case;
 import com.gtnewhorizon.gtnhlib.json.Multipart.Case.Condition;
 import com.gtnewhorizon.gtnhlib.json.Multipart.Case.MultiCon;
 import com.gtnewhorizon.gtnhlib.json.Multipart.Case.StateCon;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import java.lang.reflect.Type;
-import net.minecraft.util.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
 
 public class StateDeserializer implements JsonDeserializer<StateModelMap> {
+
     @Override
-    public StateModelMap deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public StateModelMap deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+            throws JsonParseException {
         final var root = json.getAsJsonObject();
 
         if (root.has("variants")) {
@@ -46,7 +52,7 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
         var entries = variants.entrySet();
         var map = new Object2ObjectOpenHashMap<StateMatch, ObjectList<JSONVariant>>(entries.size());
 
-        entries.forEach( v -> {
+        entries.forEach(v -> {
             var match = v.getKey();
             var variant = v.getValue();
             map.put(new StateMatch(match), loadVariants(variant));
@@ -70,8 +76,8 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
     }
 
     /**
-     * Loads a list of jsonVariants from the given element. If it's an array, the list may contain multiple - otherwise the
-     * list wil contain one.
+     * Loads a list of jsonVariants from the given element. If it's an array, the list may contain multiple - otherwise
+     * the list wil contain one.
      */
     private ObjectList<JSONVariant> loadVariants(JsonElement variants) {
         final ObjectList<JSONVariant> loadedJSONVariants;
@@ -94,13 +100,12 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
 
     private JSONVariant loadVariant(JsonObject variant) {
         return new JSONVariant(
-            new ResourceLocation(loadStr(variant, "model")),
-            loadInt(variant, "x", 0),
-            loadInt(variant, "y", 0),
-            0,
-            loadBool(variant, "uvlock", false),
-            loadInt(variant, "weight", 1)
-        );
+                new ResourceLocation(loadStr(variant, "model")),
+                loadInt(variant, "x", 0),
+                loadInt(variant, "y", 0),
+                0,
+                loadBool(variant, "uvlock", false),
+                loadInt(variant, "weight", 1));
     }
 
     private Condition loadCondition(JsonObject kase) {
@@ -124,13 +129,13 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
 
     /// Given a segment like ```
     /// [
-    ///   {
-    ///     "facing": "east",
-    ///     "beans": "toast"
-    ///   },
-    ///   {
-    ///     "pied": "false"
-    ///   }
+    /// {
+    /// "facing": "east",
+    /// "beans": "toast"
+    /// },
+    /// {
+    /// "pied": "false"
+    /// }
     /// ]
     /// ```
     /// returns a list of the MultiCons `[facing = east && beans = toast], [pied = false]`
@@ -138,20 +143,15 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
         final var conditions = new ObjectArrayList<Condition>(cons.size());
 
         for (var con : cons) {
-            conditions.add(
-                new MultiCon(
-                    true,
-                    loadStateCons(con.getAsJsonObject())
-                )
-            );
+            conditions.add(new MultiCon(true, loadStateCons(con.getAsJsonObject())));
         }
         return conditions;
     }
 
     /// Given a segment like ```json
     /// {
-    ///   "facing": "east",
-    ///   "beans": "toast"
+    /// "facing": "east",
+    /// "beans": "toast"
     /// },```
     /// returns a list of StateCon `[facing = east, beans = toast]`
     private static @NotNull ObjectArrayList<Condition> loadStateCons(JsonObject obj) {
@@ -160,8 +160,7 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
 
         for (var cond : conds) {
             final var stateName = cond.getKey();
-            final var stateValues =
-                new ObjectArrayList<>(cond.getValue().getAsString().split("\\|"));
+            final var stateValues = new ObjectArrayList<>(cond.getValue().getAsString().split("\\|"));
 
             condList.add(new StateCon(stateName, stateValues));
         }
