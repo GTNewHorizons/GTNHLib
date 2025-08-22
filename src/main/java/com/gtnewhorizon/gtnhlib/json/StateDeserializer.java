@@ -40,7 +40,7 @@ public class StateDeserializer implements JsonDeserializer<StateDef> {
         throw new JsonParseException("No 'variants' or 'multipart' tag found in blockstate JSON!");
     }
 
-    private Object2ObjectMap<StateMatch, ObjectList<Variant>> loadVariants(JsonObject root) {
+    private Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> loadVariants(JsonObject root) {
         final var variants = root.getAsJsonObject("variants");
 
         var entries = variants.entrySet();
