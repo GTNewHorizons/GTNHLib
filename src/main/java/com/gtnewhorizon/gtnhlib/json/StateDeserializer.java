@@ -11,7 +11,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.gtnewhorizon.gtnhlib.client.model.Variant;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.json.MultipartState.Case;
 import com.gtnewhorizon.gtnhlib.json.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.json.MultipartState.Case.MultiCon;
@@ -44,7 +44,7 @@ public class StateDeserializer implements JsonDeserializer<StateDef> {
         final var variants = root.getAsJsonObject("variants");
 
         var entries = variants.entrySet();
-        var map = new Object2ObjectOpenHashMap<StateMatch, ObjectList<Variant>>(entries.size());
+        var map = new Object2ObjectOpenHashMap<StateMatch, ObjectList<JSONVariant>>(entries.size());
 
         entries.forEach( v -> {
             var match = v.getKey();
@@ -70,30 +70,30 @@ public class StateDeserializer implements JsonDeserializer<StateDef> {
     }
 
     /**
-     * Loads a list of variants from the given element. If it's an array, the list may contain multiple - otherwise the
+     * Loads a list of jsonVariants from the given element. If it's an array, the list may contain multiple - otherwise the
      * list wil contain one.
      */
-    private ObjectList<Variant> loadVariants(JsonElement variants) {
-        final ObjectList<Variant> loadedVariants;
+    private ObjectList<JSONVariant> loadVariants(JsonElement variants) {
+        final ObjectList<JSONVariant> loadedJSONVariants;
         if (variants.isJsonArray()) {
             var models = variants.getAsJsonArray();
-            loadedVariants = new ObjectArrayList<>(models.size());
+            loadedJSONVariants = new ObjectArrayList<>(models.size());
 
             for (var m : models) {
                 var model = m.getAsJsonObject();
-                loadedVariants.add(loadVariant(model));
+                loadedJSONVariants.add(loadVariant(model));
             }
         } else {
             var model = variants.getAsJsonObject();
-            loadedVariants = new ObjectArrayList<>(1);
-            loadedVariants.add(loadVariant(model));
+            loadedJSONVariants = new ObjectArrayList<>(1);
+            loadedJSONVariants.add(loadVariant(model));
         }
 
-        return loadedVariants;
+        return loadedJSONVariants;
     }
 
-    private Variant loadVariant(JsonObject variant) {
-        return new Variant(
+    private JSONVariant loadVariant(JsonObject variant) {
+        return new JSONVariant(
             new ResourceLocation(loadStr(variant, "model")),
             loadInt(variant, "x", 0),
             loadInt(variant, "y", 0),
