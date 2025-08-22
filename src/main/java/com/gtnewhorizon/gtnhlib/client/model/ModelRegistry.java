@@ -16,7 +16,7 @@ import net.minecraft.util.ResourceLocation;
 
 
 public class ModelRegistry {
-    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Monopart.class, new StateDeserializer())
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
         .create();
     private static final DynamicModelCache<BlockState> CACHE = new DynamicModelCache<>(s -> bakeModel((BlockState) s), false);
 
