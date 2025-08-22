@@ -10,8 +10,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.joml.Matrix4f;
 
-import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
-import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.model.impl.ModelLoader;
+import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;

@@ -1,5 +1,6 @@
-package com.gtnewhorizon.gtnhlib.client.model;
+package com.gtnewhorizon.gtnhlib.client.model.impl;
 
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
