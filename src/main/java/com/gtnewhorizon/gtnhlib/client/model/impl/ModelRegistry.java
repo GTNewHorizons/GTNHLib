@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.block.DynamicModelCache;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.json.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.json.StateModelMap;
 

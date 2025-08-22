@@ -2,7 +2,7 @@ package com.gtnewhorizon.gtnhlib.block;
 
 import java.util.concurrent.locks.StampedLock;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
