@@ -19,7 +19,7 @@ public class Variant {
     private final float y;
     private final float z;
     private final boolean uvLock;
-    private final int weight;
+    public final int weight;
 
     public Variant(ResourceLocation model, int x, int y, boolean uvLock) {
         this(model, x, y, 0, uvLock, 1);
