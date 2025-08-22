@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.json;
 
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
+import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -8,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import org.jetbrains.annotations.Nullable;
 
 public class MonopartState implements StateModelMap {
     private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants;
@@ -25,6 +27,11 @@ public class MonopartState implements StateModelMap {
             if (match.matches(properties)) return selectOne(e.getValue(), rand);
         }
 
+        return null;
+    }
+
+    @Override
+    public @Nullable UnbakedModel selectModel(Map<String, String> properties) {
         return null;
     }
 
