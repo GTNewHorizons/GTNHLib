@@ -10,7 +10,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.Map;
 import java.util.Objects;
 
-public class MultipartState implements StateDef {
+public class MultipartState implements StateModelMap {
     private final ObjectList<Case> multipart;
 
     MultipartState(ObjectList<Case> multipart) {
