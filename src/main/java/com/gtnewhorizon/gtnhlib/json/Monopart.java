@@ -11,10 +11,10 @@ import java.util.Objects;
 import java.util.Random;
 import org.jetbrains.annotations.Nullable;
 
-public class MonopartState implements StateModelMap {
+public class Monopart implements StateModelMap {
     private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants;
 
-    MonopartState(Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants) {
+    Monopart(Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants) {
         this.variants = Object2ObjectMaps.unmodifiable(variants);
     }
 
