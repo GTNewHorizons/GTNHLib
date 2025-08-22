@@ -12,8 +12,8 @@ import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.block.DynamicModelCache;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import com.gtnewhorizon.gtnhlib.json.StateDeserializer;
-import com.gtnewhorizon.gtnhlib.json.StateModelMap;
+import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
+import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 
 public class ModelRegistry {
 
