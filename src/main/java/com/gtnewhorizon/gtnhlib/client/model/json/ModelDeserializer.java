@@ -23,7 +23,7 @@ import com.gtnewhorizon.gtnhlib.util.JsonUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-public class ModelDeserializer implements JsonDeserializer<JsonModel> {
+public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
     private Vector3f loadVec3(JsonObject in, String name) {
 
@@ -177,7 +177,7 @@ public class ModelDeserializer implements JsonDeserializer<JsonModel> {
     }
 
     @Override
-    public JsonModel deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+    public JSONModel deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
             throws JsonParseException {
 
         final JsonObject in = json.getAsJsonObject();
@@ -197,6 +197,6 @@ public class ModelDeserializer implements JsonDeserializer<JsonModel> {
         final Map<String, String> textures = loadTextures(in);
         final List<ModelElement> elements = loadElements(in);
 
-        return new JsonModel(parentId, useAO, display, textures, elements);
+        return new JSONModel(parentId, useAO, display, textures, elements);
     }
 }

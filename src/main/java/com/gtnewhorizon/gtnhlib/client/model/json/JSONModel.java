@@ -33,12 +33,12 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import lombok.Getter;
 
-public class JsonModel implements BakedModel {
+public class JSONModel implements BakedModel {
 
     @Nullable
     private final ResourceLocation parentId;
     @Nullable
-    private JsonModel parent;
+    private JSONModel parent;
     @Getter
     private final boolean useAO;
     @Getter
@@ -49,9 +49,9 @@ public class JsonModel implements BakedModel {
     private final Map<ForgeDirection, List<QuadView>> sidedQuadStore = new Object2ObjectOpenHashMap<>();
     private static final List<QuadView> EMPTY = ObjectImmutableList.of();
 
-    public JsonModel(@Nullable ResourceLocation parentId, boolean useAO,
-            Map<ModelDisplay.Position, ModelDisplay> display, Map<String, String> textures,
-            List<ModelElement> elements) {
+    public JSONModel(@Nullable ResourceLocation parentId, boolean useAO,
+                     Map<ModelDisplay.Position, ModelDisplay> display, Map<String, String> textures,
+                     List<ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
         this.display = display;
@@ -62,7 +62,7 @@ public class JsonModel implements BakedModel {
     /**
      * Makes a shallow copy of og. This allows you to bake the same model multiple times with various transformations.
      */
-    public JsonModel(JsonModel og) {
+    public JSONModel(JSONModel og) {
 
         this.parentId = og.parentId;
         this.parent = og.parent;
@@ -171,11 +171,11 @@ public class JsonModel implements BakedModel {
         return this.sidedQuadStore.getOrDefault(dir, EMPTY);
     }
 
-    public void resolveParents(Function<ResourceLocation, JsonModel> modelLoader) {
+    public void resolveParents(Function<ResourceLocation, JSONModel> modelLoader) {
 
         if (this.parentId != null && this.parent == null) {
 
-            final JsonModel p = modelLoader.apply(this.parentId);
+            final JSONModel p = modelLoader.apply(this.parentId);
             p.resolveParents(modelLoader);
 
             // Inherit properties
