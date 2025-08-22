@@ -1,55 +1,48 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-
-import org.jetbrains.annotations.Nullable;
-
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import org.jetbrains.annotations.Nullable;
 
 public class Monopart implements StateModelMap {
 
-    private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants;
+    private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant.Weighted>> variants;
 
-    Monopart(Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants) {
+    Monopart(Object2ObjectMap<StateMatch, ObjectList<JSONVariant.Weighted>> variants) {
         this.variants = Object2ObjectMaps.unmodifiable(variants);
     }
 
-    public JSONVariant getModelLocation(Map<String, String> properties, Random rand) {
+    @Override
+    public @Nullable UnbakedModel selectModel(Map<String, String> properties) {
         final var iter = Object2ObjectMaps.fastIterator(variants);
         while (iter.hasNext()) {
             final var e = iter.next();
             final var match = e.getKey();
 
-            if (match.matches(properties)) return selectOne(e.getValue(), rand);
+            if (match.matches(properties)) return null; // FIXME
         }
 
         return null;
     }
 
-    @Override
-    public @Nullable UnbakedModel selectModel(Map<String, String> properties) {
-        return null;
-    }
-
-    private JSONVariant selectOne(ObjectList<JSONVariant> jsonVariants, Random rand) {
+    private JSONVariant.Weighted selectOne(ObjectList<JSONVariant.Weighted> jsonVariants, Random rand) {
         var weight = 0;
         for (var v : jsonVariants) {
-            weight += v.weight;
+            weight += v.weight();
         }
 
         final var selector = rand.nextInt(weight);
         weight = 0;
         for (var v : jsonVariants) {
             if (selector <= weight) return v;
-            weight += v.weight;
+            weight += v.weight();
         }
 
         throw new IllegalStateException("Randomly selected beyond the list!");
