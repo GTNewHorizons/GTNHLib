@@ -6,7 +6,7 @@ import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.block.DynamicModelCache;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 import com.gtnewhorizon.gtnhlib.json.MonopartState;
-import com.gtnewhorizon.gtnhlib.json.StateDef;
+import com.gtnewhorizon.gtnhlib.json.StateModelMap;
 import com.gtnewhorizon.gtnhlib.json.StateDeserializer;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,7 +31,7 @@ public class ModelRegistry {
         final var resourceManager = Minecraft.getMinecraft().getResourceManager();
         try {
             final var stateResource = resourceManager.getResource(stateLocation);
-            final var stateFile = GSON.fromJson(new InputStreamReader(stateResource.getInputStream()), StateDef.class);
+            final var stateFile = GSON.fromJson(new InputStreamReader(stateResource.getInputStream()), StateModelMap.class);
             final var model = stateFile.selectModel()
 
         } catch (IOException e) {

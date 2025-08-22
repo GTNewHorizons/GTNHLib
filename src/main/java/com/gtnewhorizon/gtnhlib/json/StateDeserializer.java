@@ -24,9 +24,9 @@ import java.lang.reflect.Type;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public class StateDeserializer implements JsonDeserializer<StateDef> {
+public class StateDeserializer implements JsonDeserializer<StateModelMap> {
     @Override
-    public StateDef deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public StateModelMap deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         final var root = json.getAsJsonObject();
 
         if (root.has("variants")) {

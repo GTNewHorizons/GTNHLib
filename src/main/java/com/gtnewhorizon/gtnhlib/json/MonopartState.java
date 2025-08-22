@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
-public class MonopartState implements StateDef {
+public class MonopartState implements StateModelMap {
     private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants;
 
     MonopartState(Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants) {
