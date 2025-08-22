@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model;
+package com.gtnewhorizon.gtnhlib.client.model.impl;
 
 import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.DOWN;
 import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.EAST;
@@ -7,6 +7,7 @@ import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.SOUTH;
 import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.UP;
 import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.WEST;
 
+import com.gtnewhorizon.gtnhlib.client.model.Material;
 import java.util.Arrays;
 
 import net.minecraft.client.Minecraft;

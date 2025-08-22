@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model;
+package com.gtnewhorizon.gtnhlib.client.model.impl;
 
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
