@@ -1,6 +1,6 @@
-package com.gtnewhorizon.gtnhlib.json;
+package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import static com.gtnewhorizon.gtnhlib.json.Monopart.StateMatch;
+import static com.gtnewhorizon.gtnhlib.client.model.state.Monopart.StateMatch;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
@@ -18,10 +18,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import com.gtnewhorizon.gtnhlib.json.Multipart.Case;
-import com.gtnewhorizon.gtnhlib.json.Multipart.Case.Condition;
-import com.gtnewhorizon.gtnhlib.json.Multipart.Case.MultiCon;
-import com.gtnewhorizon.gtnhlib.json.Multipart.Case.StateCon;
+import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case;
+import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case.Condition;
+import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case.MultiCon;
+import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case.StateCon;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
