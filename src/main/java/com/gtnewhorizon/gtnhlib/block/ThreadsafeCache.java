@@ -1,23 +1,20 @@
 package com.gtnewhorizon.gtnhlib.block;
 
-import java.util.concurrent.locks.StampedLock;
-
-import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
+import java.util.concurrent.locks.StampedLock;
 
 /**
  * Borrowed from ModernFix, because 7.10 can't embed models in blocks easily
  */
-public class DynamicModelCache<K> {
+public class ThreadsafeCache<K, V> {
 
-    private final Reference2ReferenceLinkedOpenHashMap<K, BakedModel> cache = new Reference2ReferenceLinkedOpenHashMap<>();
+    private final Reference2ReferenceLinkedOpenHashMap<K, V> cache = new Reference2ReferenceLinkedOpenHashMap<>();
     private final StampedLock lock = new StampedLock();
-    private final Function<K, BakedModel> modelRetriever;
+    private final Function<K, V> modelRetriever;
     private final boolean allowNulls;
 
-    public DynamicModelCache(Function<K, BakedModel> modelRetriever, boolean allowNulls) {
+    public ThreadsafeCache(Function<K, V> modelRetriever, boolean allowNulls) {
         this.modelRetriever = modelRetriever;
         this.allowNulls = allowNulls;
     }
@@ -40,7 +37,7 @@ public class DynamicModelCache<K> {
         }
     }
 
-    private BakedModel getModelFromCache(K state) {
+    private V getModelFromCache(K state) {
         long stamp = lock.readLock();
         try {
             return cache.get(state);
@@ -49,8 +46,8 @@ public class DynamicModelCache<K> {
         }
     }
 
-    private BakedModel cacheModel(K state) {
-        BakedModel model = modelRetriever.apply(state);
+    private V cacheModel(K state) {
+        V model = modelRetriever.apply(state);
 
         // Lock and modify our local, faster cache
         long stamp = lock.writeLock();
@@ -68,8 +65,8 @@ public class DynamicModelCache<K> {
         return model;
     }
 
-    public BakedModel get(K key) {
-        BakedModel model = getModelFromCache(key);
+    public V get(K key) {
+        V model = getModelFromCache(key);
 
         if (model == null && (!allowNulls || needToPopulate(key))) {
             model = cacheModel(key);
