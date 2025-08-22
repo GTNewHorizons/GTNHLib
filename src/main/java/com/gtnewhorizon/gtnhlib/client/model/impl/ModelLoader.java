@@ -17,7 +17,7 @@ import com.google.common.annotations.Beta;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.model.json.JsonModel;
+import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
 import com.gtnewhorizon.gtnhlib.util.Callback;
 
@@ -38,11 +38,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 @Beta
 public class ModelLoader {
 
-    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(JsonModel.class, new ModelDeserializer())
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(JSONModel.class, new ModelDeserializer())
             .create();
     private static final List<ResourceLocation> unloadedModels = new ObjectArrayList<>();
-    private static final Map<ResourceLocation, JsonModel> loadedModels = new Object2ObjectOpenHashMap<>();
-    private static final Map<JSONVariant, JsonModel> modelsToBake = new Object2ObjectOpenHashMap<>();
+    private static final Map<ResourceLocation, JSONModel> loadedModels = new Object2ObjectOpenHashMap<>();
+    private static final Map<JSONVariant, JSONModel> modelsToBake = new Object2ObjectOpenHashMap<>();
     private static final List<Callback> postBakeCallbacks = new ObjectArrayList<>();
 
     /**
@@ -84,7 +84,7 @@ public class ModelLoader {
             if (l == null) continue;
             if (loadedModels.containsKey(l)) continue;
 
-            final JsonModel model = loadJson(l, JsonModel.class);
+            final JSONModel model = loadJson(l, JSONModel.class);
             unloadedModels.addAll(model.getParents());
             loadedModels.put(l, model);
         }
@@ -104,9 +104,9 @@ public class ModelLoader {
 
     public static void bakeModels() {
 
-        for (Map.Entry<JSONVariant, JsonModel> l : modelsToBake.entrySet()) {
+        for (Map.Entry<JSONVariant, JSONModel> l : modelsToBake.entrySet()) {
 
-            final JsonModel dough = new JsonModel(loadedModels.get(l.getKey().getModel()));
+            final JSONModel dough = new JSONModel(loadedModels.get(l.getKey().getModel()));
 
             // Resolve the parent chain
             // noinspection SuspiciousMethodCalls
@@ -121,7 +121,7 @@ public class ModelLoader {
         for (Callback c : postBakeCallbacks) c.run();
     }
 
-    public static JsonModel getModel(JSONVariant loc) {
+    public static JSONModel getModel(JSONVariant loc) {
         return modelsToBake.get(loc);
     }
 
