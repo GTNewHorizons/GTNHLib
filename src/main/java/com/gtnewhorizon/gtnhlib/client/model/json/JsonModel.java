@@ -4,30 +4,34 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil.ALL_DI
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
-import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
-import lombok.Getter;
+
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
+import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
+
+import it.unimi.dsi.fastutil.Function;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
+import lombok.Getter;
 
 public class JsonModel implements BakedModel {
 

@@ -1,5 +1,15 @@
 package com.gtnewhorizon.gtnhlib.client.model.json;
 
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -9,15 +19,9 @@ import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
 import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JsonModel> {
 
@@ -63,7 +67,7 @@ public class ModelDeserializer implements JsonDeserializer<JsonModel> {
 
         // wow such long
         final Map<ModelDisplay.Position, ModelDisplay> ret = new Object2ObjectOpenHashMap<>(
-            ModelDisplay.Position.values().length);
+                ModelDisplay.Position.values().length);
 
         if (in.has("display")) {
 
@@ -174,7 +178,7 @@ public class ModelDeserializer implements JsonDeserializer<JsonModel> {
 
     @Override
     public JsonModel deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-        throws JsonParseException {
+            throws JsonParseException {
 
         final JsonObject in = json.getAsJsonObject();
 
