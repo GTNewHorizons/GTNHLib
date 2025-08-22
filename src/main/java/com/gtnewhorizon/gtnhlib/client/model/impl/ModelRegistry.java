@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.block.BlockState;
-import com.gtnewhorizon.gtnhlib.block.DynamicModelCache;
+import com.gtnewhorizon.gtnhlib.block.ThreadsafeCache;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
@@ -19,7 +19,7 @@ public class ModelRegistry {
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
             .create();
-    private static final DynamicModelCache<BlockState> CACHE = new DynamicModelCache<>(
+    private static final ThreadsafeCache<BlockState> CACHE = new ThreadsafeCache<>(
             s -> bakeModel((BlockState) s),
             false);
 
