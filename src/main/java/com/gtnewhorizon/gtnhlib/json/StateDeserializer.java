@@ -21,7 +21,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.lang.reflect.Type;
-import java.util.List;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,11 +40,11 @@ public class StateDeserializer implements JsonDeserializer<BlockStateDef> {
         throw new JsonParseException("No 'variants' or 'multipart' tag found in blockstate JSON!");
     }
 
-    private Object2ObjectMap<StateMatch, List<Variant>> loadVariants(JsonObject root) {
+    private Object2ObjectMap<StateMatch, ObjectList<Variant>> loadVariants(JsonObject root) {
         final var variants = root.getAsJsonObject("variants");
 
         var entries = variants.entrySet();
-        var map = new Object2ObjectOpenHashMap<StateMatch, List<Variant>>(entries.size());
+        var map = new Object2ObjectOpenHashMap<StateMatch, ObjectList<Variant>>(entries.size());
 
         entries.forEach( v -> {
             var match = v.getKey();
