@@ -1,9 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model.template;
 
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import net.minecraft.util.ResourceLocation;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
-import com.gtnewhorizon.gtnhlib.client.model.Variant;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 
 /**
@@ -11,18 +11,18 @@ import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
  */
 public class Column3Rot {
 
-    public final Variant[] variants = new Variant[3];
+    public final JSONVariant[] jsonVariants = new JSONVariant[3];
     public final BakedModel[] models = new BakedModel[3];
 
     public Column3Rot(ResourceLocation model) {
 
-        this.variants[0] = new Variant(model, 0, 0, 0, false);
-        this.variants[1] = new Variant(model, 90, 90, 0, false);
-        this.variants[2] = new Variant(model, 90, 0, 0, false);
+        this.jsonVariants[0] = new JSONVariant(model, 0, 0, 0, false);
+        this.jsonVariants[1] = new JSONVariant(model, 90, 90, 0, false);
+        this.jsonVariants[2] = new JSONVariant(model, 90, 0, 0, false);
 
         ModelLoader.registerModels(
-                () -> { for (int i = 0; i < 3; ++i) this.models[i] = ModelLoader.getModel(this.variants[i]); },
-                this.variants);
+                () -> { for (int i = 0; i < 3; ++i) this.models[i] = ModelLoader.getModel(this.jsonVariants[i]); },
+                this.jsonVariants);
     }
 
     public BakedModel updown() {

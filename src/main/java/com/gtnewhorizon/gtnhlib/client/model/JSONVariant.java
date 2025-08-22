@@ -8,7 +8,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
 
 @Internal
-public class Variant {
+public class JSONVariant {
 
     @Getter
     private final ResourceLocation model;
@@ -18,15 +18,15 @@ public class Variant {
     private final boolean uvLock;
     public final int weight;
 
-    public Variant(ResourceLocation model, int x, int y, boolean uvLock) {
+    public JSONVariant(ResourceLocation model, int x, int y, boolean uvLock) {
         this(model, x, y, 0, uvLock, 1);
     }
 
-    public Variant(ResourceLocation model, int x, int y, int z, boolean uvLock) {
+    public JSONVariant(ResourceLocation model, int x, int y, int z, boolean uvLock) {
         this(model, x, y, z, uvLock, 1);
     }
 
-    public Variant(ResourceLocation model, int x, int y, int z, boolean uvLock, int weight) {
+    public JSONVariant(ResourceLocation model, int x, int y, int z, boolean uvLock, int weight) {
         this.model = model;
         this.x = (float) toRadians(x);
         this.y = (float) toRadians(y);

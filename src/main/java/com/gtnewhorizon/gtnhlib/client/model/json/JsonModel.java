@@ -5,7 +5,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.model.Variant;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
@@ -68,7 +68,7 @@ public class JsonModel implements BakedModel {
         this.elements = og.elements;
     }
 
-    public void bake(Variant v) {
+    public void bake(JSONVariant v) {
 
         final Matrix4f vRot = v.getAffineMatrix();
         final NdQuadBuilder builder = new NdQuadBuilder();
