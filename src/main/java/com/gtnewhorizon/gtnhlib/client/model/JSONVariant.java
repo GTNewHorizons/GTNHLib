@@ -3,22 +3,21 @@ package com.gtnewhorizon.gtnhlib.client.model;
 import static java.lang.Math.toRadians;
 
 import net.minecraft.util.ResourceLocation;
-
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
 
-import lombok.Getter;
-
+/**
+ * Largely mirrors Minecraft's format for specifying models, except we use radians instead of degrees.
+ * @param model The model file this variant refers to
+ * @param x X rotation, in radians
+ * @param y Y rotation, in radians
+ * @param z Z rotation, in radians
+ * @param uvLock If true, textures aren't rotated with the block
+ * @param weight Used when selecting models. Irrelevant when only one variant is allowed, but must always be greater
+ *               than zero.
+ */
 @Internal
-public class JSONVariant {
-
-    @Getter
-    private final ResourceLocation model;
-    private final float x;
-    private final float y;
-    private final float z;
-    private final boolean uvLock;
-    public final int weight;
+public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock, int weight) {
 
     public JSONVariant(ResourceLocation model, int x, int y, boolean uvLock) {
         this(model, x, y, 0, uvLock, 1);
@@ -29,12 +28,7 @@ public class JSONVariant {
     }
 
     public JSONVariant(ResourceLocation model, int x, int y, int z, boolean uvLock, int weight) {
-        this.model = model;
-        this.x = (float) toRadians(x);
-        this.y = (float) toRadians(y);
-        this.z = (float) toRadians(z);
-        this.uvLock = uvLock;
-        this.weight = weight;
+        this(model, (float) toRadians(x), (float) toRadians(y), (float) toRadians(z), uvLock, weight);
     }
 
     public Matrix4f getAffineMatrix() {
