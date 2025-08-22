@@ -1,14 +1,17 @@
 package com.gtnewhorizon.gtnhlib.block;
 
+import java.util.concurrent.locks.StampedLock;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
+
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
-import java.util.concurrent.locks.StampedLock;
 
 /**
  * Borrowed from ModernFix, because 7.10 can't embed models in blocks easily
  */
 public class DynamicModelCache<K> {
+
     private final Reference2ReferenceLinkedOpenHashMap<K, BakedModel> cache = new Reference2ReferenceLinkedOpenHashMap<>();
     private final StampedLock lock = new StampedLock();
     private final Function<K, BakedModel> modelRetriever;
@@ -68,7 +71,7 @@ public class DynamicModelCache<K> {
     public BakedModel get(K key) {
         BakedModel model = getModelFromCache(key);
 
-        if(model == null && (!allowNulls || needToPopulate(key))) {
+        if (model == null && (!allowNulls || needToPopulate(key))) {
             model = cacheModel(key);
         }
 
