@@ -1,38 +1,22 @@
 package com.gtnewhorizon.gtnhlib.json;
 
-import com.github.bsideup.jabel.Desugar;
-import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.Variant;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
-public class BlockStateDef {
+public class MonopartState implements StateDef {
     private final Object2ObjectMap<StateMatch, ObjectList<Variant>> variants;
-    private final ObjectList<Case> multipart;
 
-    BlockStateDef(Object2ObjectMap<StateMatch, ObjectList<Variant>> variants) {
+    MonopartState(Object2ObjectMap<StateMatch, ObjectList<Variant>> variants) {
         this.variants = Object2ObjectMaps.unmodifiable(variants);
-        multipart = null;
-    }
-
-    BlockStateDef(ObjectList<Case> multipart) {
-        variants = null;
-        this.multipart = ObjectLists.unmodifiable(multipart);
     }
 
     public Variant getModelLocation(Map<String, String> properties, Random rand) {
-        if (variants == null) return getModelLocationMultipart(properties);
-        return getModelLocationVariants(properties, rand);
-    }
-
-    private Variant getModelLocationVariants(Map<String, String> properties, Random rand) {
         final var iter = Object2ObjectMaps.fastIterator(variants);
         while (iter.hasNext()) {
             final var e = iter.next();
@@ -42,9 +26,6 @@ public class BlockStateDef {
         }
 
         return null;
-    }
-
-    private Variant getModelLocationMultipart(Map<String, String> properties) {
     }
 
     private Variant selectOne(ObjectList<Variant> variants, Random rand) {
@@ -95,45 +76,6 @@ public class BlockStateDef {
             }
 
             return true;
-        }
-    }
-
-    record Case(ObjectList<Variant> apply, BlockStateDef.Case.Condition when) {
-
-        interface Condition {
-            Condition TRUE = (Map<String, String> state) -> true;
-
-            boolean matches(Map<String, String> state);
-        }
-
-        @Desugar
-        record MultiCon(boolean requireAll, ObjectList<Condition> matches) implements Condition {
-            @Override
-            public boolean matches(Map<String, String> state) {
-                if (requireAll) {
-                    for (var m : matches) {
-                        if (!m.matches(state)) return false;
-                    }
-                    return true;
-                }
-
-                for (var m : matches) {
-                    if (m.matches(state)) return true;
-                }
-                return false;
-            }
-        }
-
-        @Desugar
-        record StateCon(String key, ObjectList<String> values) implements Condition {
-            @Override
-            public boolean matches(Map<String, String> state) {
-                final var val = state.get(key);
-                for (var v : values) {
-                    if (v.equals(val)) return true;
-                }
-                return false;
-            }
         }
     }
 }

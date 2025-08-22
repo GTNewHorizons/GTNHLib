@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.json;
 
-import static com.gtnewhorizon.gtnhlib.json.BlockStateDef.StateMatch;
+import static com.gtnewhorizon.gtnhlib.json.MonopartState.StateMatch;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
@@ -12,10 +12,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.Variant;
-import com.gtnewhorizon.gtnhlib.json.BlockStateDef.Case;
-import com.gtnewhorizon.gtnhlib.json.BlockStateDef.Case.Condition;
-import com.gtnewhorizon.gtnhlib.json.BlockStateDef.Case.MultiCon;
-import com.gtnewhorizon.gtnhlib.json.BlockStateDef.Case.StateCon;
+import com.gtnewhorizon.gtnhlib.json.MultipartState.Case;
+import com.gtnewhorizon.gtnhlib.json.MultipartState.Case.Condition;
+import com.gtnewhorizon.gtnhlib.json.MultipartState.Case.MultiCon;
+import com.gtnewhorizon.gtnhlib.json.MultipartState.Case.StateCon;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -24,17 +24,17 @@ import java.lang.reflect.Type;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public class StateDeserializer implements JsonDeserializer<BlockStateDef> {
+public class StateDeserializer implements JsonDeserializer<StateDef> {
     @Override
-    public BlockStateDef deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public StateDef deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         final var root = json.getAsJsonObject();
 
         if (root.has("variants")) {
-            return new BlockStateDef(loadVariants(root));
+            return new MonopartState(loadVariants(root));
         }
 
         if (root.has("multipart")) {
-            return new BlockStateDef(loadMultipart(root));
+            return new MultipartState(loadMultipart(root));
         }
 
         throw new JsonParseException("No 'variants' or 'multipart' tag found in blockstate JSON!");
