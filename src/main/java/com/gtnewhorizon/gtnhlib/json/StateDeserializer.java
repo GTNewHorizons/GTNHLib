@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.json;
 
-import static com.gtnewhorizon.gtnhlib.json.MonopartState.StateMatch;
+import static com.gtnewhorizon.gtnhlib.json.Monopart.StateMatch;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
@@ -30,7 +30,7 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
         final var root = json.getAsJsonObject();
 
         if (root.has("variants")) {
-            return new MonopartState(loadVariants(root));
+            return new Monopart(loadVariants(root));
         }
 
         if (root.has("multipart")) {

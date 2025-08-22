@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.block.DynamicModelCache;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
-import com.gtnewhorizon.gtnhlib.json.MonopartState;
+import com.gtnewhorizon.gtnhlib.json.Monopart;
 import com.gtnewhorizon.gtnhlib.json.StateModelMap;
 import com.gtnewhorizon.gtnhlib.json.StateDeserializer;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import net.minecraft.util.ResourceLocation;
 
 
 public class ModelRegistry {
-    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(MonopartState.class, new StateDeserializer())
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Monopart.class, new StateDeserializer())
         .create();
     private static final DynamicModelCache<BlockState> CACHE = new DynamicModelCache<>(s -> bakeModel((BlockState) s), false);
 
