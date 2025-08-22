@@ -22,7 +22,7 @@ import org.joml.Vector4f;
 
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;

@@ -4,7 +4,7 @@ import net.minecraft.util.ResourceLocation;
 
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.impl.ModelLoader;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 
 /**
  * Use this to create JSON model rotatable in 4 directions - NSWE
