@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model;
+package com.gtnewhorizon.gtnhlib.client.model.impl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
