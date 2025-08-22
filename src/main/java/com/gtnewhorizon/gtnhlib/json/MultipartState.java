@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.json;
 
 import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Variant;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -16,7 +17,9 @@ public class MultipartState implements StateDef {
         this.multipart = multipart;
     }
 
-    private Variant getModelLocationMultipart(Map<String, String> properties) {
+    @Override
+    public UnbakedModel selectModel(Map<String, String> properties) {
+        return null;
     }
 
     static class StateMatch {
