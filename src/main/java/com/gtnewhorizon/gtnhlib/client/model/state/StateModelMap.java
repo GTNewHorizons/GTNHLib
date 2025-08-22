@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.json;
+package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import java.util.Map;
 
