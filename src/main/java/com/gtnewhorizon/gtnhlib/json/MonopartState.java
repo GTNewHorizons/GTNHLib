@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.json;
 
-import com.gtnewhorizon.gtnhlib.client.model.Variant;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -10,13 +10,13 @@ import java.util.Objects;
 import java.util.Random;
 
 public class MonopartState implements StateDef {
-    private final Object2ObjectMap<StateMatch, ObjectList<Variant>> variants;
+    private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants;
 
-    MonopartState(Object2ObjectMap<StateMatch, ObjectList<Variant>> variants) {
+    MonopartState(Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> variants) {
         this.variants = Object2ObjectMaps.unmodifiable(variants);
     }
 
-    public Variant getModelLocation(Map<String, String> properties, Random rand) {
+    public JSONVariant getModelLocation(Map<String, String> properties, Random rand) {
         final var iter = Object2ObjectMaps.fastIterator(variants);
         while (iter.hasNext()) {
             final var e = iter.next();
@@ -28,15 +28,15 @@ public class MonopartState implements StateDef {
         return null;
     }
 
-    private Variant selectOne(ObjectList<Variant> variants, Random rand) {
+    private JSONVariant selectOne(ObjectList<JSONVariant> jsonVariants, Random rand) {
         var weight = 0;
-        for (var v : variants) {
+        for (var v : jsonVariants) {
             weight += v.weight;
         }
 
         final var selector = rand.nextInt(weight);
         weight = 0;
-        for (var v : variants) {
+        for (var v : jsonVariants) {
             if (selector <= weight) return v;
             weight += v.weight;
         }

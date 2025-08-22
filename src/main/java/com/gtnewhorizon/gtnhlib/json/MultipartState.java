@@ -2,7 +2,7 @@ package com.gtnewhorizon.gtnhlib.json;
 
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.Variant;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -57,7 +57,7 @@ public class MultipartState implements StateDef {
         }
     }
 
-    record Case(ObjectList<Variant> apply, Condition when) {
+    record Case(ObjectList<JSONVariant> apply, Condition when) {
 
         interface Condition {
             Condition TRUE = (Map<String, String> state) -> true;
