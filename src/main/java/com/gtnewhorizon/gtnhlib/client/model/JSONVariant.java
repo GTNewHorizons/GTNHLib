@@ -36,4 +36,10 @@ public record JSONVariant(ResourceLocation model, float x, float y, float z, boo
         return new Matrix4f().translation(-.5f, -.5f, -.5f).rotateLocalX(x).rotateLocalY(y).rotateLocalZ(z)
                 .translateLocal(.5f, .5f, .5f);
     }
+
+    /**
+     * Convenience wrapper to combine a weight with a model. Does not uniquely identify a model, unlike JSONVariant
+     * itself.
+     */
+    public record Weighted(JSONVariant v, int weight) {}
 }
