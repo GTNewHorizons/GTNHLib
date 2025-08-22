@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
 
 public interface QuadBuilder {
 
