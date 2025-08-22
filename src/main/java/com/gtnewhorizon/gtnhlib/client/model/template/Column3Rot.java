@@ -1,8 +1,8 @@
 package com.gtnewhorizon.gtnhlib.client.model.template;
 
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import net.minecraft.util.ResourceLocation;
 
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 

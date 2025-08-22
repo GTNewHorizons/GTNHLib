@@ -9,8 +9,8 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

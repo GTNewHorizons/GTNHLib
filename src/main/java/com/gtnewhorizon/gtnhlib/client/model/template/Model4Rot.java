@@ -1,8 +1,8 @@
 package com.gtnewhorizon.gtnhlib.client.model.template;
 
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import net.minecraft.util.ResourceLocation;
 
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.BakedModel;
 
@@ -16,8 +16,9 @@ public class Model4Rot {
 
     public Model4Rot(ResourceLocation modelLoc) {
 
-        this.modelIds = new JSONVariant[] { new JSONVariant(modelLoc, 0, 0, 0, false), new JSONVariant(modelLoc, 0, 180, 0, false),
-                new JSONVariant(modelLoc, 0, 90, 0, false), new JSONVariant(modelLoc, 0, 270, 0, false) };
+        this.modelIds = new JSONVariant[] { new JSONVariant(modelLoc, 0, 0, 0, false),
+                new JSONVariant(modelLoc, 0, 180, 0, false), new JSONVariant(modelLoc, 0, 90, 0, false),
+                new JSONVariant(modelLoc, 0, 270, 0, false) };
 
         ModelLoader.registerModels(() -> loadModels(this), this.modelIds);
     }

@@ -1,12 +1,15 @@
 package com.gtnewhorizon.gtnhlib.json;
 
-import com.github.bsideup.jabel.Desugar;
-import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.Map;
 
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
+import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
+
+import it.unimi.dsi.fastutil.objects.ObjectList;
+
 public class Multipart implements StateModelMap {
+
     private final ObjectList<Case> multipart;
 
     Multipart(ObjectList<Case> multipart) {
@@ -21,6 +24,7 @@ public class Multipart implements StateModelMap {
     record Case(ObjectList<JSONVariant> apply, Condition when) {
 
         interface Condition {
+
             Condition TRUE = (Map<String, String> state) -> true;
 
             boolean matches(Map<String, String> state);
@@ -28,6 +32,7 @@ public class Multipart implements StateModelMap {
 
         @Desugar
         record MultiCon(boolean requireAll, ObjectList<Condition> matches) implements Condition {
+
             @Override
             public boolean matches(Map<String, String> state) {
                 if (requireAll) {
@@ -46,6 +51,7 @@ public class Multipart implements StateModelMap {
 
         @Desugar
         record StateCon(String key, ObjectList<String> values) implements Condition {
+
             @Override
             public boolean matches(Map<String, String> state) {
                 final var val = state.get(key);
