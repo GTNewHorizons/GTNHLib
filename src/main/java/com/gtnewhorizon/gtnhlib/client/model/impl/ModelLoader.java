@@ -70,7 +70,7 @@ public class ModelLoader {
 
         for (JSONVariant v : jsonVariants) {
 
-            unloadedModels.add(v.getModel());
+            unloadedModels.add(v.model());
             modelsToBake.put(v, null);
         }
 
@@ -106,7 +106,7 @@ public class ModelLoader {
 
         for (Map.Entry<JSONVariant, JSONModel> l : modelsToBake.entrySet()) {
 
-            final JSONModel dough = new JSONModel(loadedModels.get(l.getKey().getModel()));
+            final JSONModel dough = new JSONModel(loadedModels.get(l.getKey().model()));
 
             // Resolve the parent chain
             // noinspection SuspiciousMethodCalls
