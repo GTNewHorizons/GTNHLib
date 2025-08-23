@@ -161,6 +161,7 @@ public class JSONModel implements BakedModel {
     }
 
     public List<ResourceLocation> getParents() {
+        //noinspection ArraysAsListWithZeroOrOneArgument
         return Arrays.asList(parentId);
     }
 
