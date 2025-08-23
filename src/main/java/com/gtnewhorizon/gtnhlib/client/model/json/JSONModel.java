@@ -1,39 +1,32 @@
 package com.gtnewhorizon.gtnhlib.client.model.json;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil.ALL_DIRECTIONS;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import com.gtnewhorizon.gtnhlib.client.model.BakeData;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.PileOfQuads;
+import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
+import it.unimi.dsi.fastutil.Function;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.function.Supplier;
-
-import net.minecraft.block.Block;
+import lombok.Getter;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
-
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
-
-import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
-import lombok.Getter;
-
-public class JSONModel implements BakedModel {
+public class JSONModel implements UnbakedModel {
 
     @Nullable
     private final ResourceLocation parentId;
@@ -45,9 +38,6 @@ public class JSONModel implements BakedModel {
     private final Map<ModelDisplay.Position, ModelDisplay> display;
     private final Map<String, String> textures;
     private List<ModelElement> elements;
-    private List<QuadView> allQuadStore = new ObjectArrayList<>();
-    private final Map<ForgeDirection, List<QuadView>> sidedQuadStore = new Object2ObjectOpenHashMap<>();
-    private static final List<QuadView> EMPTY = ObjectImmutableList.of();
 
     public JSONModel(@Nullable ResourceLocation parentId, boolean useAO,
                      Map<ModelDisplay.Position, ModelDisplay> display, Map<String, String> textures,
@@ -72,10 +62,12 @@ public class JSONModel implements BakedModel {
         this.elements = og.elements;
     }
 
-    public void bake(JSONVariant v) {
+    @Override
+    public BakedModel bake(BakeData data) {
 
-        final Matrix4f vRot = v.getAffineMatrix();
-        final NdQuadBuilder builder = new NdQuadBuilder();
+        final Matrix4f vRot = data.getAffineMatrix();
+        final var builder = new NdQuadBuilder();
+        final var sidedQuadStore = new HashMap<ForgeDirection, ArrayList<QuadView>>(7);
 
         // Append faces from each element
         for (ModelElement e : this.elements) {
@@ -146,30 +138,17 @@ public class JSONModel implements BakedModel {
 
                 // Bake and add it
                 final QuadView q = builder.build(new Quad());
-                this.allQuadStore.add(q);
-                this.sidedQuadStore.computeIfAbsent(q.getCullFace(), o -> new ObjectArrayList<>()).add(q);
+                sidedQuadStore.computeIfAbsent(q.getCullFace(), d -> new ArrayList<>()).add(q);
             }
         }
 
-        // Lock the lists.
-        this.allQuadStore = new ObjectImmutableList<>(this.allQuadStore);
-        for (ForgeDirection f : ALL_DIRECTIONS) {
-
-            List<QuadView> l = this.sidedQuadStore.computeIfAbsent(f, o -> EMPTY);
-            if (!l.isEmpty()) this.sidedQuadStore.put(f, new ObjectImmutableList<>(l));
-        }
+        // Add them to the model
+        return new PileOfQuads(sidedQuadStore);
     }
 
     public List<ResourceLocation> getParents() {
         //noinspection ArraysAsListWithZeroOrOneArgument
         return Arrays.asList(parentId);
-    }
-
-    @Override
-    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
-            Random random, int color, Supplier<QuadView> quadPool) {
-
-        return this.sidedQuadStore.getOrDefault(dir, EMPTY);
     }
 
     public void resolveParents(Function<ResourceLocation, JSONModel> modelLoader) {
@@ -213,5 +192,4 @@ public class JSONModel implements BakedModel {
             }
         }
     }
-
 }
