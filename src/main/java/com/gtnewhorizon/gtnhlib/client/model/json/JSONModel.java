@@ -98,7 +98,7 @@ public class JSONModel implements BakedModel {
                 // Assign vertexes
                 for (int i = 0; i < 4; ++i) {
 
-                    final Vector3f vert = QuadBuilder.mapSideToVertex(from, to, i, f.getName()).mulPosition(rot)
+                    final Vector3f vert = QuadBuilder.mapSideToVertex(from, to, i, f.getName(), false).mulPosition(rot)
                             .mulPosition(vRot);
                     builder.pos(i, vert.x, vert.y, vert.z);
                     x = min(x, vert.x);
