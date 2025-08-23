@@ -2,5 +2,5 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 public interface UnbakedModel {
 
-    BakedModel bake();
+    BakedModel bake(BakeData data);
 }
