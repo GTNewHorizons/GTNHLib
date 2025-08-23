@@ -1,13 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad;
 
+import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
-
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-
-import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
 
 public interface QuadBuilder {
 
@@ -181,9 +180,10 @@ public interface QuadBuilder {
     /**
      * Modern Minecraft uses magic arrays to do this without breaking AO. This is the same thing, but without arrays.
      */
-    static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side) {
+    @Contract(value = "_, _, _, _, false -> !null", pure = true)
+    static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side, boolean allowNull) {
 
-        return switch (side) {
+        var ret = switch (side) {
             case DOWN -> switch (index) {
                     case 0 -> new Vector3f(from.x, from.y, to.z);
                     case 1 -> new Vector3f(from.x, from.y, from.z);
@@ -228,5 +228,8 @@ public interface QuadBuilder {
                 };
             case UNKNOWN -> null;
         };
+
+        if (ret == null && !allowNull) throw new IllegalArgumentException("No vector matching UNKNOWN!");
+        return ret;
     }
 }
