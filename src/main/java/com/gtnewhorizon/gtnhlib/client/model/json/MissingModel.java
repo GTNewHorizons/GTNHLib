@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.json;
 
-import static com.gtnewhorizon.gtnhlib.client.model.PileOfQuads.BLANK;
+import static com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads.BLANK;
 
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;

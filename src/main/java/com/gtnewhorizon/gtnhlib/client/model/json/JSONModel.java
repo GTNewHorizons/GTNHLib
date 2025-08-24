@@ -5,7 +5,7 @@ import static java.lang.Math.min;
 
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.PileOfQuads;
+import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;

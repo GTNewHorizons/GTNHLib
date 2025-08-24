@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model;
+package com.gtnewhorizon.gtnhlib.client.model.baked;
 
 import static net.minecraftforge.common.util.ForgeDirection.DOWN;
 import static net.minecraftforge.common.util.ForgeDirection.EAST;
@@ -8,6 +8,7 @@ import static net.minecraftforge.common.util.ForgeDirection.UNKNOWN;
 import static net.minecraftforge.common.util.ForgeDirection.UP;
 import static net.minecraftforge.common.util.ForgeDirection.WEST;
 
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import java.util.ArrayList;
