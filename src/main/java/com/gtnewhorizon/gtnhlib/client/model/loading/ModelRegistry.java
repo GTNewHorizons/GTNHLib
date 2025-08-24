@@ -5,7 +5,7 @@ import static com.gtnewhorizon.gtnhlib.client.model.json.MissingModel.MISSING_MO
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
-import com.gtnewhorizon.gtnhlib.client.model.state.Missing;
+import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +40,7 @@ public class ModelRegistry {
 
     /// If the first cache misses, we hit this to get the state map, so we can figure out which model to bake.
     private static final ThreadsafeCache<ResourceLocation, StateModelMap> STATE_MODEL_MAP_CACHE = new ThreadsafeCache<>(
-        s -> loadJson((ResourceLocation) s, StateModelMap.class, () -> Missing.MISSING_MAP),
+        s -> loadJson((ResourceLocation) s, StateModelMap.class, () -> MissingState.MISSING_STATE_MAP),
         false);
 
     private static final ThreadsafeCache<ResourceLocation, JSONModel> JSON_MODEL_CACHE = new ThreadsafeCache<>(
