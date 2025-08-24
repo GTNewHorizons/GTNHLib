@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;

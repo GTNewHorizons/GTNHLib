@@ -8,8 +8,8 @@ import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.client.model.impl.ModelLoader;
-import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader;
+import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
