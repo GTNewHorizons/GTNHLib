@@ -17,7 +17,8 @@ import org.joml.Matrix4f;
  *               than zero.
  */
 @Internal
-public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock, int weight) implements BakeData {
+public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock, int weight)
+    implements BakeData {
 
     public JSONVariant(ResourceLocation model, int x, int y, boolean uvLock) {
         this(model, x, y, 0, uvLock, 1);
