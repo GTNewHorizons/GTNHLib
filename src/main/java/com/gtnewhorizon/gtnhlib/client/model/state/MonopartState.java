@@ -2,19 +2,21 @@ package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import org.jetbrains.annotations.Nullable;
 
 public class MonopartState implements StateModelMap {
 
-    private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant.Weighted>> variants;
+    private final Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants;
 
-    MonopartState(Object2ObjectMap<StateMatch, ObjectList<JSONVariant.Weighted>> variants) {
+    MonopartState(Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants) {
         this.variants = Object2ObjectMaps.unmodifiable(variants);
     }
 
@@ -29,22 +31,6 @@ public class MonopartState implements StateModelMap {
         }
 
         return null;
-    }
-
-    private JSONVariant.Weighted selectOne(ObjectList<JSONVariant.Weighted> jsonVariants, Random rand) {
-        var weight = 0;
-        for (var v : jsonVariants) {
-            weight += v.weight();
-        }
-
-        final var selector = rand.nextInt(weight);
-        weight = 0;
-        for (var v : jsonVariants) {
-            if (selector <= weight) return v;
-            weight += v.weight();
-        }
-
-        throw new IllegalStateException("Randomly selected beyond the list!");
     }
 
     static class StateMatch {
