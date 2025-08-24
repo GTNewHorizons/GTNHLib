@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.impl;
+package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib;
 
-import static com.gtnewhorizon.gtnhlib.client.model.impl.ModelLoader.shouldLoadModels;
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader.shouldLoadModels;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
@@ -8,7 +8,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.ClientCommandHandler;
 
-import com.gtnewhorizon.gtnhlib.client.model.impl.ModelLoader;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;

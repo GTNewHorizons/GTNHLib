@@ -3,7 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.model.template;
 import net.minecraft.util.ResourceLocation;
 
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import com.gtnewhorizon.gtnhlib.client.model.impl.ModelLoader;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 
 /**

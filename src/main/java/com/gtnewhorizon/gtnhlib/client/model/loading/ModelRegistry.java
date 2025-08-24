@@ -1,9 +1,8 @@
-package com.gtnewhorizon.gtnhlib.client.model.impl;
+package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import static com.gtnewhorizon.gtnhlib.client.model.json.MissingModel.MISSING_MODEL;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.Missing;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import java.util.HashMap;
 import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
