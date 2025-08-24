@@ -24,7 +24,6 @@ import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class ModelRegistry {
 
@@ -43,8 +42,13 @@ public class ModelRegistry {
         s -> loadJson((ResourceLocation) s, StateModelMap.class, () -> MissingState.MISSING_STATE_MAP),
         false);
 
+    /// {@link JSONModel}s may be shared across several {@link BakedModel}s, so we cache them too. The cache ensures all
+    /// loaded models are resolved and ready to bake.
+    ///
+    /// Note: the retriever was broken out into a function, because you can't read a field from within its own
+    /// definition.
     private static final ThreadsafeCache<ResourceLocation, JSONModel> JSON_MODEL_CACHE = new ThreadsafeCache<>(
-        s -> loadJson((ResourceLocation) s, JSONModel.class, () -> MISSING_MODEL),
+        s -> loadAndResolveJSONModel((ResourceLocation) s),
         false
     );
 
@@ -66,8 +70,7 @@ public class ModelRegistry {
         final var dough = smm.selectModel(properties);
     }
 
-    /// Getter for {@link JSONModel}s from the cache.
-    @NotNull
+    /// Getter for {@link JSONModel}s. We don't want to publicly expose the cache, modders can't be trusted with it :P
     public static JSONModel getJSONModel(ResourceLocation loc) {
         return JSON_MODEL_CACHE.get(loc);
     }
@@ -78,8 +81,13 @@ public class ModelRegistry {
         return STATE_MODEL_MAP_CACHE.get(stateLocation);
     }
 
-    @Nullable
-    private static <T> T loadJson(ResourceLocation path, Class<T> clazz, Supplier<T> defaultSrc) {
+    private static JSONModel loadAndResolveJSONModel(ResourceLocation loc) {
+        final var m = loadJson(loc, JSONModel.class, () -> MISSING_MODEL);
+        m.resolveParents(JSON_MODEL_CACHE::get);
+        return m;
+    }
+
+    private static <T> T loadJson(ResourceLocation path, Class<T> clazz, Supplier<@NotNull T> defaultSrc) {
         try {
             final InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(path).getInputStream();
             return GSON.fromJson(new InputStreamReader(is), clazz);
