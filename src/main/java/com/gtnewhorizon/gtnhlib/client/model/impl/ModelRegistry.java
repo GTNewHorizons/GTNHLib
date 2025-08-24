@@ -1,8 +1,17 @@
 package com.gtnewhorizon.gtnhlib.client.model.impl;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
+import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
+import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
+import com.gtnewhorizon.gtnhlib.client.model.state.Missing;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import java.util.HashMap;
+import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -14,32 +23,58 @@ import com.gtnewhorizon.gtnhlib.block.ThreadsafeCache;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
+import org.jetbrains.annotations.Nullable;
 
 public class ModelRegistry {
 
-    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
-            .create();
-    private static final ThreadsafeCache<BlockState> CACHE = new ThreadsafeCache<>(
-            s -> bakeModel((BlockState) s),
-            false);
+    private static final Gson GSON = new GsonBuilder()
+        .registerTypeAdapter(StateModelMap.class, new StateDeserializer())
+        .registerTypeAdapter(JSONModel.class, new ModelDeserializer())
+        .create();
+
+    /// The first cache. Ideally, every request hits this and gets a baked model.
+    private static final ThreadsafeCache<BlockState, BakedModel> BLOCKSTATE_MODEL_CACHE = new ThreadsafeCache<>(
+        s -> bakeModel((BlockState) s),
+        false);
+
+    /// If the first cache misses, we hit this to get the state map, so we can figure out which model to bake.
+    private static final ThreadsafeCache<ResourceLocation, StateModelMap> STATE_MODEL_MAP_CACHE = new ThreadsafeCache<>(
+        s -> loadJson((ResourceLocation) s, StateModelMap.class, () -> Missing.MISSING_MAP),
+        false);
+
+    private static final String[] DEFAULT_STATE_KEYS = new String[] { "meta" };
 
     private static BakedModel bakeModel(BlockState state) {
         final var block = state.block();
         final var meta = state.meta();
 
-        // Fetch the blockstate file
+        final var smm = getStateModelMap(block);
+        final var properties = new Object2ObjectArrayMap<String, String>(
+            DEFAULT_STATE_KEYS,
+            new String[] { Integer.toString(meta) }
+        );
+
+        // Caching this would be a little pointless, since an UnbakedModel here would map directly to the BakedModel
+        // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
+        // will be cached, however.
+        final var dough = smm.selectModel(properties);
+    }
+
+    private static StateModelMap getStateModelMap(Block block) {
         final var name = BlockName.fromBlock(block);
         final var stateLocation = new ResourceLocation(name.domain, "blockstates/" + name.name);
+        return STATE_MODEL_MAP_CACHE.get(stateLocation);
+    }
 
-        final var resourceManager = Minecraft.getMinecraft().getResourceManager();
+    @Nullable
+    private static <T> T loadJson(ResourceLocation path, Class<T> clazz, Supplier<T> defaultSrc) {
         try {
-            final var stateResource = resourceManager.getResource(stateLocation);
-            final var stateFile = GSON
-                    .fromJson(new InputStreamReader(stateResource.getInputStream()), StateModelMap.class);
-            // final var model = stateFile.selectModel()
-
+            final InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(path).getInputStream();
+            return GSON.fromJson(new InputStreamReader(is), clazz);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            GTNHLib.LOG.error("Could not find {} {}", path.getResourceDomain(), path.getResourcePath());
+            return defaultSrc.get();
         }
     }
 
