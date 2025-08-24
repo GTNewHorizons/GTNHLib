@@ -8,14 +8,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import org.jetbrains.annotations.Nullable;
 
-public class Monopart implements StateModelMap {
+public class MonopartState implements StateModelMap {
 
     private final Object2ObjectMap<StateMatch, ObjectList<JSONVariant.Weighted>> variants;
 
-    Monopart(Object2ObjectMap<StateMatch, ObjectList<JSONVariant.Weighted>> variants) {
+    MonopartState(Object2ObjectMap<StateMatch, ObjectList<JSONVariant.Weighted>> variants) {
         this.variants = Object2ObjectMaps.unmodifiable(variants);
     }
 

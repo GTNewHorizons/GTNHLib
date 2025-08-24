@@ -8,11 +8,11 @@ import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
-public class Multipart implements StateModelMap {
+public class MultipartState implements StateModelMap {
 
     private final ObjectList<Case> multipart;
 
-    Multipart(ObjectList<Case> multipart) {
+    MultipartState(ObjectList<Case> multipart) {
         this.multipart = multipart;
     }
 

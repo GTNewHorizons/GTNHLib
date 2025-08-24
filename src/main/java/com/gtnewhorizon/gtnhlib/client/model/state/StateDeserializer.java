@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import static com.gtnewhorizon.gtnhlib.client.model.state.Monopart.StateMatch;
+import static com.gtnewhorizon.gtnhlib.client.model.state.MonopartState.StateMatch;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
@@ -18,10 +18,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case;
-import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case.Condition;
-import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case.MultiCon;
-import com.gtnewhorizon.gtnhlib.client.model.state.Multipart.Case.StateCon;
+import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case;
+import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
+import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.MultiCon;
+import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.StateCon;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -36,11 +36,11 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
         final var root = json.getAsJsonObject();
 
         if (root.has("variants")) {
-            return new Monopart(loadVariants(root));
+            return new MonopartState(loadVariants(root));
         }
 
         if (root.has("multipart")) {
-            return new Multipart(loadMultipart(root));
+            return new MultipartState(loadMultipart(root));
         }
 
         throw new JsonParseException("No 'variants' or 'multipart' tag found in blockstate JSON!");
