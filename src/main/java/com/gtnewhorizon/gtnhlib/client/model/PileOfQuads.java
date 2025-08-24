@@ -11,6 +11,7 @@ import static net.minecraftforge.common.util.ForgeDirection.WEST;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -21,6 +22,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
+    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>());
 
     public PileOfQuads(Map<ForgeDirection, ArrayList<QuadView>> sidedQuadStore) {
         this(new SidedQuadStore(sidedQuadStore));
