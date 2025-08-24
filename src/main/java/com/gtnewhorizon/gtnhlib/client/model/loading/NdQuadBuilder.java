@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.impl;
+package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.DOWN;
 import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.EAST;

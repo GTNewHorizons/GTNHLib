@@ -7,7 +7,7 @@ import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.PileOfQuads;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.impl.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
