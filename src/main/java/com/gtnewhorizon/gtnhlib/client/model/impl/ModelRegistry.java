@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model.impl;
 
+import static com.gtnewhorizon.gtnhlib.client.model.json.MissingModel.MISSING_MODEL;
+
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
@@ -23,6 +25,7 @@ import com.gtnewhorizon.gtnhlib.block.ThreadsafeCache;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ModelRegistry {
@@ -42,6 +45,11 @@ public class ModelRegistry {
         s -> loadJson((ResourceLocation) s, StateModelMap.class, () -> Missing.MISSING_MAP),
         false);
 
+    private static final ThreadsafeCache<ResourceLocation, JSONModel> JSON_MODEL_CACHE = new ThreadsafeCache<>(
+        s -> loadJson((ResourceLocation) s, JSONModel.class, () -> MISSING_MODEL),
+        false
+    );
+
     private static final String[] DEFAULT_STATE_KEYS = new String[] { "meta" };
 
     private static BakedModel bakeModel(BlockState state) {
@@ -58,6 +66,12 @@ public class ModelRegistry {
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
         // will be cached, however.
         final var dough = smm.selectModel(properties);
+    }
+
+    /// Getter for {@link JSONModel}s from the cache.
+    @NotNull
+    public static JSONModel getJSONModel(ResourceLocation loc) {
+        return JSON_MODEL_CACHE.get(loc);
     }
 
     private static StateModelMap getStateModelMap(Block block) {
