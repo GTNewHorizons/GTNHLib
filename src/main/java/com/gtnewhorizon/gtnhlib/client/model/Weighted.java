@@ -6,7 +6,7 @@ import java.util.Random;
 
 @Desugar
 public record Weighted<T>(T thing, int weight) {
-    private static <T> T selectOne(ObjectList<Weighted<T>> heavyThings, Random rand) {
+    public static <T> T selectOne(ObjectList<Weighted<T>> heavyThings, Random rand) {
         var weight = 0;
         for (var v : heavyThings) {
             weight += v.weight();
