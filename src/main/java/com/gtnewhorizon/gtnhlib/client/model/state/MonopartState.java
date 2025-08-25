@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import org.jetbrains.annotations.Nullable;
 
 public class MonopartState implements StateModelMap {
