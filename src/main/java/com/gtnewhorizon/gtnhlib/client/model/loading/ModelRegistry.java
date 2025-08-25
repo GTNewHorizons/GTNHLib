@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import static com.gtnewhorizon.gtnhlib.client.model.json.MissingModel.MISSING_MODEL;
 
+import com.github.bsideup.jabel.Desugar;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -102,6 +103,7 @@ public class ModelRegistry {
         }
     }
 
+    @Desugar
     private record BlockName(String domain, String name) {
 
         private static BlockName fromBlock(Block block) {

@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import static java.lang.Math.toRadians;
 
+import com.github.bsideup.jabel.Desugar;
 import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -9,13 +10,14 @@ import org.joml.Matrix4f;
 
 /**
  * Largely mirrors Minecraft's format for specifying models, except we use radians instead of degrees.
- * 
+ *
  * @param model  The model file this variant refers to
  * @param x      X rotation, in radians
  * @param y      Y rotation, in radians
  * @param z      Z rotation, in radians
  * @param uvLock If true, textures aren't rotated with the block
  */
+@Desugar
 @Internal
 public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock) implements BakeData {
 
