@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.baked;
 
+import com.github.bsideup.jabel.Desugar;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -16,6 +17,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+@Desugar
 public record MonopartModel(ObjectArrayList<Weighted<BakedModel>> models) implements BakedModel {
 
     @Override

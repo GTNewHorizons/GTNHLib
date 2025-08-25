@@ -8,6 +8,7 @@ import static net.minecraftforge.common.util.ForgeDirection.UNKNOWN;
 import static net.minecraftforge.common.util.ForgeDirection.UP;
 import static net.minecraftforge.common.util.ForgeDirection.WEST;
 
+import com.github.bsideup.jabel.Desugar;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
+@Desugar
 public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
 
     public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>());
