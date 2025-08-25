@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.baked;
 
-import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -11,6 +9,8 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 

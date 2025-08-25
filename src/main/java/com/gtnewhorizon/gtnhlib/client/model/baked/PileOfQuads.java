@@ -8,21 +8,26 @@ import static net.minecraftforge.common.util.ForgeDirection.UNKNOWN;
 import static net.minecraftforge.common.util.ForgeDirection.UP;
 import static net.minecraftforge.common.util.ForgeDirection.WEST;
 
-import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
-import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
+
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
+
+import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
+
 public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
+
     public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>());
 
     public PileOfQuads(Map<ForgeDirection, ArrayList<QuadView>> sidedQuadStore) {
@@ -30,11 +35,13 @@ public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
     }
 
     @Override
-    public List<QuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool) {
+    public List<QuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
+            ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool) {
         return sidedQuadStore.getQuads(dir);
     }
 
     public static class SidedQuadStore {
+
         private static final ObjectImmutableList<QuadView> EMPTY = ObjectImmutableList.of();
 
         private final ObjectImmutableList<QuadView> up;

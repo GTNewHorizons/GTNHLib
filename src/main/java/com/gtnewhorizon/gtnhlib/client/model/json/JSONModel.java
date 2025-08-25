@@ -3,6 +3,21 @@ package com.gtnewhorizon.gtnhlib.client.model.json;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
@@ -11,20 +26,9 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import lombok.Getter;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class JSONModel implements UnbakedModel {
 
@@ -40,8 +44,8 @@ public class JSONModel implements UnbakedModel {
     private List<ModelElement> elements;
 
     public JSONModel(@Nullable ResourceLocation parentId, boolean useAO,
-                     Map<ModelDisplay.Position, ModelDisplay> display, Map<String, String> textures,
-                     List<ModelElement> elements) {
+            Map<ModelDisplay.Position, ModelDisplay> display, Map<String, String> textures,
+            List<ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
         this.display = display;
@@ -147,7 +151,7 @@ public class JSONModel implements UnbakedModel {
     }
 
     public List<ResourceLocation> getParents() {
-        //noinspection ArraysAsListWithZeroOrOneArgument
+        // noinspection ArraysAsListWithZeroOrOneArgument
         return Arrays.asList(parentId);
     }
 

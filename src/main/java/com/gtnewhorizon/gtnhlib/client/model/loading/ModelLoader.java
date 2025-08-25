@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,6 +16,7 @@ import com.google.common.annotations.Beta;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
 import com.gtnewhorizon.gtnhlib.util.Callback;
