@@ -1,5 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
+import java.util.Map;
+
+import org.jetbrains.annotations.ApiStatus;
+
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
@@ -8,10 +12,10 @@ import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import com.gtnewhorizon.gtnhlib.client.model.baked.MultipartModel;
 import com.gtnewhorizon.gtnhlib.client.model.intermodel.MonopartDough;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import java.util.Map;
-import org.jetbrains.annotations.ApiStatus;
 
 public class MultipartState implements StateModelMap, UnbakedModel {
 
@@ -28,7 +32,7 @@ public class MultipartState implements StateModelMap, UnbakedModel {
 
     @Override
     public BakedModel bake(BakeData data) {
-        final var bread = new Object2ObjectOpenHashMap<Case.Condition, BakedModel>(multipart.size());
+        final var bread = new Object2ObjectArrayMap<Condition, BakedModel>(multipart.size());
         for (var c : multipart) {
             bread.put(c.when, new MonopartDough(c.apply).bake());
         }
