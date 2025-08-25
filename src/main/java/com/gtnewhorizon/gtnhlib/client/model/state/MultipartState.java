@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
+import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import java.util.Map;
 
 import com.github.bsideup.jabel.Desugar;
@@ -21,7 +22,7 @@ public class MultipartState implements StateModelMap {
         return null;
     }
 
-    record Case(ObjectList<JSONVariant> apply, Condition when) {
+    record Case(ObjectList<Weighted<JSONVariant>> apply, Condition when) {
 
         interface Condition {
 
