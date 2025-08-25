@@ -6,7 +6,6 @@ import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
 
-import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import java.lang.reflect.Type;
 
 import net.minecraft.util.ResourceLocation;
@@ -20,6 +19,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
+import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.MultiCon;

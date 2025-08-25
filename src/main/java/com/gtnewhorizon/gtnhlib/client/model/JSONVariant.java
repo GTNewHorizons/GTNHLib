@@ -3,20 +3,21 @@ package com.gtnewhorizon.gtnhlib.client.model;
 import static java.lang.Math.toRadians;
 
 import net.minecraft.util.ResourceLocation;
+
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
 
 /**
  * Largely mirrors Minecraft's format for specifying models, except we use radians instead of degrees.
- * @param model The model file this variant refers to
- * @param x X rotation, in radians
- * @param y Y rotation, in radians
- * @param z Z rotation, in radians
+ * 
+ * @param model  The model file this variant refers to
+ * @param x      X rotation, in radians
+ * @param y      Y rotation, in radians
+ * @param z      Z rotation, in radians
  * @param uvLock If true, textures aren't rotated with the block
  */
 @Internal
-public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock)
-    implements BakeData {
+public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock) implements BakeData {
 
     public JSONVariant(ResourceLocation model, int x, int y, boolean uvLock) {
         this(model, x, y, 0, uvLock);
@@ -27,8 +28,9 @@ public record JSONVariant(ResourceLocation model, float x, float y, float z, boo
     }
 
     /// @param weight Used when selecting models. Irrelevant when only one variant is allowed, but must always be
-    ///               greater than zero.
-    public static Weighted<JSONVariant> weightedVariant(ResourceLocation model, int x, int y, int z, boolean uvLock, int weight) {
+    /// greater than zero.
+    public static Weighted<JSONVariant> weightedVariant(ResourceLocation model, int x, int y, int z, boolean uvLock,
+            int weight) {
         final var v = new JSONVariant(model, x, y, z, uvLock);
         return new Weighted<>(v, weight);
     }
