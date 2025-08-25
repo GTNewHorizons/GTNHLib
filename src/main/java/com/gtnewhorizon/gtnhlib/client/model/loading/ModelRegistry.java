@@ -25,6 +25,9 @@ import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import org.jetbrains.annotations.NotNull;
 
+/// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
+/// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
+/// beyond excessively complex models being loaded multiple times... add a counter if I'm wrong.
 public class ModelRegistry {
 
     private static final Gson GSON = new GsonBuilder()
