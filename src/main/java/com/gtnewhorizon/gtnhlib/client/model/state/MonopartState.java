@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
+import com.gtnewhorizon.gtnhlib.client.model.intermodel.MonopartDough;
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,7 +30,7 @@ public class MonopartState implements StateModelMap {
             final var e = iter.next();
             final var match = e.getKey();
 
-            if (match.matches(properties)) return null; // FIXME
+            if (match.matches(properties)) return new MonopartDough(e.getValue());
         }
 
         return null;
