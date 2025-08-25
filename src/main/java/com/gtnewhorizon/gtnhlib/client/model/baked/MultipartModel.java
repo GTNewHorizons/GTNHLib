@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.model.baked;
 
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
+import com.github.bsideup.jabel.Desugar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps.UnmodifiableMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+@Desugar
 public record MultipartModel(UnmodifiableMap<Condition, BakedModel> piles) implements BakedModel {
 
     public MultipartModel(Object2ObjectArrayMap<Condition, BakedModel> piles) {
