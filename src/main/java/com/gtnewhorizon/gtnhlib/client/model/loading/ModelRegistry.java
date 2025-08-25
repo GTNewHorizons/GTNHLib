@@ -71,6 +71,9 @@ public class ModelRegistry {
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
         // will be cached, however.
         final var dough = smm.selectModel(properties);
+        if (dough == null) return MISSING_MODEL.bake();
+
+        return dough.bake();
     }
 
     /// Getter for {@link JSONModel}s. We don't want to publicly expose the cache, modders can't be trusted with it :P
