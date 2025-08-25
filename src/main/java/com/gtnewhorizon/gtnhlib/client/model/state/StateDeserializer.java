@@ -1,10 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
+import static com.gtnewhorizon.gtnhlib.client.model.JSONVariant.weightedVariant;
 import static com.gtnewhorizon.gtnhlib.client.model.state.MonopartState.StateMatch;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
 
+import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import java.lang.reflect.Type;
 
 import net.minecraft.util.ResourceLocation;
@@ -46,11 +48,11 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
         throw new JsonParseException("No 'variants' or 'multipart' tag found in blockstate JSON!");
     }
 
-    private Object2ObjectMap<StateMatch, ObjectList<JSONVariant>> loadVariants(JsonObject root) {
+    private Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> loadVariants(JsonObject root) {
         final var variants = root.getAsJsonObject("variants");
 
         var entries = variants.entrySet();
-        var map = new Object2ObjectOpenHashMap<StateMatch, ObjectList<JSONVariant>>(entries.size());
+        var map = new Object2ObjectOpenHashMap<StateMatch, ObjectList<Weighted<JSONVariant>>>(entries.size());
 
         entries.forEach(v -> {
             var match = v.getKey();
@@ -79,8 +81,8 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
      * Loads a list of jsonVariants from the given element. If it's an array, the list may contain multiple - otherwise
      * the list wil contain one.
      */
-    private ObjectList<JSONVariant> loadVariants(JsonElement variants) {
-        final ObjectList<JSONVariant> loadedJSONVariants;
+    private ObjectList<Weighted<JSONVariant>> loadVariants(JsonElement variants) {
+        final ObjectList<Weighted<JSONVariant>> loadedJSONVariants;
         if (variants.isJsonArray()) {
             var models = variants.getAsJsonArray();
             loadedJSONVariants = new ObjectArrayList<>(models.size());
@@ -98,8 +100,8 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
         return loadedJSONVariants;
     }
 
-    private JSONVariant loadVariant(JsonObject variant) {
-        return new JSONVariant(
+    private Weighted<JSONVariant> loadVariant(JsonObject variant) {
+        return weightedVariant(
                 new ResourceLocation(loadStr(variant, "model")),
                 loadInt(variant, "x", 0),
                 loadInt(variant, "y", 0),
