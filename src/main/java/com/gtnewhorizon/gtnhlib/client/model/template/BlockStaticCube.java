@@ -8,17 +8,16 @@ import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
-import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
-import com.gtnewhorizon.gtnhlib.client.model.NdQuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader;
+import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
-public class BlockStaticCube implements QuadProvider {
+public class BlockStaticCube implements BakedModel {
 
     private final String textureName;
     protected final List<QuadView>[] store = new List[7];
@@ -42,7 +41,7 @@ public class BlockStaticCube implements QuadProvider {
     }
 
     @Override
-    public List<QuadView> getQuads(IBlockAccess world, IBlockPos pos, Block block, int meta, ForgeDirection dir,
+    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
             Random random, int color, Supplier<QuadView> quadPool) {
         return store[dir.ordinal()];
     }
