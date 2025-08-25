@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import com.gtnewhorizon.gtnhlib.client.model.intermodel.MonopartDough;
 import java.util.Map;
 import java.util.Objects;
 
@@ -9,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
+import com.gtnewhorizon.gtnhlib.client.model.intermodel.MonopartDough;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
