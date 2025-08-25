@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -10,6 +9,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 public interface BakedModel {
 
@@ -64,5 +65,5 @@ public interface BakedModel {
      * @return A list of quads from the model. These are *not* adjusted for the given xyz - that is up to the renderer.
      */
     List<QuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-                            ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool);
+            ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool);
 }

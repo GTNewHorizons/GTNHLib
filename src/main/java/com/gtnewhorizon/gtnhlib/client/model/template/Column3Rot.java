@@ -2,9 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.model.template;
 
 import net.minecraft.util.ResourceLocation;
 
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader;
-import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 
 /**
  * Use this to create a full cube column rotatable in 3 directions - vertical, x, and z
