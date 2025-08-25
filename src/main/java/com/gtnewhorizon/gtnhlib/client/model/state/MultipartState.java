@@ -1,15 +1,19 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import java.util.Map;
-
 import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.model.BakeData;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
-
+import com.gtnewhorizon.gtnhlib.client.model.baked.MultipartModel;
+import com.gtnewhorizon.gtnhlib.client.model.intermodel.MonopartDough;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import java.util.Map;
+import org.jetbrains.annotations.ApiStatus;
 
-public class MultipartState implements StateModelMap {
+public class MultipartState implements StateModelMap, UnbakedModel {
 
     private final ObjectList<Case> multipart;
 
@@ -19,12 +23,23 @@ public class MultipartState implements StateModelMap {
 
     @Override
     public UnbakedModel selectModel(Map<String, String> properties) {
-        return null;
+        return this;
     }
 
-    record Case(ObjectList<Weighted<JSONVariant>> apply, Condition when) {
+    @Override
+    public BakedModel bake(BakeData data) {
+        final var bread = new Object2ObjectOpenHashMap<Case.Condition, BakedModel>(multipart.size());
+        for (var c : multipart) {
+            bread.put(c.when, new MonopartDough(c.apply).bake());
+        }
 
-        interface Condition {
+        return new MultipartModel(bread);
+    }
+
+    @ApiStatus.Internal
+    public record Case(ObjectList<Weighted<JSONVariant>> apply, Condition when) {
+
+        public interface Condition {
 
             Condition TRUE = (Map<String, String> state) -> true;
 
