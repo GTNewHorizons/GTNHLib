@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.baked;
 
-import com.github.bsideup.jabel.Desugar;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -11,6 +10,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;

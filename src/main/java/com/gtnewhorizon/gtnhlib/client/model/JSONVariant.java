@@ -2,11 +2,12 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import static java.lang.Math.toRadians;
 
-import com.github.bsideup.jabel.Desugar;
 import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
+
+import com.github.bsideup.jabel.Desugar;
 
 /**
  * Largely mirrors Minecraft's format for specifying models, except we use radians instead of degrees.
