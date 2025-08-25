@@ -40,6 +40,7 @@ public class MultipartState implements StateModelMap, UnbakedModel {
         return new MultipartModel(bread);
     }
 
+    @Desugar
     @ApiStatus.Internal
     public record Case(ObjectList<Weighted<JSONVariant>> apply, Condition when) {
 

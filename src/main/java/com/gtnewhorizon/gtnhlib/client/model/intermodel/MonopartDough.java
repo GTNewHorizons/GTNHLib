@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.intermodel;
 
+import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
@@ -11,6 +12,7 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
+@Desugar
 public record MonopartDough(ObjectList<Weighted<JSONVariant>> variants) implements UnbakedModel {
 
     @Override
