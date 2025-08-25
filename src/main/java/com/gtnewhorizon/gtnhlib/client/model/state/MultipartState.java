@@ -1,11 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import java.util.Map;
 
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 
 import it.unimi.dsi.fastutil.objects.ObjectList;
 

@@ -7,6 +7,7 @@ import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import com.gtnewhorizon.gtnhlib.client.model.baked.MonopartModel;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 

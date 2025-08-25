@@ -1,12 +1,14 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+
+import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 
 public interface QuadBuilder {
 
