@@ -2,7 +2,6 @@ package com.gtnewhorizon.gtnhlib.client.model.baked;
 
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
-import com.github.bsideup.jabel.Desugar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +14,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
