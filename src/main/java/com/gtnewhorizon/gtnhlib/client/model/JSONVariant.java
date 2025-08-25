@@ -13,23 +13,24 @@ import org.joml.Matrix4f;
  * @param y Y rotation, in radians
  * @param z Z rotation, in radians
  * @param uvLock If true, textures aren't rotated with the block
- * @param weight Used when selecting models. Irrelevant when only one variant is allowed, but must always be greater
- *               than zero.
  */
 @Internal
-public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock, int weight)
+public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock)
     implements BakeData {
 
     public JSONVariant(ResourceLocation model, int x, int y, boolean uvLock) {
-        this(model, x, y, 0, uvLock, 1);
+        this(model, x, y, 0, uvLock);
     }
 
     public JSONVariant(ResourceLocation model, int x, int y, int z, boolean uvLock) {
-        this(model, x, y, z, uvLock, 1);
+        this(model, (float) toRadians(x), (float) toRadians(y), (float) toRadians(z), uvLock);
     }
 
-    public JSONVariant(ResourceLocation model, int x, int y, int z, boolean uvLock, int weight) {
-        this(model, (float) toRadians(x), (float) toRadians(y), (float) toRadians(z), uvLock, weight);
+    /// @param weight Used when selecting models. Irrelevant when only one variant is allowed, but must always be
+    ///               greater than zero.
+    public static Weighted<JSONVariant> weightedVariant(ResourceLocation model, int x, int y, int z, boolean uvLock, int weight) {
+        final var v = new JSONVariant(model, x, y, z, uvLock);
+        return new Weighted<>(v, weight);
     }
 
     @Override
@@ -43,10 +44,4 @@ public record JSONVariant(ResourceLocation model, float x, float y, float z, boo
     public boolean lockUV() {
         return uvLock;
     }
-
-    /**
-     * Convenience wrapper to combine a weight with a model. Does not uniquely identify a model, unlike JSONVariant
-     * itself.
-     */
-    public record Weighted(JSONVariant v, int weight) {}
 }
