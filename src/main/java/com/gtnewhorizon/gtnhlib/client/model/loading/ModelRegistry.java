@@ -75,7 +75,12 @@ public class ModelRegistry {
         return dough.bake();
     }
 
-    /// Getter for {@link JSONModel}s. We don't want to publicly expose the cache, modders can't be trusted with it :P
+    /// Getter for {@link BakedModel}s. We don't want to publicly expose the cache, modders can't be trusted with it :P
+    public static BakedModel getBakedModel(BlockState state) {
+        return BLOCKSTATE_MODEL_CACHE.get(state);
+    }
+
+    /// Getter for {@link JSONModel}s. See {@link ModelRegistry#getBakedModel(BlockState)}
     public static JSONModel getJSONModel(ResourceLocation loc) {
         return JSON_MODEL_CACHE.get(loc);
     }
