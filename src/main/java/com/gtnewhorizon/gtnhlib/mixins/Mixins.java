@@ -20,7 +20,8 @@ public enum Mixins implements IMixins {
     GAME_RULES_API(Side.COMMON, "MixinGameRules"),
     DEBUG_TEXTURES(new MixinBuilder("Dump textures sizes")
             .addClientMixins("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite").setPhase(Phase.EARLY)
-            .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false"))));
+            .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))),
+    BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp");
 
     private final MixinBuilder builder;
 
