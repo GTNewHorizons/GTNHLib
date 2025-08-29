@@ -178,9 +178,9 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
         final JsonObject in = json.getAsJsonObject();
 
-        final String parent = JsonUtil.loadStr(in, "parent", "");
+        final String parent = JsonUtil.loadStr(in, "parent", null);
         ResourceLoc.ModelLoc parentId = null;
-        if (!parent.isEmpty()) {
+        if (parent != null && !parent.isEmpty()) {
             if (parent.contains(":")) {
                 parentId = new ResourceLoc.ModelLoc(parent.split(":")[0], parent.split(":")[1]);
             } else {
