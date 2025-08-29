@@ -1,16 +1,15 @@
 package com.gtnewhorizon.gtnhlib.block;
 
-import java.util.concurrent.locks.StampedLock;
-
 import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
+import java.util.concurrent.locks.StampedLock;
 
 /**
  * Borrowed from ModernFix, because 7.10 can't embed models in blocks easily
  */
 public class ThreadsafeCache<K, V> {
 
-    private final Reference2ReferenceLinkedOpenHashMap<K, V> cache = new Reference2ReferenceLinkedOpenHashMap<>();
+    private final Object2ReferenceLinkedOpenHashMap<K, V> cache = new Object2ReferenceLinkedOpenHashMap<>();
     private final StampedLock lock = new StampedLock();
     private final Function<K, V> modelRetriever;
     private final boolean allowNulls;
