@@ -1,16 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import static com.gtnewhorizon.gtnhlib.client.model.JSONVariant.weightedVariant;
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc.ModelLoc.fromStr;
 import static com.gtnewhorizon.gtnhlib.client.model.state.MonopartState.StateMatch;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadStr;
-
-import java.lang.reflect.Type;
-
-import net.minecraft.util.ResourceLocation;
-
-import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -24,11 +19,12 @@ import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.MultiCon;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.StateCon;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import java.lang.reflect.Type;
+import org.jetbrains.annotations.NotNull;
 
 public class StateDeserializer implements JsonDeserializer<StateModelMap> {
 
@@ -102,7 +98,7 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
 
     private Weighted<JSONVariant> loadVariant(JsonObject variant) {
         return weightedVariant(
-                new ResourceLocation(loadStr(variant, "model")),
+                fromStr(loadStr(variant, "model")),
                 loadInt(variant, "x", 0),
                 loadInt(variant, "y", 0),
                 0,

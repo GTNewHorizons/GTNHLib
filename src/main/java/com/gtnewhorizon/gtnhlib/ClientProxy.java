@@ -1,9 +1,6 @@
 package com.gtnewhorizon.gtnhlib;
 
-import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader.shouldLoadModels;
-
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelLoader;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
@@ -16,8 +13,6 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -61,11 +56,6 @@ public class ClientProxy extends CommonProxy {
         }
         if (Mods.NEI) {
             FMLCommonHandler.instance().bus().register(new NotEnoughItemsVersionChecker());
-        }
-
-        if (shouldLoadModels()) {
-            Minecraft.getMinecraft().refreshResources();
-            ModelLoader.loadModels();
         }
 
         LoreHandler.postInit();
@@ -130,13 +120,5 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void printMessageAboveHotbar(String message, int displayDuration, boolean drawShadow, boolean shouldFade) {
         AboveHotbarHUD.renderTextAboveHotbar(message, displayDuration, drawShadow, shouldFade);
-    }
-
-    @SubscribeEvent
-    public static void onTick(TickEvent.ClientTickEvent event) {
-        if (!modelsBaked) {
-            ModelLoader.bakeModels();
-            modelsBaked = true;
-        }
     }
 }
