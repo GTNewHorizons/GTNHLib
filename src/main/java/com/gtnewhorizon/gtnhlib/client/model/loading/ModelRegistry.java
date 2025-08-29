@@ -103,7 +103,7 @@ public class ModelRegistry {
             return GSON.fromJson(new InputStreamReader(is), clazz);
         } catch (IOException e) {
 
-            GTNHLib.LOG.error("Could not find {} {}", path.getResourceDomain(), path.getResourcePath());
+            GTNHLib.LOG.error("Could not find {}:{}", path.getResourceDomain(), path.getResourcePath());
             return defaultSrc.get();
         }
     }
