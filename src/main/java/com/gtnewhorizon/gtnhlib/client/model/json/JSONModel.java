@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.function.Function;
 import lombok.Getter;
 import net.minecraftforge.common.util.ForgeDirection;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -35,11 +36,12 @@ public class JSONModel implements UnbakedModel {
     private final boolean useAO;
     @Getter
     private final Map<ModelDisplay.Position, ModelDisplay> display;
+    @NotNull
     private final Map<String, String> textures;
     private List<ModelElement> elements;
 
     public JSONModel(@Nullable ResourceLoc.ModelLoc parentId, boolean useAO,
-                     Map<ModelDisplay.Position, ModelDisplay> display, Map<String, String> textures,
+                     Map<ModelDisplay.Position, ModelDisplay> display, @NotNull Map<String, String> textures,
                      List<ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
