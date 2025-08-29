@@ -116,7 +116,7 @@ public class ModelRegistry {
 
             final int sepIdx = blockName.indexOf(":");
             final var domain = blockName.substring(0, sepIdx);
-            final var name = blockName.substring(sepIdx);
+            final var name = blockName.substring(sepIdx + 1);
 
             return new BlockName(domain, name);
         }
