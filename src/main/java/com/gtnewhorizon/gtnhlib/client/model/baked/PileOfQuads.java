@@ -76,8 +76,8 @@ public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
             };
         }
 
-        private ObjectImmutableList<QuadView> lockList(List<QuadView> list) {
-            if (list.isEmpty()) return EMPTY;
+        private ObjectImmutableList<QuadView> lockList(@Nullable List<QuadView> list) {
+            if (list == null || list.isEmpty()) return EMPTY;
             return new ObjectImmutableList<>(list);
         }
     }
