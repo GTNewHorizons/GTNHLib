@@ -2,21 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import static com.gtnewhorizon.gtnhlib.client.model.json.MissingModel.MISSING_MODEL;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.function.Supplier;
-
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
-
-import org.jetbrains.annotations.NotNull;
-
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.block.ThreadsafeCache;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
@@ -25,16 +13,15 @@ import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import net.minecraft.block.Block;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
 /// beyond excessively complex models being loaded multiple times... add a counter if I'm wrong.
 public class ModelRegistry {
-
-    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
-            .registerTypeAdapter(JSONModel.class, new ModelDeserializer()).create();
+    private static Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
+        .registerTypeAdapter(JSONModel.class, new ModelDeserializer()).create();
 
     /// The first cache. Ideally, every request hits this and gets a baked model.
     private static final ThreadsafeCache<BlockState, BakedModel> BLOCKSTATE_MODEL_CACHE = new ThreadsafeCache<>(
@@ -42,8 +29,8 @@ public class ModelRegistry {
             false);
 
     /// If the first cache misses, we hit this to get the state map, so we can figure out which model to bake.
-    private static final ThreadsafeCache<ResourceLocation, StateModelMap> STATE_MODEL_MAP_CACHE = new ThreadsafeCache<>(
-            s -> loadJson((ResourceLocation) s, StateModelMap.class, () -> MissingState.MISSING_STATE_MAP),
+    private static final ThreadsafeCache<ResourceLoc.StateLoc, StateModelMap> STATE_MODEL_MAP_CACHE = new ThreadsafeCache<>(
+            s -> ((ResourceLoc.StateLoc) s).load(() -> MissingState.MISSING_STATE_MAP, GSON),
             false);
 
     /// {@link JSONModel}s may be shared across several {@link BakedModel}s, so we cache them too. The cache ensures all
@@ -51,8 +38,8 @@ public class ModelRegistry {
     ///
     /// Note: the retriever was broken out into a function, because you can't read a field from within its own
     /// definition.
-    private static final ThreadsafeCache<ResourceLocation, JSONModel> JSON_MODEL_CACHE = new ThreadsafeCache<>(
-            s -> loadAndResolveJSONModel((ResourceLocation) s),
+    private static final ThreadsafeCache<ResourceLoc.ModelLoc, JSONModel> JSON_MODEL_CACHE = new ThreadsafeCache<>(
+            s -> loadAndResolveJSONModel((ResourceLoc.ModelLoc) s),
             false);
 
     private static final String[] DEFAULT_STATE_KEYS = new String[] { "meta" };
@@ -81,31 +68,20 @@ public class ModelRegistry {
     }
 
     /// Getter for {@link JSONModel}s. See {@link ModelRegistry#getBakedModel(BlockState)}
-    public static JSONModel getJSONModel(ResourceLocation loc) {
+    public static JSONModel getJSONModel(ResourceLoc.ModelLoc loc) {
         return JSON_MODEL_CACHE.get(loc);
     }
 
     private static StateModelMap getStateModelMap(Block block) {
         final var name = BlockName.fromBlock(block);
-        final var stateLocation = new ResourceLocation(name.domain, "blockstates/" + name.name);
+        final var stateLocation = new ResourceLoc.StateLoc(name.domain, name.name);
         return STATE_MODEL_MAP_CACHE.get(stateLocation);
     }
 
-    private static JSONModel loadAndResolveJSONModel(ResourceLocation loc) {
-        final var m = loadJson(loc, JSONModel.class, () -> MISSING_MODEL);
+    private static JSONModel loadAndResolveJSONModel(ResourceLoc.ModelLoc loc) {
+        final var m = loc.load(() -> MISSING_MODEL, GSON);
         m.resolveParents(JSON_MODEL_CACHE::get);
         return m;
-    }
-
-    private static <T> T loadJson(ResourceLocation path, Class<T> clazz, Supplier<@NotNull T> defaultSrc) {
-        try {
-            final InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(path).getInputStream();
-            return GSON.fromJson(new InputStreamReader(is), clazz);
-        } catch (IOException e) {
-
-            GTNHLib.LOG.error("Could not find {}:{}", path.getResourceDomain(), path.getResourcePath());
-            return defaultSrc.get();
-        }
     }
 
     @Desugar
