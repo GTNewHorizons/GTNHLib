@@ -2,12 +2,10 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import static java.lang.Math.toRadians;
 
-import net.minecraft.util.ResourceLocation;
-
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
-
-import com.github.bsideup.jabel.Desugar;
 
 /**
  * Largely mirrors Minecraft's format for specifying models, except we use radians instead of degrees.
@@ -20,20 +18,20 @@ import com.github.bsideup.jabel.Desugar;
  */
 @Desugar
 @Internal
-public record JSONVariant(ResourceLocation model, float x, float y, float z, boolean uvLock) implements BakeData {
+public record JSONVariant(ResourceLoc.ModelLoc model, float x, float y, float z, boolean uvLock) implements BakeData {
 
-    public JSONVariant(ResourceLocation model, int x, int y, boolean uvLock) {
+    public JSONVariant(ResourceLoc.ModelLoc model, int x, int y, boolean uvLock) {
         this(model, x, y, 0, uvLock);
     }
 
-    public JSONVariant(ResourceLocation model, int x, int y, int z, boolean uvLock) {
+    public JSONVariant(ResourceLoc.ModelLoc model, int x, int y, int z, boolean uvLock) {
         this(model, (float) toRadians(x), (float) toRadians(y), (float) toRadians(z), uvLock);
     }
 
     /// @param weight Used when selecting models. Irrelevant when only one variant is allowed, but must always be
     /// greater than zero.
-    public static Weighted<JSONVariant> weightedVariant(ResourceLocation model, int x, int y, int z, boolean uvLock,
-            int weight) {
+    public static Weighted<JSONVariant> weightedVariant(ResourceLoc.ModelLoc model, int x, int y, int z, boolean uvLock,
+                                                        int weight) {
         final var v = new JSONVariant(model, x, y, z, uvLock);
         return new Weighted<>(v, weight);
     }

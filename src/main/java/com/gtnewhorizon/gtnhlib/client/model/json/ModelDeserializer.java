@@ -1,27 +1,23 @@
 package com.gtnewhorizon.gtnhlib.client.model.json;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
 import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import net.minecraftforge.common.util.ForgeDirection;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
@@ -183,12 +179,12 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         final JsonObject in = json.getAsJsonObject();
 
         final String parent = JsonUtil.loadStr(in, "parent", "");
-        ResourceLocation parentId = null;
+        ResourceLoc.ModelLoc parentId = null;
         if (!parent.isEmpty()) {
             if (parent.contains(":")) {
-                parentId = new ModelLocation(parent.split(":")[0], parent.split(":")[1]);
+                parentId = new ResourceLoc.ModelLoc(parent.split(":")[0], parent.split(":")[1]);
             } else {
-                parentId = new ModelLocation(parent);
+                parentId = new ResourceLoc.ModelLoc("minecraft", parent);
             }
         }
 
