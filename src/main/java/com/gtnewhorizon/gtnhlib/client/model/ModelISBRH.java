@@ -28,6 +28,12 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     private ModelISBRH() {}
 
+    /// Override this if you want programmatic model selection
+    @SuppressWarnings("unused")
+    protected BakedModel getModel(IBlockAccess world, Block block, int meta, int x, int y, int z) {
+        return ModelRegistry.getBakedModel(new BlockState(block, meta));
+    }
+
     @Override
     public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
 
@@ -41,7 +47,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
-        final var model = ModelRegistry.getBakedModel(new BlockState(block, meta));
+        final var model = getModel(world, block, meta, x, y, z);
 
         int color = model.getColor(world, x, y, z, block, meta, random);
 
