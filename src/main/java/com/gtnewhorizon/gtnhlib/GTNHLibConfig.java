@@ -9,4 +9,9 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(false)
     public static boolean ignoreNEIVersion;
 
+    @Config.Comment("If you're not a dev, you don't need this")
+    @Config.DefaultBoolean(false)
+    @Config.RequiresMcRestart
+    public static boolean enableTestBlocks;
+
 }
