@@ -34,7 +34,7 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
 
     /**
      * Marks the backing inventory dirty. Only called the first time a stack is set.
-     * 
+     *
      * @see IInventory#markDirty()
      */
     protected void markDirty() {
@@ -125,11 +125,11 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         return slots[last];
     }
 
-    private static boolean isStackValid(ItemStack stack) {
+    static boolean isStackValid(ItemStack stack) {
         return stack != null && stack.getItem() != null && stack.stackSize > 0;
     }
 
-    private static boolean areStacksEqual(ItemStack a, ItemStack b) {
+    static boolean areStacksEqual(ItemStack a, ItemStack b) {
         if (a == null || b == null) return false;
 
         if (a.getItem() != b.getItem()) return false;
@@ -139,7 +139,7 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         return true;
     }
 
-    private static ItemStack copyAmount(int amount, ItemStack stack) {
+    static ItemStack copyAmount(int amount, ItemStack stack) {
         if (stack == null || stack.getItem() == null) return null;
 
         stack = stack.copy();
