@@ -8,7 +8,8 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
 
 /**
- * Something that can provide items.  Should only be retrieved via {@link CapabilityProvider#getCapability(Class, ForgeDirection)}.
+ * Something that can provide items. Should only be retrieved via
+ * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}.
  */
 public interface IItemSource {
 
@@ -16,7 +17,8 @@ public interface IItemSource {
      * Creates a new iterator for the items in this source. The backing inventory may be modified while this iterator
      * exists, but no guarantees are made that the list will be updated to reflect them.
      */
-    @NotNull InventorySourceIterator iterator();
+    @NotNull
+    InventorySourceIterator iterator();
 
     /**
      * Sets the slots that this source can pull from. If any given slot (or all of them) are invalid, they may be

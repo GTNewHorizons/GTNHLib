@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.capability.item;
 import java.util.OptionalInt;
 
 import net.minecraft.item.ItemStack;
-
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
@@ -11,7 +10,8 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
 
 /**
- * Something that can accept items. Should only be retrieved via {@link CapabilityProvider#getCapability(Class, ForgeDirection)}.
+ * Something that can accept items. Should only be retrieved via
+ * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}.
  */
 public interface IItemSink {
 
@@ -38,6 +38,7 @@ public interface IItemSink {
     /**
      * Returns the stored amount of items in the sink. If this sink does not support this operation,
      * {@link OptionalInt#empty()} must be returned. Otherwise, a >=0 integer must be returned.
+     * 
      * @param stack The stack, or null for all items.
      * @return The count for the given stack, or empty if this operation is invalid.
      */

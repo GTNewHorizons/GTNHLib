@@ -5,9 +5,9 @@ import java.util.ListIterator;
 import net.minecraft.item.ItemStack;
 
 /**
- * It is assumed that this object is never stored in a field. It must not last for more than one discrete operation.
- * The backing data source (inventory, ME system, etc) can be modified, but no guarantees are made that the returned
- * data is complete or up to date beyond the guarantees laid out below.
+ * It is assumed that this object is never stored in a field. It must not last for more than one discrete operation. The
+ * backing data source (inventory, ME system, etc) can be modified, but no guarantees are made that the returned data is
+ * complete or up to date beyond the guarantees laid out below.
  */
 public interface InventorySourceIterator extends ListIterator<ImmutableItemStack> {
 
@@ -23,7 +23,8 @@ public interface InventorySourceIterator extends ListIterator<ImmutableItemStack
 
     @Override
     default void remove() {
-        throw new UnsupportedOperationException("Cannot remove items from an InventorySourceIterator via remove(); use extract()");
+        throw new UnsupportedOperationException(
+                "Cannot remove items from an InventorySourceIterator via remove(); use extract()");
     }
 
     /**

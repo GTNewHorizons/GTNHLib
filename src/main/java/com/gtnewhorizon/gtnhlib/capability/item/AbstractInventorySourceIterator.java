@@ -34,6 +34,7 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
 
     /**
      * Marks the backing inventory dirty. Only called the first time a stack is set.
+     * 
      * @see IInventory#markDirty()
      */
     protected void markDirty() {
@@ -103,7 +104,10 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         ItemStack inSlot = getStackInSlot(slots[last]);
 
         if (isStackValid(inSlot) && !areStacksEqual(inSlot, stack)) {
-            throw new IllegalArgumentException("Cannot insert stack that does not match the existing stack. Attempted to inject: " + stack + ", already had: " + inSlot);
+            throw new IllegalArgumentException(
+                    "Cannot insert stack that does not match the existing stack. Attempted to inject: " + stack
+                            + ", already had: "
+                            + inSlot);
         }
 
         ItemStack out;
