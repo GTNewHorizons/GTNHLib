@@ -40,6 +40,10 @@ public class Lazy<T> implements Supplier<T> {
         return value;
     }
 
+    public synchronized boolean hasValue() {
+        return hasValue;
+    }
+
     /**
      * Initializes the value. {@link #get()}, but with a more readable method name.
      */

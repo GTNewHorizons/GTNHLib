@@ -40,18 +40,28 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
     }
 
     @Override
-    public IBlockPos offset(ForgeDirection d) {
+    public BlockPos offset(ForgeDirection d) {
         return new BlockPos(this.x + d.offsetX, this.y + d.offsetY, this.z + d.offsetZ);
     }
 
     @Override
-    public IBlockPos down() {
+    public BlockPos offset(int x, int y, int z) {
+        return new BlockPos(this.x + x, this.y + y, this.z + z);
+    }
+
+    @Override
+    public BlockPos down() {
         return offset(ForgeDirection.DOWN);
     }
 
     @Override
-    public IBlockPos up() {
+    public BlockPos up() {
         return offset(ForgeDirection.UP);
+    }
+
+    @Override
+    public BlockPos copy() {
+        return new BlockPos(this.x, this.y, this.z);
     }
 
     @Override
@@ -69,6 +79,11 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
     public BlockPos set(long packedPos) {
         CoordinatePacker.unpack(packedPos, this);
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + z + ")";
     }
 
     /**
