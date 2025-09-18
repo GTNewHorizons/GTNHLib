@@ -54,6 +54,9 @@ public class ShaderProgram implements AutoCloseable {
 
         GL20.glLinkProgram(program);
 
+        if (vertShader != 0) GL20.glDeleteShader(vertShader);
+        if (fragShader != 0) GL20.glDeleteShader(fragShader);
+
         if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
             GTNHLib.LOG.error("Could not link shader: {}", getProgramLogInfo(program));
             GL20.glDeleteProgram(program);
@@ -159,13 +162,6 @@ public class ShaderProgram implements AutoCloseable {
     }
 
     public void close() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer shaders = stack.mallocInt(GL20.glGetProgrami(program, GL20.GL_ATTACHED_SHADERS));
-            GL20.glGetAttachedShaders(program, null, shaders);
-            GL20.glDeleteProgram(program);
-            for (int i : shaders.array()) {
-                GL20.glDeleteShader(i);
-            }
-        }
+        GL20.glDeleteProgram(program);
     }
 }
