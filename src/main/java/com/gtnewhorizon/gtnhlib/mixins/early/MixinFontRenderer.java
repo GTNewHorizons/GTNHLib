@@ -25,4 +25,9 @@ public abstract class MixinFontRenderer implements IFontParameters {
     private void sizeStringToWidth(String str, int wrapWidth, CallbackInfoReturnable<Integer> cir) {
         cir.setReturnValue(FontRendering.sizeStringToWidth(str, wrapWidth, (FontRenderer) (Object) this));
     }
+
+    @Inject(method = "trimStringToWidth(Ljava/lang/String;IZ)Ljava/lang/String;", at = @At("HEAD"), cancellable = true)
+    public void trimStringToWidth(String str, int trimWidth, boolean reverse, CallbackInfoReturnable<String> cir) {
+        cir.setReturnValue(FontRendering.trimStringToWidth(str, trimWidth, reverse, (FontRenderer) (Object) this));
+    }
 }

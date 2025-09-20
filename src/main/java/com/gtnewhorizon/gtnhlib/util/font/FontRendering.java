@@ -28,9 +28,9 @@ public class FontRendering {
     /**
      * A getStringWidth implementation that respects formatting rules and works with custom fonts through Angelica.
      */
-    public static int getStringWidth(String text, FontRenderer fr) {
+    public static int getStringWidth(String str, FontRenderer fr) {
 
-        if (text == null || text.isEmpty()) { return 0; }
+        if (str == null || str.isEmpty()) { return 0; }
 
         IFontParameters fontParams = (IFontParameters) fr;
 
@@ -38,13 +38,13 @@ public class FontRendering {
         boolean curBold = false;
         boolean spacingOmittedOnce = false;
 
-        for (int i = 0; i < text.length(); ++i) {
-            char ch = text.charAt(i);
+        for (int i = 0; i < str.length(); ++i) {
+            char ch = str.charAt(i);
             float charWidth = fontParams.getCharWidthFine(ch);
 
-            if (charWidth < 0 && (i + 1) < text.length()) {
+            if (charWidth < 0 && (i + 1) < str.length()) {
                 i++;
-                char fmtChar = text.charAt(i);
+                char fmtChar = str.charAt(i);
                 curBold = determineIfBold(curBold, fmtChar);
                 charWidth = 0;
             }
@@ -73,7 +73,7 @@ public class FontRendering {
      */
     public static int sizeStringToWidth(String str, int wrapWidth, FontRenderer fr) {
         int originalStringLength = str.length();
-        float curWidth = 0;
+        float width = 0;
         int i = 0;
         int lastBreakSpot = -1;
         boolean curBold = false;
@@ -100,21 +100,21 @@ public class FontRendering {
                 case ' ':
                     lastBreakSpot = i;
                 default:
-                    curWidth += fontParams.getCharWidthFine(currentChar);
+                    width += fontParams.getCharWidthFine(currentChar);
 
                     // Add glyph spacing (n-1) times for n characters
                     if (spacingOmittedOnce) {
-                        curWidth += fontParams.getGlyphSpacing();
+                        width += fontParams.getGlyphSpacing();
                     } else {
                         spacingOmittedOnce = true;
                     }
 
                     if (curBold) {
-                        curWidth += fontParams.getShadowOffset();
+                        width += fontParams.getShadowOffset();
                     }
             }
 
-            if (Math.ceil(curWidth) > wrapWidth) {
+            if (Math.ceil(width) > wrapWidth) {
                 break;
             }
             i++;
@@ -124,5 +124,60 @@ public class FontRendering {
             return lastBreakSpot;
         }
         return i;
+    }
+
+    /**
+     * Trims a string to a specified width, optionally reversing it.
+     */
+    public static String trimStringToWidth(String str, int trimWidth, boolean reverse, FontRenderer fr) {
+        StringBuilder stringbuilder = new StringBuilder();
+        float width = 0;
+        int startOrEnd = reverse ? str.length() - 1 : 0;
+        int increment = reverse ? -1 : 1;
+        boolean curBold = false;
+        boolean spacingOmittedOnce = false;
+        boolean parsingFormatCode = false;
+
+        IFontParameters fontParams = (IFontParameters) fr;
+
+        for (int i = startOrEnd; i >= 0 && i < str.length() && width < trimWidth; i += increment) {
+            char ch = str.charAt(i);
+            float charWidth = fontParams.getCharWidthFine(ch);
+
+            if (parsingFormatCode) {
+                parsingFormatCode = false;
+                curBold = determineIfBold(curBold, ch);
+            }
+            else if (charWidth < 0) {
+                parsingFormatCode = true;
+            }
+            else {
+                width += charWidth;
+
+                // Add glyph spacing (n-1) times for n characters
+                if (spacingOmittedOnce) {
+                    width += fontParams.getGlyphSpacing();
+                } else {
+                    spacingOmittedOnce = true;
+                }
+
+                if (curBold) {
+                    width += fontParams.getShadowOffset();
+                }
+            }
+
+            if (Math.ceil(width) > trimWidth) {
+                break;
+            }
+
+            if (reverse) {
+                stringbuilder.insert(0, ch);
+            }
+            else {
+                stringbuilder.append(ch);
+            }
+        }
+
+        return stringbuilder.toString();
     }
 }
