@@ -127,7 +127,8 @@ public class FontRendering {
     }
 
     /**
-     * Trims a string to a specified width, optionally reversing it.
+     * Removes characters from the string to trim its rendered length down to trimWidth,
+     * starting from either the end (reverse = 0) or the beginning (reverse = 1).
      */
     public static String trimStringToWidth(String str, int trimWidth, boolean reverse, FontRenderer fr) {
         StringBuilder stringbuilder = new StringBuilder();
