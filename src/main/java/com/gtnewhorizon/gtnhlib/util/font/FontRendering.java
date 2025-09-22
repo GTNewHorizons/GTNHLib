@@ -30,7 +30,9 @@ public class FontRendering {
      */
     public static int getStringWidth(String str, FontRenderer fr) {
 
-        if (str == null || str.isEmpty()) { return 0; }
+        if (str == null || str.isEmpty()) {
+            return 0;
+        }
 
         IFontParameters fontParams = (IFontParameters) fr;
 
@@ -72,6 +74,7 @@ public class FontRendering {
      * Determines how many characters from the string will fit into the specified width.
      */
     public static int sizeStringToWidth(String str, int wrapWidth, FontRenderer fr) {
+
         int originalStringLength = str.length();
         float width = 0;
         int i = 0;
@@ -127,10 +130,11 @@ public class FontRendering {
     }
 
     /**
-     * Removes characters from the string to trim its rendered length down to trimWidth,
-     * starting from either the end (reverse = 0) or the beginning (reverse = 1).
+     * Removes characters from the string to trim its rendered length down to trimWidth, starting either from the end
+     * (reverse = 0) or the beginning (reverse = 1).
      */
     public static String trimStringToWidth(String str, int trimWidth, boolean reverse, FontRenderer fr) {
+
         StringBuilder stringbuilder = new StringBuilder();
         float width = 0;
         int startOrEnd = reverse ? str.length() - 1 : 0;
@@ -148,11 +152,9 @@ public class FontRendering {
             if (parsingFormatCode) {
                 parsingFormatCode = false;
                 curBold = determineIfBold(curBold, ch);
-            }
-            else if (charWidth < 0) {
+            } else if (charWidth < 0) {
                 parsingFormatCode = true;
-            }
-            else {
+            } else {
                 width += charWidth;
 
                 // Add glyph spacing (n-1) times for n characters
@@ -173,8 +175,7 @@ public class FontRendering {
 
             if (reverse) {
                 stringbuilder.insert(0, ch);
-            }
-            else {
+            } else {
                 stringbuilder.append(ch);
             }
         }
