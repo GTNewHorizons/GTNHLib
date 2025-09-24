@@ -9,8 +9,4 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(false)
     public static boolean ignoreNEIVersion;
 
-    @Config.Comment("Enable a mixin that changes some vanilla methods to work better with formatting and custom fonts")
-    @Config.DefaultBoolean(true)
-    @Config.RequiresMcRestart
-    public static boolean enableFontRendererMixin;
 }

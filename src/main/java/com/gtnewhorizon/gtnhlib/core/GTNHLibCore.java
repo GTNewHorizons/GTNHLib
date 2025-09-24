@@ -11,11 +11,8 @@ import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.Tags;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHolderDiscoverer;
-import com.gtnewhorizon.gtnhlib.config.ConfigException;
-import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
@@ -45,11 +42,6 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
         md.modId = md.name = "GTNHLib Core";
         md.parent = "gtnhlib";
         md.version = Tags.VERSION;
-        try {
-            ConfigurationManager.registerConfig(GTNHLibConfig.class);
-        } catch (ConfigException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
