@@ -96,8 +96,6 @@ public class TimedCache<K, V> {
         Entry<K, V> entry = values.get(key);
 
         if (entry == null) {
-            doCleanup(now);
-
             if (clone != null) {
                 key = clone.apply(key);
             }
@@ -109,6 +107,8 @@ public class TimedCache<K, V> {
         } else {
             entry.lastAccess = now;
         }
+
+        doCleanup(now);
 
         return entry.value;
     }
