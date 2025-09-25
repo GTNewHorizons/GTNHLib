@@ -2,29 +2,34 @@ package com.gtnewhorizon.gtnhlib.capability.item;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
-import appeng.api.util.DimensionalCoord;
+import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 
 public class DroppingItemSink implements IItemSink {
 
-    private final DimensionalCoord dropLocation;
+    private final World world;
+    private final BlockPos pos;
 
-    public DroppingItemSink(DimensionalCoord dropLocation) {
-        this.dropLocation = dropLocation;
+    public DroppingItemSink(World world, BlockPos pos) {
+        this.world = world;
+        this.pos = pos;
     }
 
     @Override
     public ItemStack store(ItemStack stack) {
         EntityItem entity = new EntityItem(
-                dropLocation.getWorld(),
-                dropLocation.x + 0.5,
-                dropLocation.y + 0.5,
-                dropLocation.z + 0.5,
+                world,
+                pos.x + 0.5,
+                pos.y + 0.5,
+                pos.z + 0.5,
                 stack);
+
         entity.motionX = 0;
         entity.motionY = 0;
         entity.motionZ = 0;
-        dropLocation.getWorld().spawnEntityInWorld(entity);
+
+        world.spawnEntityInWorld(entity);
 
         return null;
     }
