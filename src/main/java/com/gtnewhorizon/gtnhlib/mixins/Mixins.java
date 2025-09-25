@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.mixins;
 
+import com.gtnewhorizon.gtnhlib.util.EarlyConfig;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
@@ -20,7 +21,9 @@ public enum Mixins implements IMixins {
     GAME_RULES_API(Side.COMMON, "MixinGameRules"),
     DEBUG_TEXTURES(new MixinBuilder("Dump textures sizes")
             .addClientMixins("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite").setPhase(Phase.EARLY)
-            .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false"))));
+            .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))),
+    FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
+            .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin));
 
     private final MixinBuilder builder;
 
