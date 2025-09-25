@@ -21,26 +21,26 @@ public interface ImmutableItemMeta {
      * @return The item stored in this pair.
      */
     @Nonnull
-    public Item item();
+    Item item();
 
     /**
      * The value of this must not change while this object is exposed via an API.
      *
      * @return The item's metadata stored in this pair. May be {@link OreDictionary#WILDCARD_VALUE}.
      */
-    public int getItemMeta();
+    int getItemMeta();
 
     /**
      * Gets the corresponding block for this item. Subclasses may provide a faster implementation.
      */
-    public default Block getBlock() {
+    default Block getBlock() {
         return Block.getBlockFromItem(item());
     }
 
     /**
      * Checks if this pair matches the given ItemStack's item and metadata.
      */
-    public default boolean matches(ItemStack stack) {
+    default boolean matches(ItemStack stack) {
         if (stack == null) return false;
 
         return matches(stack.getItem(), Items.feather.getDamage(stack));
@@ -54,13 +54,13 @@ public interface ImmutableItemMeta {
      *             then meta checks are ignored.
      * @return Whether this pair matches or not.
      */
-    public default boolean matches(Item item, int meta) {
+    default boolean matches(Item item, int meta) {
         return item() == item && (meta == OreDictionary.WILDCARD_VALUE || getItemMeta() == OreDictionary.WILDCARD_VALUE
                 || getItemMeta() == meta);
     }
 
     /** Converts this pair to an ItemStack. */
-    public default ItemStack toStack(int amount) {
+    default ItemStack toStack(int amount) {
         int meta = getItemMeta();
 
         return new ItemStack(item(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
