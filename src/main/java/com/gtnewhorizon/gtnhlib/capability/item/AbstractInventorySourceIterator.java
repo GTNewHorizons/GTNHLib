@@ -41,6 +41,14 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
 
     }
 
+    protected boolean canExtract(ItemStack stack, int slot) {
+        return true;
+    }
+
+    protected boolean canInsert(ItemStack stack, int slot) {
+        return true;
+    }
+
     @Override
     public boolean hasNext() {
         return i < slots.length;
@@ -51,7 +59,7 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         last = i++;
 
         pooled.stack = getStackInSlot(slots[last]);
-        return pooled.stack == null ? null : pooled;
+        return pooled.stack == null || !canExtract(pooled.stack, slots[last]) ? null : pooled;
     }
 
     @Override
@@ -64,17 +72,17 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         last = --i;
 
         pooled.stack = getStackInSlot(slots[last]);
-        return pooled.stack == null ? null : pooled;
+        return pooled.stack == null || canExtract(pooled.stack, slots[last]) ? null : pooled;
     }
 
     @Override
     public int nextIndex() {
-        return i + 1;
+        return slots[last + 1];
     }
 
     @Override
     public int previousIndex() {
-        return i - 1;
+        return slots[last - 1];
     }
 
     @Override
@@ -82,6 +90,7 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         ItemStack inSlot = getStackInSlot(slots[last]);
 
         if (!isStackValid(inSlot)) return null;
+        if (!canExtract(inSlot, slots[last])) return null;
 
         int toExtract = Math.min(inSlot.stackSize, amount);
 

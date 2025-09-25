@@ -27,7 +27,7 @@ public interface ImmutableItemStack extends ImmutableItemMeta {
     default ItemStack toStack(int amount) {
         int meta = getItemMeta();
 
-        ItemStack stack = new ItemStack(getItem(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
+        ItemStack stack = new ItemStack(item(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
 
         stack.setTagCompound(getTag() == null ? null : (NBTTagCompound) getTag().copy());
 

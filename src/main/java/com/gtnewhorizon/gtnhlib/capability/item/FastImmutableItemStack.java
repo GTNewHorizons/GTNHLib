@@ -20,7 +20,7 @@ public class FastImmutableItemStack implements ImmutableItemStack {
     }
 
     @Override
-    public @NotNull Item getItem() {
+    public @NotNull Item item() {
         // noinspection DataFlowIssue
         return stack.getItem();
     }

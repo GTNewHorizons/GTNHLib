@@ -37,8 +37,8 @@ public interface InventorySourceIterator extends ListIterator<ImmutableItemStack
 
     /**
      * Returns the rejected items from a previously extracted stack. The item must be identical in every way, except the
-     * stack size may be less than or equal to what was originally returned. Attempting to insert other stacks must
-     * cause the operation to be ignored silently.
+     * stack size may be less than or equal to what was originally returned. Attempting to insert other stacks should do
+     * nothing or throw an exception.
      */
     void insert(ItemStack stack);
 }

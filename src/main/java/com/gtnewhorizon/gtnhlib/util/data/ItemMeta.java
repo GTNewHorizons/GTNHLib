@@ -28,7 +28,7 @@ public class ItemMeta implements ImmutableItemMeta {
 
     @Override
     @Nonnull
-    public Item getItem() {
+    public Item item() {
         return item;
     }
 
