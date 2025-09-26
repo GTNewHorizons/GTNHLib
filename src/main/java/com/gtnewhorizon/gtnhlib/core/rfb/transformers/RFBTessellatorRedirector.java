@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.rfb;
+package com.gtnewhorizon.gtnhlib.core.rfb.transformers;
 
 import java.util.jar.Manifest;
 
@@ -6,15 +6,20 @@ import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorRedirectorTransformer;
+import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
+import com.gtnewhorizon.gtnhlib.core.shared.transformers.TessellatorRedirector;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
 
-/** RFB wrapper for {@link TessellatorRedirectorTransformer} */
-public class TessellatorRedirectorTransformerWrapper implements RfbClassTransformer {
+/** RfbClassTransformer wrapper for {@link TessellatorRedirector} */
+public class RFBTessellatorRedirector implements RfbClassTransformer {
 
-    public final TessellatorRedirectorTransformer inner = new TessellatorRedirectorTransformer();
+    private final TessellatorRedirector inner;
+
+    public RFBTessellatorRedirector(boolean isObf) {
+        inner = new TessellatorRedirector(isObf);
+    }
 
     @Pattern("[a-z0-9-]+")
     @Override
@@ -34,7 +39,7 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
 
     @Override
     public @NotNull String @Nullable [] additionalExclusions() {
-        return TessellatorRedirectorTransformer.getTransformerExclusions().toArray(new String[0]);
+        return inner.getTransformerExclusions();
     }
 
     @Override
@@ -48,7 +53,7 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
             // If a class is already a transformed ClassNode, conservatively continue processing.
             return true;
         }
-        return inner.shouldRfbTransform(classNode.getOriginalBytes());
+        return inner.shouldTransform(classNode.getOriginalBytes());
     }
 
     @Override
@@ -57,6 +62,7 @@ public class TessellatorRedirectorTransformerWrapper implements RfbClassTransfor
         final boolean changed = inner.transformClassNode(className, classNode.getNode());
         if (changed) {
             classNode.computeMaxs();
+            GTNHLibClassDump.dumpRFBClass(className, classNode, this);
         }
     }
 }

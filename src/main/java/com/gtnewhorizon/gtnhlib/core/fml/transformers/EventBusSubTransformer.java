@@ -1,9 +1,12 @@
-package com.gtnewhorizon.gtnhlib.core.transformer;
+package com.gtnewhorizon.gtnhlib.core.fml.transformers;
 
 import static com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil.DEBUG_EVENT_BUS;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
@@ -17,6 +20,7 @@ import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
 import com.gtnewhorizon.gtnhlib.eventbus.MethodInfo;
@@ -26,9 +30,6 @@ import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -60,7 +61,7 @@ public class EventBusSubTransformer implements IClassTransformer {
         boolean changed = false;
         // Processing all of this from the ASMDataTable is way too slow
         for (MethodNode mn : cn.methods) {
-            Object2ObjectMap<String, AnnotationNode> usableAnnotations = getUsableAnnotations(mn.visibleAnnotations);
+            Map<String, AnnotationNode> usableAnnotations = getUsableAnnotations(mn.visibleAnnotations);
             if (usableAnnotations.isEmpty()) continue;
 
             if (!matchesSide(usableAnnotations.get(SIDEONLY_DESC))) {
@@ -133,15 +134,17 @@ public class EventBusSubTransformer implements IClassTransformer {
         if (changed) {
             final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             cn.accept(cw);
-            return cw.toByteArray();
+            final byte[] transformedBytes = cw.toByteArray();
+            GTNHLibClassDump.dumpClass(transformedName, basicClass, transformedBytes, this);
+            return transformedBytes;
         }
 
         return basicClass;
     }
 
-    private static Object2ObjectMap<String, AnnotationNode> getUsableAnnotations(List<AnnotationNode> annotations) {
-        if (annotations == null) return Object2ObjectMaps.emptyMap();
-        Object2ObjectMap<String, AnnotationNode> usable = new Object2ObjectOpenHashMap<>();
+    private static Map<String, AnnotationNode> getUsableAnnotations(List<AnnotationNode> annotations) {
+        if (annotations == null) return Collections.emptyMap();
+        Map<String, AnnotationNode> usable = new HashMap<>();
         for (AnnotationNode ann : annotations) {
             if (ANNOTATIONS.contains(ann.desc)) {
                 usable.put(ann.desc, ann);
@@ -151,7 +154,7 @@ public class EventBusSubTransformer implements IClassTransformer {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private boolean matchesSide(AnnotationNode side) {
+    private static boolean matchesSide(AnnotationNode side) {
         if (side == null) return true;
         for (int x = 0; x < side.values.size() - 1; x += 2) {
             Object key = side.values.get(x);
