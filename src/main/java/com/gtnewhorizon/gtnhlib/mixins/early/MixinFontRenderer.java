@@ -35,7 +35,7 @@ public abstract class MixinFontRenderer implements IFontParameters {
      * @reason (as above)
      */
     @Overwrite
-    protected int sizeStringToWidth(String str, int wrapWidth) {
+    public int sizeStringToWidth(String str, int wrapWidth) {
         return FontRendering.sizeStringToWidth(str, wrapWidth, (FontRenderer) (Object) this);
     }
 
