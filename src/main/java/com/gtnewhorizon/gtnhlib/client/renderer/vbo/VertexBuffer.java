@@ -48,7 +48,7 @@ public class VertexBuffer implements AutoCloseable {
     }
 
     /**
-     * GL_DYNAMIC_DRAW is more efficient for buffers that have their values constantly updated.
+     * GL_DYNAMIC_DRAW is more efficient for buffers that have their values constantly updated and read multiple times.
      */
     public void uploadDynamic(ByteBuffer buffer, int vertexCount) {
         upload(buffer, vertexCount, GL15.GL_DYNAMIC_DRAW);
@@ -59,7 +59,8 @@ public class VertexBuffer implements AutoCloseable {
     }
 
     /**
-     * GL_STREAM_DRAW is more efficient for buffers that have their values constantly updated and read a few times
+     * GL_STREAM_DRAW is more efficient for buffers that have their values constantly updated and read at most a few
+     * times (example: uploading a set of vertices that only get used a few times at most)
      */
     public void uploadStream(ByteBuffer buffer, int vertexCount) {
         upload(buffer, vertexCount, GL15.GL_STREAM_DRAW);
