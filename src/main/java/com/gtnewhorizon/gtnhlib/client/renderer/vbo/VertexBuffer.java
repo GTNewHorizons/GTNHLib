@@ -10,10 +10,10 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public class VertexBuffer implements AutoCloseable {
 
-    private int id;
-    private int vertexCount;
-    private final VertexFormat format;
-    private final int drawMode;
+    protected int id;
+    protected int vertexCount;
+    protected final VertexFormat format;
+    protected final int drawMode;
 
     public VertexBuffer(VertexFormat format, int drawMode) {
         if (format == null) throw new IllegalStateException("No format specified for VBO");
@@ -58,6 +58,17 @@ public class VertexBuffer implements AutoCloseable {
         upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_DYNAMIC_DRAW);
     }
 
+    /**
+     * GL_STREAM_DRAW is more efficient for buffers that have their values constantly updated and read a few times
+     */
+    public void uploadStream(ByteBuffer buffer, int vertexCount) {
+        upload(buffer, vertexCount, GL15.GL_STREAM_DRAW);
+    }
+
+    public void uploadStream(ByteBuffer buffer) {
+        upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_STREAM_DRAW);
+    }
+
     public void close() {
         if (this.id >= 0) {
             GL15.glDeleteBuffers(this.id);
@@ -99,5 +110,9 @@ public class VertexBuffer implements AutoCloseable {
 
     public int getDrawMode() {
         return drawMode;
+    }
+
+    public int getVertexCount() {
+        return vertexCount;
     }
 }

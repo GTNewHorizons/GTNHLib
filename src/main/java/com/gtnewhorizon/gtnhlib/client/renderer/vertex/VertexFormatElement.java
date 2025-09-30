@@ -51,11 +51,11 @@ public class VertexFormatElement {
             GL13.glClientActiveTexture(GL13.GL_TEXTURE0 + index);
             GL11.glTexCoordPointer(size, type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-            if (index != 0) GL13.glClientActiveTexture(GL13.GL_TEXTURE0);
+            GL13.glClientActiveTexture(GL13.GL_TEXTURE0);
         }, index -> {
             GL13.glClientActiveTexture(GL13.GL_TEXTURE0 + index);
             GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-            if (index != 0) GL13.glClientActiveTexture(GL13.GL_TEXTURE0);
+            GL13.glClientActiveTexture(GL13.GL_TEXTURE0);
         }),
         PADDING("Padding", (size, type, stride, pointer, index) -> {}, index -> {}),
         GENERIC("Generic", (size, type, stride, pointer, index) -> {
