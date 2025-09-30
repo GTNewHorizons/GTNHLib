@@ -23,7 +23,9 @@ public class ASMUtil {
     private static File outputDir = null;
 
     private static void emptyClassOutputFolder() {
-        outputDir = new File(Launch.minecraftHome, "ASM_GTNH");
+        outputDir = new File(
+                Launch.minecraftHome,
+                "ASM_GTNH" + File.separatorChar + stripClassName(ASMUtil.class.getClassLoader().getClass().getName()));
         try {
             FileUtils.deleteDirectory(outputDir);
         } catch (IOException ignored) {}
@@ -79,7 +81,7 @@ public class ASMUtil {
         }
     }
 
-    private static String stripClassName(String classname) {
+    public static String stripClassName(String classname) {
         final String[] split = classname.split("\\.");
         return split[split.length - 1];
     }
@@ -147,6 +149,8 @@ public class ASMUtil {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
+        // Replace $->. because otherwise the files are invisible in IntelliJ
+        fileName = fileName.replace('$', '.');
         final File classFile = new File(outputDir, fileName + ".class");
         final File outDir = classFile.getParentFile();
         if (!outDir.exists()) {
@@ -201,6 +205,8 @@ public class ASMUtil {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
+        // Replace $->. because otherwise the files are invisible in IntelliJ
+        fileName = fileName.replace('$', '.');
         final File bytecodeFile = new File(outputDir, fileName + "_BYTECODE.txt");
         final File outDir = bytecodeFile.getParentFile();
         if (!outDir.exists()) {
@@ -256,6 +262,8 @@ public class ASMUtil {
         if (outputDir == null) {
             emptyClassOutputFolder();
         }
+        // Replace $->. because otherwise the files are invisible in IntelliJ
+        fileName = fileName.replace('$', '.');
         final File asmifiedFile = new File(outputDir, fileName + "_ASM.txt");
         final File outDir = asmifiedFile.getParentFile();
         if (!outDir.exists()) {
