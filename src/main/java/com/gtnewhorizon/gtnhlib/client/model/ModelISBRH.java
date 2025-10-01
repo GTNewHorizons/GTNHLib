@@ -1,5 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackY;
+import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackZ;
+
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
@@ -76,7 +80,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 final int lz = z + dir.offsetZ;
                 final int lm = block.getMixedBrightnessForBlock(world, lx, ly, lz);
                 tesselator.setBrightness(lm);
-                tesselator.setColorOpaque(r, g, b);
+
+                final float shade = diffuseLight(quad.getNormal(0));
+                tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
                 renderQuad(quad, x, y, z, tesselator, null);
             }
         }
@@ -103,5 +109,12 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     @Override
     public int getRenderId() {
         return JSON_ISBRH_ID;
+    }
+
+    public static float diffuseLight(int normal) {
+        final var nx = unpackX(normal);
+        final var ny = unpackY(normal);
+        final var nz = unpackZ(normal);
+        return Math.min(nx * nx * 0.6F + ny * ny * ((3.0F + ny) / 4.0F) + nz * nz * 0.8F, 1.0F);
     }
 }
