@@ -1,12 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.DOWN;
-import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.EAST;
-import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.NORTH;
-import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.SOUTH;
-import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.UP;
-import static com.gtnewhorizon.gtnhlib.client.model.json.FaceRewindHelper.WEST;
-
 import java.util.Arrays;
 
 import net.minecraft.client.Minecraft;
@@ -16,7 +9,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
@@ -34,7 +26,6 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
     private ForgeDirection lightFace = ForgeDirection.UP;
     private int geometryFlags = 0;
     private boolean isGeometryInvalid = true;
-    private int tag = 0;
     final Vector3f faceNormal = new Vector3f();
     public final Material mat = new Material();
     @Setter
@@ -52,28 +43,6 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
         return out;
     }
 
-    /**
-     * See {@link #build(QuadView)}. This rotates the output by the given matrix.
-     */
-    public QuadView build(QuadView out, Matrix4f rotMat) {
-
-        this.pos(0, this.pos(0).mulPosition(rotMat));
-        this.pos(1, this.pos(1).mulPosition(rotMat));
-        this.pos(2, this.pos(2).mulPosition(rotMat));
-
-        if (this.drawMode == GL11.GL_QUADS) this.pos(3, this.pos(3).mulPosition(rotMat));
-        else this.quadrangulate();
-
-        this.computeGeometry();
-
-        // Reset the cull face
-        this.setCullFace();
-
-        out.copyFrom(this);
-        this.clear();
-        return out;
-    }
-
     private void clear() {
 
         Arrays.fill(this.data, 0);
@@ -81,7 +50,6 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
         this.lightFace = ForgeDirection.UP;
         this.geometryFlags = 0;
         this.isGeometryInvalid = true;
-        this.tag(0);
         this.setColorIndex(-1);
         this.mat.reset();
         this.drawMode = GL11.GL_QUADS;
@@ -149,74 +117,8 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
     }
 
     @Override
-    public void pos(int vertexIndex, Vector3f vec) {
-
-        this.setX(vertexIndex, vec.x);
-        this.setY(vertexIndex, vec.y);
-        this.setZ(vertexIndex, vec.z);
-        isGeometryInvalid = true;
-    }
-
-    @Override
-    public Vector3f pos(int vertexIndex) {
-
-        return new Vector3f(this.getX(vertexIndex), this.getY(vertexIndex), this.getZ(vertexIndex));
-    }
-
-    @Override
     public float posByIndex(int vertexIndex, int coordinateIndex) {
         return Float.intBitsToFloat(this.data[vertexIndex * Quad.VERTEX_STRIDE + Quad.X_INDEX + coordinateIndex]);
-    }
-
-    final int MIN_X = 0;
-    final int MIN_Y = 1;
-    final int MIN_Z = 2;
-    final int MAX_X = 3;
-    final int MAX_Y = 4;
-    final int MAX_Z = 5;
-
-    /**
-     * Rewinds the quad to the standard order. Works as long as four vertex positions have been assigned, and will not
-     * rewind any non-position data. Recommended to do immediately after vertex assignment, and to set/reset UVs,
-     * colors, etc. afterwards.
-     *
-     * PS: this should only be used on quads parallel to the block grid.
-     *
-     * TODO: this doesn't actually work
-     */
-    public void rewind(float x, float y, float z, float X, float Y, float Z) {
-        boolean[] targets = switch (getLightFace()) {
-            case DOWN -> DOWN;
-            case UP -> UP;
-            case NORTH -> NORTH;
-            case SOUTH -> SOUTH;
-            case WEST -> WEST;
-            case EAST -> EAST;
-            case UNKNOWN -> throw new RuntimeException("Expected non-UNKNOWN face!");
-        };
-
-        final float ox = getX(0);
-        final float oy = getY(0);
-        final float oz = getZ(0);
-
-        // Reset the vertices, given the bounds
-        int iFirst = 0;
-        for (int i = 0; i < 4; ++i) {
-            final float px = targets[i * 3] ? X : x;
-            final float py = targets[i * 3 + 1] ? Y : y;
-            final float pz = targets[i * 3 + 2] ? Z : z;
-            pos(i, px, py, pz);
-
-            // Save the original first vertex
-            if (px == ox && py == oy && pz == oz) iFirst = i;
-        }
-
-        // Shift the UVs - copy to a temp array, then copy back in the right order, wrapping appropriately
-        float[] uvs = { getTexU(0), getTexV(0), getTexU(1), getTexV(1), getTexU(2), getTexV(2), getTexU(3),
-                getTexV(3) };
-        for (int i = 0; i < 4; ++i) {
-            uv((i + iFirst) % 4, uvs[i * 2], uvs[i * 2 + 1]);
-        }
     }
 
     @Override
@@ -278,15 +180,6 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
                 pos(3, 1 - right, top, depth);
                 break;
         }
-    }
-
-    public int tag() {
-        return this.tag;
-    }
-
-    @Override
-    public void tag(int tag) {
-        this.tag = tag;
     }
 
     @Override
