@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "gtnhlib:test"
+    "all": "minecraft:beacon"
   }
 }
