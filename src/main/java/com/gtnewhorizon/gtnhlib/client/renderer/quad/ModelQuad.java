@@ -85,11 +85,6 @@ public class ModelQuad implements ModelQuadViewMutable {
     public void setCullFace(ForgeDirection f) {}
 
     @Override
-    public int getLight(int idx) {
-        return this.data[vertexOffset(idx) + LIGHT_INDEX];
-    }
-
-    @Override
     public int getNormal(int idx) {
         return this.data[vertexOffset(idx) + NORMAL_INDEX];
     }
