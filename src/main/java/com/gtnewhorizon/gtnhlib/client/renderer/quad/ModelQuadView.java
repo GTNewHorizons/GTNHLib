@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad;
 
-import java.nio.ByteBuffer;
-
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -48,11 +46,6 @@ public interface ModelQuadView {
     int getFlags();
 
     /**
-     * @return The lightmap texture coordinates for the vertex at index {@param idx}
-     */
-    int getLight(int idx);
-
-    /**
      * @return The integer-encoded normal vector for the vertex at index {@param idx}
      */
     int getNormal(int idx);
@@ -74,26 +67,6 @@ public interface ModelQuadView {
      * {@link ForgeDirection#UNKNOWN} or null.
      */
     ForgeDirection getLightFace();
-
-    /**
-     * Copies this quad's data into the specified buffer starting at the given position.
-     * 
-     * @param buf      The buffer to write this quad's data to
-     * @param position The starting byte index to write to
-     */
-    default void copyInto(ByteBuffer buf, int position) {
-        for (int i = 0; i < 4; i++) {
-            buf.putFloat(position, this.getX(i));
-            buf.putFloat(position + 4, this.getY(i));
-            buf.putFloat(position + 8, this.getZ(i));
-            buf.putInt(position + 12, this.getColor(i));
-            buf.putFloat(position + 16, this.getTexU(i));
-            buf.putFloat(position + 20, this.getTexV(i));
-            buf.putInt(position + 24, this.getLight(i));
-
-            position += 28;
-        }
-    }
 
     /**
      * @return The sprite texture used by this quad, or null if none is attached

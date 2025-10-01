@@ -5,7 +5,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
@@ -83,11 +82,6 @@ public interface QuadBuilder {
     QuadView build(QuadView out);
 
     /**
-     * See {@link #build(QuadView)}. This also rotates the output by the given matrix.
-     */
-    QuadView build(QuadView out, Matrix4f rotMat);
-
-    /**
      * Tries to automatically set the culling and nominal face from the quad's geometry.
      */
     void setCullFace();
@@ -123,16 +117,6 @@ public interface QuadBuilder {
     void pos(int vertexIndex, float x, float y, float z);
 
     /**
-     * Convenience: set pos with a vector. See {@link #pos(int, float, float, float)}.
-     */
-    void pos(int vertexIndex, Vector3f vec);
-
-    /**
-     * Gets the vertex position as a vector. This allocates a new vector, do not use in dynamic rendering!
-     */
-    Vector3f pos(int vertexIndex);
-
-    /**
      * Convenience: access x, y, z by index 0-2.
      */
     float posByIndex(int vertexIndex, int coordinateIndex);
@@ -165,14 +149,6 @@ public interface QuadBuilder {
      * The directions for the faces assume you're looking at them. For top and bottom, they assume you're looking north.
      */
     void square(ForgeDirection nominalFace, float left, float bottom, float right, float top, float depth);
-
-    int tag();
-
-    /**
-     * Encodes an integer tag with this quad that can later be retrieved via {@link #tag()}. Useful for models that want
-     * to perform conditional transformation or filtering on static meshes.
-     */
-    void tag(int tag);
 
     /**
      * Set texture coordinates.
