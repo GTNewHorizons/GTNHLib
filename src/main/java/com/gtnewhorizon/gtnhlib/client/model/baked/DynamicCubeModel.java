@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model;
+package com.gtnewhorizon.gtnhlib.client.model.baked;
 
 import java.util.List;
 import java.util.Random;
@@ -9,15 +9,15 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadProvider;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
-public class DynamicCubeModel implements QuadProvider {
+public class DynamicCubeModel implements BakedModel {
 
     /*
      * By the power of ~~theft~~ inspiration, this class is wayyy simpler. It's also a basic example of dynamic model
@@ -40,7 +40,7 @@ public class DynamicCubeModel implements QuadProvider {
     }
 
     @Override
-    public List<QuadView> getQuads(IBlockAccess world, IBlockPos pos, Block block, int meta, ForgeDirection dir,
+    public List<QuadView> getQuads(IBlockAccess world, int x, int y, int z, Block block, int meta, ForgeDirection dir,
             Random random, int color, Supplier<QuadView> quadPool) {
 
         if (dir == ForgeDirection.UNKNOWN) return EMPTY;

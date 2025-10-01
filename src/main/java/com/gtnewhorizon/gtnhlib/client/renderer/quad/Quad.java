@@ -91,11 +91,6 @@ public class Quad implements QuadView {
     }
 
     @Override
-    public int getLight(int idx) {
-        return this.data[idx * VERTEX_STRIDE + LIGHTMAP_INDEX];
-    }
-
-    @Override
     public int getNormal(int idx) {
         return this.data[idx * VERTEX_STRIDE + NORMAL_INDEX];
     }
@@ -250,7 +245,6 @@ public class Quad implements QuadView {
         this.setTexU(3, this.getTexU(2));
         this.setTexV(3, this.getTexV(2));
 
-        this.setLight(3, this.getLight(2));
         this.setColor(3, this.getColor(2));
         this.setNormal(3, this.getNormal(2));
     }
@@ -332,13 +326,6 @@ public class Quad implements QuadView {
         public boolean hasBrightness;
         public boolean hasColor;
         public boolean hasNormals;
-
-        public Flags(byte flags) {
-            hasTexture = (flags & 1) != 0;
-            hasBrightness = (flags & 2) != 0;
-            hasColor = (flags & 4) != 0;
-            hasNormals = (flags & 8) != 0;
-        }
 
         public Flags(boolean hasTexture, boolean hasBrightness, boolean hasColor, boolean hasNormals) {
             this.hasTexture = hasTexture;
