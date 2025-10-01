@@ -51,11 +51,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
         int color = model.getColor(world, x, y, z, block, meta, random);
 
-        tesselator.setBrightness(
-            world instanceof World worldIn
-                ? worldIn.getBlockLightValue_do(x, y, z, block.getUseNeighborBrightness())
-                : block.getMixedBrightnessForBlock(world, x, y, z));
-
         var rendered = false;
         for (ForgeDirection dir : DirectionUtil.ALL_DIRECTIONS) {
             // TODO: face culling
@@ -76,7 +71,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 final int b = color >> 16 & 255;
 
                 // TODO: look into 21.5+ model-based AO and the NeoForge light pipeline
-
+                final int lx = x + dir.offsetX;
+                final int ly = y + dir.offsetY;
+                final int lz = z + dir.offsetZ;
+                final int lm = block.getMixedBrightnessForBlock(world, lx, ly, lz);
+                tesselator.setBrightness(lm);
                 tesselator.setColorOpaque(r, g, b);
                 renderQuad(quad, x, y, z, tesselator, null);
             }
