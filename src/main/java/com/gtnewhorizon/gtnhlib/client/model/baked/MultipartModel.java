@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.model.baked;
 
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +33,9 @@ public record MultipartModel(UnmodifiableMap<Condition, BakedModel> piles) imple
     }
 
     @Override
-    public List<QuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-            ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool) {
-        final var quads = new ObjectArrayList<QuadView>();
+    public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
+                                        ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool) {
+        final var quads = new ObjectArrayList<ModelQuadView>();
         Object2ObjectMaps.fastForEach(piles, e -> {
             if (e.getKey().matches(stateMap(meta)))
                 quads.addAll(e.getValue().getQuads(world, x, y, z, block, meta, dir, random, color, quadPool));

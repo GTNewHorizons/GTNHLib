@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.sorting;
 
+import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexEncoder;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import java.util.BitSet;
@@ -44,6 +45,7 @@ public class TranslucentQuadAnalyzer {
         }
     }
 
+    @Desugar
     public record SortState(Level level, float[] centers, int centersLength, BitSet normalSigns, Vector3f sharedNormal) {
         public static final SortState NONE = new SortState(Level.NONE, null, 0, null, null);
 
