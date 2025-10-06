@@ -7,9 +7,12 @@ import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
 
+import com.github.bsideup.jabel.Desugar;
+
 /**
  * An enumeration over the supported data types that can be used for vertex attributes.
  */
+@Desugar
 public record GlVertexAttributeFormat(int typeId, int size) {
     public static final GlVertexAttributeFormat FLOAT = new GlVertexAttributeFormat(GL_FLOAT, 4);
     public static final GlVertexAttributeFormat SHORT = new GlVertexAttributeFormat(GL_SHORT, 2);

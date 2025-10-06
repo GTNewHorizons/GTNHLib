@@ -6,6 +6,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackZ;
 
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -64,7 +65,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
             // iterates over the quads and dumps em into the tesselator, nothing special
             rendered = true;
-            for (final QuadView quad : quads) {
+            for (final ModelQuadView quad : quads) {
 
                 if (quad.getColorIndex() != -1 && color == -1) {
                     color = block.colorMultiplier(world, x, y, z);
@@ -74,14 +75,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 final int g = color >> 8 & 255;
                 final int b = color >> 16 & 255;
 
-                // TODO: look into 21.5+ model-based AO and the NeoForge light pipeline
                 final int lx = x + dir.offsetX;
                 final int ly = y + dir.offsetY;
                 final int lz = z + dir.offsetZ;
                 final int lm = block.getMixedBrightnessForBlock(world, lx, ly, lz);
                 tesselator.setBrightness(lm);
 
-                final float shade = diffuseLight(quad.getNormal(0));
+                final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
                 renderQuad(quad, x, y, z, tesselator, null);
             }
@@ -90,7 +90,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         return rendered;
     }
 
-    protected void renderQuad(QuadView quad, float x, float y, float z, Tessellator tessellator, @Nullable IIcon overrideIcon) {
+    protected void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator, @Nullable IIcon overrideIcon) {
         for (int i = 0; i < 4; ++i) {
             tessellator.addVertexWithUV(
                 quad.getX(i) + x,

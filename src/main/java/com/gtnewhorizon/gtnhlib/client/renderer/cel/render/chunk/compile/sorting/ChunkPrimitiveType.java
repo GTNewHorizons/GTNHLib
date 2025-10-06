@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.compile.sorting;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.sorting.TranslucentQuadAnalyzer;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,6 @@ public interface ChunkPrimitiveType {
     void generateSortedIndexBuffer(ByteBuffer indexBuffer, int numPrimitives, @Nullable TranslucentQuadAnalyzer.SortState chunkData, float x, float y, float z);
 
     default List<String> getDefines() {
-        return List.of();
+        return ObjectArrayList.of();
     }
 }
