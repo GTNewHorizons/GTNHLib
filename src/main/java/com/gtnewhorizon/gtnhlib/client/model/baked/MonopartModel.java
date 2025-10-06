@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.baked;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -21,8 +22,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public record MonopartModel(ObjectArrayList<Weighted<BakedModel>> models) implements BakedModel {
 
     @Override
-    public List<QuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-            ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool) {
+    public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
+                                        ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool) {
         return Weighted.selectOne(models, random).getQuads(world, x, y, z, block, meta, dir, random, color, quadPool);
     }
 }

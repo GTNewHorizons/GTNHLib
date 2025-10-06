@@ -2,16 +2,18 @@ package com.gtnewhorizon.gtnhlib.client.model.json;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.joml.Math.fma;
 
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
-import com.gtnewhorizon.gtnhlib.client.model.loading.NdQuadBuilder;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.Getter;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -63,12 +65,17 @@ public class JSONModel implements UnbakedModel {
         this.elements = og.elements;
     }
 
+    private static void setUV(ModelQuadViewMutable q, int i, float u, float v) {
+        q.setTexU(i, u);
+        q.setTexV(i, v);
+    }
+
     @Override
     public BakedModel bake(BakeData data) {
 
         final Matrix4f vRot = data.getAffineMatrix();
-        final var builder = new NdQuadBuilder();
-        final var sidedQuadStore = new HashMap<ForgeDirection, ArrayList<QuadView>>(7);
+        //final var builder = new NdQuadBuilder();
+        final var sidedQuadStore = new HashMap<ModelQuadFacing, ArrayList<ModelQuadView>>(7);
 
         // Append faces from each element
         for (ModelElement e : this.elements) {
@@ -89,11 +96,15 @@ public class JSONModel implements UnbakedModel {
                 float Z = Float.MIN_VALUE;
 
                 // Assign vertexes
+                final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
 
                     final Vector3f vert = QuadBuilder.mapSideToVertex(from, to, i, f.getName(), false).mulPosition(rot)
                             .mulPosition(vRot);
-                    builder.pos(i, vert.x, vert.y, vert.z);
+                    quad.setX(i, vert.x);
+                    quad.setY(i, vert.y);
+                    quad.setZ(i, vert.z);
+
                     x = min(x, vert.x);
                     y = min(y, vert.y);
                     z = min(z, vert.z);
@@ -103,7 +114,8 @@ public class JSONModel implements UnbakedModel {
                 }
 
                 // Set culling and nominal faces
-                builder.setCullFace();
+                final var normFace = quad.getNormalFace();
+                quad.setLightFace(normFace != ModelQuadFacing.UNASSIGNED ? normFace : ModelQuadFacing.POS_Y);
 
                 // Set bake flags
                 int flags = switch (f.getRotation()) {
@@ -118,10 +130,10 @@ public class JSONModel implements UnbakedModel {
                 final Vector4f uv = f.getUv();
                 if (uv != null) {
 
-                    builder.uv(0, uv.x, uv.y);
-                    builder.uv(1, uv.x, uv.w);
-                    builder.uv(2, uv.z, uv.w);
-                    builder.uv(3, uv.z, uv.y);
+                    setUV(quad,0, uv.x, uv.y);
+                    setUV(quad,1, uv.x, uv.w);
+                    setUV(quad,2, uv.z, uv.w);
+                    setUV(quad,3, uv.z, uv.y);
                 } else {
 
                     // Not sure if this is correct, but it seems to fix things
@@ -129,22 +141,35 @@ public class JSONModel implements UnbakedModel {
                 }
 
                 // Set the sprite
-                builder.spriteBake(this.textures.get(f.getTexture()), flags);
+                bakeSprite(quad, this.textures.get(f.getTexture()), flags);
 
                 // Set the tint index
-                builder.setColors(f.getTintIndex());
+                quad.setColorIndex(f.getTintIndex());
 
                 // Set AO
-                builder.mat.setAO(this.useAO);
+                quad.setHasAmbientOcclusion(this.useAO);
 
                 // Bake and add it
-                final QuadView q = builder.build(new Quad());
-                sidedQuadStore.computeIfAbsent(q.getCullFace(), d -> new ArrayList<>()).add(q);
+                sidedQuadStore.computeIfAbsent(quad.getNormalFace(), d -> new ArrayList<>()).add(quad);
             }
         }
 
         // Add them to the model
         return new PileOfQuads(sidedQuadStore);
+    }
+
+    // TODO fix
+    private void bakeSprite(ModelQuadViewMutable quad, String name, int flags) {
+        final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
+        final float minU = icon.getMinU();
+        final float minV = icon.getMinV();
+        final float dU = icon.getMaxU() - minU;
+        final float dV = icon.getMaxV() - minV;
+
+        for (int i = 0; i < 4; ++i) {
+            quad.setTexU(i, fma(dU, quad.getTexU(i), minU));
+            quad.setTexV(i, fma(dV, quad.getTexV(i), minV));
+        }
     }
 
     public void resolveParents(Function<ResourceLoc.ModelLoc, JSONModel> modelLoader) {

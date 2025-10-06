@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.polyfill.Maps;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.compile.sorting.ChunkPrimitiveType;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.material.Material;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexType;
@@ -67,7 +68,7 @@ public class TerrainRenderPass {
                              @NotNull ChunkVertexType vertexType,
                              @NotNull ChunkPrimitiveType primitiveType,
                              @Singular Map<String, String> extraDefines) {
-        if(name == null || name.length() == 0) {
+        if(name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Name not specified for terrain pass");
         }
         Objects.requireNonNull(vertexType);
@@ -81,7 +82,7 @@ public class TerrainRenderPass {
         this.hasNoLightmap = hasNoLightmap;
         this.primitiveType = primitiveType;
         this.vertexType = vertexType;
-        this.extraDefines = Map.copyOf(extraDefines);
+        this.extraDefines = Maps.copyOf(extraDefines);
     }
 
     public boolean isReverseOrder() {
