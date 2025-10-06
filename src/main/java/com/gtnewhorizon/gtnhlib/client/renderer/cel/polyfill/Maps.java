@@ -8,8 +8,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 
 public class Maps {
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <K, V> Object2ObjectMap<K, V> copyOf(Map<K, V> input) {
-        if (input instanceof Object2ObjectMaps.UnmodifiableMap<K,V> u) return u;
+        if (input instanceof Object2ObjectMaps.UnmodifiableMap u) return u;
         return unmodifiable(new Object2ObjectOpenHashMap<>(input));
     }
 }
