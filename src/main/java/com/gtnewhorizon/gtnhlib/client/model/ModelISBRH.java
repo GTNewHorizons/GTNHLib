@@ -71,9 +71,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                     color = block.colorMultiplier(world, x, y, z);
                 }
 
-                final int r = color & 255;
-                final int g = color >> 8 & 255;
-                final int b = color >> 16 & 255;
+                final float r = (color & 255) / 255f;
+                final float g = (color >> 8 & 255) / 255f;
+                final float b = (color >> 16 & 255) / 255f;
 
                 final int lx = x + dir.offsetX;
                 final int ly = y + dir.offsetY;
