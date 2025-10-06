@@ -4,6 +4,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
+import com.google.common.base.Objects;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
@@ -41,6 +42,8 @@ public class JSONModel implements UnbakedModel {
     @NotNull
     private final Map<String, String> textures;
     private List<ModelElement> elements;
+
+    private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
     public JSONModel(@Nullable ResourceLoc.ModelLoc parentId, boolean useAO,
                      Map<ModelDisplay.Position, ModelDisplay> display, @NotNull Map<String, String> textures,
@@ -127,18 +130,11 @@ public class JSONModel implements UnbakedModel {
 
                 // Set UV
                 // TODO: UV locking
-                final Vector4f uv = f.getUv();
-                if (uv != null) {
-
-                    setUV(quad,0, uv.x, uv.y);
-                    setUV(quad,1, uv.x, uv.w);
-                    setUV(quad,2, uv.z, uv.w);
-                    setUV(quad,3, uv.z, uv.y);
-                } else {
-
-                    // Not sure if this is correct, but it seems to fix things
-                    flags |= QuadBuilder.BAKE_LOCK_UV;
-                }
+                final Vector4f uv = Objects.firstNonNull(f.getUv(), DEFAULT_UV);
+                setUV(quad,0, uv.x, uv.y);
+                setUV(quad,1, uv.x, uv.w);
+                setUV(quad,2, uv.z, uv.w);
+                setUV(quad,3, uv.z, uv.y);
 
                 // Set the sprite
                 bakeSprite(quad, this.textures.get(f.getTexture()), flags);
@@ -167,8 +163,8 @@ public class JSONModel implements UnbakedModel {
         final float dV = icon.getMaxV() - minV;
 
         for (int i = 0; i < 4; ++i) {
-            quad.setTexU(i, fma(dU, quad.getTexU(i), minU));
-            quad.setTexV(i, fma(dV, quad.getTexV(i), minV));
+            quad.setTexU(i, fma(dU, quad.getTexU(i) / 16, minU));
+            quad.setTexV(i, fma(dV, quad.getTexV(i) / 16, minV));
         }
     }
 
