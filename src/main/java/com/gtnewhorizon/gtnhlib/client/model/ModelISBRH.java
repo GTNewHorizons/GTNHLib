@@ -1,9 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
-import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackX;
-import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackY;
-import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackZ;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 
 import java.util.Random;
 import java.util.function.Supplier;
