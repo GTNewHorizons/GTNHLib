@@ -2,7 +2,6 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
@@ -73,17 +72,4 @@ public abstract class GeometryHelper {
         return Math.abs(normalZ) > longest ? Axis.Z : result;
     }
 
-    /**
-     * Rotates the given direction by the matrix, and returns the closest direction to the output.
-     */
-    public static ForgeDirection rotate(ForgeDirection d, Matrix4f rotMat) {
-        return rotate(d, rotMat, new Vector3f());
-    }
-
-    /**
-     * See {@link #rotate(ForgeDirection, Matrix4f)}. This overload allows you to pass a scratch vector instead.
-     */
-    public static ForgeDirection rotate(ForgeDirection d, Matrix4f rotMat, Vector3f v) {
-        return coerceVector(v.set(d.offsetX, d.offsetY, d.offsetZ).mulPosition(rotMat));
-    }
 }

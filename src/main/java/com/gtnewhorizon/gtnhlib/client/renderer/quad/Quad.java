@@ -1,17 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad;
 
-import java.util.Locale;
-
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
-
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.properties.ModelQuadFlags;
-
+import java.util.Locale;
 import lombok.Getter;
+import net.minecraftforge.common.util.ForgeDirection;
+import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Roughly equivalent to 16.5's BakedQuadView and BakedQuadMixin
@@ -45,19 +40,12 @@ public class Quad implements QuadView {
     private int cachedFlags;
     @Getter
     private ForgeDirection face;
-    private int colorIndex = -1;
     private int shaderBlockId = -1;
-    private TextureAtlasSprite sprite = null;
 
     /** Returns the face, forced to take one of 6 directions to mirror the behavior of baked quads in 1.16.5. */
     @Override
     public ForgeDirection getLightFace() {
         return this.face != ForgeDirection.UNKNOWN ? this.face : ForgeDirection.UP;
-    }
-
-    @Override
-    public ForgeDirection getCullFace() {
-        return this.face;
     }
 
     @Override
@@ -101,18 +89,8 @@ public class Quad implements QuadView {
     }
 
     @Override
-    public int getColorIndex() {
-        return this.colorIndex;
-    }
-
-    @Override
     public int getShaderBlockId() {
         return this.shaderBlockId;
-    }
-
-    @Override
-    public TextureAtlasSprite rubidium$getSprite() {
-        return this.sprite;
     }
 
     @Override
@@ -166,23 +144,8 @@ public class Quad implements QuadView {
     }
 
     @Override
-    public void setColorIndex(int i) {
-        this.colorIndex = i;
-    }
-
-    @Override
-    public void setSprite(TextureAtlasSprite sprite) {
-        this.sprite = sprite;
-    }
-
-    @Override
     public void setShaderBlockId(int shaderBlockId) {
         this.shaderBlockId = shaderBlockId;
-    }
-
-    @Override
-    public int[] getRawData() {
-        return this.data;
     }
 
     /**
@@ -247,21 +210,6 @@ public class Quad implements QuadView {
 
         this.setColor(3, this.getColor(2));
         this.setNormal(3, this.getNormal(2));
-    }
-
-    @Override
-    public QuadView copyFrom(QuadView quad) {
-
-        System.arraycopy(quad.getRawData(), 0, this.data, 0, QUAD_STRIDE);
-
-        this.deleted = quad.isDeleted();
-        this.shade = quad.isShade();
-        this.face = quad.getFace();
-        this.colorIndex = quad.getColorIndex();
-        this.cachedFlags = quad.getFlags();
-        this.sprite = quad.rubidium$getSprite();
-
-        return this;
     }
 
     private void read(int[] rawBuffer, int offset, float offsetX, float offsetY, float offsetZ, int drawMode,
@@ -334,21 +282,5 @@ public class Quad implements QuadView {
             this.hasNormals = hasNormals;
         }
 
-        public byte toByte() {
-            byte flags = 0;
-            if (hasTexture) {
-                flags |= 1;
-            }
-            if (hasBrightness) {
-                flags |= 2;
-            }
-            if (hasColor) {
-                flags |= 4;
-            }
-            if (hasNormals) {
-                flags |= 8;
-            }
-            return flags;
-        }
     }
 }

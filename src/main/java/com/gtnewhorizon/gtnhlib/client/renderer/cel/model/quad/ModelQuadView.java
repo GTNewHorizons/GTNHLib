@@ -89,4 +89,6 @@ public interface ModelQuadView {
     default int getVanillaLightEmission() {
         return 0;
     }
+
+    int getShaderBlockId();
 }
