@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +18,7 @@ import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -34,7 +34,7 @@ public record MultipartModel(UnmodifiableMap<Condition, BakedModel> piles) imple
 
     @Override
     public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-            ForgeDirection dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
+            ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
         final var quads = new ObjectArrayList<ModelQuadView>();
         Object2ObjectMaps.fastForEach(piles, e -> {
             if (e.getKey().matches(stateMap(meta)))

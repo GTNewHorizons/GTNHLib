@@ -17,7 +17,6 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +39,7 @@ public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
 
     @Override
     public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-            ForgeDirection dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
+            ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
         return sidedQuadStore.getQuads(dir);
     }
 
@@ -66,15 +65,15 @@ public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
             unknown = lockList(sidedQuadStore.get(UNASSIGNED));
         }
 
-        public List<ModelQuadView> getQuads(ForgeDirection dir) {
+        public List<ModelQuadView> getQuads(ModelQuadFacing dir) {
             return switch (dir) {
-                case UP -> up;
-                case DOWN -> down;
-                case NORTH -> north;
-                case SOUTH -> south;
-                case WEST -> west;
-                case EAST -> east;
-                case UNKNOWN -> unknown;
+                case POS_Y -> up;
+                case NEG_Y -> down;
+                case NEG_Z -> north;
+                case POS_Z -> south;
+                case NEG_X -> west;
+                case POS_X -> east;
+                case UNASSIGNED -> unknown;
             };
         }
 

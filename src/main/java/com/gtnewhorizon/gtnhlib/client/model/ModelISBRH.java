@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackX;
 import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackY;
 import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackZ;
@@ -13,7 +14,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +21,6 @@ import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
-import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -63,7 +62,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         int color = model.getColor(world, x, y, z, block, meta, random);
 
         var rendered = false;
-        for (ForgeDirection dir : DirectionUtil.ALL_DIRECTIONS) {
+        for (var dir : DIRECTIONS) {
             // TODO: face culling
 
             final var quads = model.getQuads(world, x, y, z, block, meta, dir, random, color, sq);
@@ -81,9 +80,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 final float g = (color >> 8 & 255) / 255f;
                 final float b = (color >> 16 & 255) / 255f;
 
-                final int lx = x + dir.offsetX;
-                final int ly = y + dir.offsetY;
-                final int lz = z + dir.offsetZ;
+                final int lx = x + dir.getStepX();
+                final int ly = y + dir.getStepY();
+                final int lz = z + dir.getStepZ();
                 final int lm = block.getMixedBrightnessForBlock(world, lx, ly, lz);
                 tesselator.setBrightness(lm);
 
