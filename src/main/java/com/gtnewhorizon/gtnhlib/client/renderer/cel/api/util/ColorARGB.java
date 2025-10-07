@@ -1,14 +1,15 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util;
 
 /// Provides some utilities for packing and unpacking color components from packed integer colors in ARGB format. This
-/// packed format is used by most of Minecraft, but special care must be taken to pack it into ABGR format before passing
+/// packed format is used by most of Minecraft, but special care must be taken to pack it into ABGR format before
+/// passing
 /// it to OpenGL attributes.
 ///
 /// |||||
 /// | --------- | --------- | --------- | ---------- |
-/// | 32        | 24        | 16        | 8          |
-/// | 0110 1100 | 0110 1100 | 0110 1100 | 0110 1100  |
-/// | Alpha     | Red       | Green     | Blue       |
+/// | 32 | 24 | 16 | 8 |
+/// | 0110 1100 | 0110 1100 | 0110 1100 | 0110 1100 |
+/// | Alpha | Red | Green | Blue |
 public class ColorARGB implements ColorU8 {
 
     private static final int ALPHA_COMPONENT_OFFSET = 24;
