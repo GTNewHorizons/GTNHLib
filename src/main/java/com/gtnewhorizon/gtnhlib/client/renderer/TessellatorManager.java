@@ -1,15 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-
-import net.minecraft.client.renderer.Tessellator;
-
-import org.lwjgl.opengl.GL11;
-
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import java.nio.ByteBuffer;
+import java.util.List;
+import net.minecraft.client.renderer.Tessellator;
+import org.lwjgl.opengl.GL11;
 
 @SuppressWarnings("unused")
 public class TessellatorManager {
@@ -48,18 +45,16 @@ public class TessellatorManager {
         if (currentlyCapturing.get())
             throw new IllegalStateException("Tried to start capturing when already capturing!");
         final CapturingTessellator tess = capturingTessellator.get();
-        if (tess.getQuads().size() > 0)
+        if (!tess.getQuads().isEmpty())
             throw new IllegalStateException("Tried to start capturing with existing collected Quads!");
         tess.storeTranslation();
 
         currentlyCapturing.set(true);
     }
 
-    /*
-     * Stop the CapturingTessellator and return the pooled quads. The quads are valid until clearQuads() is called on
-     * the CapturingTesselator, which must be done before starting capturing again.
-     */
-    public static List<QuadView> stopCapturingToPooledQuads() {
+    /// Stop the CapturingTessellator and return the pooled quads. The quads are valid until clearQuads() is called on
+    /// the CapturingTesselator, which must be done before starting capturing again.
+    public static List<ModelQuad> stopCapturingToPooledQuads() {
         if (!currentlyCapturing.get()) throw new IllegalStateException("Tried to stop capturing when not capturing!");
         currentlyCapturing.set(false);
         final CapturingTessellator tess = capturingTessellator.get();
@@ -67,27 +62,23 @@ public class TessellatorManager {
         // Be sure we got all the quads
         if (tess.isDrawing) tess.draw();
 
-        final List<QuadView> quads = tess.getQuads();
+        final List<ModelQuad> quads = tess.getQuads();
         tess.discard();
         tess.restoreTranslation();
 
         return quads;
     }
 
-    /*
-     * Stops the CapturingTessellator, stores the quads in a buffer (based on the VertexFormat provided), and clears the
-     * quads.
-     */
+    /// Stops the CapturingTessellator, stores the quads in a buffer (based on the VertexFormat provided), and clears
+    /// the quads.
     public static ByteBuffer stopCapturingToBuffer(VertexFormat format) {
         final ByteBuffer buf = CapturingTessellator.quadsToBuffer(stopCapturingToPooledQuads(), format);
         capturingTessellator.get().clearQuads();
         return buf;
     }
 
-    /*
-     * Stops the CapturingTessellator, stores the quads in a buffer (based on the VertexFormat provided), uploads the
-     * buffer to a new VertexBuffer, and clears the quads.
-     */
+    /// Stops the CapturingTessellator, stores the quads in a buffer (based on the VertexFormat provided), uploads the
+    /// buffer to a new VertexBuffer, and clears the quads.
     public static VertexBuffer stopCapturingToVBO(VertexFormat format) {
         return new VertexBuffer(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
     }

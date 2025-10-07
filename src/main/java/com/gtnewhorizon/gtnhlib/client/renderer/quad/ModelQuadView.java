@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad;
 
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.properties.ModelQuadFlags;
@@ -51,25 +50,10 @@ public interface ModelQuadView {
     int getNormal(int idx);
 
     /**
-     * @return The color index of this quad.
-     */
-    int getColorIndex();
-
-    /**
-     * If not {@link ForgeDirection#UNKNOWN}, quad should not be rendered in-world if the opposite face of a neighbor
-     * block occludes it.
-     */
-    ForgeDirection getCullFace();
-
-    /**
      * This is the face used for vanilla lighting calculations and will be the block face to which the quad is most
      * closely aligned. Always the same as cull face for quads that are on a block face, but never
      * {@link ForgeDirection#UNKNOWN} or null.
      */
     ForgeDirection getLightFace();
 
-    /**
-     * @return The sprite texture used by this quad, or null if none is attached
-     */
-    TextureAtlasSprite rubidium$getSprite();
 }

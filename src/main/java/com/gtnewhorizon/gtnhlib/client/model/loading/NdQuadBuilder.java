@@ -1,23 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import java.util.Arrays;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.IIcon;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.properties.ModelQuadFlags;
 import net.minecraftforge.common.util.ForgeDirection;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
-
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.properties.ModelQuadFlags;
-
-import lombok.Setter;
 
 public class NdQuadBuilder extends Quad implements QuadBuilder {
 
@@ -28,32 +17,6 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
     private boolean isGeometryInvalid = true;
     final Vector3f faceNormal = new Vector3f();
     public final Material mat = new Material();
-    @Setter
-    private int drawMode = GL11.GL_QUADS;
-
-    @Override
-    public QuadView build(QuadView out) {
-
-        if (this.drawMode != GL11.GL_QUADS) this.quadrangulate();
-
-        // FRAPI does this late, but we need to do it before baking to Nd quads
-        this.computeGeometry();
-        out.copyFrom(this);
-        this.clear();
-        return out;
-    }
-
-    private void clear() {
-
-        Arrays.fill(this.data, 0);
-        this.setCullFace(ForgeDirection.UNKNOWN);
-        this.lightFace = ForgeDirection.UP;
-        this.geometryFlags = 0;
-        this.isGeometryInvalid = true;
-        this.setColorIndex(-1);
-        this.mat.reset();
-        this.drawMode = GL11.GL_QUADS;
-    }
 
     private void computeGeometry() {
         if (this.isGeometryInvalid) {
@@ -88,16 +51,6 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
     }
 
     @Override
-    public void setCullFace() {
-        this.computeGeometry();
-        if ((this.geometryFlags & ModelQuadFlags.IS_ALIGNED) != 0) this.setCullFace(this.lightFace);
-        else {
-            this.setCullFace(ForgeDirection.UNKNOWN);
-            this.nominalFace(this.lightFace);
-        }
-    }
-
-    @Override
     public void nominalFace(@Nullable ForgeDirection face) {
         this.nominalFace = face;
     }
@@ -108,85 +61,8 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
     }
 
     @Override
-    public void pos(int vertexIndex, float x, float y, float z) {
-
-        this.setX(vertexIndex, x);
-        this.setY(vertexIndex, y);
-        this.setZ(vertexIndex, z);
-        isGeometryInvalid = true;
-    }
-
-    @Override
     public float posByIndex(int vertexIndex, int coordinateIndex) {
         return Float.intBitsToFloat(this.data[vertexIndex * Quad.VERTEX_STRIDE + Quad.X_INDEX + coordinateIndex]);
-    }
-
-    @Override
-    public void spriteBake(String spriteName, int bakeFlags) {
-
-        final IIcon icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(spriteName);
-        TexHelper.bakeSprite(this, icon, bakeFlags);
-    }
-
-    @Override
-    public void spriteBake(IIcon sprite, int bakeFlags) {
-        TexHelper.bakeSprite(this, sprite, bakeFlags);
-    }
-
-    @Override
-    public void square(ForgeDirection nominalFace, float left, float bottom, float right, float top, float depth) {
-        if (Math.abs(depth) < CULL_FACE_EPSILON) {
-            setCullFace(nominalFace);
-            depth = 0; // avoid any inconsistency for face quads
-        } else {
-            setCullFace(ForgeDirection.UNKNOWN);
-        }
-
-        nominalFace(nominalFace);
-        switch (nominalFace) {
-            case UP:
-                depth = 1 - depth;
-                top = 1 - top;
-                bottom = 1 - bottom;
-
-            case DOWN:
-                pos(0, left, depth, top);
-                pos(1, left, depth, bottom);
-                pos(2, right, depth, bottom);
-                pos(3, right, depth, top);
-                break;
-
-            case EAST:
-                depth = 1 - depth;
-                left = 1 - left;
-                right = 1 - right;
-
-            case WEST:
-                pos(0, depth, top, left);
-                pos(1, depth, bottom, left);
-                pos(2, depth, bottom, right);
-                pos(3, depth, top, right);
-                break;
-
-            case SOUTH:
-                depth = 1 - depth;
-                left = 1 - left;
-                right = 1 - right;
-
-            case NORTH:
-                pos(0, 1 - left, top, depth);
-                pos(1, 1 - left, bottom, depth);
-                pos(2, 1 - right, bottom, depth);
-                pos(3, 1 - right, top, depth);
-                break;
-        }
-    }
-
-    @Override
-    public void uv(int vertexIndex, float u, float v) {
-
-        this.setTexU(vertexIndex, u);
-        this.setTexV(vertexIndex, v);
     }
 
     @Override
@@ -194,8 +70,4 @@ public class NdQuadBuilder extends Quad implements QuadBuilder {
         return this.geometryFlags;
     }
 
-    @Override
-    public TextureAtlasSprite rubidium$getSprite() {
-        return null;
-    }
 }

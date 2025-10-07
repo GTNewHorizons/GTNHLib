@@ -7,35 +7,35 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQ
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.joml.Vector3f;
 
-/**
- * Provides some utilities and constants for interacting with vanilla's model quad vertex format.
- *
- * This is the current vertex format used by Minecraft for chunk meshes and model quads. Internally, it uses integer
- * arrays for store baked quad data, and as such the following table provides both the byte and int indices.
- *
- * Byte Index    Integer Index             Name                 Format                 Fields
- * 0 ..11        0..2                      Position             3 floats               x, y, z
- * 12..15        3                         Color                4 unsigned bytes       a, r, g, b
- * 16..23        4..5                      Block Texture        2 floats               u, v
- * 24..27        6                         Light Texture        2 shorts               u, v
- * 28..30        7                         Normal               3 unsigned bytes       x, y, z
- * 31                                      Padding              1 byte
- */
+/// Provides some utilities and constants for interacting with vanilla's model quad vertex format.
+/// This is the vertex format used by Minecraft 7.10 for chunk meshes and model quads. Internally, it uses integer
+/// arrays for store baked quad data, and as such the following table provides both the byte and int indices.
+///
+/// | Byte Index | Integer Index | Name          | Format           | Fields          |
+/// | ---------- | ------------- | ------------- | ---------------- | --------------- |
+/// | 0..11      | 0..2          | Position      | 3 floats         | x, y, z         |
+/// | 12..19     | 3..4          | Block Texture | 2 floats         | u, v            |
+/// | 19..23     | 5             | Color         | 4 unsigned bytes | a, b, g, r [^1] |
+/// | 24..27     | 6             | Normal        | 3 unsigned bytes | x, y, z         |
+/// | 28..31     | 7             | Light Texture | 2 shorts         | u, v            |
+///
+/// [^1]: ABGR on little-endian systems, RGBA on big-endian systems.
 public class ModelQuadUtil {
     // Integer indices for vertex attributes, useful for accessing baked quad data
     public static final int POSITION_INDEX = 0,
-            COLOR_INDEX = 3,
-            TEXTURE_INDEX = 4,
-            LIGHT_INDEX = 6,
-            NORMAL_INDEX = 7;
+            COLOR_INDEX = 5,
+            TEXTURE_INDEX = 3,
+            LIGHT_INDEX = 7,
+            NORMAL_INDEX = 6;
 
     // Size of vertex format in 4-byte integers
     public static final int VERTEX_SIZE = 8;
 
-    /**
-     * @param vertexIndex The index of the vertex to access
-     * @return The starting offset of the vertex's attributes
-     */
+    public static final int DEFAULT_COLOR = 0xFFFFFFFF;
+    public static final int DEFAULT_LIGHTMAP = 15 << 20 | 15 << 4;
+
+    /// @param vertexIndex The index of the vertex to access
+    /// @return The starting offset of the vertex's attributes
     public static int vertexOffset(int vertexIndex) {
         return vertexIndex * VERTEX_SIZE;
     }
@@ -111,11 +111,9 @@ public class ModelQuadUtil {
         return (sl << 16) | bl;
     }
 
-    /**
-     * Mixes two ABGR colors together like what Forge does in VertexConsumer.
-     *
-     * Despite the name, the method tries to avoid doing any work whenever possible.
-     */
+    /// Mixes two ABGR colors together like what Forge does in VertexConsumer.
+    ///
+    /// Despite the name, the method tries to avoid doing any work whenever possible.
     public static int mixARGBColors(int colorA, int colorB) {
         // Most common case: Either quad coloring or tint-based coloring, but not both
         if (colorA == -1) {
