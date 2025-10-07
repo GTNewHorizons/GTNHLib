@@ -5,7 +5,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -19,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
+import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
