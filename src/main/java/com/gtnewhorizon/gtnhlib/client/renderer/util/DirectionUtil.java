@@ -8,12 +8,6 @@ import net.minecraftforge.common.util.ForgeDirection;
  */
 public class DirectionUtil {
 
-    public static final ForgeDirection[] ALL_DIRECTIONS = ForgeDirection.values();
-
-    // Provides the same order as enumerating ForgeDirection and checking the axis of each value
-    public static final ForgeDirection[] HORIZONTAL_DIRECTIONS = new ForgeDirection[] { ForgeDirection.NORTH,
-            ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST };
-
     public static ForgeDirection fromName(String name) {
         return switch (name) {
             case "up" -> ForgeDirection.UP;
