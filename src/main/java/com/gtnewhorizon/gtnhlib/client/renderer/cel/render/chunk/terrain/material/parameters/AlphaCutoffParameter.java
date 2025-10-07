@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.material.parameters;
 
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
@@ -9,6 +8,7 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @Getter
 public enum AlphaCutoffParameter {
+
     ZERO(0.0f),
     ONE_TENTH(0.1f),
     HALF(0.5f),

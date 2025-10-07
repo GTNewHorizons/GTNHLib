@@ -1,32 +1,30 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.util;
 
+import org.joml.Vector3f;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.ColorARGB;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexEncoder;
-import org.joml.Vector3f;
 
 /// Provides some utilities and constants for interacting with vanilla's model quad vertex format.
 /// This is the vertex format used by Minecraft 7.10 for chunk meshes and model quads. Internally, it uses integer
 /// arrays for store baked quad data, and as such the following table provides both the byte and int indices.
 ///
-/// | Byte Index | Integer Index | Name          | Format           | Fields          |
-/// | ---------- | ------------- | ------------- | ---------------- | --------------- |
-/// | 0..11      | 0..2          | Position      | 3 floats         | x, y, z         |
-/// | 12..19     | 3..4          | Block Texture | 2 floats         | u, v            |
-/// | 19..23     | 5             | Color         | 4 unsigned bytes | a, b, g, r [^1] |
-/// | 24..27     | 6             | Normal        | 3 unsigned bytes | x, y, z         |
-/// | 28..31     | 7             | Light Texture | 2 shorts         | u, v            |
+/// | Byte Index | Integer Index | Name | Format | Fields |
+/// | ---------- | ------------- | ---- | ------ | ------ |
+/// | 0..11 | 0..2 | Position | 3 floats | x, y, z |
+/// | 12..19 | 3..4 | Block Texture | 2 floats | u, v |
+/// | 19..23 | 5 | Color | 4 unsigned bytes | a, b, g, r \[1] |
+/// | 24..27 | 6 | Normal | 3 unsigned bytes | x, y, z |
+/// | 28..31 | 7 | Light Texture | 2 shorts | u, v |
 ///
-/// [^1]: ABGR on little-endian systems, RGBA on big-endian systems.
+/// \[1]: ABGR on little-endian systems, RGBA on big-endian systems.
 public class ModelQuadUtil {
+
     // Integer indices for vertex attributes, useful for accessing baked quad data
-    public static final int POSITION_INDEX = 0,
-            COLOR_INDEX = 5,
-            TEXTURE_INDEX = 3,
-            LIGHT_INDEX = 7,
-            NORMAL_INDEX = 6;
+    public static final int POSITION_INDEX = 0, COLOR_INDEX = 5, TEXTURE_INDEX = 3, LIGHT_INDEX = 7, NORMAL_INDEX = 6;
 
     // Size of vertex format in 4-byte integers
     public static final int VERTEX_SIZE = 8;
@@ -92,15 +90,13 @@ public class ModelQuadUtil {
     }
 
     public static int mergeNormal(int packedNormal, int calcNormal) {
-        if((packedNormal & 0xFFFFFF) == 0)
-            return calcNormal;
+        if ((packedNormal & 0xFFFFFF) == 0) return calcNormal;
         return packedNormal;
     }
 
     public static int mergeBakedLight(int packedLight, int vanillaLightEmission, int calcLight) {
         // bail early in most cases
-        if (packedLight == 0 && vanillaLightEmission == 0)
-            return calcLight;
+        if (packedLight == 0 && vanillaLightEmission == 0) return calcLight;
 
         int psl = (packedLight >> 16) & 0xFF;
         int csl = (calcLight >> 16) & 0xFF;
@@ -122,10 +118,10 @@ public class ModelQuadUtil {
             return colorA;
         }
         // General case (rare): Both colorings, actually perform the multiplication
-        int a = (int)((ColorARGB.unpackAlpha(colorA)/255.0f) * (ColorARGB.unpackAlpha(colorB)/255.0f) * 255.0f);
-        int b = (int)((ColorARGB.unpackBlue(colorA)/255.0f) * (ColorARGB.unpackBlue(colorB)/255.0f) * 255.0f);
-        int g = (int)((ColorARGB.unpackGreen(colorA)/255.0f) * (ColorARGB.unpackGreen(colorB)/255.0f) * 255.0f);
-        int r = (int)((ColorARGB.unpackRed(colorA)/255.0f) * (ColorARGB.unpackRed(colorB)/255.0f) * 255.0f);
+        int a = (int) ((ColorARGB.unpackAlpha(colorA) / 255.0f) * (ColorARGB.unpackAlpha(colorB) / 255.0f) * 255.0f);
+        int b = (int) ((ColorARGB.unpackBlue(colorA) / 255.0f) * (ColorARGB.unpackBlue(colorB) / 255.0f) * 255.0f);
+        int g = (int) ((ColorARGB.unpackGreen(colorA) / 255.0f) * (ColorARGB.unpackGreen(colorB) / 255.0f) * 255.0f);
+        int r = (int) ((ColorARGB.unpackRed(colorA) / 255.0f) * (ColorARGB.unpackRed(colorB) / 255.0f) * 255.0f);
         return ColorARGB.pack(r, g, b, a);
     }
 }

@@ -1,11 +1,14 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.sprite.SpriteTransparencyLevel;
 import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.sprite.SpriteTransparencyLevel;
+
 public interface BakedQuadView extends ModelQuadView {
+
     ModelQuadFacing getNormalFace();
 
     boolean hasShade();
@@ -14,14 +17,15 @@ public interface BakedQuadView extends ModelQuadView {
 
     int getVerticesCount();
 
-    @Nullable SpriteTransparencyLevel getTransparencyLevel();
+    @Nullable
+    SpriteTransparencyLevel getTransparencyLevel();
 
     static BakedQuadView of(Object o) {
-        return (BakedQuadView)o;
+        return (BakedQuadView) o;
     }
 
     @SuppressWarnings("unchecked")
     static <T> List<? extends BakedQuadView> ofList(List<T> quads) {
-        return (List<? extends BakedQuadView>)(List<?>)quads;
+        return (List<? extends BakedQuadView>) (List<?>) quads;
     }
 }

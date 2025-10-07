@@ -5,6 +5,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties;
  * consistent order, eliminating a number of shading issues caused by anisotropy problems.
  */
 public enum ModelQuadOrientation {
+
     NORMAL(new int[] { 0, 1, 2, 3 }),
     FLIP(new int[] { 1, 2, 3, 0 });
 

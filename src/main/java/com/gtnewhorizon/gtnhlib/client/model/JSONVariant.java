@@ -2,10 +2,11 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import static java.lang.Math.toRadians;
 
-import com.github.bsideup.jabel.Desugar;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
+
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
 
 /**
  * Largely mirrors Minecraft's format for specifying models, except we use radians instead of degrees.
@@ -31,7 +32,7 @@ public record JSONVariant(ResourceLoc.ModelLoc model, float x, float y, float z,
     /// @param weight Used when selecting models. Irrelevant when only one variant is allowed, but must always be
     /// greater than zero.
     public static Weighted<JSONVariant> weightedVariant(ResourceLoc.ModelLoc model, int x, int y, int z, boolean uvLock,
-                                                        int weight) {
+            int weight) {
         final var v = new JSONVariant(model, x, y, z, uvLock);
         return new Weighted<>(v, weight);
     }

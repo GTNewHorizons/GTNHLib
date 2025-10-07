@@ -1,12 +1,15 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+
+import net.minecraft.client.renderer.Tessellator;
+
+import org.lwjgl.opengl.GL11;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-import java.nio.ByteBuffer;
-import java.util.List;
-import net.minecraft.client.renderer.Tessellator;
-import org.lwjgl.opengl.GL11;
 
 @SuppressWarnings("unused")
 public class TessellatorManager {

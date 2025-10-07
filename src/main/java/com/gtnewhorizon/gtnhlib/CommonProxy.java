@@ -1,5 +1,11 @@
 package com.gtnewhorizon.gtnhlib;
 
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.util.FakePlayer;
+
 import com.gtnewhorizon.gtnhlib.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -10,6 +16,7 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
+
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -22,11 +29,6 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.IChatComponent;
-import net.minecraftforge.common.util.FakePlayer;
 
 @EventBusSubscriber
 public class CommonProxy {
@@ -44,7 +46,7 @@ public class CommonProxy {
             GTNHLib.LOG.error("Failed to register GTNHLib config!", e);
         }
 
-        if (GTNHLibConfig.enableTestBlocks){
+        if (GTNHLibConfig.enableTestBlocks) {
             GameRegistry.registerBlock(new BlockTest(), "model_test");
         }
     }
