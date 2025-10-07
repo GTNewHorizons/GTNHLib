@@ -139,13 +139,13 @@ public class JSONModel implements UnbakedModel {
         // Append faces from each element
         for (ModelElement e : this.elements) {
 
-            final Matrix4f rot = (e.getRotation() == null) ? ModelElement.Rotation.NOOP.getAffineMatrix()
-                    : e.getRotation().getAffineMatrix();
+            final Matrix4f rot = (e.rotation() == null) ? ModelElement.Rotation.NOOP.getAffineMatrix()
+                    : e.rotation().getAffineMatrix();
 
-            final Vector3f from = e.getFrom();
-            final Vector3f to = e.getTo();
+            final Vector3f from = e.from();
+            final Vector3f to = e.to();
 
-            for (ModelElement.Face f : e.getFaces()) {
+            for (ModelElement.Face f : e.faces()) {
 
                 float x = Float.MAX_VALUE;
                 float y = Float.MAX_VALUE;
@@ -158,7 +158,7 @@ public class JSONModel implements UnbakedModel {
                 final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
 
-                    final Vector3f vert = mapSideToVertex(from, to, i, f.getName()).mulPosition(rot).mulPosition(vRot);
+                    final Vector3f vert = mapSideToVertex(from, to, i, f.name()).mulPosition(rot).mulPosition(vRot);
                     quad.setX(i, vert.x);
                     quad.setY(i, vert.y);
                     quad.setZ(i, vert.z);
@@ -177,17 +177,17 @@ public class JSONModel implements UnbakedModel {
 
                 // Set UV
                 // TODO: UV locking
-                final Vector4f uv = Objects.firstNonNull(f.getUv(), DEFAULT_UV);
+                final Vector4f uv = Objects.firstNonNull(f.uv(), DEFAULT_UV);
                 setUV(quad, 0, uv.x, uv.y);
                 setUV(quad, 1, uv.x, uv.w);
                 setUV(quad, 2, uv.z, uv.w);
                 setUV(quad, 3, uv.z, uv.y);
 
                 // Set the sprite
-                bakeSprite(quad, this.textures.get(f.getTexture()));
+                bakeSprite(quad, this.textures.get(f.texture()));
 
                 // Set the tint index
-                quad.setColorIndex(f.getTintIndex());
+                quad.setColorIndex(f.tintIndex());
 
                 // Set AO
                 quad.setHasAmbientOcclusion(this.useAO);
