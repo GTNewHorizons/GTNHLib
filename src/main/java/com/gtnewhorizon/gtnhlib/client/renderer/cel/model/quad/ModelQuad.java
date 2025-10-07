@@ -11,10 +11,11 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.VE
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.vertexOffset;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.TessFlags;
-import org.jetbrains.annotations.ApiStatus;
 
 /// A simple implementation of the [ModelQuadViewMutable] interface which can provide an on-heap scratch area
 /// for storing quad vertex data.
