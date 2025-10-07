@@ -1,11 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.util;
 
+import org.joml.Vector3f;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexEncoder;
-import org.joml.Vector3f;
 
 public class QuadUtil {
+
     public static ModelQuadFacing findNormalFace(float x, float y, float z) {
         if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z)) {
             return ModelQuadFacing.UNASSIGNED;

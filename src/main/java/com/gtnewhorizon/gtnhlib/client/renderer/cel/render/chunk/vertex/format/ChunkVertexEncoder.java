@@ -3,9 +3,11 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.material.Material;
 
 public interface ChunkVertexEncoder {
+
     long write(long ptr, Material material, Vertex vertex, int sectionIndex);
 
     class Vertex {
+
         public float x;
         public float y;
         public float z;

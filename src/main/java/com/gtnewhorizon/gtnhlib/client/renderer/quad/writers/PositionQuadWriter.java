@@ -1,7 +1,8 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad.writers;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import java.nio.ByteBuffer;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 
 public class PositionQuadWriter implements IWriteQuads {
 
