@@ -3,14 +3,15 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util;
 import org.joml.Math;
 import org.joml.Vector3f;
 
-/// Provides some utilities for working with packed normal vectors. Each normal component provides 8 bits of precision in
+/// Provides some utilities for working with packed normal vectors. Each normal component provides 8 bits of precision
+/// in
 /// the range of \[-1.0,1.0].
 ///
 /// |||||
 /// | --------- | --------- | --------- | ---------- |
-/// | 32        | 24        | 16        | 8          |
-/// | 0000 0000 | 0110 1100 | 0110 1100 | 0110 1100  |
-/// | Padding   | X         | Y         | Z          |
+/// | 32 | 24 | 16 | 8 |
+/// | 0000 0000 | 0110 1100 | 0110 1100 | 0110 1100 |
+/// | Padding | X | Y | Z |
 public class NormI8 {
 
     private static final int X_COMPONENT_OFFSET = 0;

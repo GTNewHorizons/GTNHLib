@@ -5,9 +5,9 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util;
 ///
 /// |||||
 /// | --------- | --------- | --------- | ---------- |
-/// | 32        | 24        | 16        | 8          |
-/// | 0110 1100 | 0110 1100 | 0110 1100 | 0110 1100  |
-/// | Alpha     | Blue      | Green     | Red        |
+/// | 32 | 24 | 16 | 8 |
+/// | 0110 1100 | 0110 1100 | 0110 1100 | 0110 1100 |
+/// | Alpha | Blue | Green | Red |
 public class ColorABGR implements ColorU8 {
 
     private static final int RED_COMPONENT_OFFSET = 0;
