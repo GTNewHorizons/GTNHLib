@@ -1,15 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-
-import net.minecraft.client.renderer.Tessellator;
-
-import org.lwjgl.opengl.GL11;
-
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import java.nio.ByteBuffer;
+import java.util.List;
+import net.minecraft.client.renderer.Tessellator;
+import org.lwjgl.opengl.GL11;
 
 @SuppressWarnings("unused")
 public class TessellatorManager {
@@ -57,7 +54,9 @@ public class TessellatorManager {
 
     /// Stop the CapturingTessellator and return the pooled quads. The quads are valid until clearQuads() is called on
     /// the CapturingTesselator, which must be done before starting capturing again.
-    public static List<ModelQuad> stopCapturingToPooledQuads() {
+    ///
+    /// @return The quads captured. This list is not copied, and thus should *not* be modified by callers.
+    public static List<ModelQuadView> stopCapturingToPooledQuads() {
         if (!currentlyCapturing.get()) throw new IllegalStateException("Tried to stop capturing when not capturing!");
         currentlyCapturing.set(false);
         final CapturingTessellator tess = capturingTessellator.get();
@@ -65,7 +64,7 @@ public class TessellatorManager {
         // Be sure we got all the quads
         if (tess.isDrawing) tess.draw();
 
-        final List<ModelQuad> quads = tess.getQuads();
+        final var quads = tess.getQuads();
         tess.discard();
         tess.restoreTranslation();
 
