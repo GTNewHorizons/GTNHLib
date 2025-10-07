@@ -13,7 +13,7 @@ import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.TessFlags;
 import org.jetbrains.annotations.ApiStatus;
 
 /// A simple implementation of the [ModelQuadViewMutable] interface which can provide an on-heap scratch area
@@ -187,7 +187,7 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @ApiStatus.Internal
-    public void setState(int[] rawBuffer, int srcOffset, Quad.Flags flags, int drawMode, int offsetX, int offsetY, int offsetZ) {
+    public void setState(int[] rawBuffer, int srcOffset, TessFlags flags, int drawMode, int offsetX, int offsetY, int offsetZ) {
         System.arraycopy(rawBuffer, srcOffset, data, 0, data.length);
 
         if (!flags.hasColor) clearColors();

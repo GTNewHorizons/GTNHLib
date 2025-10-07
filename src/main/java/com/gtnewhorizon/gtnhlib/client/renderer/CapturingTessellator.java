@@ -10,7 +10,7 @@ import static net.minecraft.util.MathHelper.clamp_int;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Quad;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.TessFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
@@ -37,7 +37,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     // Access Transformers don't work on Forge Fields :rage:
     private static final MethodHandle sRawBufferSize;
     private static final MethodHandle gRawBufferSize;
-    private final Quad.Flags FLAGS = new Quad.Flags(true, true, true, true);
+    private final TessFlags FLAGS = new TessFlags(true, true, true, true);
     private final ObjectPooler<ModelQuad> quadBuf = new ObjectPooler<>(ModelQuad::new);
     private final List<ModelQuad> collectedQuads = new ObjectArrayList<>();
     private int shaderBlockId = -1;

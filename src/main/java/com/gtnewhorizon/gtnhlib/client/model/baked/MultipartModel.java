@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.model.baked;
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -34,7 +34,7 @@ public record MultipartModel(UnmodifiableMap<Condition, BakedModel> piles) imple
 
     @Override
     public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-                                        ForgeDirection dir, Random random, int color, @Nullable Supplier<QuadView> quadPool) {
+                                        ForgeDirection dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
         final var quads = new ObjectArrayList<ModelQuadView>();
         Object2ObjectMaps.fastForEach(piles, e -> {
             if (e.getKey().matches(stateMap(meta)))
