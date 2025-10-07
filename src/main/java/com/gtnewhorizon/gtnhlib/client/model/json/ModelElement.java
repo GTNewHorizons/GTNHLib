@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.json;
 
-import com.github.bsideup.jabel.Desugar;
 import java.util.List;
 
 import net.minecraftforge.common.util.ForgeDirection;
@@ -10,7 +9,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
+import com.github.bsideup.jabel.Desugar;
 
 @Desugar
 public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotation, boolean shade, List<Face> faces) {
@@ -25,8 +24,7 @@ public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotati
 
     @Desugar
     public record Face(ForgeDirection name, Vector4f uv, String texture, ForgeDirection cullFace, int rotation,
-                int tintIndex) {
-    }
+            int tintIndex) {}
 
     @Desugar
     public record Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
@@ -54,6 +52,22 @@ public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotati
 
             // Add the origin back in
             return ret.translateLocal(this.origin.x, this.origin.y, this.origin.z);
+        }
+    }
+
+    public enum Axis {
+
+        X,
+        Y,
+        Z;
+
+        public static Axis fromName(String dir) {
+            return switch (dir) {
+                case "y" -> Y;
+                case "z" -> Z;
+                case "x" -> X;
+                default -> null;
+            };
         }
     }
 }

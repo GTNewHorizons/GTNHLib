@@ -15,8 +15,9 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.gtnewhorizon.gtnhlib.client.model.json.ModelDisplay.Position;
+import com.gtnewhorizon.gtnhlib.client.model.json.ModelElement.Axis;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.Axis;
 import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
 
@@ -63,11 +64,10 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return new ModelDisplay(rotation, translation, scale);
     }
 
-    private Map<ModelDisplay.Position, ModelDisplay> loadDisplay(JsonObject in) {
+    private Map<Position, ModelDisplay> loadDisplay(JsonObject in) {
 
         // wow such long
-        final Map<ModelDisplay.Position, ModelDisplay> ret = new Object2ObjectOpenHashMap<>(
-                ModelDisplay.Position.values().length);
+        final Map<Position, ModelDisplay> ret = new Object2ObjectOpenHashMap<>(Position.values().length);
 
         if (in.has("display")) {
 
@@ -76,12 +76,12 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             for (Map.Entry<String, JsonElement> j : display.entrySet()) {
 
                 final String name = j.getKey();
-                final ModelDisplay.Position pos = ModelDisplay.Position.getByName(name);
+                final Position pos = Position.getByName(name);
                 ret.put(pos, loadADisplay(j.getValue().getAsJsonObject()));
             }
         }
 
-        for (ModelDisplay.Position p : ModelDisplay.Position.values()) {
+        for (Position p : Position.values()) {
             ret.putIfAbsent(p, ModelDisplay.DEFAULT);
         }
 
@@ -193,7 +193,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         }
 
         final boolean useAO = JsonUtil.loadBool(in, "ambientocclusion", true);
-        final Map<ModelDisplay.Position, ModelDisplay> display = loadDisplay(in);
+        final Map<Position, ModelDisplay> display = loadDisplay(in);
         final Map<String, String> textures = loadTextures(in);
         final List<ModelElement> elements = loadElements(in);
 
