@@ -8,12 +8,14 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TE
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.vertexOffset;
 import static net.minecraft.util.MathHelper.clamp_int;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.renderer.Tessellator;
@@ -138,8 +140,8 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         reset();
     }
 
-    public List<ModelQuad> getQuads() {
-        return collectedQuads;
+    public List<ModelQuadView> getQuads() {
+        return Collections.unmodifiableList(collectedQuads);
     }
 
     public void clearQuads() {
@@ -150,7 +152,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         this.collectedQuads.clear();
     }
 
-    public static ByteBuffer quadsToBuffer(List<ModelQuad> quads, VertexFormat format) {
+    public static ByteBuffer quadsToBuffer(List<ModelQuadView> quads, VertexFormat format) {
         if (!format.canWriteQuads()) {
             throw new IllegalStateException("Vertex format has no quad writer: " + format);
         }
