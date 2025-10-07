@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util;
 
 public interface ColorU8 {
+
     /**
      * The number of bits used for each color component.
      */
@@ -23,6 +24,7 @@ public interface ColorU8 {
 
     /**
      * Converts a normalized float to an integer component.
+     * 
      * @param value The floating point value in the range of 0.0..1.0
      * @return The integer component of the floating point value in 0..255 range
      */
@@ -32,6 +34,7 @@ public interface ColorU8 {
 
     /**
      * Converts an integer component to a normalized floating point value.
+     * 
      * @param value The integer component in 0..255 range
      * @return The floating point value of the integer component in the range of 0.0..1.0
      */

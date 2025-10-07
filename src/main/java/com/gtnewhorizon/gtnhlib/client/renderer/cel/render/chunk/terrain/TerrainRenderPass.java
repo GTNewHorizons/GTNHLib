@@ -1,29 +1,34 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain;
 
+import java.util.Map;
+import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.polyfill.Maps;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.compile.sorting.ChunkPrimitiveType;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.material.Material;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexType;
-import java.util.Map;
-import java.util.Objects;
+
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
 
 /**
- * A terrain render pass corresponds to a draw call to render some subset of terrain geometry. Passes are generally
- * used for fixed configuration that will not change from quad to quad and allow for optimizations to be made
- * within the terrain shader code at compile time (e.g. omitting the fragment discard conditional entirely on the solid pass).
- * <p></p>
- * Geometry that shares the same terrain render pass may still be able to specify some more dynamic properties. See {@link Material}
- * for more information.
+ * A terrain render pass corresponds to a draw call to render some subset of terrain geometry. Passes are generally used
+ * for fixed configuration that will not change from quad to quad and allow for optimizations to be made within the
+ * terrain shader code at compile time (e.g. omitting the fragment discard conditional entirely on the solid pass).
+ * <p>
+ * </p>
+ * Geometry that shares the same terrain render pass may still be able to specify some more dynamic properties. See
+ * {@link Material} for more information.
  */
 @Accessors(fluent = true)
 @EqualsAndHashCode
 public class TerrainRenderPass {
+
     /**
      * The friendly name of this render pass.
      */
@@ -59,16 +64,10 @@ public class TerrainRenderPass {
     private final Map<String, String> extraDefines;
 
     @Builder
-    public TerrainRenderPass(String name,
-                             PipelineState pipelineState,
-                             boolean useReverseOrder,
-                             boolean fragmentDiscard,
-                             boolean useTranslucencySorting,
-                             boolean hasNoLightmap,
-                             @NotNull ChunkVertexType vertexType,
-                             @NotNull ChunkPrimitiveType primitiveType,
-                             @Singular Map<String, String> extraDefines) {
-        if(name == null || name.isEmpty()) {
+    public TerrainRenderPass(String name, PipelineState pipelineState, boolean useReverseOrder, boolean fragmentDiscard,
+            boolean useTranslucencySorting, boolean hasNoLightmap, @NotNull ChunkVertexType vertexType,
+            @NotNull ChunkPrimitiveType primitiveType, @Singular Map<String, String> extraDefines) {
+        if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Name not specified for terrain pass");
         }
         Objects.requireNonNull(vertexType);
@@ -127,7 +126,9 @@ public class TerrainRenderPass {
     }
 
     public interface PipelineState {
+
         PipelineState DEFAULT = new PipelineState() {
+
             @Override
             public void setup() {
 
@@ -140,6 +141,7 @@ public class TerrainRenderPass {
         };
 
         void setup();
+
         void clear();
     }
 }

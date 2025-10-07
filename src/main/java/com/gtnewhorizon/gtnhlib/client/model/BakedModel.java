@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -11,6 +9,9 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 
 public interface BakedModel {
 
@@ -44,18 +45,18 @@ public interface BakedModel {
     /// Provide quads to render. If you need new quads, they should be obtained with the passed supplier,
     /// [#isDynamic] should be overridden to return true, and you should not keep references to the quads.
     ///
-    /// @param world    The world the model is in. Null if not applicable, like in inventory rendering.
-    /// @param x        The x-position of the model.
-    /// @param y        The y-position of the model.
-    /// @param z        The z-position of the model.
-    /// @param block    The block to be rendered.
-    /// @param meta     The meta value of the rendered object.
-    /// @param dir      The direction to get quads from - the returned quads should have the same facing.
-    /// @param random   A RNG to use.
-    /// @param color    The ABGR packed color to use.
+    /// @param world The world the model is in. Null if not applicable, like in inventory rendering.
+    /// @param x The x-position of the model.
+    /// @param y The y-position of the model.
+    /// @param z The z-position of the model.
+    /// @param block The block to be rendered.
+    /// @param meta The meta value of the rendered object.
+    /// @param dir The direction to get quads from - the returned quads should have the same facing.
+    /// @param random A RNG to use.
+    /// @param color The ABGR packed color to use.
     /// @param quadPool If [#isDynamic()], the pool to obtain quads from and where the quads should be released
-    ///                 after use. Ignored otherwise.
+    /// after use. Ignored otherwise.
     /// @return A list of quads from the model. These are *not* adjusted for the given xyz - that is up to the renderer.
     List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-                                 ForgeDirection dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool);
+            ForgeDirection dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool);
 }

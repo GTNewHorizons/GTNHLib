@@ -1,11 +1,14 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.gl.attribute.GlVertexFormat;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.gl.attribute.GlVertexFormat;
+
 public interface ChunkVertexType {
+
     /**
      * @return The scale to be applied to vertex coordinates
      */

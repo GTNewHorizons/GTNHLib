@@ -1,10 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import java.util.Arrays;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
+
 import lombok.Getter;
 
 public enum ModelQuadFacing {
+
     POS_X(1, 0, 0, Axis.X),
     POS_Y(0, 1, 0, Axis.Y),
     POS_Z(0, 0, 1, Axis.Z),
@@ -14,7 +17,8 @@ public enum ModelQuadFacing {
     UNASSIGNED(0, 0, 0, null);
 
     public static final ModelQuadFacing[] VALUES = ModelQuadFacing.values();
-    public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(facing -> facing != UNASSIGNED).toArray(ModelQuadFacing[]::new);
+    public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(facing -> facing != UNASSIGNED)
+            .toArray(ModelQuadFacing[]::new);
     public static final Axis[] AXES = Axis.values();
 
     public static final int COUNT = VALUES.length;
@@ -56,6 +60,7 @@ public enum ModelQuadFacing {
     }
 
     public enum Axis {
+
         X,
         Y,
         Z;

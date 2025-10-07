@@ -1,18 +1,20 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.gl.attribute;
 
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
 import lombok.AllArgsConstructor;
 
 /**
- * Provides a generic vertex format which contains attributes. Other code can then retrieve
- * the attributes and work with encoded data in a generic manner without needing to rely on a specific format.
+ * Provides a generic vertex format which contains attributes. Other code can then retrieve the attributes and work with
+ * encoded data in a generic manner without needing to rely on a specific format.
  */
 @AllArgsConstructor
 public class GlVertexFormat {
+
     /**
      * Magic value that will have GlVertexFormat calculate the next pointer to use.
      */
@@ -32,6 +34,7 @@ public class GlVertexFormat {
 
     /**
      * Returns the {@link GlVertexAttribute} of this vertex format bound to the type {@param name}.
+     * 
      * @throws NullPointerException If the attribute does not exist in this format
      */
     public GlVertexAttribute getAttribute(String name) {
@@ -57,11 +60,11 @@ public class GlVertexFormat {
 
     @Override
     public String toString() {
-        return String.format("GlVertexFormat{attributes=%d,stride=%d}",
-                this.attributesKeyed.size(), this.stride);
+        return String.format("GlVertexFormat{attributes=%d,stride=%d}", this.attributesKeyed.size(), this.stride);
     }
 
     public static class Builder {
+
         private final Reference2ReferenceLinkedOpenHashMap<String, GlVertexAttribute> attributes;
         private final int stride;
 
@@ -72,7 +75,15 @@ public class GlVertexFormat {
 
         public Builder addAllElements(GlVertexFormat otherFormat) {
             for (var attribute : otherFormat.getAttributes()) {
-                this.addElement(new GlVertexAttribute(attribute.getFormat(), attribute.getName(), attribute.getCount(), attribute.isNormalized(), attribute.getPointer(), this.stride, attribute.isIntType()));
+                this.addElement(
+                        new GlVertexAttribute(
+                                attribute.getFormat(),
+                                attribute.getName(),
+                                attribute.getCount(),
+                                attribute.isNormalized(),
+                                attribute.getPointer(),
+                                this.stride,
+                                attribute.isIntType()));
             }
             return this;
         }
@@ -82,11 +93,13 @@ public class GlVertexFormat {
             return (nextPtr + (ATTRIBUTE_ALIGNMENT - 1)) & ~(ATTRIBUTE_ALIGNMENT - 1);
         }
 
-        public Builder addElement(String name, int pointer, GlVertexAttributeFormat format, int count, boolean normalized, boolean intType) {
+        public Builder addElement(String name, int pointer, GlVertexAttributeFormat format, int count,
+                boolean normalized, boolean intType) {
             if (pointer == NEXT_ALIGNED_POINTER) {
                 pointer = this.findNextPointer();
             }
-            return this.addElement(new GlVertexAttribute(format, name, count, normalized, pointer, this.stride, intType));
+            return this
+                    .addElement(new GlVertexAttribute(format, name, count, normalized, pointer, this.stride, intType));
         }
 
         /**
@@ -97,7 +110,13 @@ public class GlVertexFormat {
          */
         private Builder addElement(GlVertexAttribute attribute) {
             if (attribute.getPointer() >= this.stride) {
-                throw new IllegalArgumentException("Element " + attribute.getName() + " starts outside vertex format (" + attribute.getPointer() + ", stride is " + this.stride + ")");
+                throw new IllegalArgumentException(
+                        "Element " + attribute.getName()
+                                + " starts outside vertex format ("
+                                + attribute.getPointer()
+                                + ", stride is "
+                                + this.stride
+                                + ")");
             }
 
             if (attribute.getPointer() + attribute.getSize() > this.stride) {
@@ -105,7 +124,8 @@ public class GlVertexFormat {
             }
 
             if (this.attributes.put(attribute.getName(), attribute) != null) {
-                throw new IllegalStateException("Generic attribute " + attribute.getName() + " already defined in vertex format");
+                throw new IllegalStateException(
+                        "Generic attribute " + attribute.getName() + " already defined in vertex format");
             }
 
             return this;
@@ -128,8 +148,10 @@ public class GlVertexFormat {
             GlVertexAttribute prevAttribute = null;
 
             for (var attribute : allAttributes) {
-                if (prevAttribute != null && attribute.getPointer() < (prevAttribute.getPointer() + prevAttribute.getSize())) {
-                    throw new IllegalArgumentException("Attribute " + attribute.getName() + " overlaps with " + prevAttribute.getName());
+                if (prevAttribute != null
+                        && attribute.getPointer() < (prevAttribute.getPointer() + prevAttribute.getSize())) {
+                    throw new IllegalArgumentException(
+                            "Attribute " + attribute.getName() + " overlaps with " + prevAttribute.getName());
                 }
                 prevAttribute = attribute;
             }

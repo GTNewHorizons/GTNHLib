@@ -14,6 +14,7 @@ import com.github.bsideup.jabel.Desugar;
  */
 @Desugar
 public record GlVertexAttributeFormat(int typeId, int size) {
+
     public static final GlVertexAttributeFormat FLOAT = new GlVertexAttributeFormat(GL_FLOAT, 4);
     public static final GlVertexAttributeFormat SHORT = new GlVertexAttributeFormat(GL_SHORT, 2);
     public static final GlVertexAttributeFormat UNSIGNED_SHORT = new GlVertexAttributeFormat(GL_UNSIGNED_SHORT, 2);

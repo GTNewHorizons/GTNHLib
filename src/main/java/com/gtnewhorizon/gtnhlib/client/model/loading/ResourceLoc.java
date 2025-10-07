@@ -1,17 +1,20 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.function.Supplier;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
+
+import org.jetbrains.annotations.NotNull;
+
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.function.Supplier;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
 
 public interface ResourceLoc<T> {
 
@@ -40,6 +43,7 @@ public interface ResourceLoc<T> {
 
     @Desugar
     record ModelLoc(String owner, String path) implements ResourceLoc<JSONModel> {
+
         public static ModelLoc fromStr(String id) {
             final int sepIdx = id.indexOf(':');
             if (sepIdx < 0) return new ModelLoc("minecraft", id);
@@ -64,6 +68,7 @@ public interface ResourceLoc<T> {
 
     @Desugar
     record StateLoc(String owner, String path) implements ResourceLoc<StateModelMap> {
+
         @Override
         public String prefix() {
             return "blockstates/";

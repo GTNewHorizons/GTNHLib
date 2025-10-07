@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.impl.common.util;
 
 public class MathUtil {
+
     /**
      * @return True if the specified number is greater than zero and is a power of two, otherwise false
      */
@@ -21,13 +22,13 @@ public class MathUtil {
     }
 
     public static int mojfloor(float f) {
-        int truncated = (int)f;
-        return f < (float)truncated ? truncated - 1 : truncated;
+        int truncated = (int) f;
+        return f < (float) truncated ? truncated - 1 : truncated;
     }
 
     public static int mojfloor(double f) {
-        int truncated = (int)f;
-        return f < (double)truncated ? truncated - 1 : truncated;
+        int truncated = (int) f;
+        return f < (double) truncated ? truncated - 1 : truncated;
     }
 
     public static int clamp(int value, int min, int max) {

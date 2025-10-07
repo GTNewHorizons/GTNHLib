@@ -4,15 +4,9 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackX;
 import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackY;
 import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackZ;
 
-import com.gtnewhorizon.gtnhlib.block.BlockState;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
-import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
-import cpw.mods.fml.client.registry.RenderingRegistry;
 import java.util.Random;
 import java.util.function.Supplier;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -20,9 +14,20 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.block.BlockState;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
+
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
+import cpw.mods.fml.client.registry.RenderingRegistry;
+
 public class ModelISBRH implements ISimpleBlockRenderingHandler {
+
     /**
      * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
      */
@@ -45,7 +50,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     }
 
     @Override
-    public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
+    public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
+            RenderBlocks renderer) {
         final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
         final Tessellator tesselator = Tessellator.instance;
         final Supplier<ModelQuadViewMutable> sq = null;
@@ -90,14 +96,15 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         return rendered;
     }
 
-    protected void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator, @Nullable IIcon overrideIcon) {
+    protected void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
+            @Nullable IIcon overrideIcon) {
         for (int i = 0; i < 4; ++i) {
             tessellator.addVertexWithUV(
-                quad.getX(i) + x,
-                quad.getY(i) + y,
-                quad.getZ(i) + z,
-                quad.getTexU(i),
-                quad.getTexV(i));
+                    quad.getX(i) + x,
+                    quad.getY(i) + y,
+                    quad.getZ(i) + z,
+                    quad.getTexU(i),
+                    quad.getTexV(i));
         }
     }
 

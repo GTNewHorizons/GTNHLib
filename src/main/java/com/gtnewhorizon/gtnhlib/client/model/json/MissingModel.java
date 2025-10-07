@@ -2,9 +2,10 @@ package com.gtnewhorizon.gtnhlib.client.model.json;
 
 import static com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads.BLANK;
 
+import java.util.HashMap;
+
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import java.util.HashMap;
 
 public class MissingModel extends JSONModel {
 

@@ -4,6 +4,21 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.google.common.base.Objects;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
@@ -14,20 +29,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import lombok.Getter;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class JSONModel implements UnbakedModel {
 
@@ -46,8 +50,8 @@ public class JSONModel implements UnbakedModel {
     private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
     public JSONModel(@Nullable ResourceLoc.ModelLoc parentId, boolean useAO,
-                     Map<ModelDisplay.Position, ModelDisplay> display, @NotNull Map<String, String> textures,
-                     List<ModelElement> elements) {
+            Map<ModelDisplay.Position, ModelDisplay> display, @NotNull Map<String, String> textures,
+            List<ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
         this.display = display;
@@ -154,8 +158,7 @@ public class JSONModel implements UnbakedModel {
                 final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
 
-                    final Vector3f vert = mapSideToVertex(from, to, i, f.getName()).mulPosition(rot)
-                            .mulPosition(vRot);
+                    final Vector3f vert = mapSideToVertex(from, to, i, f.getName()).mulPosition(rot).mulPosition(vRot);
                     quad.setX(i, vert.x);
                     quad.setY(i, vert.y);
                     quad.setZ(i, vert.z);
@@ -175,10 +178,10 @@ public class JSONModel implements UnbakedModel {
                 // Set UV
                 // TODO: UV locking
                 final Vector4f uv = Objects.firstNonNull(f.getUv(), DEFAULT_UV);
-                setUV(quad,0, uv.x, uv.y);
-                setUV(quad,1, uv.x, uv.w);
-                setUV(quad,2, uv.z, uv.w);
-                setUV(quad,3, uv.z, uv.y);
+                setUV(quad, 0, uv.x, uv.y);
+                setUV(quad, 1, uv.x, uv.w);
+                setUV(quad, 2, uv.z, uv.w);
+                setUV(quad, 3, uv.z, uv.y);
 
                 // Set the sprite
                 bakeSprite(quad, this.textures.get(f.getTexture()));

@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.sprite;
 
 public enum SpriteTransparencyLevel {
+
     OPAQUE,
     TRANSPARENT,
     TRANSLUCENT;
@@ -13,10 +14,11 @@ public enum SpriteTransparencyLevel {
     }
 
     public interface Holder {
+
         SpriteTransparencyLevel embeddium$getTransparencyLevel();
 
         static SpriteTransparencyLevel getTransparencyLevel(Object o) {
-            return ((Holder)o).embeddium$getTransparencyLevel();
+            return ((Holder) o).embeddium$getTransparencyLevel();
         }
     }
 }

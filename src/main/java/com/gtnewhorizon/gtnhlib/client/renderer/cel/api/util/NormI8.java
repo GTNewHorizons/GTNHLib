@@ -3,15 +3,16 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util;
 import org.joml.Math;
 import org.joml.Vector3f;
 
-/**
- * Provides some utilities for working with packed normal vectors. Each normal component provides 8 bits of
- * precision in the range of [-1.0,1.0].
- *
- * | 32        | 24        | 16        | 8          |
- * | 0000 0000 | 0110 1100 | 0110 1100 | 0110 1100  |
- * | Padding   | X         | Y         | Z          |
- */
+/// Provides some utilities for working with packed normal vectors. Each normal component provides 8 bits of precision in
+/// the range of \[-1.0,1.0].
+///
+/// |||||
+/// | --------- | --------- | --------- | ---------- |
+/// | 32        | 24        | 16        | 8          |
+/// | 0000 0000 | 0110 1100 | 0110 1100 | 0110 1100  |
+/// | Padding   | X         | Y         | Z          |
 public class NormI8 {
+
     private static final int X_COMPONENT_OFFSET = 0;
     private static final int Y_COMPONENT_OFFSET = 8;
     private static final int Z_COMPONENT_OFFSET = 16;
@@ -34,6 +35,7 @@ public class NormI8 {
     /**
      * Packs the specified vector components into a 32-bit integer in XYZ ordering with the 8 bits of padding at the
      * end.
+     *
      * @param x The x component of the normal's vector
      * @param y The y component of the normal's vector
      * @param z The z component of the normal's vector
@@ -57,6 +59,7 @@ public class NormI8 {
 
     /**
      * Unpacks the x-component of the packed normal, denormalizing it to a float in the range of -1.0..1.0.
+     *
      * @param norm The packed normal
      */
     public static float unpackX(int norm) {
@@ -65,6 +68,7 @@ public class NormI8 {
 
     /**
      * Unpacks the y-component of the packed normal, denormalizing it to a float in the range of -1.0..1.0.
+     *
      * @param norm The packed normal
      */
     public static float unpackY(int norm) {
@@ -73,6 +77,7 @@ public class NormI8 {
 
     /**
      * Unpacks the z-component of the packed normal, denormalizing it to a float in the range of -1.0..1.0.
+     *
      * @param norm The packed normal
      */
     public static float unpackZ(int norm) {

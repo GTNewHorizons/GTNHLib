@@ -1,12 +1,16 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.sorting;
 
-import com.github.bsideup.jabel.Desugar;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexEncoder;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import java.util.BitSet;
+
 import org.joml.Vector3f;
 
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexEncoder;
+
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+
 public class TranslucentQuadAnalyzer {
+
     // X/Y/Z for each quad center
     private static final int EXPECTED_QUADS = 1000;
     private final FloatArrayList quadCenters = new FloatArrayList(EXPECTED_QUADS * 3);
@@ -19,6 +23,7 @@ public class TranslucentQuadAnalyzer {
     private boolean hasDistinctNormals;
 
     public enum Level {
+
         /**
          * No sorting is required of the current section.
          */
@@ -40,13 +45,15 @@ public class TranslucentQuadAnalyzer {
     }
 
     public TranslucentQuadAnalyzer() {
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             vertexPositions[i] = new Vector3f();
         }
     }
 
     @Desugar
-    public record SortState(Level level, float[] centers, int centersLength, BitSet normalSigns, Vector3f sharedNormal) {
+    public record SortState(Level level, float[] centers, int centersLength, BitSet normalSigns,
+            Vector3f sharedNormal) {
+
         public static final SortState NONE = new SortState(Level.NONE, null, 0, null, null);
 
         public boolean requiresDynamicSorting() {
@@ -54,7 +61,7 @@ public class TranslucentQuadAnalyzer {
         }
 
         public SortState compactForStorage() {
-            if(this == NONE || requiresDynamicSorting()) {
+            if (this == NONE || requiresDynamicSorting()) {
                 return this;
             } else {
                 return new SortState(level, null, 0, null, null);
@@ -67,10 +74,10 @@ public class TranslucentQuadAnalyzer {
     }
 
     private static BitSet cloneBits(BitSet bits) {
-        if(bits.isEmpty()) {
+        if (bits.isEmpty()) {
             return EMPTY;
         } else {
-            return (BitSet)bits.clone();
+            return (BitSet) bits.clone();
         }
     }
 
@@ -78,7 +85,8 @@ public class TranslucentQuadAnalyzer {
         // Let globalNormal = (a, b, c). Any plane with this normal vector is denoted by the equation ax + by + cz = d,
         // for some real number d.
         //
-        // Next, we know that any quad has either globalNormal or -globalNormal as a normal vector. Suppose a quad q has center (x, y, z).
+        // Next, we know that any quad has either globalNormal or -globalNormal as a normal vector. Suppose a quad q has
+        // center (x, y, z).
         // We define the "plane extension" of q as the unique plane in 3D space that q resides within. In particular,
         // any quad's plane extension (when all share parallel normals) is uniquely determined by the choice of d.
         //
@@ -92,10 +100,11 @@ public class TranslucentQuadAnalyzer {
         float a = globalNormal.x, b = globalNormal.y, c = globalNormal.z;
         float d = a * centerArray[0] + b * centerArray[1] + c * centerArray[2];
         int nQuads = quadCenters.size() / 3;
-        for(int quadIdx = 1; quadIdx < nQuads; quadIdx++) {
+        for (int quadIdx = 1; quadIdx < nQuads; quadIdx++) {
             int centerOff = quadIdx * 3;
-            float candidateD = a * centerArray[centerOff + 0] + b * centerArray[centerOff + 1] + c * centerArray[centerOff + 2];
-            if(Math.abs(candidateD - d) >= 1.0E-5F) {
+            float candidateD = a * centerArray[centerOff + 0] + b * centerArray[centerOff + 1]
+                    + c * centerArray[centerOff + 2];
+            if (Math.abs(candidateD - d) >= 1.0E-5F) {
                 // Different planes
                 return false;
             }
@@ -105,17 +114,18 @@ public class TranslucentQuadAnalyzer {
     }
 
     public SortState getSortState() {
-        if(quadCenters.isEmpty()) {
+        if (quadCenters.isEmpty()) {
             return SortState.NONE;
         } else {
             Level sortLevel;
 
             // Figure out what sort level is required
-            if(hasDistinctNormals) {
+            if (hasDistinctNormals) {
                 // Must use dynamic sort
                 sortLevel = Level.DYNAMIC;
             } else {
-                // If all quads are on the same plane we can use NONE sorting, otherwise we need to sort statically to put
+                // If all quads are on the same plane we can use NONE sorting, otherwise we need to sort statically to
+                // put
                 // them in the right order
                 sortLevel = areAllQuadsOnSamePlane() ? Level.NONE : Level.STATIC;
             }
@@ -126,10 +136,20 @@ public class TranslucentQuadAnalyzer {
                 finalState = SortState.NONE;
             } else if (sortLevel.requiresDynamicSorting()) {
                 // Clone everything
-                finalState = new SortState(sortLevel, quadCenters.toArray(new float[0]), quadCenters.size(), cloneBits(normalSigns), new Vector3f(globalNormal));
+                finalState = new SortState(
+                        sortLevel,
+                        quadCenters.toArray(new float[0]),
+                        quadCenters.size(),
+                        cloneBits(normalSigns),
+                        new Vector3f(globalNormal));
             } else {
                 // Just make a thin wrapper around our backing objects
-                finalState = new SortState(sortLevel, quadCenters.elements(), quadCenters.size(), normalSigns, globalNormal);
+                finalState = new SortState(
+                        sortLevel,
+                        quadCenters.elements(),
+                        quadCenters.size(),
+                        normalSigns,
+                        globalNormal);
             }
 
             return finalState;
@@ -208,10 +228,10 @@ public class TranslucentQuadAnalyzer {
         centers.add(totalY / 4);
         centers.add(totalZ / 4);
 
-        if(!hasDistinctNormals) {
+        if (!hasDistinctNormals) {
             calculateNormal();
 
-            if(globalNormal.x == 0 && globalNormal.y == 0 && globalNormal.z == 0) {
+            if (globalNormal.x == 0 && globalNormal.y == 0 && globalNormal.z == 0) {
                 // No normal has been tracked thus far, choose this one
                 globalNormal.set(currentNormal);
             } else {
@@ -236,7 +256,7 @@ public class TranslucentQuadAnalyzer {
         int i = currentVertex;
         vertexPositions[i].set(vertex.x, vertex.y, vertex.z);
         i++;
-        if(i == 4) {
+        if (i == 4) {
             captureQuad();
             i = 0;
         }

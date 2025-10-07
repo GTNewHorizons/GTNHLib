@@ -1,12 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFlags;
 
 /**
  * Provides a read-only view of a model quad. For mutable access to a model quad, see {@link ModelQuadViewMutable}.
  */
 public interface ModelQuadView {
+
     /**
      * @return The x-position of the vertex at index {@param idx}
      */
@@ -38,8 +39,8 @@ public interface ModelQuadView {
     float getTexV(int idx);
 
     /**
-     * @return The packed lightmap coordinates for the vertex at index {@param idx},
-     * or zero if regular lighting should be used.
+     * @return The packed lightmap coordinates for the vertex at index {@param idx}, or zero if regular lighting should
+     *         be used.
      */
     int getLight(int idx);
 
@@ -84,7 +85,9 @@ public interface ModelQuadView {
         return this.getColorIndex() != -1;
     }
 
-    default boolean hasAmbientOcclusion() { return true; }
+    default boolean hasAmbientOcclusion() {
+        return true;
+    }
 
     default int getVanillaLightEmission() {
         return 0;

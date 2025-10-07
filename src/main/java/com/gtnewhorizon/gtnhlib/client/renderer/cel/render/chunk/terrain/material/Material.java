@@ -1,9 +1,10 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.material;
 
+import java.util.Objects;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.TerrainRenderPass;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.terrain.material.parameters.MaterialParameters;
-import java.util.Objects;
 
 /**
  * A material provides the full configuration about how a geometry element should render. It corresponds to the vanilla
@@ -12,6 +13,7 @@ import java.util.Objects;
  * efficiency. The material configuration is recovered on the GPU within the render pass.
  */
 public final class Material {
+
     public final TerrainRenderPass pass;
     public final int packed;
 
@@ -20,9 +22,10 @@ public final class Material {
 
     /**
      * Constructs a new Material.
-     * @param pass the {@link TerrainRenderPass} to use for the base configuration
+     * 
+     * @param pass        the {@link TerrainRenderPass} to use for the base configuration
      * @param alphaCutoff the alpha level below which fragments should be discarded
-     * @param mipped whether mipmapping should be enabled on geometry rendered with this material
+     * @param mipped      whether mipmapping should be enabled on geometry rendered with this material
      */
     public Material(TerrainRenderPass pass, AlphaCutoffParameter alphaCutoff, boolean mipped) {
         if (alphaCutoff != AlphaCutoffParameter.ZERO && !pass.supportsFragmentDiscard()) {
@@ -57,10 +60,6 @@ public final class Material {
 
     @Override
     public String toString() {
-        return "Material{" +
-                "pass=" + pass +
-                ", alphaCutoff=" + alphaCutoff +
-                ", mipped=" + mipped +
-                '}';
+        return "Material{" + "pass=" + pass + ", alphaCutoff=" + alphaCutoff + ", mipped=" + mipped + '}';
     }
 }

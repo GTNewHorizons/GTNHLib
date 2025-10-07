@@ -1,8 +1,9 @@
 package com.gtnewhorizon.gtnhlib.block;
 
+import java.util.concurrent.locks.StampedLock;
+
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
-import java.util.concurrent.locks.StampedLock;
 
 /**
  * Borrowed from ModernFix, because 7.10 can't embed models in blocks easily
