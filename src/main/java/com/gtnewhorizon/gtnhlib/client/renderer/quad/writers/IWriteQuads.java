@@ -1,10 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad.writers;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import java.nio.ByteBuffer;
-
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 
 public interface IWriteQuads {
 
-    void writeQuad(QuadView quad, ByteBuffer buf);
+    void writeQuad(ModelQuadView quad, ByteBuffer buf);
 }

@@ -63,4 +63,6 @@ public interface ModelQuadViewMutable extends ModelQuadView {
     void setLightFace(ModelQuadFacing face);
 
     void setHasAmbientOcclusion(boolean hasAmbientOcclusion);
+
+    void setShaderBlockId(int shaderBlockId);
 }

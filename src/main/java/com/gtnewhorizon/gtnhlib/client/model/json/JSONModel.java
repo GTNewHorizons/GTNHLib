@@ -14,7 +14,6 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +22,8 @@ import java.util.Map;
 import java.util.function.Function;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.common.util.ForgeDirection;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -73,6 +74,63 @@ public class JSONModel implements UnbakedModel {
         q.setTexV(i, v);
     }
 
+    /**
+     * Modern Minecraft uses magic arrays to do this without breaking AO. This is the same thing, but without arrays.
+     * Note: still doesn't fix AO. Whoops.
+     */
+    @Contract(value = "_, _, _, _, false -> !null", pure = true)
+    private static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side, boolean allowNull) {
+
+        var ret = switch (side) {
+            case DOWN -> switch (index) {
+                    case 0 -> new Vector3f(from.x, from.y, to.z);
+                    case 1 -> new Vector3f(from.x, from.y, from.z);
+                    case 2 -> new Vector3f(to.x, from.y, from.z);
+                    case 3 -> new Vector3f(to.x, from.y, to.z);
+                    default -> throw new RuntimeException("Too many indices!");
+                };
+            case UP -> switch (index) {
+                    case 0 -> new Vector3f(from.x, to.y, from.z);
+                    case 1 -> new Vector3f(from.x, to.y, to.z);
+                    case 2 -> new Vector3f(to.x, to.y, to.z);
+                    case 3 -> new Vector3f(to.x, to.y, from.z);
+                    default -> throw new RuntimeException("Too many indices!");
+                };
+            case NORTH -> switch (index) {
+                    case 0 -> new Vector3f(to.x, to.y, from.z);
+                    case 1 -> new Vector3f(to.x, from.y, from.z);
+                    case 2 -> new Vector3f(from.x, from.y, from.z);
+                    case 3 -> new Vector3f(from.x, to.y, from.z);
+                    default -> throw new RuntimeException("Too many indices!");
+                };
+            case SOUTH -> switch (index) {
+                    case 0 -> new Vector3f(from.x, to.y, to.z);
+                    case 1 -> new Vector3f(from.x, from.y, to.z);
+                    case 2 -> new Vector3f(to.x, from.y, to.z);
+                    case 3 -> new Vector3f(to.x, to.y, to.z);
+                    default -> throw new RuntimeException("Too many indices!");
+                };
+            case WEST -> switch (index) {
+                    case 0 -> new Vector3f(from.x, to.y, from.z);
+                    case 1 -> new Vector3f(from.x, from.y, from.z);
+                    case 2 -> new Vector3f(from.x, from.y, to.z);
+                    case 3 -> new Vector3f(from.x, to.y, to.z);
+                    default -> throw new RuntimeException("Too many indices!");
+                };
+            case EAST -> switch (index) {
+                    case 0 -> new Vector3f(to.x, to.y, to.z);
+                    case 1 -> new Vector3f(to.x, from.y, to.z);
+                    case 2 -> new Vector3f(to.x, from.y, from.z);
+                    case 3 -> new Vector3f(to.x, to.y, from.z);
+                    default -> throw new RuntimeException("Too many indices!");
+                };
+            case UNKNOWN -> null;
+        };
+
+        if (ret == null && !allowNull) throw new IllegalArgumentException("No vector matching UNKNOWN!");
+        return ret;
+    }
+
     @Override
     public BakedModel bake(BakeData data) {
 
@@ -102,7 +160,7 @@ public class JSONModel implements UnbakedModel {
                 final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
 
-                    final Vector3f vert = QuadBuilder.mapSideToVertex(from, to, i, f.getName(), false).mulPosition(rot)
+                    final Vector3f vert = mapSideToVertex(from, to, i, f.getName(), false).mulPosition(rot)
                             .mulPosition(vRot);
                     quad.setX(i, vert.x);
                     quad.setY(i, vert.y);
@@ -120,14 +178,6 @@ public class JSONModel implements UnbakedModel {
                 final var normFace = quad.getNormalFace();
                 quad.setLightFace(normFace != ModelQuadFacing.UNASSIGNED ? normFace : ModelQuadFacing.POS_Y);
 
-                // Set bake flags
-                int flags = switch (f.getRotation()) {
-                    case 90 -> QuadBuilder.BAKE_ROTATE_90;
-                    case 180 -> QuadBuilder.BAKE_ROTATE_180;
-                    case 270 -> QuadBuilder.BAKE_ROTATE_270;
-                    default -> QuadBuilder.BAKE_ROTATE_NONE;
-                };
-
                 // Set UV
                 // TODO: UV locking
                 final Vector4f uv = Objects.firstNonNull(f.getUv(), DEFAULT_UV);
@@ -137,7 +187,7 @@ public class JSONModel implements UnbakedModel {
                 setUV(quad,3, uv.z, uv.y);
 
                 // Set the sprite
-                bakeSprite(quad, this.textures.get(f.getTexture()), flags);
+                bakeSprite(quad, this.textures.get(f.getTexture()));
 
                 // Set the tint index
                 quad.setColorIndex(f.getTintIndex());
@@ -155,7 +205,7 @@ public class JSONModel implements UnbakedModel {
     }
 
     // TODO fix
-    private void bakeSprite(ModelQuadViewMutable quad, String name, int flags) {
+    private void bakeSprite(ModelQuadViewMutable quad, String name) {
         final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
         final float minU = icon.getMinU();
         final float minV = icon.getMinV();

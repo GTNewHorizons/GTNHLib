@@ -38,17 +38,4 @@ public enum Axis {
 
     }
 
-    public enum Direction {
-
-        POSITIVE,
-        NEGATIVE;
-
-        public static Direction fromDirection(ForgeDirection dir) {
-            return switch (dir) {
-                case DOWN, NORTH, WEST -> NEGATIVE;
-                case UP, SOUTH, EAST -> POSITIVE;
-                case UNKNOWN -> null;
-            };
-        }
-    }
 }

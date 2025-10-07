@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.quad;
 
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.properties.ModelQuadFlags;
@@ -64,16 +63,6 @@ public interface ModelQuadViewMutable extends ModelQuadView {
      * Sets the bit-flag field which contains the {@link ModelQuadFlags} for this quad
      */
     void setFlags(int flags);
-
-    /**
-     * Sets the sprite used by this quad
-     */
-    void setSprite(TextureAtlasSprite sprite);
-
-    /**
-     * Sets the color index used by this quad
-     */
-    void setColorIndex(int index);
 
     /**
      * If not {@link ForgeDirection#UNKNOWN}, quad is coplanar with a block face which, if known, simplifies or

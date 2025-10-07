@@ -10,10 +10,6 @@ public interface QuadView extends ModelQuadViewMutable {
 
     ForgeDirection getFace();
 
-    QuadView copyFrom(QuadView src);
-
-    int[] getRawData();
-
     void setShaderBlockId(int shaderBlockId);
 
     int getShaderBlockId();

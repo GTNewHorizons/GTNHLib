@@ -14,9 +14,6 @@ public enum ModelQuadFacing {
     NORTH,
     UNASSIGNED;
 
-    public static final ModelQuadFacing[] VALUES = ModelQuadFacing.values();
-    public static final int COUNT = VALUES.length;
-
     public static ModelQuadFacing fromDirection(ForgeDirection dir) {
         return switch (dir) {
             case DOWN -> DOWN;
@@ -66,15 +63,4 @@ public enum ModelQuadFacing {
         return UNASSIGNED;
     }
 
-    public ModelQuadFacing getOpposite() {
-        return switch (this) {
-            case UP -> DOWN;
-            case DOWN -> UP;
-            case EAST -> WEST;
-            case WEST -> EAST;
-            case SOUTH -> NORTH;
-            case NORTH -> SOUTH;
-            default -> UNASSIGNED;
-        };
-    }
 }
