@@ -100,6 +100,11 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
+    public void setForgeNormal(int idx, int normal) {
+        this.data[vertexOffset(idx) + NORMAL_INDEX] = normal;
+    }
+
+    @Override
     public void setShaderBlockId(int shaderBlockId) {
         this.shaderBlockId = shaderBlockId;
     }
