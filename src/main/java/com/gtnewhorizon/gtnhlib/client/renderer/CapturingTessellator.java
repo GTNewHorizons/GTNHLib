@@ -8,7 +8,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TE
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.vertexOffset;
 import static net.minecraft.util.MathHelper.clamp_int;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
@@ -25,6 +24,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.TessFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
