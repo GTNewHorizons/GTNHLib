@@ -23,7 +23,6 @@ import java.util.function.Function;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.util.ForgeDirection;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -78,10 +77,9 @@ public class JSONModel implements UnbakedModel {
      * Modern Minecraft uses magic arrays to do this without breaking AO. This is the same thing, but without arrays.
      * Note: still doesn't fix AO. Whoops.
      */
-    @Contract(value = "_, _, _, _, false -> !null", pure = true)
-    private static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side, boolean allowNull) {
-
-        var ret = switch (side) {
+    @NotNull
+    private static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side) {
+        return switch (side) {
             case DOWN -> switch (index) {
                     case 0 -> new Vector3f(from.x, from.y, to.z);
                     case 1 -> new Vector3f(from.x, from.y, from.z);
@@ -124,18 +122,14 @@ public class JSONModel implements UnbakedModel {
                     case 3 -> new Vector3f(to.x, to.y, from.z);
                     default -> throw new RuntimeException("Too many indices!");
                 };
-            case UNKNOWN -> null;
+            case UNKNOWN -> throw new IllegalArgumentException("No vector matching UNKNOWN!");
         };
-
-        if (ret == null && !allowNull) throw new IllegalArgumentException("No vector matching UNKNOWN!");
-        return ret;
     }
 
     @Override
     public BakedModel bake(BakeData data) {
 
         final Matrix4f vRot = data.getAffineMatrix();
-        //final var builder = new NdQuadBuilder();
         final var sidedQuadStore = new HashMap<ModelQuadFacing, ArrayList<ModelQuadView>>(7);
 
         // Append faces from each element
@@ -160,7 +154,7 @@ public class JSONModel implements UnbakedModel {
                 final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
 
-                    final Vector3f vert = mapSideToVertex(from, to, i, f.getName(), false).mulPosition(rot)
+                    final Vector3f vert = mapSideToVertex(from, to, i, f.getName()).mulPosition(rot)
                             .mulPosition(vRot);
                     quad.setX(i, vert.x);
                     quad.setY(i, vert.y);
