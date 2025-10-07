@@ -7,7 +7,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.util.NormI8.unpackZ;
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -48,7 +48,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
         final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
         final Tessellator tesselator = Tessellator.instance;
-        final Supplier<QuadView> sq = null;
+        final Supplier<ModelQuadViewMutable> sq = null;
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
