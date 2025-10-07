@@ -6,7 +6,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 
 import java.util.Random;
-import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -20,22 +19,22 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.block.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
+@ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     /**
      * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
      */
-    public int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
+    public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
-    public static final ModelISBRH MODEL_ISBRH = new ModelISBRH();
-    private static final Random RAND = new Random();
+    private final Random RAND = new Random();
 
-    private ModelISBRH() {}
+    public ModelISBRH() {}
 
     /// Override this if you want programmatic model selection
     @SuppressWarnings("unused")
@@ -53,7 +52,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             RenderBlocks renderer) {
         final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
         final Tessellator tesselator = Tessellator.instance;
-        final Supplier<ModelQuadViewMutable> sq = null;
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
@@ -65,12 +63,12 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         for (var dir : DIRECTIONS) {
             // TODO: face culling
 
-            final var quads = model.getQuads(world, x, y, z, block, meta, dir, random, color, sq);
+            final var quads = model.getQuads(world, x, y, z, block, meta, dir, random, color, null);
             if (quads.isEmpty()) continue;
 
             // iterates over the quads and dumps em into the tesselator, nothing special
             rendered = true;
-            for (final ModelQuadView quad : quads) {
+            for (final var quad : quads) {
 
                 if (quad.getColorIndex() != -1 && color == -1) {
                     color = block.colorMultiplier(world, x, y, z);
