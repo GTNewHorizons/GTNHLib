@@ -6,12 +6,12 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
 public interface BakedModel {
 
@@ -58,5 +58,5 @@ public interface BakedModel {
     /// after use. Ignored otherwise.
     /// @return A list of quads from the model. These are *not* adjusted for the given xyz - that is up to the renderer.
     List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-            ForgeDirection dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool);
+            ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool);
 }
