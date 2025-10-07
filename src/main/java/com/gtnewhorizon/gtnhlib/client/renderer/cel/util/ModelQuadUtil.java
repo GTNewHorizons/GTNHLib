@@ -46,6 +46,10 @@ public class ModelQuadUtil {
         return findNormalFace(NormI8.unpackX(normal), NormI8.unpackY(normal), NormI8.unpackZ(normal));
     }
 
+    public static ModelQuadFacing findLightFace(int normal) {
+        return QuadUtil.findLightFace(NormI8.unpackX(normal), NormI8.unpackY(normal), NormI8.unpackZ(normal));
+    }
+
     public static int calculateNormal(ModelQuadView quad) {
         final float x0 = quad.getX(0);
         final float y0 = quad.getY(0);

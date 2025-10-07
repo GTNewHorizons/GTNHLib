@@ -5,6 +5,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -51,7 +52,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
             RenderBlocks renderer) {
         final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
-        final Tessellator tesselator = Tessellator.instance;
+        final Tessellator tesselator = TessellatorManager.get();
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
