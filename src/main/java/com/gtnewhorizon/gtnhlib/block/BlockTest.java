@@ -1,9 +1,9 @@
 package com.gtnewhorizon.gtnhlib.block;
 
+import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-
-import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 
 public class BlockTest extends Block {
 
@@ -13,6 +13,6 @@ public class BlockTest extends Block {
 
     @Override
     public int getRenderType() {
-        return ModelISBRH.MODEL_ISBRH.JSON_ISBRH_ID;
+        return JSON_ISBRH_ID;
     }
 }

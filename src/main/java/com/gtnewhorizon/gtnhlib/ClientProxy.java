@@ -37,7 +37,7 @@ public class ClientProxy extends CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
 
-        RenderingRegistry.registerBlockHandler(ModelISBRH.MODEL_ISBRH);
+        RenderingRegistry.registerBlockHandler(new ModelISBRH());
     }
 
     @Override
