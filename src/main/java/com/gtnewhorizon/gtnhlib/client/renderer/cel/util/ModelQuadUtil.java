@@ -1,12 +1,8 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.util;
 
-import org.joml.Vector3f;
-
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.ColorARGB;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.render.chunk.vertex.format.ChunkVertexEncoder;
 
 /// Provides some utilities and constants for interacting with vanilla's model quad vertex format.
 /// This is the vertex format used by Minecraft 7.10 for chunk meshes and model quads. Internally, it uses integer
@@ -89,43 +85,4 @@ public class ModelQuadUtil {
         return NormI8.pack(normX, normY, normZ);
     }
 
-    public static void calculateNormal(ChunkVertexEncoder.Vertex[] quad, Vector3f result) {
-        QuadUtil.calculateNormal(quad, result);
-    }
-
-    public static int mergeNormal(int packedNormal, int calcNormal) {
-        if ((packedNormal & 0xFFFFFF) == 0) return calcNormal;
-        return packedNormal;
-    }
-
-    public static int mergeBakedLight(int packedLight, int vanillaLightEmission, int calcLight) {
-        // bail early in most cases
-        if (packedLight == 0 && vanillaLightEmission == 0) return calcLight;
-
-        int psl = (packedLight >> 16) & 0xFF;
-        int csl = (calcLight >> 16) & 0xFF;
-        int pbl = (packedLight) & 0xFF;
-        int cbl = (calcLight) & 0xFF;
-        int bl = Math.max(Math.max(pbl, cbl), vanillaLightEmission);
-        int sl = Math.max(Math.max(psl, csl), vanillaLightEmission);
-        return (sl << 16) | bl;
-    }
-
-    /// Mixes two ABGR colors together like what Forge does in VertexConsumer.
-    ///
-    /// Despite the name, the method tries to avoid doing any work whenever possible.
-    public static int mixARGBColors(int colorA, int colorB) {
-        // Most common case: Either quad coloring or tint-based coloring, but not both
-        if (colorA == -1) {
-            return colorB;
-        } else if (colorB == -1) {
-            return colorA;
-        }
-        // General case (rare): Both colorings, actually perform the multiplication
-        int a = (int) ((ColorARGB.unpackAlpha(colorA) / 255.0f) * (ColorARGB.unpackAlpha(colorB) / 255.0f) * 255.0f);
-        int b = (int) ((ColorARGB.unpackBlue(colorA) / 255.0f) * (ColorARGB.unpackBlue(colorB) / 255.0f) * 255.0f);
-        int g = (int) ((ColorARGB.unpackGreen(colorA) / 255.0f) * (ColorARGB.unpackGreen(colorB) / 255.0f) * 255.0f);
-        int r = (int) ((ColorARGB.unpackRed(colorA) / 255.0f) * (ColorARGB.unpackRed(colorB) / 255.0f) * 255.0f);
-        return ColorARGB.pack(r, g, b, a);
-    }
 }

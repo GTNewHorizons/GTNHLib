@@ -2,7 +2,6 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.ColorABGR;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.impl.common.util.MathUtil;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.BakedQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 
 public class ModelQuadFlags {
@@ -161,9 +160,6 @@ public class ModelQuadFlags {
         float maxZ = -32.0F;
 
         int numVertices = 4;
-        if (quad instanceof BakedQuadView bakedQuad) {
-            numVertices = Math.min(numVertices, bakedQuad.getVerticesCount());
-        }
 
         boolean degenerate = false, nonOpaqueColor = false;
 
