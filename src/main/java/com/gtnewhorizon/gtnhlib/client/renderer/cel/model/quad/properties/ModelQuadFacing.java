@@ -74,5 +74,5 @@ public enum ModelQuadFacing {
                 case Z -> positive ? POS_Z : NEG_Z;
             };
         }
-    };
+    }
 }
