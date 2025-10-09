@@ -18,13 +18,25 @@ import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.json.ModelDisplay.Position;
 import com.gtnewhorizon.gtnhlib.client.model.json.ModelElement.Axis;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
-import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
+
+    private static ForgeDirection fromName(String name) {
+        return switch (name) {
+            case "up" -> ForgeDirection.UP;
+            case "down" -> ForgeDirection.DOWN;
+            case "north" -> ForgeDirection.NORTH;
+            case "south" -> ForgeDirection.SOUTH;
+            case "west" -> ForgeDirection.WEST;
+            case "east" -> ForgeDirection.EAST;
+            case "unknown" -> ForgeDirection.UNKNOWN;
+            default -> null;
+        };
+    }
 
     private Vector3f loadVec3(JsonObject in, String name) {
 
@@ -137,13 +149,13 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
         for (Map.Entry<String, JsonElement> e : json.entrySet()) {
 
-            final ForgeDirection side = DirectionUtil.fromName(e.getKey());
+            final ForgeDirection side = fromName(e.getKey());
             final JsonObject face = e.getValue().getAsJsonObject();
 
             final Vector4f uv = (face.has("uv")) ? loadVec4(face, "uv") : null;
             String texture = JsonUtil.loadStr(face, "texture");
             if (texture.startsWith("#")) texture = texture.substring(1);
-            final ForgeDirection cullFace = DirectionUtil.fromName(JsonUtil.loadStr(face, "cullface", "unknown"));
+            final ForgeDirection cullFace = fromName(JsonUtil.loadStr(face, "cullface", "unknown"));
             final int rotation = JsonUtil.loadInt(face, "rotation", 0);
             final int tintIndex = JsonUtil.loadInt(face, "tintindex", -1);
 
