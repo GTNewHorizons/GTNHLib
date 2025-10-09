@@ -1,5 +1,14 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.util;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_X;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Z;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_X;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Z;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -35,7 +44,27 @@ public class ModelQuadUtil {
     }
 
     public static ModelQuadFacing findNormalFace(float x, float y, float z) {
-        return QuadUtil.findNormalFace(x, y, z);
+        if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z)) {
+            return ModelQuadFacing.UNASSIGNED;
+        }
+
+        float maxDot = 0;
+        ModelQuadFacing closestFace = null;
+
+        for (ModelQuadFacing face : ModelQuadFacing.DIRECTIONS) {
+            float dot = (x * face.getStepX()) + (y * face.getStepY()) + (z * face.getStepZ());
+
+            if (dot > maxDot) {
+                maxDot = dot;
+                closestFace = face;
+            }
+        }
+
+        if (closestFace != null && abs(maxDot - 1.0f) < 1.0E-5F) {
+            return closestFace;
+        }
+
+        return ModelQuadFacing.UNASSIGNED;
     }
 
     public static ModelQuadFacing findNormalFace(int normal) {
@@ -43,7 +72,14 @@ public class ModelQuadUtil {
     }
 
     public static ModelQuadFacing findLightFace(int normal) {
-        return QuadUtil.findLightFace(NormI8.unpackX(normal), NormI8.unpackY(normal), NormI8.unpackZ(normal));
+        float x = NormI8.unpackX(normal);
+        float y = NormI8.unpackY(normal);
+        float z = NormI8.unpackZ(normal);
+        var max = (max(max((abs(x)), abs(y)), abs(z)));
+
+        if (max == x) return x < 0 ? NEG_X : POS_X;
+        if (max == z) return z < 0 ? NEG_Z : POS_Z;
+        return y < 0 ? NEG_Y : POS_Y;
     }
 
     public static int calculateNormal(ModelQuadView quad) {
@@ -83,6 +119,20 @@ public class ModelQuadUtil {
         }
 
         return NormI8.pack(normX, normY, normZ);
+    }
+
+    @SuppressWarnings("unused")
+    public static int mergeBakedLight(int packedLight, int vanillaLightEmission, int calcLight) {
+        // bail early in most cases
+        if (packedLight == 0 && vanillaLightEmission == 0) return calcLight;
+
+        int psl = (packedLight >> 16) & 0xFF;
+        int csl = (calcLight >> 16) & 0xFF;
+        int pbl = (packedLight) & 0xFF;
+        int cbl = (calcLight) & 0xFF;
+        int bl = Math.max(Math.max(pbl, cbl), vanillaLightEmission);
+        int sl = Math.max(Math.max(psl, csl), vanillaLightEmission);
+        return (sl << 16) | bl;
     }
 
 }
