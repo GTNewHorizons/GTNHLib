@@ -8,6 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 import com.gtnewhorizon.gtnhlib.blockpos.IWorldReferent;
 import com.gtnewhorizon.gtnhlib.util.ItemUtil;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -59,7 +60,8 @@ public class ItemTransfer {
 
     public <Coord extends IBlockPos & IWorldReferent> void push(Coord pos, ForgeDirection side) {
         TileEntity self = pos.getWorld().getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        TileEntity adjacent = pos.getWorld().getTileEntity(pos.getX() + side.offsetX, pos.getY() + side.offsetY, pos.getZ() + side.offsetZ);
+        TileEntity adjacent = pos.getWorld()
+                .getTileEntity(pos.getX() + side.offsetX, pos.getY() + side.offsetY, pos.getZ() + side.offsetZ);
 
         push(self, side, adjacent);
     }
@@ -71,7 +73,8 @@ public class ItemTransfer {
 
     public <Coord extends IBlockPos & IWorldReferent> void pull(Coord pos, ForgeDirection side) {
         TileEntity self = pos.getWorld().getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        TileEntity adjacent = pos.getWorld().getTileEntity(pos.getX() + side.offsetX, pos.getY() + side.offsetY, pos.getZ() + side.offsetZ);
+        TileEntity adjacent = pos.getWorld()
+                .getTileEntity(pos.getX() + side.offsetX, pos.getY() + side.offsetY, pos.getZ() + side.offsetZ);
 
         pull(self, side, adjacent);
     }
@@ -113,7 +116,7 @@ public class ItemTransfer {
         int itemsTransferred = 0, stacksTransferred = 0;
 
         outer: while (iter.hasNext() && stacksTransferred < stacksToTransfer
-            && itemsTransferred < maxTotalTransferred) {
+                && itemsTransferred < maxTotalTransferred) {
             ImmutableItemStack available = iter.next();
 
             if (available == null) continue;
