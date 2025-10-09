@@ -4,14 +4,14 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
+import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 
 public class DroppingItemSink implements IItemSink {
 
     private final World world;
-    private final BlockPos pos;
+    private final IBlockPos pos;
 
-    public DroppingItemSink(World world, BlockPos pos) {
+    public DroppingItemSink(World world, IBlockPos pos) {
         this.world = world;
         this.pos = pos;
     }
@@ -20,9 +20,9 @@ public class DroppingItemSink implements IItemSink {
     public ItemStack store(ItemStack stack) {
         EntityItem entity = new EntityItem(
                 world,
-                pos.x + 0.5,
-                pos.y + 0.5,
-                pos.z + 0.5,
+                pos.getX() + 0.5,
+                pos.getY() + 0.5,
+                pos.getZ() + 0.5,
                 stack);
 
         entity.motionX = 0;

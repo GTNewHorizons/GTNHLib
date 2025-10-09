@@ -13,11 +13,13 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.hash.Fnv1a32;
 
 import it.unimi.dsi.fastutil.Hash;
 
 @SuppressWarnings("unused")
+@Desugar
 public record ItemId(Item item, int meta, NBTTagCompound tag) implements ImmutableItemMeta {
 
     @Override

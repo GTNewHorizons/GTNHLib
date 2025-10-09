@@ -7,8 +7,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 
-import gregtech.api.util.GTDataUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 
 public class InventoryItemSource implements IItemSource {
 
@@ -44,9 +44,24 @@ public class InventoryItemSource implements IItemSource {
         this.allowedSlots = slots;
     }
 
+    public static int[] intersect(int[] a, int[] b) {
+        IntLinkedOpenHashSet a2 = new IntLinkedOpenHashSet(a);
+        IntLinkedOpenHashSet b2 = new IntLinkedOpenHashSet(b);
+
+        IntArrayList out = new IntArrayList();
+
+        a2.forEach(i -> {
+            if (b2.contains(i)) {
+                out.add(i);
+            }
+        });
+
+        return out.toIntArray();
+    }
+
     @Override
     public @NotNull InventorySourceIterator iterator() {
-        int[] effectiveSlots = allowedSlots != null ? GTDataUtils.intersect(slots, allowedSlots) : slots;
+        int[] effectiveSlots = allowedSlots != null ? intersect(slots, allowedSlots) : slots;
 
         return new AbstractInventorySourceIterator(effectiveSlots) {
 

@@ -11,6 +11,8 @@ import net.minecraft.item.ItemStack;
  */
 public interface InventorySourceIterator extends ListIterator<ImmutableItemStack> {
 
+    InventorySourceIterator EMPTY = new EmptyInventorySourceIterator();
+
     @Override
     default void set(ImmutableItemStack immutableItemStack) {
         throw new UnsupportedOperationException("Cannot insert items into an InventorySourceIterator");
@@ -41,4 +43,47 @@ public interface InventorySourceIterator extends ListIterator<ImmutableItemStack
      * nothing or throw an exception.
      */
     void insert(ItemStack stack);
+
+    class EmptyInventorySourceIterator implements InventorySourceIterator {
+
+        @Override
+        public ItemStack extract(int amount) {
+            return null;
+        }
+
+        @Override
+        public void insert(ItemStack stack) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public ImmutableItemStack next() {
+            return null;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return false;
+        }
+
+        @Override
+        public ImmutableItemStack previous() {
+            return null;
+        }
+
+        @Override
+        public int nextIndex() {
+            return 0;
+        }
+
+        @Override
+        public int previousIndex() {
+            return 0;
+        }
+    }
 }

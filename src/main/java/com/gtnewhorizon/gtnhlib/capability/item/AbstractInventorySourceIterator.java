@@ -134,11 +134,11 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         return slots[last];
     }
 
-    static boolean isStackValid(ItemStack stack) {
+    public static boolean isStackValid(ItemStack stack) {
         return stack != null && stack.getItem() != null && stack.stackSize > 0;
     }
 
-    static boolean areStacksEqual(ItemStack a, ItemStack b) {
+    public static boolean areStacksEqual(ItemStack a, ItemStack b) {
         if (a == null || b == null) return false;
 
         if (a.getItem() != b.getItem()) return false;
@@ -148,7 +148,7 @@ public abstract class AbstractInventorySourceIterator implements InventorySource
         return true;
     }
 
-    static ItemStack copyAmount(int amount, ItemStack stack) {
+    public static ItemStack copyAmount(int amount, ItemStack stack) {
         if (stack == null || stack.getItem() == null) return null;
 
         stack = stack.copy();
