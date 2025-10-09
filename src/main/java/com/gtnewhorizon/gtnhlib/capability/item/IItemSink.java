@@ -11,7 +11,9 @@ import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
 
 /**
  * Something that can accept items. Should only be retrieved via
- * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}.
+ * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}. A sink must be effectively stateless. That is, it
+ * can use caches to improve performance but its methods must always reflect the state of the world immediately. There
+ * is no defined lifetime for a sink - it may last for one operation, or it may be stored across several ticks.
  */
 public interface IItemSink {
 
@@ -38,7 +40,7 @@ public interface IItemSink {
     /**
      * Returns the stored amount of items in the sink. If this sink does not support this operation,
      * {@link OptionalInt#empty()} must be returned. Otherwise, a >=0 integer must be returned.
-     * 
+     *
      * @param stack The stack, or null for all items.
      * @return The count for the given stack, or empty if this operation is invalid.
      */

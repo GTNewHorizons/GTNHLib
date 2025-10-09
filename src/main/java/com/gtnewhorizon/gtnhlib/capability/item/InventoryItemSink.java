@@ -1,9 +1,7 @@
 package com.gtnewhorizon.gtnhlib.capability.item;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.BitSet;
 import java.util.OptionalInt;
-import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
@@ -12,102 +10,78 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.gtnewhorizon.gtnhlib.datastructs.extensions.IterableBitSet;
 import com.gtnewhorizon.gtnhlib.util.ItemUtil;
-import com.gtnewhorizon.gtnhlib.util.data.ItemId;
+
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntIterable;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntIterators;
 
 public class InventoryItemSink implements IItemSink {
 
     public final IInventory inv;
     private final ForgeDirection side;
 
-    private final ArrayListMultimap<ItemId, SlotInfo> partialItemStacks = ArrayListMultimap.create();
-
-    private final IterableBitSet emptySlots = new IterableBitSet();
-
     private boolean markedDirty = false;
+
+    private BitSet allowedSlots = null;
 
     public InventoryItemSink(IInventory inv, ForgeDirection side) {
         this.inv = inv;
         this.side = side;
+    }
 
-        IntStream slots;
-
-        if (inv instanceof ISidedInventory sided) {
-            slots = IntStream.of(sided.getAccessibleSlotsFromSide(side.ordinal()));
-        } else {
-            slots = IntStream.range(0, inv.getSizeInventory());
+    @Override
+    public void setAllowedSinkSlots(int @org.jetbrains.annotations.Nullable [] slots) {
+        if (slots == null) {
+            allowedSlots = null;
+            return;
         }
 
-        slots.forEach(slot -> {
-            ItemStack existing = inv.getStackInSlot(slot);
+        if (allowedSlots == null) {
+            allowedSlots = new BitSet();
+        } else {
+            allowedSlots.clear();
+        }
 
-            int maxStack = getSlotStackLimit(slot, existing);
-
-            if (ItemUtil.isStackEmpty(existing)) {
-                emptySlots.set(slot);
-            } else if (existing.stackSize < maxStack) {
-                SlotInfo slotInfo = new SlotInfo(
-                        inv,
-                        slot,
-                        inv.getStackInSlot(slot),
-                        getSlotStackLimit(slot, existing));
-                partialItemStacks.put(ItemId.create(existing), slotInfo);
-            }
-        });
+        for (int slot : slots) {
+            allowedSlots.set(slot);
+        }
     }
 
     @Override
     public ItemStack store(ItemStack stack) {
+        stack = ItemStack.copyItemStack(stack);
+
         if (stack.stackSize <= 0) return null;
 
-        ItemId id = ItemId.create(stack);
+        this.markedDirty = false;
 
-        List<SlotInfo> partialSlots = partialItemStacks.get(id);
+        IntIterable slots;
 
-        Iterator<SlotInfo> iterator = partialSlots.iterator();
-        while (iterator.hasNext()) {
-            if (stack.stackSize <= 0) return null;
-
-            SlotInfo slot = iterator.next();
-
-            if (!inv.isItemValidForSlot(slot.getSlot(), stack)) continue;
-
-            if (side != ForgeDirection.UNKNOWN && inv instanceof ISidedInventory sided) {
-                if (!sided.canInsertItem(slot.getSlot(), stack, side.ordinal())) continue;
-            }
-
-            // Safety in case the slot changed since we cached it
-            slot.contents = inv.getStackInSlot(slot.getSlot());
-            if (!ItemUtil.areStacksEqual(slot.contents, stack)) {
-                iterator.remove();
-                continue;
-            }
-
-            int remaining = slot.maxStackSize - slot.contents.stackSize;
-
-            if (remaining <= 0) {
-                iterator.remove();
-                continue;
-            }
-
-            int toTransfer = Math.min(remaining, stack.stackSize);
-
-            stack.stackSize -= toTransfer;
-            slot.contents.stackSize += toTransfer;
-
-            markDirty();
-
-            if (slot.contents.stackSize >= slot.maxStackSize) {
-                iterator.remove();
-            }
+        if (inv instanceof ISidedInventory sided) {
+            slots = IntArrayList.wrap(sided.getAccessibleSlotsFromSide(side.ordinal()));
+        } else {
+            slots = () -> IntIterators.fromTo(0, inv.getSizeInventory());
         }
 
-        if (stack.stackSize <= 0) return null;
+        IterableBitSet emptySlots = null;
 
-        for (int slot : emptySlots) {
-            if (stack.stackSize <= 0) return null;
+        for (IntIterator iterator = slots.iterator(); iterator.hasNext();) {
+            int slot = iterator.nextInt();
+
+            if (allowedSlots != null && !allowedSlots.get(slot)) continue;
+
+            ItemStack inSlot = inv.getStackInSlot(slot);
+
+            if (ItemUtil.isStackEmpty(inSlot)) {
+                if (emptySlots == null) emptySlots = new IterableBitSet();
+                emptySlots.set(slot);
+                continue;
+            }
+
+            if (!ItemUtil.areStacksEqual(inSlot, stack)) continue;
 
             if (!inv.isItemValidForSlot(slot, stack)) continue;
 
@@ -115,26 +89,41 @@ public class InventoryItemSink implements IItemSink {
                 if (!sided.canInsertItem(slot, stack, side.ordinal())) continue;
             }
 
-            // Safety in case the slot changed since we cached it
-            if (inv.getStackInSlot(slot) != null) {
-                emptySlots.clear(slot);
-                continue;
+            int slotLimit = getSlotStackLimit(slot, inSlot);
+            int remaining = slotLimit - inSlot.stackSize;
+
+            int toTransfer = Math.min(remaining, stack.stackSize);
+
+            stack.stackSize -= toTransfer;
+            inSlot.stackSize += toTransfer;
+
+            inv.setInventorySlotContents(slot, inSlot);
+
+            markDirty();
+
+            if (stack.stackSize <= 0) return null;
+        }
+
+        if (stack.stackSize <= 0) return null;
+        if (emptySlots == null) return stack;
+
+        for (int slot : emptySlots) {
+            if (!inv.isItemValidForSlot(slot, stack)) continue;
+
+            if (side != ForgeDirection.UNKNOWN && inv instanceof ISidedInventory sided) {
+                if (!sided.canInsertItem(slot, stack, side.ordinal())) continue;
             }
 
-            int maxStack = getSlotStackLimit(slot, stack);
-
-            int toTransfer = Math.min(maxStack, stack.stackSize);
+            int slotStackLimit = getSlotStackLimit(slot, stack);
+            int toTransfer = Math.min(slotStackLimit, stack.stackSize);
 
             ItemStack inserted = ItemUtil.copyAmount(toTransfer, stack);
             inv.setInventorySlotContents(slot, inserted);
             stack.stackSize -= toTransfer;
 
-            if (toTransfer < maxStack) {
-                SlotInfo slotInfo = new SlotInfo(inv, slot, inv.getStackInSlot(slot), getSlotStackLimit(slot, stack));
-                partialItemStacks.put(id, slotInfo);
-            }
+            markDirty();
 
-            emptySlots.clear(slot);
+            if (stack.stackSize <= 0) return null;
         }
 
         return stack.stackSize <= 0 ? null : stack;

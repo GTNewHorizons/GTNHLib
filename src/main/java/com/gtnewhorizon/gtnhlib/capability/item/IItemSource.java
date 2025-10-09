@@ -9,7 +9,9 @@ import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
 
 /**
  * Something that can provide items. Should only be retrieved via
- * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}.
+ * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}. A source must be effectively stateless. That is, it
+ * can use caches to improve performance but its methods must always reflect the state of the world immediately. There
+ * is no defined lifetime for a source - it may last for one operation, or it may be stored across several ticks.
  */
 public interface IItemSource {
 

@@ -18,7 +18,12 @@ public class DroppingItemSink implements IItemSink {
 
     @Override
     public ItemStack store(ItemStack stack) {
-        EntityItem entity = new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+        EntityItem entity = new EntityItem(
+                world,
+                pos.getX() + 0.5,
+                pos.getY() + 0.5,
+                pos.getZ() + 0.5,
+                ItemStack.copyItemStack(stack));
 
         entity.motionX = 0;
         entity.motionY = 0;
