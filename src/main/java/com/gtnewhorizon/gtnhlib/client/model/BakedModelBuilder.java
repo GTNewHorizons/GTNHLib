@@ -71,8 +71,8 @@ public class BakedModelBuilder {
     }
 
     public BakedModelBuilder setTextureSize(int textureWidth, int textureHeight) {
-        this.textureWidth = (float) textureWidth;
-        this.textureHeight = (float) textureHeight;
+        this.textureWidth = textureWidth;
+        this.textureHeight = textureHeight;
         return this;
     }
 
@@ -84,24 +84,24 @@ public class BakedModelBuilder {
     }
 
     public BakedModelBuilder setRotationAngles(float x, float y, float z) {
-        rotateAngleX = x;
-        rotateAngleY = y;
-        rotateAngleZ = z;
+        this.rotateAngleX = x;
+        this.rotateAngleY = y;
+        this.rotateAngleZ = z;
         return this;
     }
 
     public BakedModelBuilder setRotationAngleX(float x) {
-        rotateAngleX = x;
+        this.rotateAngleX = x;
         return this;
     }
 
     public BakedModelBuilder setRotationAngleY(float y) {
-        rotateAngleY = y;
+        this.rotateAngleY = y;
         return this;
     }
 
     public BakedModelBuilder setRotationAngleZ(float z) {
-        rotateAngleZ = z;
+        this.rotateAngleZ = z;
         return this;
     }
 
