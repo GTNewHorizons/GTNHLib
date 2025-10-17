@@ -59,14 +59,14 @@ public class BakedModelBuilder {
         this(model.textureWidth, model.textureHeight);
     }
 
-    public BakedModelBuilder(ModelBase p_i1174_1_, int p_i1174_2_, int p_i1174_3_) {
-        this(p_i1174_1_);
-        this.setTextureOffset(p_i1174_2_, p_i1174_3_);
+    public BakedModelBuilder(ModelBase model, int textureOffsetX, int textureOffsetY) {
+        this(model);
+        this.setTextureOffset(textureOffsetX, textureOffsetY);
     }
 
-    public BakedModelBuilder setTextureOffset(int p_78784_1_, int p_78784_2_) {
-        this.textureOffsetX = p_78784_1_;
-        this.textureOffsetY = p_78784_2_;
+    public BakedModelBuilder setTextureOffset(int textureOffsetX, int textureOffsetY) {
+        this.textureOffsetX = textureOffsetX;
+        this.textureOffsetY = textureOffsetY;
         return this;
     }
 
@@ -76,10 +76,10 @@ public class BakedModelBuilder {
         return this;
     }
 
-    public BakedModelBuilder setRotationPoint(float p_78793_1_, float p_78793_2_, float p_78793_3_) {
-        this.rotationPointX = p_78793_1_;
-        this.rotationPointY = p_78793_2_;
-        this.rotationPointZ = p_78793_3_;
+    public BakedModelBuilder setRotationPoint(float rotationPointX, float rotationPointY, float rotationPointZ) {
+        this.rotationPointX = rotationPointX;
+        this.rotationPointY = rotationPointY;
+        this.rotationPointZ = rotationPointZ;
         return this;
     }
 
@@ -121,7 +121,7 @@ public class BakedModelBuilder {
 
     public void addBoxVertices(float x1, float y1, float z1, int xWidth, int yWidth, int zWidth, Matrix4f mat4f,
             float scale) {
-        new ModelBox(this, this.textureOffsetX, this.textureOffsetY, x1, y1, z1, xWidth, yWidth, zWidth, 0.0F)
+        new ModelBox(this, this.textureOffsetX, this.textureOffsetY, x1, y1, z1, xWidth, yWidth, zWidth)
                 .addVerticesToTesselator(tessellator, mat4f, scale);
     }
 
@@ -153,44 +153,115 @@ public class BakedModelBuilder {
     }
 
     // spotless:off
-    // Mostly copied from net.minecraft.client.model.ModelBox
+    // Mostly copied from net.minecraft.client.model.ModelBox + remapped
     private static class ModelBox {
         private final TexturedQuad[] quadList;
 
-        public ModelBox(BakedModelBuilder p_i1171_1_, int p_i1171_2_, int p_i1171_3_, float p_i1171_4_, float p_i1171_5_, float p_i1171_6_, int p_i1171_7_, int p_i1171_8_, int p_i1171_9_, float p_i1171_10_) {
+        public ModelBox(
+            BakedModelBuilder builder,
+            int texOffsetX, int texOffsetY,
+            float minX, float minY, float minZ,
+            int xWidth, int yWidth, int zWidth
+        ) {
             this.quadList = new TexturedQuad[6];
-            float f4 = p_i1171_4_ + (float) p_i1171_7_;
-            float f5 = p_i1171_5_ + (float) p_i1171_8_;
-            float f6 = p_i1171_6_ + (float) p_i1171_9_;
-            p_i1171_4_ -= p_i1171_10_;
-            p_i1171_5_ -= p_i1171_10_;
-            p_i1171_6_ -= p_i1171_10_;
-            f4 += p_i1171_10_;
-            f5 += p_i1171_10_;
-            f6 += p_i1171_10_;
+            float maxX = minX + (float) xWidth;
+            float maxY = minY + (float) yWidth;
+            float maxZ = minZ + (float) zWidth;
 
-            if (p_i1171_1_.mirror) {
-                float f7 = f4;
-                f4 = p_i1171_4_;
-                p_i1171_4_ = f7;
+            if (builder.mirror) {
+                float temp = maxX;
+                maxX = minX;
+                minX = temp;
             }
 
-            PositionTextureVertex positiontexturevertex7 = new PositionTextureVertex(p_i1171_4_, p_i1171_5_, p_i1171_6_, 0.0F, 0.0F);
-            PositionTextureVertex positiontexturevertex = new PositionTextureVertex(f4, p_i1171_5_, p_i1171_6_, 0.0F, 8.0F);
-            PositionTextureVertex positiontexturevertex1 = new PositionTextureVertex(f4, f5, p_i1171_6_, 8.0F, 8.0F);
-            PositionTextureVertex positiontexturevertex2 = new PositionTextureVertex(p_i1171_4_, f5, p_i1171_6_, 8.0F, 0.0F);
-            PositionTextureVertex positiontexturevertex3 = new PositionTextureVertex(p_i1171_4_, p_i1171_5_, f6, 0.0F, 0.0F);
-            PositionTextureVertex positiontexturevertex4 = new PositionTextureVertex(f4, p_i1171_5_, f6, 0.0F, 8.0F);
-            PositionTextureVertex positiontexturevertex5 = new PositionTextureVertex(f4, f5, f6, 8.0F, 8.0F);
-            PositionTextureVertex positiontexturevertex6 = new PositionTextureVertex(p_i1171_4_, f5, f6, 8.0F, 0.0F);
-            this.quadList[0] = new TexturedQuad(new PositionTextureVertex[] {positiontexturevertex4, positiontexturevertex, positiontexturevertex1, positiontexturevertex5}, p_i1171_2_ + p_i1171_9_ + p_i1171_7_, p_i1171_3_ + p_i1171_9_, p_i1171_2_ + p_i1171_9_ + p_i1171_7_ + p_i1171_9_, p_i1171_3_ + p_i1171_9_ + p_i1171_8_, p_i1171_1_.textureWidth, p_i1171_1_.textureHeight);
-            this.quadList[1] = new TexturedQuad(new PositionTextureVertex[] {positiontexturevertex7, positiontexturevertex3, positiontexturevertex6, positiontexturevertex2}, p_i1171_2_, p_i1171_3_ + p_i1171_9_, p_i1171_2_ + p_i1171_9_, p_i1171_3_ + p_i1171_9_ + p_i1171_8_, p_i1171_1_.textureWidth, p_i1171_1_.textureHeight);
-            this.quadList[2] = new TexturedQuad(new PositionTextureVertex[] {positiontexturevertex4, positiontexturevertex3, positiontexturevertex7, positiontexturevertex}, p_i1171_2_ + p_i1171_9_, p_i1171_3_, p_i1171_2_ + p_i1171_9_ + p_i1171_7_, p_i1171_3_ + p_i1171_9_, p_i1171_1_.textureWidth, p_i1171_1_.textureHeight);
-            this.quadList[3] = new TexturedQuad(new PositionTextureVertex[] {positiontexturevertex1, positiontexturevertex2, positiontexturevertex6, positiontexturevertex5}, p_i1171_2_ + p_i1171_9_ + p_i1171_7_, p_i1171_3_ + p_i1171_9_, p_i1171_2_ + p_i1171_9_ + p_i1171_7_ + p_i1171_7_, p_i1171_3_, p_i1171_1_.textureWidth, p_i1171_1_.textureHeight);
-            this.quadList[4] = new TexturedQuad(new PositionTextureVertex[] {positiontexturevertex, positiontexturevertex7, positiontexturevertex2, positiontexturevertex1}, p_i1171_2_ + p_i1171_9_, p_i1171_3_ + p_i1171_9_, p_i1171_2_ + p_i1171_9_ + p_i1171_7_, p_i1171_3_ + p_i1171_9_ + p_i1171_8_, p_i1171_1_.textureWidth, p_i1171_1_.textureHeight);
-            this.quadList[5] = new TexturedQuad(new PositionTextureVertex[] {positiontexturevertex3, positiontexturevertex4, positiontexturevertex5, positiontexturevertex6}, p_i1171_2_ + p_i1171_9_ + p_i1171_7_ + p_i1171_9_, p_i1171_3_ + p_i1171_9_, p_i1171_2_ + p_i1171_9_ + p_i1171_7_ + p_i1171_9_ + p_i1171_7_, p_i1171_3_ + p_i1171_9_ + p_i1171_8_, p_i1171_1_.textureWidth, p_i1171_1_.textureHeight);
+            PositionTextureVertex positiontexturevertex7 = new PositionTextureVertex(
+                minX, minY, minZ,
+                0.0F, 0.0F
+            );
+            PositionTextureVertex positiontexturevertex = new PositionTextureVertex(
+                maxX, minY, minZ,
+                0.0F, 8.0F
+            );
+            PositionTextureVertex positiontexturevertex1 = new PositionTextureVertex(
+                maxX, maxY, minZ,
+                8.0F, 8.0F
+            );
+            PositionTextureVertex positiontexturevertex2 = new PositionTextureVertex(
+                minX, maxY, minZ,
+                8.0F, 0.0F
+            );
+            PositionTextureVertex positiontexturevertex3 = new PositionTextureVertex(
+                minX, minY, maxZ,
+                0.0F, 0.0F
+            );
+            PositionTextureVertex positiontexturevertex4 = new PositionTextureVertex(
+                maxX, minY, maxZ,
+                0.0F, 8.0F
+            );
+            PositionTextureVertex positiontexturevertex5 = new PositionTextureVertex(
+                maxX, maxY, maxZ,
+                8.0F, 8.0F
+            );
+            PositionTextureVertex positiontexturevertex6 = new PositionTextureVertex(
+                minX, maxY, maxZ,
+                8.0F, 0.0F
+            );
+            this.quadList[0] = new TexturedQuad(
+                new PositionTextureVertex[] {positiontexturevertex4, positiontexturevertex, positiontexturevertex1, positiontexturevertex5},
+                texOffsetX + zWidth + xWidth,
+                texOffsetY + zWidth,
+                texOffsetX + zWidth + xWidth + zWidth,
+                texOffsetY + zWidth + yWidth,
+                builder.textureWidth,
+                builder.textureHeight
+            );
+            this.quadList[1] = new TexturedQuad(
+                new PositionTextureVertex[] {positiontexturevertex7, positiontexturevertex3, positiontexturevertex6, positiontexturevertex2},
+                texOffsetX,
+                texOffsetY + zWidth,
+                texOffsetX + zWidth,
+                texOffsetY + zWidth + yWidth,
+                builder.textureWidth,
+                builder.textureHeight
+            );
+            this.quadList[2] = new TexturedQuad(
+                new PositionTextureVertex[] {positiontexturevertex4, positiontexturevertex3, positiontexturevertex7, positiontexturevertex},
+                texOffsetX + zWidth,
+                texOffsetY,
+                texOffsetX + zWidth + xWidth,
+                texOffsetY + zWidth,
+                builder.textureWidth,
+                builder.textureHeight
+            );
+            this.quadList[3] = new TexturedQuad(
+                new PositionTextureVertex[] {positiontexturevertex1, positiontexturevertex2, positiontexturevertex6, positiontexturevertex5},
+                texOffsetX + zWidth + xWidth,
+                texOffsetY + zWidth,
+                texOffsetX + zWidth + xWidth + xWidth,
+                texOffsetY,
+                builder.textureWidth,
+                builder.textureHeight
+            );
+            this.quadList[4] = new TexturedQuad(
+                new PositionTextureVertex[] {positiontexturevertex, positiontexturevertex7, positiontexturevertex2, positiontexturevertex1},
+                texOffsetX + zWidth,
+                texOffsetY + zWidth,
+                texOffsetX + zWidth + yWidth,
+                texOffsetY + zWidth + yWidth,
+                builder.textureWidth,
+                builder.textureHeight
+            );
+            this.quadList[5] = new TexturedQuad(
+                new PositionTextureVertex[] {positiontexturevertex3, positiontexturevertex4, positiontexturevertex5, positiontexturevertex6},
+                texOffsetX + zWidth + yWidth + zWidth,
+                texOffsetY + zWidth,
+                texOffsetX + zWidth + yWidth + zWidth + yWidth,
+                texOffsetY + zWidth + yWidth,
+                builder.textureWidth,
+                builder.textureHeight
+            );
 
-            if (p_i1171_1_.mirror) {
+            if (builder.mirror) {
                 for (TexturedQuad texturedQuad : this.quadList) {
                     texturedQuad.flipFace();
                 }
