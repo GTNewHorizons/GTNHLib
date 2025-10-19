@@ -1,8 +1,8 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.ColorABGR;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.MathUtil;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.MathUtil;
 
 public class ModelQuadFlags {
 
