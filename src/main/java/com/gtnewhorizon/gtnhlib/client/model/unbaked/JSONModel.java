@@ -21,8 +21,7 @@ import org.joml.Vector4f;
 
 import com.google.common.base.Objects;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
-import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelElement;

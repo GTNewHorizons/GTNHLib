@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.MonopartDough;
 

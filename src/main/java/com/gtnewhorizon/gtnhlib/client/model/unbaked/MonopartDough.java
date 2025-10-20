@@ -2,9 +2,8 @@ package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
-import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
-import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import com.gtnewhorizon.gtnhlib.client.model.baked.MonopartModel;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;

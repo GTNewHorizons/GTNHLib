@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model;
+package com.gtnewhorizon.gtnhlib.client.model.baked;
 
 import java.util.List;
 import java.util.Random;
