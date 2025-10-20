@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.unbaked.json;
+package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import net.minecraft.util.ResourceLocation;
 
