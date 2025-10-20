@@ -34,7 +34,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         };
     }
 
-    private Vector3f loadVec3(JsonObject in, String name) {
+    private static Vector3f loadVec3(JsonObject in, String name) {
 
         final JsonArray arr = in.getAsJsonArray(name);
         final Vector3f ret = new Vector3f();
@@ -46,12 +46,12 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private Vector3f loadVec3(JsonObject in, String name, Vector3f defaultv) {
+    private static Vector3f loadVec3(JsonObject in, String name, Vector3f defaultv) {
         if (!in.isJsonArray()) return defaultv;
         return loadVec3(in, name);
     }
 
-    private Vector4f loadVec4(JsonObject in, String name) {
+    private static Vector4f loadVec4(JsonObject in, String name) {
 
         final JsonArray arr = in.getAsJsonArray(name);
         final Vector4f ret = new Vector4f();
@@ -63,7 +63,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private ModelDisplay loadADisplay(JsonObject in) {
+    private static ModelDisplay loadADisplay(JsonObject in) {
 
         final Vector3f rotation = loadVec3(in, "rotation", new Vector3f(0, 0, 0));
         final Vector3f translation = loadVec3(in, "translation", new Vector3f(0, 0, 0));
@@ -72,7 +72,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return new ModelDisplay(rotation, translation, scale);
     }
 
-    private Map<Position, ModelDisplay> loadDisplay(JsonObject in) {
+    private static Map<Position, ModelDisplay> loadDisplay(JsonObject in) {
 
         // wow such long
         final Map<Position, ModelDisplay> ret = new Object2ObjectOpenHashMap<>(Position.values().length);
@@ -96,7 +96,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private Map<String, String> loadTextures(JsonObject in) {
+    private static Map<String, String> loadTextures(JsonObject in) {
 
         final Map<String, String> textures = new Object2ObjectOpenHashMap<>();
 
@@ -121,7 +121,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return textures;
     }
 
-    private ModelElement.Rotation loadRotation(JsonObject in) {
+    private static ModelElement.Rotation loadRotation(JsonObject in) {
 
         if (in.has("rotation")) {
             final JsonObject json = in.getAsJsonObject("rotation");
@@ -138,7 +138,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         }
     }
 
-    private List<ModelElement.Face> loadFaces(JsonObject in) {
+    private static List<ModelElement.Face> loadFaces(JsonObject in) {
 
         final List<ModelElement.Face> ret = new ObjectArrayList<>();
         final JsonObject json = in.getAsJsonObject("faces");
@@ -161,7 +161,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private List<ModelElement> loadElements(JsonObject in) {
+    private static List<ModelElement> loadElements(JsonObject in) {
 
         final List<ModelElement> ret = new ObjectArrayList<>();
 
