@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.unbaked.json;
+package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;

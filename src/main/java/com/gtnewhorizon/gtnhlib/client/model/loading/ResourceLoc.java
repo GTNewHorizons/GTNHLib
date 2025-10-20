@@ -4,7 +4,7 @@ import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
-import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.JSONModel;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
