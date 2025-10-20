@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.intermodel;
+package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
