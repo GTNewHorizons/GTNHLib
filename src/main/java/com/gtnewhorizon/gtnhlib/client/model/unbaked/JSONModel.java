@@ -7,6 +7,21 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.google.common.base.Objects;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
@@ -20,20 +35,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import lombok.Getter;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class JSONModel implements UnbakedModel {
 
@@ -51,9 +55,8 @@ public class JSONModel implements UnbakedModel {
 
     private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
-    public JSONModel(@Nullable ModelLoc parentId, boolean useAO,
-                     Map<Position, ModelDisplay> display, @NotNull Map<String, String> textures,
-                     List<ModelDeserializer.ModelElement> elements) {
+    public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
+            @NotNull Map<String, String> textures, List<ModelDeserializer.ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
         this.display = display;
@@ -141,8 +144,7 @@ public class JSONModel implements UnbakedModel {
         // Append faces from each element
         for (ModelDeserializer.ModelElement e : this.elements) {
 
-            final Matrix4f rot = (e.rotation() == null) ? NOOP.getAffineMatrix()
-                    : e.rotation().getAffineMatrix();
+            final Matrix4f rot = (e.rotation() == null) ? NOOP.getAffineMatrix() : e.rotation().getAffineMatrix();
 
             final Vector3f from = e.from();
             final Vector3f to = e.to();
