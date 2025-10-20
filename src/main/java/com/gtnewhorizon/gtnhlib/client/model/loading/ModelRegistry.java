@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
+import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
 import net.minecraft.block.Block;
 
@@ -26,7 +27,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 public class ModelRegistry {
 
     public static final Logger MODEL_LOGGER = LogManager.getLogger(ModelRegistry.class);
-    private static Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
             .registerTypeAdapter(JSONModel.class, new ModelDeserializer()).create();
 
     /// The first cache. Ideally, every request hits this and gets a baked model.
@@ -55,9 +56,8 @@ public class ModelRegistry {
         final var meta = state.meta();
 
         final var smm = getStateModelMap(block);
-        final var properties = new Object2ObjectArrayMap<String, String>(
-                DEFAULT_STATE_KEYS,
-                new String[] { Integer.toString(meta) });
+        final var properties = unmodifiable(
+                new Object2ObjectArrayMap<String, String>(DEFAULT_STATE_KEYS, new String[] { Integer.toString(meta) }));
 
         // Caching this would be a little pointless, since an UnbakedModel here would map directly to the BakedModel
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
