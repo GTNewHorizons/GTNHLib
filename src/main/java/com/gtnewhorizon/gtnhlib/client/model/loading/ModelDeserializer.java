@@ -4,28 +4,27 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
+import com.github.bsideup.jabel.Desugar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay.Position;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.ModelDisplay;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import net.minecraftforge.common.util.ForgeDirection;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
@@ -220,5 +219,78 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         final List<ModelElement> elements = loadElements(in);
 
         return new JSONModel(parentId, useAO, display, textures, elements);
+    }
+
+    public enum Position {
+
+        THIRDPERSON_RIGHTHAND,
+        THIRDPERSON_LEFTHAND,
+        FIRSTPERSON_RIGHTHAND,
+        FIRSTPERSON_LEFTHAND,
+        GUI, // inventory
+        HEAD,
+        GROUND, // dropped item I think
+        FIXED; // item frames
+
+        public static Position getByName(String name) {
+            return switch (name) {
+                case "thirdperson_righthand" -> THIRDPERSON_RIGHTHAND;
+                case "thirdperson_lefthand" -> THIRDPERSON_LEFTHAND;
+                case "firstperson_righthand" -> FIRSTPERSON_RIGHTHAND;
+                case "firstperson_lefthand" -> FIRSTPERSON_LEFTHAND;
+                case "gui" -> GUI;
+                case "head" -> HEAD;
+                case "ground" -> GROUND;
+                case "fixed" -> FIXED;
+                default -> null;
+            };
+        }
+
+        @Desugar
+        public record ModelDisplay(Vector3f rotation, Vector3f translation, Vector3f scale) {
+
+            public static final ModelDisplay DEFAULT = new ModelDisplay(
+                    new Vector3f(0, 0, 0),
+                    new Vector3f(0, 0, 0),
+                    new Vector3f(1, 1, 1));
+
+        }
+    }
+
+    @Desugar
+    public record ModelElement(Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation, boolean shade, List<Face> faces) {
+
+        @Desugar
+        public record Face(ForgeDirection name, Vector4f uv, String texture, ForgeDirection cullFace, int rotation,
+                int tintIndex) {}
+
+        @Desugar
+        public record Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
+
+            public static final Rotation NOOP = new Rotation(new Vector3f(0, 0, 0), X, 0, false);
+
+            public Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
+                this.origin = origin;
+                this.axis = axis;
+                this.angle = (float) Math.toRadians(angle);
+                this.rescale = rescale;
+            }
+
+            public Matrix4f getAffineMatrix() {
+
+                // Subtract origin
+                final Matrix4f ret = new Matrix4f().translation(-this.origin.x, -this.origin.y, -this.origin.z);
+
+                // Rotate
+                switch (this.axis) {
+                    case X -> ret.rotateLocalX(angle);
+                    case Y -> ret.rotateLocalY(angle);
+                    case Z -> ret.rotateLocalZ(angle);
+                }
+
+                // Add the origin back in
+                return ret.translateLocal(this.origin.x, this.origin.y, this.origin.z);
+            }
+        }
     }
 }
