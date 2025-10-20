@@ -7,7 +7,7 @@ import net.minecraft.block.Block;
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.gtnewhorizon.gtnhlib.block.BlockState;
+import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
