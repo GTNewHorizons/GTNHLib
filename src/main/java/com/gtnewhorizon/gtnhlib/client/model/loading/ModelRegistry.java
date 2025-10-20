@@ -11,7 +11,6 @@ import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.JSONModel;
-import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.ModelDeserializer;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.block.Block;

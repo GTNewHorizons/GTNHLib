@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.unbaked.json;
+package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -6,9 +6,9 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
-import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.ModelDisplay.Position;
-import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.ModelElement.Axis;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay.Position;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelElement.Axis;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.JSONModel;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

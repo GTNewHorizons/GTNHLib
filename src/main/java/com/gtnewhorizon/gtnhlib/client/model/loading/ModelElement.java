@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.unbaked.json;
+package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotati
     @Desugar
     public record Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
 
-        static final Rotation NOOP = new Rotation(new Vector3f(0, 0, 0), Axis.X, 0, false);
+        public static final Rotation NOOP = new Rotation(new Vector3f(0, 0, 0), Axis.X, 0, false);
 
         public Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
             this.origin = origin;
@@ -38,7 +38,7 @@ public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotati
             this.rescale = rescale;
         }
 
-        Matrix4f getAffineMatrix() {
+        public Matrix4f getAffineMatrix() {
 
             // Subtract origin
             final Matrix4f ret = new Matrix4f().translation(-this.origin.x, -this.origin.y, -this.origin.z);
