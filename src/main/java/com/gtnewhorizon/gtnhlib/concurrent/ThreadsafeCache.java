@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.block;
+package com.gtnewhorizon.gtnhlib.concurrent;
 
 import java.util.concurrent.locks.StampedLock;
 
