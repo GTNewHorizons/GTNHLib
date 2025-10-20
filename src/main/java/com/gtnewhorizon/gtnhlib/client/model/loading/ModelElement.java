@@ -1,26 +1,18 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.X;
+
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import java.util.List;
-
 import net.minecraftforge.common.util.ForgeDirection;
-
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.github.bsideup.jabel.Desugar;
-
 @Desugar
 public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotation, boolean shade, List<Face> faces) {
-
-    public ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotation, boolean shade, List<Face> faces) {
-        this.from = from;
-        this.to = to;
-        this.rotation = rotation;
-        this.shade = shade;
-        this.faces = faces;
-    }
 
     @Desugar
     public record Face(ForgeDirection name, Vector4f uv, String texture, ForgeDirection cullFace, int rotation,
@@ -29,7 +21,7 @@ public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotati
     @Desugar
     public record Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
 
-        public static final Rotation NOOP = new Rotation(new Vector3f(0, 0, 0), Axis.X, 0, false);
+        public static final Rotation NOOP = new Rotation(new Vector3f(0, 0, 0), X, 0, false);
 
         public Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
             this.origin = origin;
@@ -52,22 +44,6 @@ public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotati
 
             // Add the origin back in
             return ret.translateLocal(this.origin.x, this.origin.y, this.origin.z);
-        }
-    }
-
-    public enum Axis {
-
-        X,
-        Y,
-        Z;
-
-        public static Axis fromName(String dir) {
-            return switch (dir) {
-                case "y" -> Y;
-                case "z" -> Z;
-                case "x" -> X;
-                default -> null;
-            };
         }
     }
 }
