@@ -1,20 +1,17 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
+import com.github.bsideup.jabel.Desugar;
+import com.google.gson.Gson;
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.JSONModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Supplier;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-
 import org.jetbrains.annotations.NotNull;
-
-import com.github.bsideup.jabel.Desugar;
-import com.google.gson.Gson;
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
-import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 
 public interface ResourceLoc<T> {
 
