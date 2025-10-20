@@ -25,7 +25,6 @@ import org.lwjgl.opengl.GL11;
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.TessFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
@@ -43,7 +42,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     // Access Transformers don't work on Forge Fields :rage:
     private static final MethodHandle sRawBufferSize;
     private static final MethodHandle gRawBufferSize;
-    private final TessFlags FLAGS = new TessFlags(true, true, true, true);
+    private final Flags FLAGS = new Flags(true, true, true, true);
     private final ObjectPooler<ModelQuad> quadBuf = new ObjectPooler<>(ModelQuad::new);
     private final List<ModelQuad> collectedQuads = new ObjectArrayList<>();
     private int shaderBlockId = -1;
@@ -280,4 +279,19 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         shaderBlockId = blockId;
     }
 
+    public static class Flags {
+
+        boolean hasTexture;
+        public boolean hasBrightness;
+        public boolean hasColor;
+        public boolean hasNormals;
+
+        public Flags(boolean hasTexture, boolean hasBrightness, boolean hasColor, boolean hasNormals) {
+            this.hasTexture = hasTexture;
+            this.hasBrightness = hasBrightness;
+            this.hasColor = hasColor;
+            this.hasNormals = hasNormals;
+        }
+
+    }
 }
