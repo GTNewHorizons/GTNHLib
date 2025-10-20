@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import static com.gtnewhorizon.gtnhlib.client.model.unbaked.json.MissingModel.MISSING_MODEL;
+import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
@@ -10,7 +10,7 @@ import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
-import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.JSONModel;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.block.Block;

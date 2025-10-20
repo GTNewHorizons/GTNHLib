@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.unbaked.json;
+package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads.BLANK;
 
