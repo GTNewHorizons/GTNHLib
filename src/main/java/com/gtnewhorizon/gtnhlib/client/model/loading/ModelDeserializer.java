@@ -4,6 +4,15 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -14,14 +23,9 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay.Position;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 

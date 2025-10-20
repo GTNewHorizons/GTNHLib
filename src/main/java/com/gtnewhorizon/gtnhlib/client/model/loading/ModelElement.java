@@ -2,14 +2,17 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.X;
 
-import com.github.bsideup.jabel.Desugar;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import java.util.List;
+
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 
 @Desugar
 public record ModelElement(Vector3f from, Vector3f to, @Nullable Rotation rotation, boolean shade, List<Face> faces) {

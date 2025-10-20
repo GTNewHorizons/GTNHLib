@@ -4,8 +4,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +24,8 @@ import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelElement;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;

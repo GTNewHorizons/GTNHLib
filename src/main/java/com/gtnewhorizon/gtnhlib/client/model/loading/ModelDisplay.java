@@ -1,15 +1,16 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import com.github.bsideup.jabel.Desugar;
 import org.joml.Vector3f;
+
+import com.github.bsideup.jabel.Desugar;
 
 @Desugar
 public record ModelDisplay(Vector3f rotation, Vector3f translation, Vector3f scale) {
 
     public static final ModelDisplay DEFAULT = new ModelDisplay(
-        new Vector3f(0, 0, 0),
-        new Vector3f(0, 0, 0),
-        new Vector3f(1, 1, 1));
+            new Vector3f(0, 0, 0),
+            new Vector3f(0, 0, 0),
+            new Vector3f(1, 1, 1));
 
     public enum Position {
 
