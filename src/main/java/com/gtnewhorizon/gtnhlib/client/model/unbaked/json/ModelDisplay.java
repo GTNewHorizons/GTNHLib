@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.json;
+package com.gtnewhorizon.gtnhlib.client.model.unbaked.json;
 
 import org.joml.Vector3f;
 

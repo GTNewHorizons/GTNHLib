@@ -1,13 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.model.json;
-
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+package com.gtnewhorizon.gtnhlib.client.model.unbaked.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -15,13 +6,18 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.gtnewhorizon.gtnhlib.client.model.json.ModelDisplay.Position;
-import com.gtnewhorizon.gtnhlib.client.model.json.ModelElement.Axis;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.ModelDisplay.Position;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.ModelElement.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import net.minecraftforge.common.util.ForgeDirection;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 

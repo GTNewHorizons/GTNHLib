@@ -1,22 +1,20 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import static com.gtnewhorizon.gtnhlib.client.model.json.MissingModel.MISSING_MODEL;
-
-import net.minecraft.block.Block;
+import static com.gtnewhorizon.gtnhlib.client.model.unbaked.json.MissingModel.MISSING_MODEL;
 
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
-import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.json.JSONModel;
-import com.gtnewhorizon.gtnhlib.client.model.json.ModelDeserializer;
+import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
-
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.JSONModel;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.json.ModelDeserializer;
+import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import net.minecraft.block.Block;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
