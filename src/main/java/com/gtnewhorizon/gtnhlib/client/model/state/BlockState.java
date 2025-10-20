@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.block;
+package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import net.minecraft.block.Block;
 
