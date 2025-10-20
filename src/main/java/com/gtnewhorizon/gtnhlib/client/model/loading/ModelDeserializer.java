@@ -4,6 +4,17 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -15,16 +26,9 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
@@ -258,7 +262,8 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
     }
 
     @Desugar
-    public record ModelElement(Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation, boolean shade, List<Face> faces) {
+    public record ModelElement(Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation,
+            boolean shade, List<Face> faces) {
 
         @Desugar
         public record Face(ForgeDirection name, Vector4f uv, String texture, ForgeDirection cullFace, int rotation,
