@@ -14,12 +14,15 @@ import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.block.Block;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
 /// beyond excessively complex models being loaded multiple times... add a counter if I'm wrong.
 public class ModelRegistry {
 
+    public static final Logger MODEL_LOGGER = LogManager.getLogger(ModelRegistry.class);
     private static Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
             .registerTypeAdapter(JSONModel.class, new ModelDeserializer()).create();
 

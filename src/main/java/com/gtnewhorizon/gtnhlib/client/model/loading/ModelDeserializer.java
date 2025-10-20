@@ -1,5 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.X;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -7,8 +11,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay.Position;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelElement.Axis;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -127,7 +131,13 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             final JsonObject json = in.getAsJsonObject("rotation");
 
             final Vector3f origin = loadVec3(json, "origin").div(16);
-            final Axis axis = Axis.fromName(JsonUtil.loadStr(json, "axis"));
+            final String sAxis = JsonUtil.loadStr(json, "axis");
+            final Axis axis = switch (sAxis) {
+                case "x" -> X;
+                case "y" -> Y;
+                case "z" -> Z;
+                default -> throw new JsonParseException("Invalid axis " + sAxis);
+            };
             final float angle = JsonUtil.loadFloat(json, "angle");
             final boolean rescale = JsonUtil.loadBool(json, "rescale", false);
 

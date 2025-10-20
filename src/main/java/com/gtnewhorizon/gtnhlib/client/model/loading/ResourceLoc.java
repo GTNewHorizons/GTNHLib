@@ -1,8 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
+
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.JsonException;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,11 +23,12 @@ public interface ResourceLoc<T> {
         try {
             final InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(jsonPath).getInputStream();
             return gson.fromJson(new InputStreamReader(is), clazz());
+        } catch (JsonException e) {
+            MODEL_LOGGER.error("Failed to parse {}:{}", owner(), jsonPath.getResourcePath());
         } catch (IOException e) {
-
-            GTNHLib.LOG.error("Could not find {}:{}", owner(), jsonPath.getResourcePath());
-            return defaultSrc.get();
+            MODEL_LOGGER.error("Could not load {}:{}", owner(), jsonPath.getResourcePath());
         }
+        return defaultSrc.get();
     }
 
     String prefix();
