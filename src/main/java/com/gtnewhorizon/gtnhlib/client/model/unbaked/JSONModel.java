@@ -1,58 +1,59 @@
 package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
+import com.google.common.base.Objects;
+import com.gtnewhorizon.gtnhlib.client.model.BakeData;
+import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Face;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.ModelDisplay;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc.ModelLoc;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.util.ForgeDirection;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.google.common.base.Objects;
-import com.gtnewhorizon.gtnhlib.client.model.BakeData;
-import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelElement;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
-
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import lombok.Getter;
-
 public class JSONModel implements UnbakedModel {
 
     @Nullable
-    private final ResourceLoc.ModelLoc parentId;
+    private final ModelLoc parentId;
     @Nullable
     private JSONModel parent;
     @Getter
     private final boolean useAO;
     @Getter
-    private final Map<ModelDisplay.Position, ModelDisplay> display;
+    private final Map<Position, ModelDisplay> display;
     @NotNull
     private final Map<String, String> textures;
-    private List<ModelElement> elements;
+    private List<ModelDeserializer.ModelElement> elements;
 
     private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
-    public JSONModel(@Nullable ResourceLoc.ModelLoc parentId, boolean useAO,
-            Map<ModelDisplay.Position, ModelDisplay> display, @NotNull Map<String, String> textures,
-            List<ModelElement> elements) {
+    public JSONModel(@Nullable ModelLoc parentId, boolean useAO,
+                     Map<Position, ModelDisplay> display, @NotNull Map<String, String> textures,
+                     List<ModelDeserializer.ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
         this.display = display;
@@ -138,15 +139,15 @@ public class JSONModel implements UnbakedModel {
         final var sidedQuadStore = new HashMap<ModelQuadFacing, ArrayList<ModelQuadView>>(7);
 
         // Append faces from each element
-        for (ModelElement e : this.elements) {
+        for (ModelDeserializer.ModelElement e : this.elements) {
 
-            final Matrix4f rot = (e.rotation() == null) ? ModelElement.Rotation.NOOP.getAffineMatrix()
+            final Matrix4f rot = (e.rotation() == null) ? NOOP.getAffineMatrix()
                     : e.rotation().getAffineMatrix();
 
             final Vector3f from = e.from();
             final Vector3f to = e.to();
 
-            for (ModelElement.Face f : e.faces()) {
+            for (Face f : e.faces()) {
 
                 float x = Float.MAX_VALUE;
                 float y = Float.MAX_VALUE;
@@ -174,7 +175,7 @@ public class JSONModel implements UnbakedModel {
 
                 // Set culling and nominal faces
                 final var normFace = quad.getNormalFace();
-                quad.setLightFace(normFace != ModelQuadFacing.UNASSIGNED ? normFace : ModelQuadFacing.POS_Y);
+                quad.setLightFace(normFace != UNASSIGNED ? normFace : POS_Y);
 
                 // Set UV
                 // TODO: UV locking
@@ -216,7 +217,7 @@ public class JSONModel implements UnbakedModel {
         }
     }
 
-    public void resolveParents(Function<ResourceLoc.ModelLoc, JSONModel> modelLoader) {
+    public void resolveParents(Function<ModelLoc, JSONModel> modelLoader) {
 
         if (this.parentId != null && this.parent == null) {
 

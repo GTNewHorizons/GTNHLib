@@ -6,6 +6,7 @@ import com.github.bsideup.jabel.Desugar;
 
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
+/// A simple wrapper for any object, adding a weight. Also provides a helper for selecting from a weighted list.
 @Desugar
 public record Weighted<T> (T thing, int weight) {
 
