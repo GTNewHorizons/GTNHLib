@@ -5,6 +5,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 
+import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import java.util.Random;
 
 import net.minecraft.block.Block;
