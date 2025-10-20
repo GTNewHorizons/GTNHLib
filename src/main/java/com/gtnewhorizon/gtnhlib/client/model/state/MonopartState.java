@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
-import com.gtnewhorizon.gtnhlib.client.model.intermodel.MonopartDough;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.MonopartDough;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
