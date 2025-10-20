@@ -4,6 +4,8 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDisplay;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
