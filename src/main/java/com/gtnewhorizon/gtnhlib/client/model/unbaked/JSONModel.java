@@ -42,7 +42,7 @@ import lombok.Getter;
 public class JSONModel implements UnbakedModel {
 
     @Nullable
-    private final ModelLoc parentId;
+    private final ModelLocation parentId;
     @Nullable
     private JSONModel parent;
     @Getter
@@ -55,7 +55,7 @@ public class JSONModel implements UnbakedModel {
 
     private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
-    public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
+    public JSONModel(@Nullable ModelLocation parentId, boolean useAO, Map<Position, ModelDisplay> display,
             @NotNull Map<String, String> textures, List<ModelDeserializer.ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
@@ -219,7 +219,7 @@ public class JSONModel implements UnbakedModel {
         }
     }
 
-    public void resolveParents(Function<ModelLoc, JSONModel> modelLoader) {
+    public void resolveParents(Function<ModelLocation, JSONModel> modelLoader) {
 
         if (this.parentId != null && this.parent == null) {
 

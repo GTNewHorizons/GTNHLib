@@ -11,6 +11,10 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.VE
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.vertexOffset;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 
+import java.util.Arrays;
+
+import java.util.Arrays;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator.Flags;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil;
@@ -210,6 +214,20 @@ public class ModelQuad implements ModelQuadViewMutable {
         if (drawMode == GL_TRIANGLES) quadrangulate();
 
         setLightFace(ModelQuadUtil.findLightFace(getComputedFaceNormal()));
+    }
+
+    @Override
+    public ModelQuad reset() {
+        Arrays.fill(data, 0);
+        flags = 0;
+        normal = 0;
+        sprite = null;
+        colorIdx = -1;
+        direction = ModelQuadFacing.UNASSIGNED;
+        hasAmbientOcclusion = true;
+        shaderBlockId = -1;
+
+        return this;
     }
 
     /// Copies the third vertex to the fourth, turning this into a degenerate quad. Useful for faking triangle support.

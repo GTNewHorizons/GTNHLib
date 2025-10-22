@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties;
 import java.util.Arrays;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
+import com.gtnewhorizon.gtnhlib.geometry.Axis;
 
 import lombok.Getter;
 
@@ -59,20 +60,5 @@ public enum ModelQuadFacing {
 
     public boolean isDirection() {
         return this != UNASSIGNED;
-    }
-
-    public enum Axis {
-
-        X,
-        Y,
-        Z;
-
-        public ModelQuadFacing getFacing(boolean positive) {
-            return switch (this) {
-                case X -> positive ? POS_X : NEG_X;
-                case Y -> positive ? POS_Y : NEG_Y;
-                case Z -> positive ? POS_Z : NEG_Z;
-            };
-        }
     }
 }

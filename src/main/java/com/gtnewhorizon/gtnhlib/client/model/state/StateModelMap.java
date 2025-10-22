@@ -1,17 +1,18 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import java.util.Map;
-
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.UnbakedModel;
 
 public interface StateModelMap {
 
     /**
-     * @param properties The blockstate properties as strings
-     * @return The appropriate model, or null if none match
+     * @param state The block state
+     * @return The appropriate model's variant name, or null if no matches exist.
      */
     @Nullable
-    UnbakedModel selectModel(Map<String, String> properties);
+    String selectVariant(BlockState state);
+
+    UnbakedModel getModel(String variantName);
 }

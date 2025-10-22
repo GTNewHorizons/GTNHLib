@@ -45,12 +45,12 @@ public interface ResourceLoc<T> {
     Class<T> clazz();
 
     @Desugar
-    record ModelLoc(String owner, String path) implements ResourceLoc<JSONModel> {
+    record ModelLocation(String owner, String path) implements ResourceLoc<JSONModel> {
 
-        public static ModelLoc fromStr(String id) {
+        public static ModelLocation fromStr(String id) {
             final int sepIdx = id.indexOf(':');
-            if (sepIdx < 0) return new ModelLoc("minecraft", id);
-            return new ModelLoc(id.substring(0, sepIdx), id.substring(sepIdx + 1));
+            if (sepIdx < 0) return new ModelLocation("minecraft", id);
+            return new ModelLocation(id.substring(0, sepIdx), id.substring(sepIdx + 1));
         }
 
         @Override
@@ -70,7 +70,7 @@ public interface ResourceLoc<T> {
     }
 
     @Desugar
-    record StateLoc(String owner, String path) implements ResourceLoc<StateModelMap> {
+    record StateLocation(String owner, String path) implements ResourceLoc<StateModelMap> {
 
         @Override
         public String prefix() {

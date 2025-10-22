@@ -1,8 +1,8 @@
 package com.gtnewhorizon.gtnhlib.concurrent;
 
 import java.util.concurrent.locks.StampedLock;
+import java.util.function.Function;
 
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
 
 /**

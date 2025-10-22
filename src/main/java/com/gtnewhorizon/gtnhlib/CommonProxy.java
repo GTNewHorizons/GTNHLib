@@ -47,7 +47,7 @@ public class CommonProxy {
         }
 
         if (GTNHLibConfig.enableTestBlocks) {
-            GameRegistry.registerBlock(new BlockTest(), "model_test");
+            GameRegistry.registerBlock(BlockTest.INSTANCE, "model_test");
         }
     }
 

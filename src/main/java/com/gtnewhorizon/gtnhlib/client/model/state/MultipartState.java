@@ -5,6 +5,7 @@ import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
 
 import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -13,7 +14,6 @@ import com.gtnewhorizon.gtnhlib.client.model.baked.MultipartModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.MonopartDough;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.UnbakedModel;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
@@ -26,7 +26,12 @@ public class MultipartState implements StateModelMap, UnbakedModel {
     }
 
     @Override
-    public UnbakedModel selectModel(Map<String, String> properties) {
+    public String selectVariant(BlockState state) {
+        return "";
+    }
+
+    @Override
+    public UnbakedModel getModel(String variantName) {
         return this;
     }
 

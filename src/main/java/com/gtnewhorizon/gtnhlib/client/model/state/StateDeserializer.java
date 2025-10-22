@@ -1,7 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import static com.gtnewhorizon.gtnhlib.client.model.JSONVariant.weightedVariant;
-import static com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc.ModelLoc.fromStr;
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc.ModelLocation.fromStr;
 import static com.gtnewhorizon.gtnhlib.client.model.state.MonopartState.StateMatch;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadBool;
 import static com.gtnewhorizon.gtnhlib.util.JsonUtil.loadInt;

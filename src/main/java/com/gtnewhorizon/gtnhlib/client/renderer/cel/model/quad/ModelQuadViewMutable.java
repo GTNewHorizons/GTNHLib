@@ -71,4 +71,6 @@ public interface ModelQuadViewMutable extends ModelQuadView {
     void setForgeNormal(int idx, int normal);
 
     void setShaderBlockId(int shaderBlockId);
+
+    ModelQuadViewMutable reset();
 }

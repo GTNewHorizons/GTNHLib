@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.ModelDisplay;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
+import com.gtnewhorizon.gtnhlib.geometry.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -138,13 +138,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             final JsonObject json = in.getAsJsonObject("rotation");
 
             final Vector3f origin = loadVec3(json, "origin").div(16);
-            final String sAxis = JsonUtil.loadStr(json, "axis");
-            final Axis axis = switch (sAxis) {
-                case "x" -> X;
-                case "y" -> Y;
-                case "z" -> Z;
-                default -> throw new JsonParseException("Invalid axis " + sAxis);
-            };
+            final Axis axis = Axis.fromName(JsonUtil.loadStr(json, "axis"));
             final float angle = JsonUtil.loadFloat(json, "angle");
             final boolean rescale = JsonUtil.loadBool(json, "rescale", false);
 
@@ -208,12 +202,12 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         final JsonObject in = json.getAsJsonObject();
 
         final String parent = JsonUtil.loadStr(in, "parent", null);
-        ResourceLoc.ModelLoc parentId = null;
+        ResourceLoc.ModelLocation parentId = null;
         if (parent != null && !parent.isEmpty()) {
             if (parent.contains(":")) {
-                parentId = new ResourceLoc.ModelLoc(parent.split(":")[0], parent.split(":")[1]);
+                parentId = new ResourceLoc.ModelLocation(parent.split(":")[0], parent.split(":")[1]);
             } else {
-                parentId = new ResourceLoc.ModelLoc("minecraft", parent);
+                parentId = new ResourceLoc.ModelLocation("minecraft", parent);
             }
         }
 
