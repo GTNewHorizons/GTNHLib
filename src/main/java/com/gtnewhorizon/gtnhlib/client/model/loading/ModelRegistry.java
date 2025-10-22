@@ -3,23 +3,33 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
-import net.minecraft.block.Block;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ducks.BackingResourceManager;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ducks.GlobalResourceManager;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
-
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import java.util.List;
+import net.minecraft.block.Block;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.client.resources.IResourcePack;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
@@ -101,6 +111,41 @@ public class ModelRegistry {
             final var name = blockName.substring(sepIdx + 1);
 
             return new BlockName(domain, name);
+        }
+    }
+
+    public static class ReloadListener implements IResourceManagerReloadListener {
+
+        @Override
+        public void onResourceManagerReload(IResourceManager irm) {
+            if (!(irm instanceof GlobalResourceManager manager)) return;
+
+            final var domains = manager.nhlib$getDomainResourceManagers();
+            final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
+            for (var domain : domains.entrySet()) {
+                final var files = domain.getValue();
+                resourcePacks.addAll(((BackingResourceManager) files).nhlib$getResourcePacks());
+            }
+
+            final var texturesToLoad = new ObjectArrayList<String>();
+            for (var pack : resourcePacks) {
+                if (!(pack instanceof ModelResourcePack mrp)) continue;
+
+                final var texs = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
+                texturesToLoad.addAll(texs);
+            }
+
+            EventHandler.texturesToLoad = texturesToLoad;
+        }
+    }
+
+    public static class EventHandler {
+        private static List<String> texturesToLoad = ObjectLists.emptyList();
+
+        @SubscribeEvent
+        @SideOnly(Side.CLIENT)
+        public void onTextureStitch(TextureStitchEvent.Pre event) {
+            for (var tex : texturesToLoad) event.map.registerIcon(tex);
         }
     }
 }
