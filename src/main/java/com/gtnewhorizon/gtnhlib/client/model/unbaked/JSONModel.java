@@ -20,7 +20,6 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class JSONModel implements UnbakedModel {
     private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
     public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
-                     @NotNull Object2ObjectMap<String, String> textures, List<ModelDeserializer.ModelElement> elements) {
+                     @NotNull Object2ObjectOpenHashMap<String, String> textures, List<ModelDeserializer.ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
         this.display = display;
