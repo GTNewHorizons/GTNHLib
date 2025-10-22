@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static java.lang.Math.max;
@@ -183,7 +184,14 @@ public class JSONModel implements UnbakedModel {
                 setUV(quad, 3, uv.z, uv.y);
 
                 // Set the sprite
-                bakeSprite(quad, textures.get(f.texture()));
+                var texKey = f.texture();
+                var texName = textures.get(texKey);
+                if (texName.startsWith("#")) {
+                    MODEL_LOGGER.warn("Model {} has unflattened texture variable {} when baking!", this, texName);
+                    textures.put(texKey, "minecraft:missing");
+                    texName = "minecraft:missing";
+                }
+                bakeSprite(quad, texName);
 
                 // Set the tint index
                 quad.setColorIndex(f.tintIndex());
