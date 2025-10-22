@@ -3,6 +3,10 @@ plugins {
     id("com.gtnewhorizons.gtnhconvention")
 }
 
+minecraft {
+    //extraRunJvmArguments.add("-Dgtnhlib.dumpClass=true")
+}
+
 // Add a Java 17 sourceset for including code optimized for newer Java versions
 val java17ToolchainSpec: JavaToolchainSpec.() -> Unit = {
     vendor = JvmVendorSpec.AZUL
