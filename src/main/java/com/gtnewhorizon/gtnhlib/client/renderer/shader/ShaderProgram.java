@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.client.renderer.shader;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.IntBuffer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -13,7 +12,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.bytebuf.MemoryStack;
 
 @SuppressWarnings("unused")
 public class ShaderProgram implements AutoCloseable {
