@@ -4,17 +4,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -26,9 +15,17 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import net.minecraftforge.common.util.ForgeDirection;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
@@ -107,25 +104,27 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
+    private static Pattern TEXEX = Pattern.compile("^([^:]+:)block/");
     private static Object2ObjectOpenHashMap<String, String> loadTextures(JsonObject in) {
 
         final var textures = new Object2ObjectOpenHashMap<String, String>();
 
         if (in.has("textures")) {
             for (Map.Entry<String, JsonElement> e : in.getAsJsonObject("textures").entrySet()) {
-
-                // Trim leading octothorpes. They indicate a texture variable, but I don't actually care.
                 String s = e.getValue().getAsString();
-                if (s.startsWith("#")) {
-                    s = s.substring(1);
-                } else if (s.startsWith("minecraft:")) {
 
-                    // Because of how we fetch textures from the atlas, minecraft textures need to have their domain
-                    // stripped
-                    s = s.substring(10);
+                // If it's a texture variable, no munging is needed
+                if (!s.startsWith("#")) {
+                    // Add the default domain, if it's absent.
+                    if (!s.contains(":")) s = "minecraft:" + s;
+
+                    // Strip "block/" if present
+                    s = TEXEX.matcher(s).replaceFirst("$1");
                 }
 
-                textures.put(e.getKey(), s);
+                // The key is always a variable, so prepend accordingly
+                final var key = e.getKey();
+                textures.put(key.startsWith("#") ? key : "#" + key, s);
             }
         }
 
@@ -167,7 +166,6 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
             final Vector4f uv = (face.has("uv")) ? loadVec4(face, "uv") : null;
             String texture = JsonUtil.loadStr(face, "texture");
-            if (texture.startsWith("#")) texture = texture.substring(1);
             final ForgeDirection cullFace = fromName(JsonUtil.loadStr(face, "cullface", "unknown"));
             final int rotation = JsonUtil.loadInt(face, "rotation", 0);
             final int tintIndex = JsonUtil.loadInt(face, "tintindex", -1);
