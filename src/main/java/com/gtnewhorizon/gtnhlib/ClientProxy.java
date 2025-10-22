@@ -1,6 +1,8 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
@@ -22,6 +24,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.relauncher.Side;
 import lombok.Getter;
+import net.minecraftforge.common.MinecraftForge;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(side = Side.CLIENT)
@@ -61,6 +64,10 @@ public class ClientProxy extends CommonProxy {
         }
 
         LoreHandler.postInit();
+
+        final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
+        resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
+        MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
     }
 
     @Override
