@@ -9,6 +9,11 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(false)
     public static boolean ignoreNEIVersion;
 
+    @Config.Comment("Automatically load model textures based on model files. Disabling may cause models to lose their textures.")
+    @Config.DefaultBoolean(true)
+    @Config.RequiresMcRestart
+    public static boolean autoTextureLoading;
+
     @Config.Comment("If you're not a dev, you don't need this")
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart
