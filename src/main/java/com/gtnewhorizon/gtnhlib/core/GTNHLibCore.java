@@ -1,5 +1,9 @@
 package com.gtnewhorizon.gtnhlib.core;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+import com.gtnewhorizon.gtnhlib.config.ConfigException;
+import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +38,14 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
 
     public static final String[] DEFAULT_TRANSFORMERS = new String[] {
             "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
+
+    static {
+        try {
+            ConfigurationManager.registerConfig(GTNHLibConfig.class);
+        } catch (ConfigException e) {
+            GTNHLib.LOG.error("Failed to register GTNHLib config!", e);
+        }
+    }
 
     public GTNHLibCore() {
         super(new ModMetadata());
