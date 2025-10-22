@@ -49,7 +49,8 @@ public interface DirectionBlockProperty extends BlockProperty<ForgeDirection>, T
 
     @Override
     default ForgeDirection deserialize(JsonElement element) {
-        return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString()) : UNKNOWN;
+        return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString())
+                : UNKNOWN;
     }
 
     @Override
@@ -113,27 +114,23 @@ public interface DirectionBlockProperty extends BlockProperty<ForgeDirection>, T
     }
 
     static AbstractDirectionBlockProperty facingVanilla(int mask) {
-        return facing(
-            mask,
-            dir -> switch (dir) {
-                case NORTH -> 3;
-                case SOUTH -> 4;
-                case WEST -> 1;
-                case EAST -> 2;
-                case UP -> 0;
-                case DOWN -> 5;
-                default -> 3;
-            },
-            meta -> switch (meta) {
-                case 3 -> NORTH;
-                case 4 -> SOUTH;
-                case 1 -> WEST;
-                case 2 -> EAST;
-                case 0 -> UP;
-                case 5 -> DOWN;
-                default -> NORTH;
-            }
-        );
+        return facing(mask, dir -> switch (dir) {
+            case NORTH -> 3;
+            case SOUTH -> 4;
+            case WEST -> 1;
+            case EAST -> 2;
+            case UP -> 0;
+            case DOWN -> 5;
+            default -> 3;
+        }, meta -> switch (meta) {
+            case 3 -> NORTH;
+            case 4 -> SOUTH;
+            case 1 -> WEST;
+            case 2 -> EAST;
+            case 0 -> UP;
+            case 5 -> DOWN;
+            default -> NORTH;
+        });
     }
 
     interface D2M {
@@ -188,27 +185,23 @@ public interface DirectionBlockProperty extends BlockProperty<ForgeDirection>, T
     }
 
     static AbstractDirectionBlockProperty facing(int mask, int north, int south, int west, int east, int up, int down) {
-        return facing(
-            mask,
-            dir -> switch (dir) {
-                case NORTH -> north == -1 ? 0 : north;
-                case SOUTH -> south == -1 ? 0 : south;
-                case WEST -> west == -1 ? 0 : west;
-                case EAST -> east == -1 ? 0 : east;
-                case UP -> up == -1 ? 0 : up;
-                case DOWN -> down == -1 ? 0 : down;
-                case UNKNOWN -> 0;
-            },
-            meta -> {
-                if (meta == north) return NORTH;
-                if (meta == south) return SOUTH;
-                if (meta == west) return WEST;
-                if (meta == east) return EAST;
-                if (meta == up) return UP;
-                if (meta == down) return DOWN;
+        return facing(mask, dir -> switch (dir) {
+            case NORTH -> north == -1 ? 0 : north;
+            case SOUTH -> south == -1 ? 0 : south;
+            case WEST -> west == -1 ? 0 : west;
+            case EAST -> east == -1 ? 0 : east;
+            case UP -> up == -1 ? 0 : up;
+            case DOWN -> down == -1 ? 0 : down;
+            case UNKNOWN -> 0;
+        }, meta -> {
+            if (meta == north) return NORTH;
+            if (meta == south) return SOUTH;
+            if (meta == west) return WEST;
+            if (meta == east) return EAST;
+            if (meta == up) return UP;
+            if (meta == down) return DOWN;
 
-                return UNKNOWN;
-            }
-        );
+            return UNKNOWN;
+        });
     }
 }

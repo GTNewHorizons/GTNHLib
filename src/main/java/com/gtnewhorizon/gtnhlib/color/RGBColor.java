@@ -6,7 +6,7 @@ public class RGBColor implements ImmutableColor {
 
     public int red, green, blue, alpha;
 
-    public RGBColor() { }
+    public RGBColor() {}
 
     public RGBColor(int red, int green, int blue) {
         this.red = red;

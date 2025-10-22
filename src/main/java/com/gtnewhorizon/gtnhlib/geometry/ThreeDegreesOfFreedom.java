@@ -7,7 +7,9 @@ import org.jetbrains.annotations.Contract;
 public interface ThreeDegreesOfFreedom<TSelf> {
 
     ForgeDirection getA();
+
     ForgeDirection getB();
+
     ForgeDirection getC();
 
     /// Sets the directions to the given values. May or may not mutate this, the returned value should always

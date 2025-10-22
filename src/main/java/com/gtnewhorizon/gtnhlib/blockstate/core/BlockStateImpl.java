@@ -18,6 +18,7 @@ import com.gtnewhorizon.gtnhlib.geometry.DirectionTransform;
 import com.gtnewhorizon.gtnhlib.geometry.TransformLike;
 import com.gtnewhorizon.gtnhlib.geometry.VectorTransform;
 import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 @SuppressWarnings({ "resource", "unchecked" })
@@ -37,10 +38,14 @@ public class BlockStateImpl implements BlockState {
     }
 
     public BlockStateImpl assertIsDefault() {
-        if (block != null) throw new RuntimeException("BlockStateImpl reference was mutated while in the pool; block was set to " + block);
-        if (meta != 0) throw new RuntimeException("BlockStateImpl reference was mutated while in the pool; meta was set to " + meta);
-        if (!properties.isEmpty()) throw new RuntimeException("BlockStateImpl reference was mutated while in the pool; properties was set to " + properties);
-        if (!values.isEmpty()) throw new RuntimeException("BlockStateImpl reference was mutated while in the pool; values was set to " + values);
+        if (block != null) throw new RuntimeException(
+                "BlockStateImpl reference was mutated while in the pool; block was set to " + block);
+        if (meta != 0) throw new RuntimeException(
+                "BlockStateImpl reference was mutated while in the pool; meta was set to " + meta);
+        if (!properties.isEmpty()) throw new RuntimeException(
+                "BlockStateImpl reference was mutated while in the pool; properties was set to " + properties);
+        if (!values.isEmpty()) throw new RuntimeException(
+                "BlockStateImpl reference was mutated while in the pool; values was set to " + values);
 
         return this;
     }
@@ -73,9 +78,7 @@ public class BlockStateImpl implements BlockState {
 
         this.values.clear();
 
-        this.properties.forEach((name, property) -> {
-            this.values.put(property, property.getValue(world, x, y, z));
-        });
+        this.properties.forEach((name, property) -> { this.values.put(property, property.getValue(world, x, y, z)); });
 
         return this;
     }
@@ -90,9 +93,7 @@ public class BlockStateImpl implements BlockState {
 
         this.values.clear();
 
-        this.properties.forEach((name, property) -> {
-            this.values.put(property, property.getValue(stack));
-        });
+        this.properties.forEach((name, property) -> { this.values.put(property, property.getValue(stack)); });
 
         return this;
     }
@@ -134,13 +135,21 @@ public class BlockStateImpl implements BlockState {
         BlockProperty<T> property = (BlockProperty<T>) properties.get(name);
 
         if (property == null) {
-            GTNHLib.LOG.warn("Tried to set invalid property on BlockState by name. Name={}, Value={}", name, value, new Exception());
+            GTNHLib.LOG.warn(
+                    "Tried to set invalid property on BlockState by name. Name={}, Value={}",
+                    name,
+                    value,
+                    new Exception());
             return;
         }
 
-        if (property.getType() instanceof Class<?> clazz) {
+        if (property.getType() instanceof Class<?>clazz) {
             if (!clazz.isInstance(value)) {
-                GTNHLib.LOG.warn("Tried to set value for property on BlockState to an incompatible value. Name={}, Value={}", name, value, new Exception());
+                GTNHLib.LOG.warn(
+                        "Tried to set value for property on BlockState to an incompatible value. Name={}, Value={}",
+                        name,
+                        value,
+                        new Exception());
                 return;
             }
         }
@@ -166,7 +175,8 @@ public class BlockStateImpl implements BlockState {
     @Override
     public void transform(TransformLike transform) {
         values.replaceAll((property, value) -> {
-            if (property.hasTrait(BlockPropertyTrait.VectorTransformable) && transform instanceof VectorTransform vector) {
+            if (property.hasTrait(BlockPropertyTrait.VectorTransformable)
+                    && transform instanceof VectorTransform vector) {
                 return ((VectorTransformableProperty<Object>) property).transform(value, vector);
             }
 
@@ -183,7 +193,8 @@ public class BlockStateImpl implements BlockState {
         world.setBlock(x, y, z, this.block, this.meta, 2);
 
         values.forEach((property, value) -> {
-            if (property.hasTrait(BlockPropertyTrait.SupportsWorld) && property.hasTrait(BlockPropertyTrait.WorldMutable)) {
+            if (property.hasTrait(BlockPropertyTrait.SupportsWorld)
+                    && property.hasTrait(BlockPropertyTrait.WorldMutable)) {
                 ((BlockProperty<Object>) property).setValue(world, x, y, z, value);
             }
         });
@@ -194,7 +205,8 @@ public class BlockStateImpl implements BlockState {
         ItemStack stack = new ItemStack(this.block, 1, this.block.damageDropped(this.meta));
 
         values.forEach((property, value) -> {
-            if (property.hasTrait(BlockPropertyTrait.SupportsStacks) && property.hasTrait(BlockPropertyTrait.StackMutable)) {
+            if (property.hasTrait(BlockPropertyTrait.SupportsStacks)
+                    && property.hasTrait(BlockPropertyTrait.StackMutable)) {
                 ((BlockProperty<Object>) property).setValue(stack, value);
             }
         });

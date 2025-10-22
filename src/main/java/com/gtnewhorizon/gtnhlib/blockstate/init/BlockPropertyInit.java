@@ -21,9 +21,10 @@ public class BlockPropertyInit {
         MetaProperty metaProperty = new MetaProperty();
 
         BlockPropertyRegistry.registerProperty(new BlockPropertyFactory<Integer>() {
+
             @Override
             public BlockProperty<Integer> getProperty(IBlockAccess world, int x, int y, int z, Block block, int meta,
-                @Nullable TileEntity tile) {
+                    @Nullable TileEntity tile) {
                 return metaProperty;
             }
 

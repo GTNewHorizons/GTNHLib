@@ -26,6 +26,7 @@ import com.gtnewhorizon.gtnhlib.util.data.BlockMeta;
 import com.gtnewhorizon.gtnhlib.util.data.ImmutableBlockMeta;
 import com.gtnewhorizon.gtnhlib.util.data.ImmutableItemMeta;
 import com.gtnewhorizon.gtnhlib.util.data.ItemMeta;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -66,7 +67,9 @@ public class BlockPropertyRegistry {
             if (map == null) {
                 map = fn.apply((K) k);
 
-                this.put((K) k, map == null || map.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(map));
+                this.put(
+                        (K) k,
+                        map == null || map.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(map));
             }
 
             return map;
@@ -80,7 +83,8 @@ public class BlockPropertyRegistry {
     private static final PropertyMap<ImmutableItemMeta> ITEM_META_PROPERTIES = new PropertyMap<>();
 
     private static final PropertyMap<Type> IFACE_PROPERTIES = new PropertyMap<>();
-    private static final CachedPropertyMap<Type> IFACE_CACHE = new CachedPropertyMap<>(BlockPropertyRegistry::getInterfaceProperties);
+    private static final CachedPropertyMap<Type> IFACE_CACHE = new CachedPropertyMap<>(
+            BlockPropertyRegistry::getInterfaceProperties);
 
     private static final ObjectArrayList<BlockPropertyFactory<?>> CUSTOM_PROPERTIES = new ObjectArrayList<>();
 
@@ -113,7 +117,8 @@ public class BlockPropertyRegistry {
     }
 
     public static void registerProperty(ImmutableItemMeta im, BlockProperty<?> property) {
-        if (!(im.getItem() instanceof ItemBlock)) throw new IllegalArgumentException("Item must be an ItemBlock: " + im);
+        if (!(im.getItem() instanceof ItemBlock))
+            throw new IllegalArgumentException("Item must be an ItemBlock: " + im);
 
         ITEM_META_PROPERTIES.add(new ItemMeta(im), property);
     }
@@ -139,7 +144,7 @@ public class BlockPropertyRegistry {
 
             IFACE_PROPERTIES.copyAll(curr, cache);
 
-            if (curr instanceof Class<?> clazz2) {
+            if (curr instanceof Class<?>clazz2) {
                 for (Type iface : clazz2.getGenericInterfaces()) {
                     queue.addAndMoveToFirst(iface);
                 }
@@ -160,7 +165,8 @@ public class BlockPropertyRegistry {
 
     private static final BlockMeta POOLED_BM = new BlockMeta(Blocks.air);
 
-    public static void getProperties(IBlockAccess world, int x, int y, int z, Map<String, BlockProperty<?>> properties) {
+    public static void getProperties(IBlockAccess world, int x, int y, int z,
+            Map<String, BlockProperty<?>> properties) {
         properties.clear();
 
         Block block = world.getBlock(x, y, z);

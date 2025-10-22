@@ -18,7 +18,8 @@ public interface MetaBlockProperty<T> extends BlockProperty<T> {
     T getValue(int meta);
 
     @Override
-    default boolean appliesTo(IBlockAccess world, int x, int y, int z, Block block, int meta, @Nullable TileEntity tile) {
+    default boolean appliesTo(IBlockAccess world, int x, int y, int z, Block block, int meta,
+            @Nullable TileEntity tile) {
         return appliesTo(meta);
     }
 

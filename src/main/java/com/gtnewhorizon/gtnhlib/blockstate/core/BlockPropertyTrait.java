@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.blockstate.core;
 
-import net.minecraft.item.ItemBlock;
-
 public enum BlockPropertyTrait {
     /// If this property can interact with blocks in the world
     SupportsWorld,

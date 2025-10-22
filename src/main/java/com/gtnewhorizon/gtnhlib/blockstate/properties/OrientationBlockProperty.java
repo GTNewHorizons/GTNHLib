@@ -35,7 +35,8 @@ public interface OrientationBlockProperty extends BlockProperty<Orientation>, Tr
 
     @Override
     default Orientation deserialize(JsonElement element) {
-        return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString()) : Orientation.UNKNOWN;
+        return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString())
+                : Orientation.UNKNOWN;
     }
 
     @Override

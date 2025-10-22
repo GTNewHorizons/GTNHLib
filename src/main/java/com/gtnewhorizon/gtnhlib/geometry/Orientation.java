@@ -60,7 +60,8 @@ public enum Orientation implements TwoDegreesOfFreedom<Orientation> {
         this.b = b;
     }
 
-    private static final EnumMap<ForgeDirection, EnumMap<ForgeDirection, Orientation>> ORIENTATIONS = new EnumMap<>(ForgeDirection.class);
+    private static final EnumMap<ForgeDirection, EnumMap<ForgeDirection, Orientation>> ORIENTATIONS = new EnumMap<>(
+            ForgeDirection.class);
 
     static {
         for (Orientation o : values()) {

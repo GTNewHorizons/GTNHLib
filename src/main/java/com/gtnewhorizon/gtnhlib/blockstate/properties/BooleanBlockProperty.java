@@ -94,7 +94,7 @@ public interface BooleanBlockProperty extends BlockProperty<Boolean> {
 
             @Override
             public Boolean getValue(ItemStack stack) {
-                //noinspection DataFlowIssue
+                // noinspection DataFlowIssue
                 return ((ItemBlock) stack.getItem()).field_150939_a == truthy.get();
             }
 

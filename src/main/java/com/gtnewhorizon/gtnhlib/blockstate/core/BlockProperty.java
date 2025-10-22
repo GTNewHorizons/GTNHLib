@@ -42,7 +42,6 @@ public interface BlockProperty<TValue> {
         return value;
     }
 
-
     Gson GSON = new Gson();
 
     @OverrideOnly
@@ -84,9 +83,8 @@ public interface BlockProperty<TValue> {
         return getGson().toJson(value);
     }
 
-
-
-    default boolean appliesTo(IBlockAccess world, int x, int y, int z, Block block, int meta, @Nullable TileEntity tile) {
+    default boolean appliesTo(IBlockAccess world, int x, int y, int z, Block block, int meta,
+            @Nullable TileEntity tile) {
         return true;
     }
 
@@ -97,8 +95,6 @@ public interface BlockProperty<TValue> {
     default void setValue(World world, int x, int y, int z, TValue value) {
         throw new UnsupportedOperationException();
     }
-
-
 
     default boolean appliesTo(ItemStack stack, Item item, int meta) {
         return true;
@@ -111,7 +107,6 @@ public interface BlockProperty<TValue> {
     default void setValue(ItemStack stack, TValue value) {
         throw new UnsupportedOperationException();
     }
-
 
     static <T> T getIndexSafe(T[] array, int index) {
         return array == null || index < 0 || index >= array.length ? null : array[index];

@@ -13,8 +13,8 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 public interface BlockPropertyFactory<TValue> {
 
     @Nullable
-    default BlockProperty<TValue> getProperty(IBlockAccess world, int x, int y, int z, Block block, int meta, @Nullable
-        TileEntity tile) {
+    default BlockProperty<TValue> getProperty(IBlockAccess world, int x, int y, int z, Block block, int meta,
+            @Nullable TileEntity tile) {
         return null;
     }
 

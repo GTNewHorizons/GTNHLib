@@ -18,6 +18,7 @@ import net.minecraft.util.Vec3;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class BlockStateCommand extends CommandBase {
@@ -112,16 +113,17 @@ public class BlockStateCommand extends CommandBase {
     }
 
     private static MovingObjectPosition getHitResult(EntityPlayer player) {
-        double reachDistance = player instanceof EntityPlayerMP mp ?
-            mp.theItemInWorldManager.getBlockReachDistance() :
-            Minecraft.getMinecraft().playerController.getBlockReachDistance();
+        double reachDistance = player instanceof EntityPlayerMP mp ? mp.theItemInWorldManager.getBlockReachDistance()
+                : Minecraft.getMinecraft().playerController.getBlockReachDistance();
 
         Vec3 posVec = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 
         Vec3 lookVec = player.getLook(1);
 
-        Vec3 modifiedPosVec = posVec
-            .addVector(lookVec.xCoord * reachDistance, lookVec.yCoord * reachDistance, lookVec.zCoord * reachDistance);
+        Vec3 modifiedPosVec = posVec.addVector(
+                lookVec.xCoord * reachDistance,
+                lookVec.yCoord * reachDistance,
+                lookVec.zCoord * reachDistance);
 
         MovingObjectPosition hit = player.worldObj.rayTraceBlocks(posVec, modifiedPosVec, true);
 

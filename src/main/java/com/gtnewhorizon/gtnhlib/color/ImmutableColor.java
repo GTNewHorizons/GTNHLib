@@ -9,8 +9,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 public interface ImmutableColor {
 
     int getRed();
+
     int getGreen();
+
     int getBlue();
+
     int getAlpha();
 
     default int toIntRGB() {
@@ -18,15 +21,21 @@ public interface ImmutableColor {
     }
 
     default int toIntARGB() {
-        return ((getAlpha() & 0xFF) << 24) | ((getRed() & 0xFF) << 16) | ((getGreen() & 0xFF) << 8) | (getBlue() & 0xFF);
+        return ((getAlpha() & 0xFF) << 24) | ((getRed() & 0xFF) << 16)
+                | ((getGreen() & 0xFF) << 8)
+                | (getBlue() & 0xFF);
     }
 
     default int toIntRGBA() {
-        return ((getRed() & 0xFF) << 24) | ((getGreen() & 0xFF) << 16) | ((getBlue() & 0xFF) << 8) | ((getAlpha() & 0xFF));
+        return ((getRed() & 0xFF) << 24) | ((getGreen() & 0xFF) << 16)
+                | ((getBlue() & 0xFF) << 8)
+                | ((getAlpha() & 0xFF));
     }
 
     default int toIntABGR() {
-        return (getRed() & 0xFF) | ((getGreen() & 0xFF) << 8) | ((getBlue() & 0xFF) << 16) | ((getAlpha() & 0xFF) << 24);
+        return (getRed() & 0xFF) | ((getGreen() & 0xFF) << 8)
+                | ((getBlue() & 0xFF) << 16)
+                | ((getAlpha() & 0xFF) << 24);
     }
 
     default RGBColor toRGB() {
@@ -53,9 +62,9 @@ public interface ImmutableColor {
         HSVColor hsvB = b instanceof HSVColor hsv ? hsv : b.toHSV();
 
         return new HSVColor(
-            lerp(hsvA.hue, hsvB.hue, k),
-            lerp(hsvA.saturation, hsvB.saturation, k),
-            lerp(hsvA.brightness, hsvB.brightness, k));
+                lerp(hsvA.hue, hsvB.hue, k),
+                lerp(hsvA.saturation, hsvB.saturation, k),
+                lerp(hsvA.brightness, hsvB.brightness, k));
     }
 
     static float lerp(float a, float b, float k) {

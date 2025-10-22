@@ -33,7 +33,8 @@ public interface AxisBlockProperty extends BlockProperty<Axis>, TransformablePro
 
     @Override
     default Axis deserialize(JsonElement element) {
-        return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString()) : Axis.UNKNOWN;
+        return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString())
+                : Axis.UNKNOWN;
     }
 
     @Override

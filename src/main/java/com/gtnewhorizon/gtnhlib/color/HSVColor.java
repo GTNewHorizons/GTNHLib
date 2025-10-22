@@ -4,7 +4,7 @@ public class HSVColor implements ImmutableColor {
 
     public float hue, saturation, brightness;
 
-    public HSVColor() { }
+    public HSVColor() {}
 
     public HSVColor(float hue, float saturation, float brightness) {
         this.hue = hue;
@@ -56,9 +56,8 @@ public class HSVColor implements ImmutableColor {
     public final boolean equals(Object o) {
         if (!(o instanceof HSVColor hsvColor)) return false;
 
-        return Float.compare(hue, hsvColor.hue) == 0
-            && Float.compare(saturation, hsvColor.saturation) == 0
-            && Float.compare(brightness, hsvColor.brightness) == 0;
+        return Float.compare(hue, hsvColor.hue) == 0 && Float.compare(saturation, hsvColor.saturation) == 0
+                && Float.compare(brightness, hsvColor.brightness) == 0;
     }
 
     @Override
