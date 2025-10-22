@@ -183,7 +183,7 @@ public class JSONModel implements UnbakedModel {
                 setUV(quad, 3, uv.z, uv.y);
 
                 // Set the sprite
-                bakeSprite(quad, this.textures.get(f.texture()));
+                bakeSprite(quad, textures.get(f.texture()));
 
                 // Set the tint index
                 quad.setColorIndex(f.tintIndex());
@@ -216,43 +216,44 @@ public class JSONModel implements UnbakedModel {
 
     public void resolveParents(Function<ModelLoc, JSONModel> modelLoader) {
 
-        if (this.parentId != null && this.parent == null) {
+        if (this.parentId == null || this.parent != null) {
+            return;
+        }
 
-            final JSONModel p = modelLoader.apply(this.parentId);
-            p.resolveParents(modelLoader);
+        final JSONModel p = modelLoader.apply(this.parentId);
+        p.resolveParents(modelLoader);
 
-            // Inherit properties
-            this.parent = p;
-            if (this.elements.isEmpty()) this.elements = this.parent.elements;
+        // Inherit properties
+        this.parent = p;
+        if (this.elements.isEmpty()) this.elements = this.parent.elements;
 
-            // Resolve texture variables
-            // Add parent texture mappings, but prioritize ours.
-            for (Map.Entry<String, String> e : this.parent.textures.entrySet()) {
+        // Resolve texture variables
+        // Add parent texture mappings, but prioritize ours.
+        for (Map.Entry<String, String> e : this.parent.textures.entrySet()) {
 
-                this.textures.putIfAbsent(e.getKey(), e.getValue());
-            }
+            this.textures.putIfAbsent(e.getKey(), e.getValue());
+        }
 
-            // Flatten them, merging s -> s1, s1 -> s2 to s -> s2, s1 -> s2.
-            boolean flat = false;
-            final Map<String, String> tmp = new Object2ObjectOpenHashMap<>();
-            while (!flat) {
-                flat = true;
+        // Flatten them, merging s -> s1, s1 -> s2 to s -> s2, s1 -> s2.
+        boolean flat = false;
+        final Map<String, String> tmp = new Object2ObjectOpenHashMap<>();
+        while (!flat) {
+            flat = true;
 
-                for (Map.Entry<String, String> e : this.textures.entrySet()) {
+            for (Map.Entry<String, String> e : this.textures.entrySet()) {
 
-                    // If there is a value in the key set, replace with the value it points to
-                    // Also avoid adding a loop
-                    if (this.textures.containsKey(e.getValue())) {
+                // If there is a value in the key set, replace with the value it points to
+                // Also avoid adding a loop
+                if (this.textures.containsKey(e.getValue())) {
 
-                        if (!e.getKey().equals(e.getValue())) tmp.put(e.getKey(), this.textures.get(e.getValue()));
-                        else tmp.put(e.getKey(), "");
-                        flat = false;
-                    } else {
-                        tmp.put(e.getKey(), e.getValue());
-                    }
+                    if (!e.getKey().equals(e.getValue())) tmp.put(e.getKey(), this.textures.get(e.getValue()));
+                    else tmp.put(e.getKey(), "");
+                    flat = false;
+                } else {
+                    tmp.put(e.getKey(), e.getValue());
                 }
-                this.textures.putAll(tmp);
             }
+            this.textures.putAll(tmp);
         }
     }
 
