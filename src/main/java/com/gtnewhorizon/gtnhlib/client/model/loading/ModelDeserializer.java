@@ -107,9 +107,9 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private static Map<String, String> loadTextures(JsonObject in) {
+    private static Object2ObjectOpenHashMap<String, String> loadTextures(JsonObject in) {
 
-        final Map<String, String> textures = new Object2ObjectOpenHashMap<>();
+        final var textures = new Object2ObjectOpenHashMap<String, String>();
 
         if (in.has("textures")) {
             for (Map.Entry<String, JsonElement> e : in.getAsJsonObject("textures").entrySet()) {
@@ -219,7 +219,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
         final boolean useAO = JsonUtil.loadBool(in, "ambientocclusion", true);
         final Map<Position, ModelDisplay> display = loadDisplay(in);
-        final Map<String, String> textures = loadTextures(in);
+        final var textures = loadTextures(in);
         final List<ModelElement> elements = loadElements(in);
 
         return new JSONModel(parentId, useAO, display, textures, elements);
