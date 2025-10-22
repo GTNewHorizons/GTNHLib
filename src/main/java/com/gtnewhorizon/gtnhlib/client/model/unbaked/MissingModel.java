@@ -2,17 +2,17 @@ package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads.BLANK;
 
-import java.util.HashMap;
-
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class MissingModel extends JSONModel {
 
     public static final MissingModel MISSING_MODEL = new MissingModel();
 
     public MissingModel() {
-        super(null, false, null, new HashMap<>(), null);
+        super(null, false, null, Object2ObjectMaps.emptyMap(), null);
     }
 
     @Override
