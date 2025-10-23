@@ -3,6 +3,17 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.client.resources.IResourcePack;
+import net.minecraftforge.client.event.TextureStitchEvent;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -15,6 +26,7 @@ import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
+
 import cpw.mods.fml.common.FMLContainerHolder;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -23,14 +35,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import java.util.List;
-import net.minecraft.block.Block;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
-import net.minecraft.client.resources.IResourcePack;
-import net.minecraftforge.client.event.TextureStitchEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
@@ -142,7 +146,7 @@ public class ModelRegistry {
 
                 // Skip unregistered mods
                 if (mrp instanceof FMLContainerHolder fmlch
-                    && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
+                        && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
                     continue;
 
                 final var texs = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
@@ -154,13 +158,13 @@ public class ModelRegistry {
     }
 
     public static class EventHandler {
+
         private static List<String> texturesToLoad = ObjectLists.emptyList();
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
         public void onTextureStitch(TextureStitchEvent.Pre event) {
-            for (var tex : texturesToLoad)
-                event.map.registerIcon(tex.replaceFirst("^minecraft:", ""));
+            for (var tex : texturesToLoad) event.map.registerIcon(tex.replaceFirst("^minecraft:", ""));
         }
     }
 }

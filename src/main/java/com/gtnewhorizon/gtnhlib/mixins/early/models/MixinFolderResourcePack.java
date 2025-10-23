@@ -3,8 +3,6 @@ package com.gtnewhorizon.gtnhlib.mixins.early.models;
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
 import static java.nio.file.Files.walk;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelResourcePack;
-import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -12,9 +10,14 @@ import java.io.Reader;
 import java.nio.file.FileVisitOption;
 import java.util.List;
 import java.util.function.Function;
+
 import net.minecraft.client.resources.AbstractResourcePack;
 import net.minecraft.client.resources.FolderResourcePack;
+
 import org.spongepowered.asm.mixin.Mixin;
+
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelResourcePack;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 
 @SuppressWarnings("UnusedMixin")
 @Mixin(FolderResourcePack.class)

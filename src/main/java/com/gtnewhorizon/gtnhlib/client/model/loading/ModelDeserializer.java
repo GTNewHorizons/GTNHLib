@@ -4,6 +4,18 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.github.bsideup.jabel.Desugar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -15,17 +27,9 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis;
 import com.gtnewhorizon.gtnhlib.util.JsonUtil;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
@@ -105,6 +109,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
     }
 
     private static Pattern TEXEX = Pattern.compile("^([^:]+:)block/");
+
     private static Object2ObjectOpenHashMap<String, String> loadTextures(JsonObject in) {
 
         final var textures = new Object2ObjectOpenHashMap<String, String>();
