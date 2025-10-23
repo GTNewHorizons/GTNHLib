@@ -43,6 +43,10 @@ public class ClientProxy extends CommonProxy {
         super.preInit(event);
 
         RenderingRegistry.registerBlockHandler(new ModelISBRH());
+
+        // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
+        // you too can automatically load textures for your models!
+        ModelRegistry.registerModid(MODID);
     }
 
     @Override
@@ -71,10 +75,6 @@ public class ClientProxy extends CommonProxy {
         final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
-
-        // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
-        // you too can automatically load textures for your models!
-        ModelRegistry.registerModid(MODID);
     }
 
     @Override
