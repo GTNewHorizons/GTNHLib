@@ -104,7 +104,6 @@ public class StateDeserializer implements JsonDeserializer<StateModelMap> {
                 fromStr(loadStr(variant, "model")),
                 loadInt(variant, "x", 0),
                 loadInt(variant, "y", 0),
-                0,
                 loadBool(variant, "uvlock", false),
                 loadInt(variant, "weight", 1));
     }
