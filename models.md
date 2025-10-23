@@ -19,3 +19,4 @@ don't have models. This may change in the future.
 - Add smooth shading to ModelISBRH.
 - Add face culling to models.
 - Implement UV locking
+- Integrate with a proper BlockState API
