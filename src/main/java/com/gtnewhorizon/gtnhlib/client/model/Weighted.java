@@ -2,13 +2,18 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import java.util.Random;
 
-import com.github.bsideup.jabel.Desugar;
-
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
 /// A simple wrapper for any object, adding a weight. Also provides a helper for selecting from a weighted list.
-@Desugar
-public record Weighted<T> (T thing, int weight) {
+public final class Weighted<T> {
+
+    private final T thing;
+    private final int weight;
+
+    public Weighted(T thing, int weight) {
+        this.thing = thing;
+        this.weight = weight;
+    }
 
     public static <T> T selectOne(ObjectList<Weighted<T>> heavyThings, Random rand) {
         var weight = 0;
@@ -24,5 +29,13 @@ public record Weighted<T> (T thing, int weight) {
         }
 
         throw new IllegalStateException("Randomly selected beyond the list!");
+    }
+
+    public T thing() {
+        return thing;
+    }
+
+    public int weight() {
+        return weight;
     }
 }

@@ -3,18 +3,11 @@ package com.gtnewhorizon.gtnhlib.client.model;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
 
-import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
 
 /// Mirrors Minecraft's format for specifying models.
-///
-/// @param model The model file this variant refers to
-/// @param x X rotation
-/// @param y Y rotation
-/// @param uvLock If true, textures aren't rotated with the block
-@Desugar
 @Internal
-public record JSONVariant(ResourceLoc.ModelLoc model, int x, int y, boolean uvLock) implements BakeData {
+public final class JSONVariant implements BakeData {
 
     /// @param weight Used when selecting models. Irrelevant when only one variant is allowed, but must always be
     /// greater than zero.
@@ -25,6 +18,21 @@ public record JSONVariant(ResourceLoc.ModelLoc model, int x, int y, boolean uvLo
     }
 
     private static final float DEG2RAD = (float) (Math.PI / 180);
+    private final ResourceLoc.ModelLoc model;
+    private final int x;
+    private final int y;
+    private final boolean uvLock;
+
+    /// @param model The model file this variant refers to
+    /// @param x X rotation
+    /// @param y Y rotation
+    /// @param uvLock If true, textures aren't rotated with the block
+    public JSONVariant(ResourceLoc.ModelLoc model, int x, int y, boolean uvLock) {
+        this.model = model;
+        this.x = x;
+        this.y = y;
+        this.uvLock = uvLock;
+    }
 
     @Override
     public Matrix4f getAffineMatrix() {
@@ -34,6 +42,22 @@ public record JSONVariant(ResourceLoc.ModelLoc model, int x, int y, boolean uvLo
 
     @Override
     public boolean lockUV() {
+        return uvLock;
+    }
+
+    public ResourceLoc.ModelLoc model() {
+        return model;
+    }
+
+    public int x() {
+        return x;
+    }
+
+    public int y() {
+        return y;
+    }
+
+    public boolean uvLock() {
         return uvLock;
     }
 }

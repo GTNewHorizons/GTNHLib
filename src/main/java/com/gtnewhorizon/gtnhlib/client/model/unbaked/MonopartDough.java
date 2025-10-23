@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
-import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -11,8 +10,13 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
-@Desugar
-public record MonopartDough(ObjectList<Weighted<JSONVariant>> variants) implements UnbakedModel {
+public final class MonopartDough implements UnbakedModel {
+
+    private final ObjectList<Weighted<JSONVariant>> variants;
+
+    public MonopartDough(ObjectList<Weighted<JSONVariant>> variants) {
+        this.variants = variants;
+    }
 
     @Override
     public BakedModel bake(BakeData data) {
@@ -26,5 +30,9 @@ public record MonopartDough(ObjectList<Weighted<JSONVariant>> variants) implemen
 
         if (models.size() == 1) return models.get(0).thing();
         return new MonopartModel(models);
+    }
+
+    public ObjectList<Weighted<JSONVariant>> variants() {
+        return variants;
     }
 }

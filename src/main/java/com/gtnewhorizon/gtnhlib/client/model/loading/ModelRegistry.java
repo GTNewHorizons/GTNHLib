@@ -14,7 +14,6 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
@@ -111,8 +110,15 @@ public class ModelRegistry {
         return m;
     }
 
-    @Desugar
-    private record BlockName(String domain, String name) {
+    private static final class BlockName {
+
+        private final String domain;
+        private final String name;
+
+        private BlockName(String domain, String name) {
+            this.domain = domain;
+            this.name = name;
+        }
 
         private static BlockName fromBlock(Block block) {
             final String blockName = Block.blockRegistry.getNameForObject(block);
