@@ -55,7 +55,7 @@ public class MonopartState implements StateModelMap {
                 final int eidx = c.indexOf("=");
                 if (eidx == -1) throw new RuntimeException("Unexpected blockstate case '" + c + "'!");
 
-                states.put(c.substring(0, eidx), c.substring(eidx));
+                states.put(c.substring(0, eidx), c.substring(eidx + 1));
             }
         }
 
