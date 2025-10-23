@@ -131,6 +131,11 @@ public class ModelRegistry {
 
         @Override
         public void onResourceManagerReload(IResourceManager irm) {
+            // Flush all caches, we may have new models
+            BLOCKSTATE_MODEL_CACHE.clear();
+            STATE_MODEL_MAP_CACHE.clear();
+            JSON_MODEL_CACHE.clear();
+
             if (!(irm instanceof GlobalResourceManager manager)) return;
 
             final var domains = manager.nhlib$getDomainResourceManagers();
