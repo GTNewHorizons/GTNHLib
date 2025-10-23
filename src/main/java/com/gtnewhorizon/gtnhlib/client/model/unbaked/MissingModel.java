@@ -4,8 +4,8 @@ import static com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads.BLANK;
 
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class MissingModel extends JSONModel {
 

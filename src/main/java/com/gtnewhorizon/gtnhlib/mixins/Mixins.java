@@ -27,11 +27,10 @@ public enum Mixins implements IMixins {
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin)),
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures").addClientMixins(
-        "models.FRMAccessor",
-        "models.MixinFileResourcePack",
-        "models.MixinFolderResourcePack",
-        "models.SRRMAccessor"
-    ).setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading));
+            "models.FRMAccessor",
+            "models.MixinFileResourcePack",
+            "models.MixinFolderResourcePack",
+            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading));
 
     private final MixinBuilder builder;
 
