@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.jetbrains.annotations.ApiStatus;
 
-import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -40,9 +39,24 @@ public class MultipartState implements StateModelMap, UnbakedModel {
         return new MultipartModel(bread);
     }
 
-    @Desugar
     @ApiStatus.Internal
-    public record Case(ObjectList<Weighted<JSONVariant>> apply, Condition when) {
+    public static final class Case {
+
+        private final ObjectList<Weighted<JSONVariant>> apply;
+        private final Condition when;
+
+        public Case(ObjectList<Weighted<JSONVariant>> apply, Condition when) {
+            this.apply = apply;
+            this.when = when;
+        }
+
+        public ObjectList<Weighted<JSONVariant>> apply() {
+            return apply;
+        }
+
+        public Condition when() {
+            return when;
+        }
 
         public interface Condition {
 
@@ -51,8 +65,15 @@ public class MultipartState implements StateModelMap, UnbakedModel {
             boolean matches(Map<String, String> state);
         }
 
-        @Desugar
-        record MultiCon(boolean requireAll, ObjectList<Condition> matches) implements Condition {
+        static final class MultiCon implements Condition {
+
+            private final boolean requireAll;
+            private final ObjectList<Condition> matches;
+
+            MultiCon(boolean requireAll, ObjectList<Condition> matches) {
+                this.requireAll = requireAll;
+                this.matches = matches;
+            }
 
             @Override
             public boolean matches(Map<String, String> state) {
@@ -68,10 +89,25 @@ public class MultipartState implements StateModelMap, UnbakedModel {
                 }
                 return false;
             }
+
+            public boolean requireAll() {
+                return requireAll;
+            }
+
+            public ObjectList<Condition> matches() {
+                return matches;
+            }
         }
 
-        @Desugar
-        record StateCon(String key, ObjectList<String> values) implements Condition {
+        static final class StateCon implements Condition {
+
+            private final String key;
+            private final ObjectList<String> values;
+
+            StateCon(String key, ObjectList<String> values) {
+                this.key = key;
+                this.values = values;
+            }
 
             @Override
             public boolean matches(Map<String, String> state) {
@@ -80,6 +116,14 @@ public class MultipartState implements StateModelMap, UnbakedModel {
                     if (v.equals(val)) return true;
                 }
                 return false;
+            }
+
+            public String key() {
+                return key;
+            }
+
+            public ObjectList<String> values() {
+                return values;
             }
         }
     }

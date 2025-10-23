@@ -5,6 +5,7 @@ import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import net.minecraft.client.Minecraft;
@@ -13,7 +14,6 @@ import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.github.bsideup.jabel.Desugar;
 import com.google.gson.Gson;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
@@ -44,8 +44,15 @@ public interface ResourceLoc<T> {
 
     Class<T> clazz();
 
-    @Desugar
-    record ModelLoc(String owner, String path) implements ResourceLoc<JSONModel> {
+    final class ModelLoc implements ResourceLoc<JSONModel> {
+
+        private final String owner;
+        private final String path;
+
+        public ModelLoc(String owner, String path) {
+            this.owner = owner;
+            this.path = path;
+        }
 
         public static ModelLoc fromStr(String id) {
             final int sepIdx = id.indexOf(':');
@@ -67,10 +74,40 @@ public interface ResourceLoc<T> {
         public Class<JSONModel> clazz() {
             return JSONModel.class;
         }
+
+        @Override
+        public String owner() {
+            return owner;
+        }
+
+        @Override
+        public String path() {
+            return path;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (ModelLoc) obj;
+            return Objects.equals(this.owner, that.owner) && Objects.equals(this.path, that.path);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(owner, path);
+        }
     }
 
-    @Desugar
-    record StateLoc(String owner, String path) implements ResourceLoc<StateModelMap> {
+    final class StateLoc implements ResourceLoc<StateModelMap> {
+
+        private final String owner;
+        private final String path;
+
+        public StateLoc(String owner, String path) {
+            this.owner = owner;
+            this.path = path;
+        }
 
         @Override
         public String prefix() {
@@ -85,6 +122,29 @@ public interface ResourceLoc<T> {
         @Override
         public Class<StateModelMap> clazz() {
             return StateModelMap.class;
+        }
+
+        @Override
+        public String owner() {
+            return owner;
+        }
+
+        @Override
+        public String path() {
+            return path;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (StateLoc) obj;
+            return Objects.equals(this.owner, that.owner) && Objects.equals(this.path, that.path);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(owner, path);
         }
     }
 }

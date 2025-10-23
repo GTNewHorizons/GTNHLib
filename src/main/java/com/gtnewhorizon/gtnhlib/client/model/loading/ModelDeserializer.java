@@ -16,7 +16,6 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.github.bsideup.jabel.Desugar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -253,29 +252,124 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             };
         }
 
-        @Desugar
-        public record ModelDisplay(Vector3f rotation, Vector3f translation, Vector3f scale) {
+        public static final class ModelDisplay {
 
             public static final ModelDisplay DEFAULT = new ModelDisplay(
                     new Vector3f(0, 0, 0),
                     new Vector3f(0, 0, 0),
                     new Vector3f(1, 1, 1));
+            private final Vector3f rotation;
+            private final Vector3f translation;
+            private final Vector3f scale;
 
+            public ModelDisplay(Vector3f rotation, Vector3f translation, Vector3f scale) {
+                this.rotation = rotation;
+                this.translation = translation;
+                this.scale = scale;
+            }
+
+            public Vector3f rotation() {
+                return rotation;
+            }
+
+            public Vector3f translation() {
+                return translation;
+            }
+
+            public Vector3f scale() {
+                return scale;
+            }
         }
     }
 
-    @Desugar
-    public record ModelElement(Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation,
-            boolean shade, List<Face> faces) {
+    public static final class ModelElement {
 
-        @Desugar
-        public record Face(ForgeDirection name, Vector4f uv, String texture, ForgeDirection cullFace, int rotation,
-                int tintIndex) {}
+        private final Vector3f from;
+        private final Vector3f to;
+        private final @Nullable Rotation rotation;
+        private final boolean shade;
+        private final List<Face> faces;
 
-        @Desugar
-        public record Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
+        public ModelElement(Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation,
+                boolean shade, List<Face> faces) {
+            this.from = from;
+            this.to = to;
+            this.rotation = rotation;
+            this.shade = shade;
+            this.faces = faces;
+        }
+
+        public Vector3f from() {
+            return from;
+        }
+
+        public Vector3f to() {
+            return to;
+        }
+
+        public @Nullable Rotation rotation() {
+            return rotation;
+        }
+
+        public boolean shade() {
+            return shade;
+        }
+
+        public List<Face> faces() {
+            return faces;
+        }
+
+        public static final class Face {
+
+            private final ForgeDirection name;
+            private final Vector4f uv;
+            private final String texture;
+            private final ForgeDirection cullFace;
+            private final int rotation;
+            private final int tintIndex;
+
+            public Face(ForgeDirection name, Vector4f uv, String texture, ForgeDirection cullFace, int rotation,
+                    int tintIndex) {
+                this.name = name;
+                this.uv = uv;
+                this.texture = texture;
+                this.cullFace = cullFace;
+                this.rotation = rotation;
+                this.tintIndex = tintIndex;
+            }
+
+            public ForgeDirection name() {
+                return name;
+            }
+
+            public Vector4f uv() {
+                return uv;
+            }
+
+            public String texture() {
+                return texture;
+            }
+
+            public ForgeDirection cullFace() {
+                return cullFace;
+            }
+
+            public int rotation() {
+                return rotation;
+            }
+
+            public int tintIndex() {
+                return tintIndex;
+            }
+        }
+
+        public static final class Rotation {
 
             public static final Rotation NOOP = new Rotation(new Vector3f(0, 0, 0), X, 0, false);
+            private final Vector3f origin;
+            private final Axis axis;
+            private final float angle;
+            private final boolean rescale;
 
             public Rotation(Vector3f origin, Axis axis, float angle, boolean rescale) {
                 this.origin = origin;
@@ -298,6 +392,22 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
                 // Add the origin back in
                 return ret.translateLocal(this.origin.x, this.origin.y, this.origin.z);
+            }
+
+            public Vector3f origin() {
+                return origin;
+            }
+
+            public Axis axis() {
+                return axis;
+            }
+
+            public float angle() {
+                return angle;
+            }
+
+            public boolean rescale() {
+                return rescale;
             }
         }
     }

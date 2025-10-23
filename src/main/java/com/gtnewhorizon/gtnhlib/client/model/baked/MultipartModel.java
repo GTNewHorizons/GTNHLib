@@ -13,7 +13,6 @@ import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
@@ -24,8 +23,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps.UnmodifiableMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-@Desugar
-public record MultipartModel(UnmodifiableMap<Condition, BakedModel> piles) implements BakedModel {
+public final class MultipartModel implements BakedModel {
+
+    private final UnmodifiableMap<Condition, BakedModel> piles;
+
+    public MultipartModel(UnmodifiableMap<Condition, BakedModel> piles) {
+        this.piles = piles;
+    }
 
     public MultipartModel(Object2ObjectArrayMap<Condition, BakedModel> piles) {
         this((UnmodifiableMap<Condition, BakedModel>) unmodifiable(piles));

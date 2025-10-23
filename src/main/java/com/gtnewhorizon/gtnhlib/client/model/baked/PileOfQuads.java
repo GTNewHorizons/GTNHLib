@@ -20,17 +20,20 @@ import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
-@Desugar
-public record PileOfQuads(SidedQuadStore sidedQuadStore) implements BakedModel {
+public final class PileOfQuads implements BakedModel {
 
     public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>());
+    private final SidedQuadStore sidedQuadStore;
+
+    public PileOfQuads(SidedQuadStore sidedQuadStore) {
+        this.sidedQuadStore = sidedQuadStore;
+    }
 
     public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore) {
         this(new SidedQuadStore(sidedQuadStore));
