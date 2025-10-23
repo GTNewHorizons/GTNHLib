@@ -15,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
+import cpw.mods.fml.common.FMLContainerHolder;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -88,6 +89,12 @@ public class ModelRegistry {
         return JSON_MODEL_CACHE.get(loc);
     }
 
+    /// Registers the given mod ID for automatic texture loading. The resource pack attached to this mod will be scanned
+    /// for model files, and textures from those files will be automatically loaded.
+    public static void registerModid(String modid) {
+        ReloadListener.PERMITTED_MODIDS.add(modid);
+    }
+
     private static StateModelMap getStateModelMap(Block block) {
         final var name = BlockName.fromBlock(block);
         final var stateLocation = new ResourceLoc.StateLoc(name.domain, name.name);
@@ -116,6 +123,8 @@ public class ModelRegistry {
 
     public static class ReloadListener implements IResourceManagerReloadListener {
 
+        private static final ObjectOpenHashSet<String> PERMITTED_MODIDS = new ObjectOpenHashSet<>();
+
         @Override
         public void onResourceManagerReload(IResourceManager irm) {
             if (!(irm instanceof GlobalResourceManager manager)) return;
@@ -131,6 +140,11 @@ public class ModelRegistry {
             for (var pack : resourcePacks) {
                 if (!(pack instanceof ModelResourcePack mrp)) continue;
 
+                // Skip unregistered mods
+                if (mrp instanceof FMLContainerHolder fmlch
+                    && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
+                    continue;
+
                 final var texs = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
                 texturesToLoad.addAll(texs);
             }
@@ -145,7 +159,8 @@ public class ModelRegistry {
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
         public void onTextureStitch(TextureStitchEvent.Pre event) {
-            for (var tex : texturesToLoad) event.map.registerIcon(tex);
+            for (var tex : texturesToLoad)
+                event.map.registerIcon(tex.replaceFirst("^minecraft:", ""));
         }
     }
 }
