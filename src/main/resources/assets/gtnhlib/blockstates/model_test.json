@@ -1,5 +1,8 @@
 {
   "variants": {
-    "": { "model": "gtnhlib:blocks/model_test" }
+    "meta=0": { "model": "minecraft:block/oak_stairs", "y": 270 },
+    "meta=1": { "model": "minecraft:block/oak_stairs", "y": 90 },
+    "meta=2": { "model": "minecraft:block/oak_stairs", "y": 0 },
+    "meta=3": { "model": "minecraft:block/oak_stairs", "y": 180 }
   }
 }
