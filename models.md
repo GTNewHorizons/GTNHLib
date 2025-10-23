@@ -18,5 +18,6 @@ don't have models. This may change in the future.
 - Autoload item textures too.
 - Add smooth shading to ModelISBRH.
 - Add face culling to models.
-- Implement UV locking
-- Integrate with a proper BlockState API
+- Implement UV locking.
+- Integrate with a proper BlockState API.
+- BlockItem rendering.
