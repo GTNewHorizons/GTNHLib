@@ -19,12 +19,14 @@ import java.util.List;
 
 import net.minecraft.client.renderer.Tessellator;
 
+import org.jetbrains.annotations.UnmodifiableView;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
@@ -139,8 +141,15 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         reset();
     }
 
+    @UnmodifiableView
     public List<ModelQuadView> getQuads() {
         return Collections.unmodifiableList(collectedQuads);
+    }
+
+    /// Returns a mutable list of quads from the capturing tesselator. While modifying quads within the list will modify
+    /// quads held by the CapturingTesselator, adding or removing quads won't.
+    public List<ModelQuadViewMutable> getMutableQuads() {
+        return new ObjectArrayList<>(collectedQuads);
     }
 
     public void clearQuads() {
