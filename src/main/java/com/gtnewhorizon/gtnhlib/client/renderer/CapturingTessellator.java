@@ -14,18 +14,15 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.renderer.Tessellator;
 
-import org.jetbrains.annotations.UnmodifiableView;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
@@ -46,7 +43,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     private static final MethodHandle gRawBufferSize;
     private final Flags FLAGS = new Flags(true, true, true, true);
     private final ObjectPooler<ModelQuad> quadBuf = new ObjectPooler<>(ModelQuad::new);
-    private final List<ModelQuad> collectedQuads = new ObjectArrayList<>();
+    private final List<ModelQuadViewMutable> collectedQuads = new ObjectArrayList<>();
     private int shaderBlockId = -1;
 
     // Any offset we need to the Tesselator's offset!
@@ -141,26 +138,20 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         reset();
     }
 
-    @UnmodifiableView
-    public List<ModelQuadView> getQuads() {
-        return Collections.unmodifiableList(collectedQuads);
-    }
-
-    /// Returns a mutable list of quads from the capturing tesselator. While modifying quads within the list will modify
-    /// quads held by the CapturingTesselator, adding or removing quads won't.
-    public List<ModelQuadViewMutable> getMutableQuads() {
-        return new ObjectArrayList<>(collectedQuads);
+    public List<ModelQuadViewMutable> getQuads() {
+        return collectedQuads;
     }
 
     public void clearQuads() {
         // noinspection ForLoopReplaceableByForEach
-        for (int i = 0; i < this.collectedQuads.size(); i++) {
-            this.quadBuf.releaseInstance(this.collectedQuads.get(i));
+        for (int i = 0; i < collectedQuads.size(); i++) {
+            final var quad = collectedQuads.get(i);
+            if (quad instanceof ModelQuad mq) quadBuf.releaseInstance(mq);
         }
-        this.collectedQuads.clear();
+        collectedQuads.clear();
     }
 
-    public static ByteBuffer quadsToBuffer(List<ModelQuadView> quads, VertexFormat format) {
+    public static ByteBuffer quadsToBuffer(List<ModelQuadViewMutable> quads, VertexFormat format) {
         if (!format.canWriteQuads()) {
             throw new IllegalStateException("Vertex format has no quad writer: " + format);
         }
