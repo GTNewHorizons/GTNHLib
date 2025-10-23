@@ -17,8 +17,8 @@ import net.minecraft.util.ResourceLocation;
  * Automatically detects for updates in the specified shader files to instantly update the shader. <strong>Make sure to
  * remove this when you're done testing. THIS WILL CRASH OUTSIDE OF DEV ENV.</strong> <br>
  * <br>
- * Note: Any Shader that gets recompiled needs to have their uniforms re-fetched and attributes rebound.
- * To do this, use the IShaderReloadRunnable.
+ * Note: Any Shader that gets recompiled needs to have their uniforms re-fetched and attributes rebound. To do this, use
+ * the IShaderReloadRunnable.
  */
 @SuppressWarnings("unused")
 public class AutoShaderUpdater {

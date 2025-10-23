@@ -99,7 +99,6 @@ public class ShaderProgram implements AutoCloseable {
         return shader;
     }
 
-
     private static int linkValidateShader(int program, int vertShader, int fragShader) {
 
         if (vertShader != 0) GL20.glAttachShader(program, vertShader);
