@@ -4,7 +4,9 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 /**
  * A mutable implementation of {@link ImmutableItemMeta}. If your API should return a mutable pair, return this instead.
@@ -24,6 +26,14 @@ public class ItemMeta implements ImmutableItemMeta {
 
     public ItemMeta(@Nonnull Item item) {
         this(item, 0);
+    }
+
+    public ItemMeta(ImmutableItemMeta im) {
+        this(im.getItem(), im.getItemMeta());
+    }
+
+    public ItemMeta(ItemStack stack) {
+        this(Objects.requireNonNull(stack.getItem(), "Item must not be null"), Items.feather.getDamage(stack));
     }
 
     @Override
