@@ -4,6 +4,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static java.lang.Math.max;
 
 import java.util.Random;
 
@@ -21,6 +22,7 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -80,10 +82,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 final float g = (color >> 8 & 255) / 255f;
                 final float b = (color >> 16 & 255) / 255f;
 
-                final int lx = x + dir.getStepX();
-                final int ly = y + dir.getStepY();
-                final int lz = z + dir.getStepZ();
-                final int lm = block.getMixedBrightnessForBlock(world, lx, ly, lz);
+                final int lm = getLightMap(block, quad, dir, world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
@@ -105,6 +104,59 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                     quad.getTexU(i),
                     quad.getTexV(i));
         }
+    }
+
+    private int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
+            int z, RenderBlocks rb) {
+        // If the face is aligned or external, pick light outside
+        final float avgPos = getAveragePos(quad, dir);
+        switch (dir) {
+            case POS_X, POS_Y, POS_Z -> {
+                if (avgPos >= 1.0) {
+                    final int lx = x + dir.getStepX();
+                    final int ly = y + dir.getStepY();
+                    final int lz = z + dir.getStepZ();
+                    return block.getMixedBrightnessForBlock(world, lx, ly, lz);
+                }
+            }
+            case NEG_X, NEG_Y, NEG_Z -> {
+                if (avgPos <= 0.0) {
+                    final int lx = x + dir.getStepX();
+                    final int ly = y + dir.getStepY();
+                    final int lz = z + dir.getStepZ();
+                    return block.getMixedBrightnessForBlock(world, lx, ly, lz);
+                }
+            }
+        }
+
+        // The face is inset to some degree, pick self light (if transparent)
+        if (block.getLightOpacity(world, x, y, z) != 0) {
+            return block.getMixedBrightnessForBlock(world, x, y, z);
+        }
+
+        // ...or greatest among neighbors otherwise
+        int lm = block.getMixedBrightnessForBlock(world, x, y, z);;
+        for (int i = 0; i < 6; i++) {
+            final var neighbor = DIRECTIONS[i];
+            final int lx = x + neighbor.getStepX();
+            final int ly = y + neighbor.getStepY();
+            final int lz = z + neighbor.getStepZ();
+            lm = max(lm, block.getMixedBrightnessForBlock(world, lx, ly, lz));
+        }
+
+        return lm;
+    }
+
+    private float getAveragePos(ModelQuadView quad, ModelQuadFacing dir) {
+        float avg = 0;
+        for (int i = 0; i < 4; i++) {
+            avg += switch (dir.getAxis()) {
+                case X -> quad.getX(i);
+                case Y -> quad.getY(i);
+                case Z -> quad.getZ(i);
+            };
+        }
+        return avg / 4;
     }
 
     @Override
