@@ -82,7 +82,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 final float g = (color >> 8 & 255) / 255f;
                 final float b = (color >> 16 & 255) / 255f;
 
-                final int lm = getLightMap(block, quad, dir, world, x, y, z, renderer);
+                final int lm = getLightMap(block, quad, dir, world, x, y, z);
                 tesselator.setBrightness(lm);
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
@@ -129,7 +129,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     }
 
     private int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
-            int z, RenderBlocks rb) {
+            int z) {
         // If the face is aligned or external, pick light outside
         final float avgPos = getAveragePos(quad, dir);
         switch (dir) {
