@@ -14,11 +14,11 @@ import cpw.mods.fml.common.registry.GameRegistry;
 /**
  * A lazy-loaded item. Useful for making a static final reference to a item. Can also be used to simplify references to
  * static final items in optional methods.
- * 
+ *
  * <pre>
  * {@code
  * private static final LazyItem SOME_OPTIONAL_ITEM = new LazyItem(Mods.SomeMod, "foo");
- * 
+ *
  * {@literal @}Optional.Method(modid = Names.SOME_MOD)
  * public static void doSomething(ItemStack stack) {
  *   if (SOME_OPTIONAL_BLOCK.matches(stack)) {
@@ -92,8 +92,8 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
 
     @Override
     @Nonnull
-    public Item getItem() {
-        return get().getItem();
+    public Item item() {
+        return get().item();
     }
 
     @Override
@@ -109,9 +109,8 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
 
         if (bm == null) return false;
 
-        return bm.getItem() == other
-                && (bm.getItemMeta() == metaOther || bm.getItemMeta() == OreDictionary.WILDCARD_VALUE
-                        || metaOther == OreDictionary.WILDCARD_VALUE);
+        return bm.item() == other && (bm.getItemMeta() == metaOther || bm.getItemMeta() == OreDictionary.WILDCARD_VALUE
+                || metaOther == OreDictionary.WILDCARD_VALUE);
     }
 
     @Override
