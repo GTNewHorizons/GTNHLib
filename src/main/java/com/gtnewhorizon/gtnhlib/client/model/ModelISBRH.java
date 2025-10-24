@@ -54,7 +54,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
             RenderBlocks renderer) {
-        final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
+        final var random = world instanceof World worldIn ? worldIn.rand : RAND;
         final Tessellator tesselator = TessellatorManager.get();
 
         // Get the model!
@@ -87,7 +87,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-                renderQuad(quad, x, y, z, tesselator, null);
+                renderQuad(quad, x, y, z, tesselator, renderer.overrideBlockTexture);
             }
         }
 
@@ -96,14 +96,36 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     protected void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
+
         for (int i = 0; i < 4; ++i) {
             tessellator.addVertexWithUV(
                     quad.getX(i) + x,
                     quad.getY(i) + y,
                     quad.getZ(i) + z,
-                    quad.getTexU(i),
-                    quad.getTexV(i));
+                    getUV(quad.getTexU(i), overrideIcon, i, true),
+                    getUV(quad.getTexV(i), overrideIcon, i, false));
         }
+    }
+
+    private double getUV(double defauld, @Nullable IIcon override, int idx, boolean U) {
+        if (override == null) return defauld;
+
+        var ret = 0.0;
+        if (U) {
+            ret = switch (idx) {
+                case 0, 3 -> override.getMinU();
+                case 1, 2 -> override.getMaxU();
+                default -> throw new IllegalArgumentException("index out of bounds!");
+            };
+            return ret;
+        }
+
+        ret = switch (idx) {
+            case 0, 1 -> override.getMinV();
+            case 2, 3 -> override.getMaxV();
+            default -> throw new IllegalArgumentException("index out of bounds!");
+        };
+        return ret;
     }
 
     private int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,

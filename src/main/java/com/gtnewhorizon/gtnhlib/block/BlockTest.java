@@ -13,6 +13,9 @@ public class BlockTest extends Block {
 
     public BlockTest() {
         super(Material.wood);
+        // it's wood
+        setHardness(2.0F);
+        setResistance(5.0F);
     }
 
     @Override
