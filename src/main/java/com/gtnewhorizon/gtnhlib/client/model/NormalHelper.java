@@ -3,6 +3,8 @@ package com.gtnewhorizon.gtnhlib.client.model;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -61,5 +63,19 @@ public class NormalHelper {
         }
 
         saveTo.set(normX, normY, normZ);
+    }
+
+    /**
+     * Computes a Normal matrix using a transformation matrix.
+     */
+    public static Matrix3f getNormalMatrix(Matrix4f transformationMatrix, Matrix3f dest) {
+        return dest.set(transformationMatrix).invert().transpose();
+    }
+
+    /**
+     * Same as the method above, but now creates a new Matrix3f object. Only use if the method gets called only once.
+     */
+    public static Matrix3f getNormalMatrix(Matrix4f transformationMatrix) {
+        return new Matrix3f(transformationMatrix).invert().transpose();
     }
 }
