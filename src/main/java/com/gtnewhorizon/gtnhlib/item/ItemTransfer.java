@@ -1,4 +1,6 @@
-package com.gtnewhorizon.gtnhlib.capability.item;
+package com.gtnewhorizon.gtnhlib.item;
+
+import java.util.function.Consumer;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -7,6 +9,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 import com.gtnewhorizon.gtnhlib.blockpos.IWorldReferent;
+import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
+import com.gtnewhorizon.gtnhlib.capability.item.ItemSource;
 import com.gtnewhorizon.gtnhlib.util.ItemUtil;
 
 import lombok.Getter;
@@ -16,10 +20,10 @@ import lombok.Setter;
 public class ItemTransfer {
 
     @Getter
-    protected IItemSource source;
+    protected ItemSource source;
     @Getter
-    protected IItemSink sink;
-    protected IItemSink itemDropping;
+    protected ItemSink sink;
+    protected ItemSink itemDropping;
 
     @Setter
     protected int stacksToTransfer = 1;
@@ -42,20 +46,23 @@ public class ItemTransfer {
     @Setter
     protected ItemStackPredicate filter;
 
-    public void source(IItemSource source) {
+    @Setter
+    protected Consumer<ItemStack> rejectedStacks;
+
+    public void source(ItemSource source) {
         this.source = source;
     }
 
     public void source(Object source, ForgeDirection side) {
-        this.source = ItemUtil.getItemSource(source, side, true);
+        this.source = ItemUtil.getItemSource(source, side);
     }
 
-    public void sink(IItemSink sink) {
+    public void sink(ItemSink sink) {
         this.sink = sink;
     }
 
     public void sink(Object sink, ForgeDirection side) {
-        this.sink = ItemUtil.getItemSink(sink, side, true);
+        this.sink = ItemUtil.getItemSink(sink, side);
     }
 
     public <Coord extends IBlockPos & IWorldReferent> void push(Coord pos, ForgeDirection side) {
@@ -86,6 +93,9 @@ public class ItemTransfer {
 
     public void dropItems(World world, IBlockPos pos) {
         this.itemDropping = new DroppingItemSink(world, pos);
+        if (this.rejectedStacks == null) {
+            this.rejectedStacks = itemDropping::store;
+        }
     }
 
     public <Coord extends IBlockPos & IWorldReferent> void dropItems(Coord pos, ForgeDirection output) {
@@ -101,17 +111,23 @@ public class ItemTransfer {
     }
 
     public int transfer() {
-        IItemSink sink = this.sink == null ? itemDropping : this.sink;
+        ItemSink sink = this.sink == null ? itemDropping : this.sink;
 
         if (source == null) return 0;
         if (sink == null) return 0;
         if (stacksToTransfer == 0) return 0;
         if (maxItemsPerTransfer == 0) return 0;
 
+        source.resetSource();
+        sink.resetSink();
+
         source.setAllowedSourceSlots(sourceSlots);
         sink.setAllowedSinkSlots(sinkSlots);
 
-        InventorySourceIterator iter = source.iterator();
+        InventoryIterator iter = source.sourceIterator();
+
+        // Don't bother supporting iterator-less sources, it'll just be a performance and logic nightmare
+        if (iter == null) return 0;
 
         int itemsTransferred = 0, stacksTransferred = 0;
 
@@ -146,7 +162,10 @@ public class ItemTransfer {
                 // it again
                 if (filter != null && !filter.test(extracted)) {
                     if (!ItemUtil.isStackEmpty(extracted)) {
-                        iter.insert(extracted);
+                        ItemStack rejected = iter.insert(extracted);
+                        if (rejected != null && rejectedStacks != null) {
+                            rejectedStacks.accept(rejected);
+                        }
                     }
 
                     break;
@@ -155,8 +174,11 @@ public class ItemTransfer {
                 ItemStack rejected = sink.store(ItemUtil.copy(extracted));
 
                 if (!ItemUtil.isStackEmpty(rejected)) {
-                    iter.insert(rejected);
                     toExtract.stackSize += rejected.stackSize;
+                    rejected = iter.insert(rejected);
+                    if (rejected != null && rejectedStacks != null) {
+                        rejectedStacks.accept(rejected);
+                    }
                 }
 
                 int transferred = extracted.stackSize - (rejected == null ? 0 : rejected.stackSize);

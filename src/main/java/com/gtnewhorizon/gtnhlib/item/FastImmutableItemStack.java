@@ -1,11 +1,12 @@
-package com.gtnewhorizon.gtnhlib.capability.item;
+package com.gtnewhorizon.gtnhlib.item;
 
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import org.jetbrains.annotations.NotNull;
+
+import com.gtnewhorizon.gtnhlib.util.ItemUtil;
 
 /**
  * An ImmutableItemStack backed by an ItemStack. This is meant to be allocated once, then modified and returned from an
@@ -20,14 +21,14 @@ public class FastImmutableItemStack implements ImmutableItemStack {
     }
 
     @Override
-    public @NotNull Item item() {
+    public @NotNull Item getItem() {
         // noinspection DataFlowIssue
         return stack.getItem();
     }
 
     @Override
     public int getItemMeta() {
-        return Items.feather.getDamage(stack);
+        return ItemUtil.getStackMeta(stack);
     }
 
     @Override

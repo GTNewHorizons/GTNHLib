@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.capability.item;
+package com.gtnewhorizon.gtnhlib.item;
 
 import java.util.ListIterator;
 
@@ -9,9 +9,9 @@ import net.minecraft.item.ItemStack;
  * backing data source (inventory, ME system, etc) can be modified, but no guarantees are made that the returned data is
  * complete or up to date beyond the guarantees laid out below.
  */
-public interface InventorySourceIterator extends ListIterator<ImmutableItemStack> {
+public interface InventoryIterator extends ListIterator<ImmutableItemStack> {
 
-    InventorySourceIterator EMPTY = new EmptyInventorySourceIterator();
+    InventoryIterator EMPTY = new EmptyInventoryIterator();
 
     @Override
     default void set(ImmutableItemStack immutableItemStack) {
@@ -38,13 +38,18 @@ public interface InventorySourceIterator extends ListIterator<ImmutableItemStack
     ItemStack extract(int amount);
 
     /**
-     * Returns the rejected items from a previously extracted stack. The item must be identical in every way, except the
-     * stack size may be less than or equal to what was originally returned. Attempting to insert other stacks should do
-     * nothing or throw an exception.
+     * Inserts items into the current index. Returns any items that could not be inserted.
      */
-    void insert(ItemStack stack);
+    ItemStack insert(ItemStack stack);
 
-    class EmptyInventorySourceIterator implements InventorySourceIterator {
+    /**
+     * Rewinds this iterator to the first stack, if possible.
+     * 
+     * @return True when the rewind was successful, false otherwise.
+     */
+    boolean rewind();
+
+    class EmptyInventoryIterator implements InventoryIterator {
 
         @Override
         public ItemStack extract(int amount) {
@@ -52,8 +57,8 @@ public interface InventorySourceIterator extends ListIterator<ImmutableItemStack
         }
 
         @Override
-        public void insert(ItemStack stack) {
-            throw new UnsupportedOperationException();
+        public ItemStack insert(ItemStack stack) {
+            return stack;
         }
 
         @Override
@@ -84,6 +89,11 @@ public interface InventorySourceIterator extends ListIterator<ImmutableItemStack
         @Override
         public int previousIndex() {
             return 0;
+        }
+
+        @Override
+        public boolean rewind() {
+            return false;
         }
     }
 }

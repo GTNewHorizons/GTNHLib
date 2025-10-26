@@ -4,10 +4,11 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+
+import com.gtnewhorizon.gtnhlib.util.ItemUtil;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -57,7 +58,7 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
 
             if (stack == null || stack.getItem() == null) return null;
 
-            return new ItemMeta(stack.getItem(), Items.feather.getDamage(stack));
+            return new ItemMeta(stack.getItem(), ItemUtil.getStackMeta(stack));
         });
 
         this.mod = mod;
@@ -92,8 +93,8 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
 
     @Override
     @Nonnull
-    public Item item() {
-        return get().item();
+    public Item getItem() {
+        return get().getItem();
     }
 
     @Override
@@ -109,15 +110,16 @@ public class LazyItem extends Lazy<ImmutableItemMeta> implements ImmutableItemMe
 
         if (bm == null) return false;
 
-        return bm.item() == other && (bm.getItemMeta() == metaOther || bm.getItemMeta() == OreDictionary.WILDCARD_VALUE
-                || metaOther == OreDictionary.WILDCARD_VALUE);
+        return bm.getItem() == other
+                && (bm.getItemMeta() == metaOther || bm.getItemMeta() == OreDictionary.WILDCARD_VALUE
+                        || metaOther == OreDictionary.WILDCARD_VALUE);
     }
 
     @Override
     public boolean matches(ItemStack stack) {
         if (stack == null) return false;
 
-        return matches(stack.getItem(), Items.feather.getDamage(stack));
+        return matches(stack.getItem(), ItemUtil.getStackMeta(stack));
     }
 
     /**

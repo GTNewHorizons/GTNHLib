@@ -10,17 +10,24 @@ import net.minecraft.tileentity.TileEntityChest;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
 
 import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
-import com.gtnewhorizon.gtnhlib.capability.item.IItemIO;
-import com.gtnewhorizon.gtnhlib.capability.item.IItemSink;
-import com.gtnewhorizon.gtnhlib.capability.item.IItemSource;
-import com.gtnewhorizon.gtnhlib.capability.item.InventoryItemSink;
-import com.gtnewhorizon.gtnhlib.capability.item.InventoryItemSource;
-import com.gtnewhorizon.gtnhlib.capability.item.WrappedItemIO;
+import com.gtnewhorizon.gtnhlib.capability.item.ItemIO;
+import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
+import com.gtnewhorizon.gtnhlib.capability.item.ItemSource;
+import com.gtnewhorizon.gtnhlib.item.InventoryItemSink;
+import com.gtnewhorizon.gtnhlib.item.InventoryItemSource;
+import com.gtnewhorizon.gtnhlib.item.WrappedItemIO;
 
 public class ItemUtil {
+
+    private static int counter = 0;
+    public static final int WRAP_INVENTORIES = 0b1 << counter++;
+    public static final int FOR_INSERTS = 0b1 << counter++;
+    public static final int FOR_EXTRACTS = 0b1 << counter++;
+    public static final int DEFAULT = WRAP_INVENTORIES | FOR_INSERTS | FOR_EXTRACTS;
 
     public static int getStackMeta(ItemStack stack) {
         return Items.feather.getDamage(stack);
@@ -86,18 +93,25 @@ public class ItemUtil {
         }
     }
 
-    public static IItemSource getItemSource(Object obj, ForgeDirection side, boolean wrapInventories) {
-        if (obj instanceof IItemSource source) {
+    public static ItemSource getItemSource(Object obj, ForgeDirection side) {
+        return getItemSource(obj, side, DEFAULT);
+    }
+
+    public static ItemSource getItemSource(Object obj, ForgeDirection side,
+            @MagicConstant(flagsFromClass = ItemUtil.class) int usage) {
+        if ((usage & FOR_EXTRACTS) == 0) return null;
+
+        if (obj instanceof ItemSource source) {
             return source;
         }
 
         if (obj instanceof CapabilityProvider capabilityProvider) {
-            IItemSource source = capabilityProvider.getCapability(IItemSource.class, side);
+            ItemSource source = capabilityProvider.getCapability(ItemSource.class, side);
 
             if (source != null) return source;
         }
 
-        if (wrapInventories) {
+        if ((usage & WRAP_INVENTORIES) != 0) {
             IInventory inv = getInventory(obj, side);
 
             if (inv != null) return new InventoryItemSource(inv, side);
@@ -106,18 +120,25 @@ public class ItemUtil {
         return null;
     }
 
-    public static IItemSink getItemSink(Object obj, ForgeDirection side, boolean wrapInventories) {
-        if (obj instanceof IItemSink sink) {
+    public static ItemSink getItemSink(Object obj, ForgeDirection side) {
+        return getItemSink(obj, side, DEFAULT);
+    }
+
+    public static ItemSink getItemSink(Object obj, ForgeDirection side,
+            @MagicConstant(flagsFromClass = ItemUtil.class) int usage) {
+        if ((usage & FOR_INSERTS) == 0) return null;
+
+        if (obj instanceof ItemSink sink) {
             return sink;
         }
 
         if (obj instanceof CapabilityProvider capabilityProvider) {
-            IItemSink sink = capabilityProvider.getCapability(IItemSink.class, side);
+            ItemSink sink = capabilityProvider.getCapability(ItemSink.class, side);
 
             if (sink != null) return sink;
         }
 
-        if (wrapInventories) {
+        if ((usage & WRAP_INVENTORIES) != 0) {
             IInventory inv = getInventory(obj, side);
 
             if (inv != null) return new InventoryItemSink(inv, side);
@@ -126,17 +147,31 @@ public class ItemUtil {
         return null;
     }
 
-    public static IItemIO getItemIO(Object obj, ForgeDirection side, boolean wrapInventories) {
-        if (obj instanceof IItemIO itemIO) return itemIO;
+    public static ItemIO getItemIO(Object obj, ForgeDirection side) {
+        return getItemIO(obj, side, DEFAULT);
+    }
+
+    /// Gets an [ItemIO] from a generic object that can be used to push or pull items to or from it. The object can be
+    /// anything, but it's typically a TileEntity.
+    ///
+    /// The usage flags are used to indicate the desired usage of the [ItemIO], and control what type of [ItemIO] is
+    /// returned, if any. If the usage is only [#FOR_EXTRACTS], the [ItemIO] will only have its [ItemSource] present
+    /// and cannot be extracted from. This is useful for accurately polling what kind of capabilities the object has -
+    /// if the caller can only extract items, the source is irrelevant and the caller should not receive an [ItemIO]
+    /// with only the [ItemSink] present because such an object is useless to the caller and may prevent other fallbacks
+    /// from being used.
+    public static ItemIO getItemIO(Object obj, ForgeDirection side,
+            @MagicConstant(flagsFromClass = ItemUtil.class) int usage) {
+        if (obj instanceof ItemIO itemIO) return itemIO;
 
         if (obj instanceof CapabilityProvider capabilityProvider) {
-            IItemIO itemIO = capabilityProvider.getCapability(IItemIO.class, side);
+            ItemIO itemIO = capabilityProvider.getCapability(ItemIO.class, side);
 
             if (itemIO != null) return itemIO;
         }
 
-        IItemSource source = getItemSource(obj, side, wrapInventories);
-        IItemSink sink = getItemSink(obj, side, wrapInventories);
+        ItemSource source = getItemSource(obj, side, usage);
+        ItemSink sink = getItemSink(obj, side, usage);
 
         if (source == null && sink == null) return null;
 

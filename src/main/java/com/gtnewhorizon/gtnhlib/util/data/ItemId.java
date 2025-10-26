@@ -4,26 +4,34 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.hash.Fnv1a32;
+import com.gtnewhorizon.gtnhlib.util.ItemUtil;
 
-import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.Hash.Strategy;
 
 @SuppressWarnings("unused")
-@Desugar
-public record ItemId(Item item, int meta, NBTTagCompound tag) implements ImmutableItemMeta {
+public final class ItemId implements ImmutableItemMeta {
+
+    private final Item item;
+    private final int meta;
+    private final NBTTagCompound tag;
+
+    public ItemId(Item item, int meta, NBTTagCompound tag) {
+        this.item = item;
+        this.meta = meta;
+        this.tag = tag;
+    }
 
     @Override
-    public @NotNull Item item() {
+    public @NotNull Item getItem() {
         return item;
     }
 
@@ -43,15 +51,24 @@ public record ItemId(Item item, int meta, NBTTagCompound tag) implements Immutab
         return stack;
     }
 
+    /// Matches [ItemStack#writeToNBT(NBTTagCompound)].
     public static ItemId create(NBTTagCompound tag) {
         return new ItemId(
-                Item.getItemById(tag.getInteger("item")),
-                tag.getInteger("meta"),
-                tag.hasKey("tag", Constants.NBT.TAG_COMPOUND) ? tag.getCompoundTag("tag") : null);
+                Item.getItemById(tag.getInteger("id")),
+                tag.getInteger("Damage"),
+                tag.hasKey("tag", NBT.TAG_COMPOUND) ? tag.getCompoundTag("tag") : null);
+    }
+
+    public NBTTagCompound write(NBTTagCompound tag) {
+        tag.setInteger("id", Item.getIdFromItem(this.item));
+        tag.setInteger("Damage", this.meta);
+        if (this.tag != null) tag.setTag("tag", tag.copy());
+
+        return tag;
     }
 
     public static ItemId create(ItemStack stack) {
-        return create(stack.getItem(), Items.feather.getDamage(stack), stack.getTagCompound());
+        return create(stack.getItem(), ItemUtil.getStackMeta(stack), stack.getTagCompound());
     }
 
     public static ItemId create(Item item, int metaData, @Nullable NBTTagCompound tag) {
@@ -62,15 +79,15 @@ public record ItemId(Item item, int meta, NBTTagCompound tag) implements Immutab
     }
 
     public static ItemId createAsWildcard(ItemStack stack) {
-        return new ItemId(stack.getItem(), OreDictionary.WILDCARD_VALUE, null);
+        return new ItemId(stack.getItem(), OreDictionary.WILDCARD_VALUE, stack.getTagCompound());
     }
 
-    public static ItemId createAsWildcardWithNBT(ItemStack stack) {
-        return create(stack.getItem(), OreDictionary.WILDCARD_VALUE, stack.getTagCompound());
+    public static ItemId createAsWildcardWithoutNBT(ItemStack stack) {
+        return create(stack.getItem(), OreDictionary.WILDCARD_VALUE, null);
     }
 
     public static ItemId createWithoutNBT(ItemStack stack) {
-        return new ItemId(stack.getItem(), Items.feather.getDamage(stack), null);
+        return new ItemId(stack.getItem(), ItemUtil.getStackMeta(stack), null);
     }
 
     public static ItemId createNoCopy(Item item, int metaData, @Nullable NBTTagCompound nbt) {
@@ -78,13 +95,30 @@ public record ItemId(Item item, int meta, NBTTagCompound tag) implements Immutab
     }
 
     public static ItemId createNoCopy(ItemStack stack) {
-        return new ItemId(stack.getItem(), Items.feather.getDamage(stack), stack.getTagCompound());
+        return new ItemId(stack.getItem(), ItemUtil.getStackMeta(stack), stack.getTagCompound());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ItemId itemId)) return false;
+
+        return ITEM_META_NBT_STRATEGY.equals(this, itemId);
+    }
+
+    @Override
+    public int hashCode() {
+        return ITEM_META_NBT_STRATEGY.hashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return "ItemId[" + "item=" + item + ", " + "meta=" + meta + ", " + "tag=" + tag + ']';
     }
 
     /**
      * A hash strategy that only checks the item and metadata.
      */
-    public static final Hash.Strategy<ItemId> ITEM_META_STRATEGY = new Hash.Strategy<>() {
+    public static final Strategy<ItemId> ITEM_META_STRATEGY = new Strategy<>() {
 
         @Override
         public int hashCode(ItemId o) {
@@ -102,14 +136,15 @@ public record ItemId(Item item, int meta, NBTTagCompound tag) implements Immutab
         public boolean equals(ItemId a, ItemId b) {
             if (a == b) return true;
             if (a == null || b == null) return false;
-            return a.item() == b.item() && a.meta == b.meta;
+
+            return a.getItem() == b.getItem() && a.meta == b.meta;
         }
     };
 
     /**
      * A hash strategy that checks the item, metadata, and nbt.
      */
-    public static final Hash.Strategy<ItemId> ITEM_META_NBT_STRATEGY = new Hash.Strategy<>() {
+    public static final Strategy<ItemId> ITEM_META_NBT_STRATEGY = new Strategy<>() {
 
         @Override
         public int hashCode(ItemId o) {
@@ -126,6 +161,9 @@ public record ItemId(Item item, int meta, NBTTagCompound tag) implements Immutab
 
         @Override
         public boolean equals(ItemId a, ItemId b) {
+            if (a == b) return true;
+            if (a == null || b == null) return false;
+
             return a.item == b.item && a.meta == b.meta && Objects.equals(a.tag, b.tag);
         }
     };

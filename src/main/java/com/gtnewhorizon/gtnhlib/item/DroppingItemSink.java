@@ -1,12 +1,13 @@
-package com.gtnewhorizon.gtnhlib.capability.item;
+package com.gtnewhorizon.gtnhlib.item;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
+import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
 
-public class DroppingItemSink implements IItemSink {
+public class DroppingItemSink implements ItemSink {
 
     private final World world;
     private final IBlockPos pos;

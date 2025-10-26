@@ -3,15 +3,16 @@ package com.gtnewhorizon.gtnhlib.util.data;
 import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import com.gtnewhorizon.gtnhlib.util.ItemUtil;
+
 /**
  * An immutable item-meta pair. This must not be cast down to its mutable version unless you have a very good reason. It
- * can be assumed that the values of {@link #item()} and {@link #getItemMeta()} will never change for this object if the
- * object is exposed through an API.
+ * can be assumed that the values of {@link #getItem()} and {@link #getItemMeta()} will never change for this object if
+ * the object is exposed through an API.
  */
 public interface ImmutableItemMeta {
 
@@ -21,7 +22,7 @@ public interface ImmutableItemMeta {
      * @return The item stored in this pair.
      */
     @Nonnull
-    Item item();
+    Item getItem();
 
     /**
      * The value of this must not change while this object is exposed via an API.
@@ -34,7 +35,7 @@ public interface ImmutableItemMeta {
      * Gets the corresponding block for this item. Subclasses may provide a faster implementation.
      */
     default Block getBlock() {
-        return Block.getBlockFromItem(item());
+        return Block.getBlockFromItem(getItem());
     }
 
     /**
@@ -43,26 +44,27 @@ public interface ImmutableItemMeta {
     default boolean matches(ItemStack stack) {
         if (stack == null) return false;
 
-        return matches(stack.getItem(), Items.feather.getDamage(stack));
+        return matches(stack.getItem(), ItemUtil.getStackMeta(stack));
     }
 
     /**
      * Checks if this pair matches the given item & meta.
      *
-     * @param Item The item.
+     * @param item The item.
      * @param meta The meta. If this parameter or {@link #getItemMeta()} equals {@link OreDictionary#WILDCARD_VALUE}
      *             then meta checks are ignored.
      * @return Whether this pair matches or not.
      */
     default boolean matches(Item item, int meta) {
-        return item() == item && (meta == OreDictionary.WILDCARD_VALUE || getItemMeta() == OreDictionary.WILDCARD_VALUE
-                || getItemMeta() == meta);
+        return getItem() == item
+                && (meta == OreDictionary.WILDCARD_VALUE || getItemMeta() == OreDictionary.WILDCARD_VALUE
+                        || getItemMeta() == meta);
     }
 
     /** Converts this pair to an ItemStack. */
     default ItemStack toStack(int amount) {
         int meta = getItemMeta();
 
-        return new ItemStack(item(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
+        return new ItemStack(getItem(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
     }
 }
