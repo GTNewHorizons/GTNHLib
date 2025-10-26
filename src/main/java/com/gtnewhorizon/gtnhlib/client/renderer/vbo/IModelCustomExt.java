@@ -16,5 +16,6 @@ public interface IModelCustomExt extends IModelCustom {
     @SideOnly(CLIENT)
     void renderAllVBO();
 
+    @SideOnly(CLIENT)
     void setVertexFormat(VertexFormat format);
 }
