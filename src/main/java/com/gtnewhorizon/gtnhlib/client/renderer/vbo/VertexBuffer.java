@@ -82,4 +82,8 @@ public class VertexBuffer implements AutoCloseable {
         draw();
         cleanupState();
     }
+
+    public VertexFormat getVertexFormat() {
+        return format;
+    }
 }

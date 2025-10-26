@@ -159,6 +159,10 @@ public class ShaderProgram implements AutoCloseable {
         return index;
     }
 
+    public void bindTextureSlot(String sampler2DName, int index) {
+        GL20.glUniform1i(this.getUniformLocation(sampler2DName), index);
+    }
+
     public void close() {
         GL20.glDeleteProgram(program);
     }
