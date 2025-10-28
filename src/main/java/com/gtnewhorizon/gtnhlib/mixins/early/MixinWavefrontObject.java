@@ -28,7 +28,7 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     public abstract void tessellateAll(Tessellator tessellator);
 
     @Unique
-    VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
+    private VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
 
     @Override
     public void rebuildVBO() {
@@ -52,5 +52,13 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
             rebuildVBO();
         }
         vertexBuffer.render();
+    }
+
+    @Override
+    public void setVertexFormat(VertexFormat format) {
+        this.format = format;
+        if (this.vertexBuffer != null && this.vertexBuffer.getVertexFormat() != format) {
+            rebuildVBO();
+        }
     }
 }
