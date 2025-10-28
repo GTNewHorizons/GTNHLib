@@ -66,8 +66,9 @@ public class NormalHelper {
     }
 
     /**
-     * Computes a Normal matrix using a transformation matrix. The normal matrix is the transpose of the inverse model
-     * matrix. This is what OpenGL uses to properly transform the normals when there are non-uniform scalings present
+     * Computes a Normal matrix using a transformation matrix. <br>
+     * The normal matrix is the transpose of the inversed model matrix. <br>
+     * This is what OpenGL uses to properly transform the normals when there are non-uniform scalings present <br>
      * For more information, look up "OpenGL Normal matrix"
      */
     public static Matrix3f getNormalMatrix(Matrix4f transformationMatrix, Matrix3f dest) {
