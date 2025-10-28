@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.client.renderer.shader;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.IntBuffer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -13,7 +12,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.bytebuf.MemoryStack;
 
 @SuppressWarnings("unused")
 public class ShaderProgram implements AutoCloseable {
@@ -53,6 +51,9 @@ public class ShaderProgram implements AutoCloseable {
         if (fragShader != 0) GL20.glAttachShader(program, fragShader);
 
         GL20.glLinkProgram(program);
+
+        if (vertShader != 0) GL20.glDeleteShader(vertShader);
+        if (fragShader != 0) GL20.glDeleteShader(fragShader);
 
         if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
             GTNHLib.LOG.error("Could not link shader: {}", getProgramLogInfo(program));
@@ -158,14 +159,11 @@ public class ShaderProgram implements AutoCloseable {
         return index;
     }
 
+    public void bindTextureSlot(String sampler2DName, int index) {
+        GL20.glUniform1i(this.getUniformLocation(sampler2DName), index);
+    }
+
     public void close() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer shaders = stack.mallocInt(GL20.glGetProgrami(program, GL20.GL_ATTACHED_SHADERS));
-            GL20.glGetAttachedShaders(program, null, shaders);
-            GL20.glDeleteProgram(program);
-            for (int i : shaders.array()) {
-                GL20.glDeleteShader(i);
-            }
-        }
+        GL20.glDeleteProgram(program);
     }
 }
