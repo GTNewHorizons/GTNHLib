@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public interface BakeData {
 
@@ -9,7 +10,7 @@ public interface BakeData {
         private final Matrix4f I = new Matrix4f();
 
         @Override
-        public Matrix4f getAffineMatrix() {
+        public Matrix4fc getAffineMatrix() {
             return I;
         }
     };
@@ -17,7 +18,7 @@ public interface BakeData {
     /**
      * @return The affine matrix of the transformation. It may be reused - copy before mutating it!
      */
-    Matrix4f getAffineMatrix();
+    Matrix4fc getAffineMatrix();
 
     /**
      * @return True if textures shouldn't be rotated with the rest of the model; false otherwise.

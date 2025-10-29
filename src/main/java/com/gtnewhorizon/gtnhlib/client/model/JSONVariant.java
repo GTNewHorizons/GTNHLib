@@ -4,6 +4,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
 
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
+import org.joml.Matrix4fc;
 
 /// Mirrors Minecraft's format for specifying models.
 @Internal
@@ -35,7 +36,7 @@ public final class JSONVariant implements BakeData {
     }
 
     @Override
-    public Matrix4f getAffineMatrix() {
+    public Matrix4fc getAffineMatrix() {
         return new Matrix4f().translation(-.5f, -.5f, -.5f).rotateLocalX(x * DEG2RAD).rotateLocalY(y * DEG2RAD)
                 .translateLocal(.5f, .5f, .5f);
     }

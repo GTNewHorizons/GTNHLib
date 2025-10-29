@@ -138,7 +138,7 @@ public class JSONModel implements UnbakedModel {
     @Override
     public BakedModel bake(BakeData data) {
 
-        final Matrix4f vRot = data.getAffineMatrix();
+        final var vRot = data.getAffineMatrix();
         final var sidedQuadStore = new HashMap<ModelQuadFacing, ArrayList<ModelQuadView>>(7);
 
         // Append faces from each element
