@@ -34,6 +34,7 @@ public abstract class MixinFontRenderer implements IFontParameters {
      * @author DeathFuel
      * @reason (as above)
      */
+    @SuppressWarnings("visibility")
     @Overwrite
     public int sizeStringToWidth(String str, int wrapWidth) {
         return FontRendering.sizeStringToWidth(str, wrapWidth, (FontRenderer) (Object) this);
