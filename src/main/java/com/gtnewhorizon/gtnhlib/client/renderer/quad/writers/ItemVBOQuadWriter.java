@@ -2,7 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.quad.writers;
 
 import java.nio.ByteBuffer;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 
 public class ItemVBOQuadWriter implements IWriteQuads {
 
@@ -18,7 +18,7 @@ public class ItemVBOQuadWriter implements IWriteQuads {
     }
 
     @Override
-    public void writeQuad(QuadView quad, ByteBuffer buf) {
+    public void writeQuad(ModelQuadView quad, ByteBuffer buf) {
         if (direct) {
             writeQuadDirect(quad, buf);
         } else {
@@ -26,11 +26,11 @@ public class ItemVBOQuadWriter implements IWriteQuads {
         }
     }
 
-    protected void writeQuadDirect(QuadView quad, ByteBuffer buf) {
+    protected void writeQuadDirect(ModelQuadView quad, ByteBuffer buf) {
         throw new UnsupportedOperationException("Direct mode not supported yet");
     }
 
-    protected void writeQuadIndirect(QuadView quad, ByteBuffer buf) {
+    protected void writeQuadIndirect(ModelQuadView quad, ByteBuffer buf) {
         for (int idx = 0; idx < 4; ++idx) {
             // Position
             buf.putFloat(quad.getX(idx));
@@ -42,7 +42,7 @@ public class ItemVBOQuadWriter implements IWriteQuads {
             buf.putFloat(quad.getTexV(idx));
 
             // Normals + Padding
-            buf.putInt(quad.getNormal(idx));
+            buf.putInt(quad.getForgeNormal(idx));
         }
     }
 }

@@ -11,8 +11,12 @@ import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.Tags;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHolderDiscoverer;
+import com.gtnewhorizon.gtnhlib.config.ConfigException;
+import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusUtil;
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
@@ -34,6 +38,14 @@ public class GTNHLibCore extends DummyModContainer implements IFMLLoadingPlugin,
 
     public static final String[] DEFAULT_TRANSFORMERS = new String[] {
             "com.gtnewhorizon.gtnhlib.core.transformer.EventBusSubTransformer" };
+
+    static {
+        try {
+            ConfigurationManager.registerConfig(GTNHLibConfig.class);
+        } catch (ConfigException e) {
+            GTNHLib.LOG.error("Failed to register GTNHLib config!", e);
+        }
+    }
 
     public GTNHLibCore() {
         super(new ModMetadata());
