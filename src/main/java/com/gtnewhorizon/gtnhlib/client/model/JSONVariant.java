@@ -2,9 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
-import org.joml.Matrix4fc;
 
 /// Mirrors Minecraft's format for specifying models.
 @Internal

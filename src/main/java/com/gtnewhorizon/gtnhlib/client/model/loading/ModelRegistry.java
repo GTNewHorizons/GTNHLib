@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
+import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
@@ -46,11 +47,13 @@ public class ModelRegistry {
 
     /// The first cache. Ideally, every request hits this and gets a baked model.
     private static final ThreadsafeCache<BlockState, BakedModel> BLOCKSTATE_MODEL_CACHE = new ThreadsafeCache<>(
+            modelCacheSize,
             s -> bakeModel((BlockState) s),
             false);
 
     /// If the first cache misses, we hit this to get the state map, so we can figure out which model to bake.
     private static final ThreadsafeCache<ResourceLoc.StateLoc, StateModelMap> STATE_MODEL_MAP_CACHE = new ThreadsafeCache<>(
+            modelCacheSize,
             s -> ((ResourceLoc.StateLoc) s).load(() -> MissingState.MISSING_STATE_MAP, GSON),
             false);
 
@@ -60,6 +63,7 @@ public class ModelRegistry {
     /// Note: the retriever was broken out into a function, because you can't read a field from within its own
     /// definition.
     private static final ThreadsafeCache<ResourceLoc.ModelLoc, JSONModel> JSON_MODEL_CACHE = new ThreadsafeCache<>(
+            modelCacheSize,
             s -> loadAndResolveJSONModel((ResourceLoc.ModelLoc) s),
             false);
 

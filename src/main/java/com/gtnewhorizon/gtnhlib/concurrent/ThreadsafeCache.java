@@ -10,12 +10,14 @@ import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
  */
 public class ThreadsafeCache<K, V> {
 
+    private final int size;
     private final Object2ReferenceLinkedOpenHashMap<K, V> cache = new Object2ReferenceLinkedOpenHashMap<>();
     private final StampedLock lock = new StampedLock();
     private final Function<K, V> modelRetriever;
     private final boolean allowNulls;
 
-    public ThreadsafeCache(Function<K, V> modelRetriever, boolean allowNulls) {
+    public ThreadsafeCache(int size, Function<K, V> modelRetriever, boolean allowNulls) {
+        this.size = size;
         this.modelRetriever = modelRetriever;
         this.allowNulls = allowNulls;
     }
@@ -56,7 +58,7 @@ public class ThreadsafeCache<K, V> {
         try {
             cache.putAndMoveToFirst(state, model);
             // TODO: choose less arbitrary number
-            if (cache.size() >= 1000) {
+            if (cache.size() >= size) {
                 cache.removeLast();
             }
         } finally {
