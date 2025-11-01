@@ -47,7 +47,13 @@ public class VertexFormatElement {
             GL11.glColorPointer(size, type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
         }, index -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY)),
-        UV("UV", (size, type, stride, pointer, index) -> {
+        PRIMARY_UV("UV 0", (size, type, stride, pointer, index) -> {
+            GL11.glTexCoordPointer(size, type, stride, pointer);
+            GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+        }, index -> {
+            GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+        }),
+        SECONDARY_UV("UV 1-31", (size, type, stride, pointer, index) -> {
             GL13.glClientActiveTexture(GL13.GL_TEXTURE0 + index);
             GL11.glTexCoordPointer(size, type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);

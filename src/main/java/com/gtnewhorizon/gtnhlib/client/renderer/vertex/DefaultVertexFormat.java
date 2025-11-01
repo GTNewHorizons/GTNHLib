@@ -17,8 +17,8 @@ public class DefaultVertexFormat {
             Usage.POSITION,
             3);
     public static final VertexFormatElement COLOR_ELEMENT = new VertexFormatElement(0, Type.UBYTE, Usage.COLOR, 4);
-    public static final VertexFormatElement TEXTURE_ELEMENT = new VertexFormatElement(0, Type.FLOAT, Usage.UV, 2);
-    public static final VertexFormatElement LIGHT_ELEMENT = new VertexFormatElement(1, Type.SHORT, Usage.UV, 2);
+    public static final VertexFormatElement TEXTURE_ELEMENT = new VertexFormatElement(0, Type.FLOAT, Usage.PRIMARY_UV, 2);
+    public static final VertexFormatElement LIGHT_ELEMENT = new VertexFormatElement(1, Type.SHORT, Usage.SECONDARY_UV, 2);
     public static final VertexFormatElement NORMAL_ELEMENT = new VertexFormatElement(0, Type.BYTE, Usage.NORMAL, 3);
     public static final VertexFormatElement PADDING_ELEMENT = new VertexFormatElement(0, Type.BYTE, Usage.PADDING, 1);
     public static final VertexFormat POSITION_TEXTURE_NORMAL = new VertexFormat(
