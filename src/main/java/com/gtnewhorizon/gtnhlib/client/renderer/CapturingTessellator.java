@@ -12,6 +12,8 @@ import java.util.List;
 
 import net.minecraft.client.renderer.Tessellator;
 
+import org.joml.Matrix3f;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -216,6 +218,26 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         this.rawBuffer[this.rawBufferIndex + 6] = b0 & 255 | (b1 & 255) << 8 | (b2 & 255) << 16;
         this.hasNormals = true;
         return this;
+    }
+
+    /**
+     * Sets the normal based on a given normal matrix
+     * 
+     * @param normal       The normal vector
+     * @param dest         The vector that gets transformed
+     * @param normalMatrix The normal matrix (typically the transpose of the inverse transformation matrix)
+     */
+    public CapturingTessellator setNormalTransformed(Vector3f normal, Vector3f dest, Matrix3f normalMatrix) {
+        normalMatrix.transform(normal, dest).normalize();
+        this.setNormal(dest.x, dest.y, dest.z);
+        return this;
+    }
+
+    /**
+     * Same as the method above, but this one will mutate the passed Vector3f
+     */
+    public CapturingTessellator setNormalTransformed(Vector3f normal, Matrix3f normalMatrix) {
+        return setNormalTransformed(normal, normal, normalMatrix);
     }
 
     public CapturingTessellator lightmap(int skyLight, int blockLight) {
