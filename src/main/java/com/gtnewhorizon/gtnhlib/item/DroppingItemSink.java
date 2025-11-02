@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.item;
 
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
@@ -18,13 +17,13 @@ public class DroppingItemSink implements ItemSink {
     }
 
     @Override
-    public ItemStack store(ItemStack stack) {
+    public int store(ImmutableItemStack stack) {
         EntityItem entity = new EntityItem(
                 world,
                 pos.getX() + 0.5,
                 pos.getY() + 0.5,
                 pos.getZ() + 0.5,
-                ItemStack.copyItemStack(stack));
+                stack.toStack());
 
         entity.motionX = 0;
         entity.motionY = 0;
@@ -32,6 +31,6 @@ public class DroppingItemSink implements ItemSink {
 
         world.spawnEntityInWorld(entity);
 
-        return null;
+        return 0;
     }
 }

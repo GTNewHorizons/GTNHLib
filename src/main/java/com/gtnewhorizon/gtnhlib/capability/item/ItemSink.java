@@ -2,13 +2,15 @@ package com.gtnewhorizon.gtnhlib.capability.item;
 
 import java.util.OptionalInt;
 
-import net.minecraft.item.ItemStack;
+import javax.annotation.Nonnegative;
+
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
 import com.gtnewhorizon.gtnhlib.item.ImmutableItemStack;
+import com.gtnewhorizon.gtnhlib.item.InsertionItemStack;
 import com.gtnewhorizon.gtnhlib.item.InventoryIterator;
 import com.gtnewhorizon.gtnhlib.item.ItemStackPredicate;
 
@@ -17,6 +19,8 @@ import com.gtnewhorizon.gtnhlib.item.ItemStackPredicate;
  * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}. A sink must be effectively stateless. That is, it
  * can use caches to improve performance but its methods must always reflect the state of the world immediately. There
  * is no defined lifetime for a sink - it may last for one operation, or it may be stored across several ticks.
+ * Modifying the backing inventory while the sink is in use is undefined behaviour, though implementations should make a
+ * best-effort to behave correctly if this interface is misused.
  */
 public interface ItemSink {
 
@@ -29,11 +33,13 @@ public interface ItemSink {
     }
 
     /**
-     * Injects a stack into this sink. This operation is not atomic. Any rejected items are returned. There is no
-     * guarantee that the sink is completely full when items are rejected, this is just a best-effort operation. The
-     * stack parameter must not be mutated by the implementation.
+     * Injects a stack into this sink. This operation is not atomic. There is no guarantee that the sink is completely
+     * full when items are rejected, this is just a best-effort operation.
+     * 
+     * @return The number of rejected items.
      */
-    ItemStack store(ItemStack stack);
+    @Nonnegative
+    int store(ImmutableItemStack stack);
 
     /**
      * Creates an iterator for this sink. May return null if iterators are not supported. Modifying any backing
@@ -92,11 +98,11 @@ public interface ItemSink {
      */
     default ItemSink then(ItemSink next) {
         return (stack) -> {
-            ItemStack rejected = this.store(stack);
+            int rejected = this.store(stack);
 
-            if (rejected == null) return null;
+            if (rejected == 0) return 0;
 
-            return next.store(rejected);
+            return next.store(new InsertionItemStack(stack, rejected));
         };
     }
 

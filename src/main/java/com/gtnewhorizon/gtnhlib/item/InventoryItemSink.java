@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
-import com.gtnewhorizon.gtnhlib.util.ItemUtil;
 
 import it.unimi.dsi.fastutil.ints.IntIterators;
 
@@ -18,18 +17,18 @@ public class InventoryItemSink implements ItemSink {
     public final IInventory inv;
     private final ForgeDirection side;
 
-    private final int[] slots;
-
     private int[] allowedSlots;
 
     public InventoryItemSink(IInventory inv, ForgeDirection side) {
         this.inv = inv;
         this.side = side;
+    }
 
-        if (inv instanceof ISidedInventory sided) {
-            this.slots = sided.getAccessibleSlotsFromSide(side.ordinal());
+    protected int[] getSlots() {
+        if (this.inv instanceof ISidedInventory sided) {
+            return sided.getAccessibleSlotsFromSide(this.side.ordinal());
         } else {
-            this.slots = IntIterators.unwrap(IntIterators.fromTo(0, inv.getSizeInventory()));
+            return IntIterators.unwrap(IntIterators.fromTo(0, this.inv.getSizeInventory()));
         }
     }
 
@@ -45,32 +44,21 @@ public class InventoryItemSink implements ItemSink {
     }
 
     @Override
-    public ItemStack store(ItemStack stack) {
-        if (ItemUtil.isStackEmpty(stack)) return null;
-
-        stack = stack.copy();
+    public int store(ImmutableItemStack stack) {
+        if (stack.isEmpty()) return 0;
 
         StandardInventoryIterator iter = sinkIterator();
+
+        InsertionItemStack insertion = new InsertionItemStack(stack);
 
         while (iter.hasNext()) {
             ImmutableItemStack slot = iter.next();
 
             if (slot == null || slot.isEmpty()) continue;
 
-            if (slot.matches(stack)) {
-                int slotLimit = getSlotStackLimit(iter.getCurrentSlot(), stack);
-                int remaining = slotLimit - slot.getStackSize();
+            insertion.set(iter.insert(insertion, false));
 
-                int toTransfer = Math.min(remaining, stack.stackSize);
-
-                ItemStack rejected = iter.insert(stack.splitStack(toTransfer));
-
-                if (rejected != null) {
-                    stack.stackSize += rejected.stackSize;
-                }
-
-                if (ItemUtil.isStackEmpty(stack)) return null;
-            }
+            if (insertion.isEmpty()) return 0;
         }
 
         iter.rewind();
@@ -78,27 +66,19 @@ public class InventoryItemSink implements ItemSink {
         while (iter.hasNext()) {
             ImmutableItemStack slot = iter.next();
 
-            if (slot == null || slot.isEmpty()) {
-                int slotLimit = getSlotStackLimit(iter.getCurrentSlot(), stack);
+            if (slot != null && !slot.isEmpty()) continue;
 
-                int toTransfer = Math.min(slotLimit, stack.stackSize);
+            insertion.set(iter.insert(insertion, false));
 
-                ItemStack rejected = iter.insert(stack.splitStack(toTransfer));
-
-                if (rejected != null) {
-                    stack.stackSize += rejected.stackSize;
-                }
-
-                if (ItemUtil.isStackEmpty(stack)) return null;
-            }
+            if (insertion.isEmpty()) return 0;
         }
 
-        return stack;
+        return insertion.getStackSize();
     }
 
     @Override
     public @NotNull StandardInventoryIterator sinkIterator() {
-        return new StandardInventoryIterator(inv, side, slots, allowedSlots) {
+        return new StandardInventoryIterator(inv, side, getSlots(), allowedSlots) {
 
             @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {

@@ -5,6 +5,8 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.gtnewhorizon.gtnhlib.util.ItemUtil;
+
 /**
  * An inventory iterator for a standard inventory. Performs all item slots validation. When the side is
  * {@link ForgeDirection#UNKNOWN}, canExtractItem and canInsertItem are skipped - only
@@ -50,7 +52,6 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
         return inv.getStackInSlot(slot);
     }
 
-    @Override
     protected void setInventorySlotContents(int slot, ItemStack stack) {
         inv.setInventorySlotContents(slot, stack);
     }
@@ -67,7 +68,6 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
         }
     }
 
-    @Override
     protected boolean canInsert(ItemStack stack, int slot) {
         if (!inv.isItemValidForSlot(slot, stack)) return false;
 
@@ -80,6 +80,63 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
     }
 
     @Override
+    public ItemStack extract(int amount, boolean forced) {
+        int slotIndex = getCurrentSlot();
+
+        ItemStack inSlot = getStackInSlot(slotIndex);
+
+        if (ItemUtil.isStackEmpty(inSlot)) return null;
+        if (!forced && !canExtract(inSlot, slotIndex)) return null;
+
+        int toExtract = Math.min(inSlot.stackSize, amount);
+
+        ItemStack extracted = inSlot.splitStack(toExtract);
+
+        setInventorySlotContents(slotIndex, inSlot.stackSize == 0 ? null : inSlot);
+
+        markDirty();
+
+        return extracted;
+    }
+
+    @Override
+    public int insert(ImmutableItemStack stack, boolean forced) {
+        if (stack.isEmpty()) return 0;
+
+        int slotIndex = getCurrentSlot();
+
+        ItemStack inSlot = getStackInSlot(slotIndex);
+
+        if (!ItemUtil.isStackEmpty(inSlot) && !stack.matches(inSlot)) {
+            return stack.getStackSize();
+        }
+
+        ItemStack partialCopy = stack.toStackFast();
+
+        if (!forced && !canInsert(partialCopy, slotIndex)) {
+            return stack.getStackSize();
+        }
+
+        if (!ItemUtil.isStackEmpty(inSlot)) {
+            int maxStack = getSlotStackLimit(slotIndex, partialCopy);
+            int toInsert = forced ? stack.getStackSize() : Math.min(maxStack - inSlot.stackSize, stack.getStackSize());
+
+            inSlot.stackSize += toInsert;
+
+            setInventorySlotContents(slotIndex, inSlot);
+
+            markDirty();
+
+            return stack.getStackSize() - toInsert;
+        } else {
+            setInventorySlotContents(slotIndex, stack.toStack());
+
+            markDirty();
+
+            return 0;
+        }
+    }
+
     protected int getSlotStackLimit(int slot, ItemStack stack) {
         int invStackLimit = inv.getInventoryStackLimit();
 
@@ -92,7 +149,6 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
         }
     }
 
-    @Override
     protected void markDirty() {
         if (markedDirty) return;
 

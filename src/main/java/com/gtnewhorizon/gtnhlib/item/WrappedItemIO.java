@@ -28,8 +28,8 @@ public class WrappedItemIO implements ItemIO {
     }
 
     @Override
-    public ItemStack store(ItemStack stack) {
-        return sink == null ? stack : sink.store(stack);
+    public int store(ImmutableItemStack stack) {
+        return sink == null ? stack.getStackSize() : sink.store(stack);
     }
 
     @Override

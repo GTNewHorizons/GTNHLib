@@ -15,6 +15,8 @@ import com.gtnewhorizon.gtnhlib.item.ItemStackPredicate;
  * {@link CapabilityProvider#getCapability(Class, ForgeDirection)}. A source must be effectively stateless. That is, it
  * can use caches to improve performance but its methods must always reflect the state of the world immediately. There
  * is no defined lifetime for a source - it may last for one operation, or it may be stored across several ticks.
+ * Modifying the backing inventory while the sink is in use is undefined behaviour, though implementations should make a
+ * best-effort to behave correctly if this interface is misused.
  */
 public interface ItemSource {
 
@@ -29,7 +31,7 @@ public interface ItemSource {
     /**
      * Pulls a stack from this source. No guarantees are made that the source will be able to extract the whole amount -
      * some AE setups report more available items than are actually present.
-     * 
+     *
      * @param filter The filter, or null for all items
      * @param amount The amount to pull, once an item is found
      * @return The first stack found, if any

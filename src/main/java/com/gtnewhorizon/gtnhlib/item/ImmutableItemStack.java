@@ -36,7 +36,31 @@ public interface ImmutableItemStack extends ImmutableItemMeta {
 
         ItemStack stack = new ItemStack(getItem(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
 
-        stack.setTagCompound(getTag() == null ? null : (NBTTagCompound) getTag().copy());
+        NBTTagCompound tag = getTag();
+
+        if (tag != null) {
+            stack.setTagCompound((NBTTagCompound) tag.copy());
+        }
+
+        return stack;
+    }
+
+    /// Creates an ItemStack that matches this object, without copying the NBT (use with caution!).
+    default ItemStack toStackFast() {
+        return toStackFast(getStackSize());
+    }
+
+    /// Creates an ItemStack that matches this object, without copying the NBT (use with caution!).
+    default ItemStack toStackFast(int amount) {
+        int meta = getItemMeta();
+
+        ItemStack stack = new ItemStack(getItem(), amount, meta == OreDictionary.WILDCARD_VALUE ? 0 : meta);
+
+        NBTTagCompound tag = getTag();
+
+        if (tag != null) {
+            stack.setTagCompound(tag);
+        }
 
         return stack;
     }
@@ -51,5 +75,16 @@ public interface ImmutableItemStack extends ImmutableItemMeta {
         if (getItemMeta() != ItemUtil.getStackMeta(stack)) return false;
 
         return Objects.equals(getTag(), stack.getTagCompound());
+    }
+
+    default boolean matches(ImmutableItemStack stack) {
+        if (stack == null) return false;
+
+        if (getItem() != stack.getItem()) return false;
+        if (getItemMeta() == OreDictionary.WILDCARD_VALUE) return true;
+        if (stack.getItemMeta() == OreDictionary.WILDCARD_VALUE) return true;
+        if (getItemMeta() != stack.getItemMeta()) return false;
+
+        return Objects.equals(getTag(), stack.getTag());
     }
 }

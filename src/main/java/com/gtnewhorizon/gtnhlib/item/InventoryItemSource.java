@@ -10,35 +10,26 @@ import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSource;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntIterators;
 
 public class InventoryItemSource implements ItemSource {
 
     public final IInventory inv;
     public final ForgeDirection side;
 
-    private final int[] slots;
     private int[] allowedSlots;
 
     public InventoryItemSource(IInventory inv, ForgeDirection side) {
         this.inv = inv;
         this.side = side;
+    }
 
-        int invLength = inv.getSizeInventory();
-
-        IntArrayList slots = new IntArrayList();
-
-        if (inv instanceof ISidedInventory sided) {
-            for (int slot : sided.getAccessibleSlotsFromSide(side.ordinal())) {
-                slots.add(slot);
-            }
+    protected int[] getSlots() {
+        if (this.inv instanceof ISidedInventory sided) {
+            return sided.getAccessibleSlotsFromSide(this.side.ordinal());
         } else {
-            for (int slot = 0; slot < invLength; slot++) {
-                slots.add(slot);
-            }
+            return IntIterators.unwrap(IntIterators.fromTo(0, this.inv.getSizeInventory()));
         }
-
-        this.slots = slots.toIntArray();
     }
 
     @Override
@@ -65,7 +56,7 @@ public class InventoryItemSource implements ItemSource {
                 int toExtract = amount == null ? slot.getStackSize() : amount.apply(slot);
 
                 if (toExtract > 0) {
-                    return iter.extract(toExtract);
+                    return iter.extract(toExtract, false);
                 }
             }
         }
@@ -75,7 +66,7 @@ public class InventoryItemSource implements ItemSource {
 
     @Override
     public @NotNull StandardInventoryIterator sourceIterator() {
-        return new StandardInventoryIterator(inv, side, slots, allowedSlots) {
+        return new StandardInventoryIterator(inv, side, getSlots(), allowedSlots) {
 
             @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {

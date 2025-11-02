@@ -3,17 +3,15 @@ package com.gtnewhorizon.gtnhlib.item;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
-import com.gtnewhorizon.gtnhlib.util.ItemUtil;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 
-/**
- * A InventorySourceIterator implementation for something IInventory-like. This does not make any assumptions about the
- * backing inventory, it only implements the iterator portion of the logic. Implementations are free to do anything with
- * regard to {@link #getStackInSlot(int)} and {@link #setInventorySlotContents(int, ItemStack)}.
- */
+/// An [InventoryIterator] implementation for something [IInventory]-like. This does not make any assumptions about the
+/// backing inventory, it only implements the iterator portion of the logic. When an item was extracted from a slot, it
+/// must be force-insertable back into that same slot, otherwise [ItemTransfer#transfer()] will drop or void the stack.
 public abstract class AbstractInventoryIterator implements InventoryIterator {
+
+    public static final int[] NO_SLOTS = new int[0];
 
     private final int[] slots;
 
@@ -24,8 +22,6 @@ public abstract class AbstractInventoryIterator implements InventoryIterator {
     protected AbstractInventoryIterator(int[] slots) {
         this.slots = slots;
     }
-
-    private static final int[] NO_SLOTS = new int[0];
 
     protected AbstractInventoryIterator(int[] a, int[] b) {
         if (a == null && b == null) {
@@ -57,25 +53,7 @@ public abstract class AbstractInventoryIterator implements InventoryIterator {
      */
     protected abstract ItemStack getStackInSlot(int slot);
 
-    /**
-     * @see IInventory#setInventorySlotContents(int, ItemStack)
-     */
-    protected abstract void setInventorySlotContents(int slot, ItemStack stack);
-
-    /**
-     * Marks the backing inventory dirty.
-     *
-     * @see IInventory#markDirty()
-     */
-    protected void markDirty() {
-
-    }
-
     protected boolean canExtract(ItemStack stack, int slot) {
-        return true;
-    }
-
-    protected boolean canInsert(ItemStack stack, int slot) {
         return true;
     }
 
@@ -116,70 +94,11 @@ public abstract class AbstractInventoryIterator implements InventoryIterator {
     }
 
     @Override
-    public ItemStack extract(int amount) {
-        ItemStack inSlot = getStackInSlot(slots[last]);
-
-        if (ItemUtil.isStackEmpty(inSlot)) return null;
-        if (!canExtract(inSlot, slots[last])) return null;
-
-        int toExtract = Math.min(inSlot.stackSize, amount);
-
-        ItemStack extracted = inSlot.splitStack(toExtract);
-
-        setInventorySlotContents(slots[last], inSlot.stackSize == 0 ? null : inSlot);
-
-        markDirty();
-
-        return extracted;
-    }
-
-    @Override
-    public ItemStack insert(ItemStack stack) {
-        if (ItemUtil.isStackEmpty(stack)) return null;
-
-        stack = stack.copy();
-
-        int slotIndex = getCurrentSlot();
-
-        ItemStack inSlot = getStackInSlot(slotIndex);
-
-        if (!ItemUtil.isStackEmpty(inSlot) && !ItemUtil.areStacksEqual(inSlot, stack)) {
-            return stack;
-        }
-
-        if (!canInsert(stack, slotIndex)) {
-            return stack;
-        }
-
-        if (!ItemUtil.isStackEmpty(inSlot)) {
-            int maxStack = getSlotStackLimit(slotIndex, stack);
-            int toInsert = Math.min(maxStack - inSlot.stackSize, stack.stackSize);
-
-            inSlot.stackSize += toInsert;
-            stack.stackSize -= toInsert;
-
-            setInventorySlotContents(slotIndex, inSlot);
-
-            markDirty();
-
-            return stack.stackSize <= 0 ? null : stack;
-        } else {
-            setInventorySlotContents(slotIndex, stack);
-
-            markDirty();
-
-            return null;
-        }
-    }
-
-    @Override
     public boolean rewind() {
         i = 0;
 
         return true;
     }
-
-    protected abstract int getSlotStackLimit(int slot, ItemStack stack);
 
     protected final int getCurrentSlot() {
         return slots[last];

@@ -2,6 +2,8 @@ package com.gtnewhorizon.gtnhlib.item;
 
 import java.util.ListIterator;
 
+import javax.annotation.Nonnegative;
+
 import net.minecraft.item.ItemStack;
 
 /**
@@ -33,18 +35,22 @@ public interface InventoryIterator extends ListIterator<ImmutableItemStack> {
      * Extracts items from the current index. May return less items than what was originally reported for this index.
      *
      * @param amount The amount to extract
+     * @param forced When true, all inventory slot validation should be ignored.
      * @return The extracted stack
      */
-    ItemStack extract(int amount);
+    ItemStack extract(int amount, boolean forced);
 
     /**
-     * Inserts items into the current index. Returns any items that could not be inserted.
+     * Inserts items into the current index. Returns the number of items that could not be inserted.
+     * 
+     * @param forced When true, all inventory slot validation should be ignored.
      */
-    ItemStack insert(ItemStack stack);
+    @Nonnegative
+    int insert(ImmutableItemStack stack, boolean forced);
 
     /**
      * Rewinds this iterator to the first stack, if possible.
-     * 
+     *
      * @return True when the rewind was successful, false otherwise.
      */
     boolean rewind();
@@ -52,13 +58,13 @@ public interface InventoryIterator extends ListIterator<ImmutableItemStack> {
     class EmptyInventoryIterator implements InventoryIterator {
 
         @Override
-        public ItemStack extract(int amount) {
+        public ItemStack extract(int amount, boolean force) {
             return null;
         }
 
         @Override
-        public ItemStack insert(ItemStack stack) {
-            return stack;
+        public int insert(ImmutableItemStack stack, boolean force) {
+            return stack.getStackSize();
         }
 
         @Override
