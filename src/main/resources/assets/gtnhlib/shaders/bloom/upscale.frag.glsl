@@ -30,6 +30,6 @@ vec3 tentFilter3x3(vec2 uv, vec2 texelSize) {
     return result / 32.0;
 }
 
-void main() { // TODO
+void main() {
     gl_FragColor.rgb = tentFilter3x3(vTexCoord, texelSize);
 }
