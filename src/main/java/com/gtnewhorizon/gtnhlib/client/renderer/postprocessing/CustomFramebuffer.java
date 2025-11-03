@@ -198,6 +198,13 @@ public class CustomFramebuffer {
         return createFramebufferAttachment(0);
     }
 
+    /**
+     * Creates a framebuffer texture in the defined color attachment. Useful for framebuffers that implement multiple
+     * draw buffers.
+     * 
+     * @param slot Can be either i or GL_COLOR_ATTACHMENTi
+     * @return The created texture
+     */
     public int createFramebufferAttachment(int slot) {
         int texture = GL11.glGenTextures();
 
