@@ -1,9 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.HDRFramebuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHelper;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
-import com.gtnewhorizons.angelica.glsm.GLStateManager;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -15,20 +15,18 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gregtech.api.enums.Mods.GregTech;
-
 public class BloomShader {
 
     private static BloomShader instance;
     private static final Minecraft mc = Minecraft.getMinecraft();
 
-    private HDRFramebuffer[] framebuffers;
+    private CustomFramebuffer[] framebuffers;
 
     private final ShaderProgram downscaleProgram;
-    private int uTexelSize_downscale;
+    private final int uTexelSize_downscale;
 
     private final ShaderProgram upscaleProgram;
-    private int uTexelSize_upscale;
+    private final int uTexelSize_upscale;
 
     private float multiplier;
 
@@ -41,29 +39,11 @@ public class BloomShader {
             "shaders/bloom/downscale.frag.glsl");
         uTexelSize_downscale = downscaleProgram.getUniformLocation("texelSize");
 
-        // AutoShaderUpdater.getInstance()
-        // .registerShaderReload(
-        // downscaleProgram,
-        // GregTech.resourceDomain,
-        // "shaders/bloom/downscale.vert.glsl",
-        // "shaders/bloom/downscale.frag.glsl",
-        // (shader, vertexFile, fragmentFile) -> {
-        // uTexelSize_downscale = shader.getUniformLocation("texelSize");
-        // });
-
         upscaleProgram = new ShaderProgram(
             GTNHLib.RESOURCE_DOMAIN,
             "shaders/bloom/upscale.vert.glsl",
             "shaders/bloom/upscale.frag.glsl");
         uTexelSize_upscale = upscaleProgram.getUniformLocation("texelSize");
-
-        // AutoShaderUpdater.getInstance()
-        // .registerShaderReload(
-        // upscaleProgram,
-        // GregTech.resourceDomain,
-        // "shaders/bloom/upscale.vert.glsl",
-        // "shaders/bloom/upscale.frag.glsl",
-        // (shader, vertexFile, fragmentFile) -> uTexelSize_upscale = shader.getUniformLocation("texelSize"));
 
         createFramebuffers();
     }
@@ -71,7 +51,7 @@ public class BloomShader {
     private void createFramebuffers() {
         float width = mc.displayWidth;
         float height = mc.displayHeight;
-        List<HDRFramebuffer> framebufferList = new ArrayList<>();
+        List<CustomFramebuffer> framebufferList = new ArrayList<>();
 
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice gd = ge.getDefaultScreenDevice();
@@ -90,42 +70,40 @@ public class BloomShader {
         }
 
         while (framebufferList.size() < 8 && width + height > 5) {
-            final HDRFramebuffer framebuffer;
+            final CustomFramebuffer framebuffer;
             if (framebufferList.isEmpty()) {
-                framebuffer = new HDRFramebuffer(
+                framebuffer = new CustomFramebuffer(
                     Math.round(width),
                     Math.round(height),
-                    true);
+                    CustomFramebuffer.FRAMEBUFFER_DEPTH_ENABLED | CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR);
             } else {
-                framebuffer = new HDRFramebuffer(
+                framebuffer = new CustomFramebuffer(
                     Math.round(width),
                     Math.round(height),
-                    false);
+                    CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR); //TODO
             }
             framebufferList.add(framebuffer);
-            framebuffer.setFramebufferFilter(GL11.GL_LINEAR);
 
             width /= 2;
             height /= 2;
         }
-        framebuffers = framebufferList.toArray(new HDRFramebuffer[0]);
+        framebuffers = framebufferList.toArray(new CustomFramebuffer[0]);
     }
 
     public void bind() {
-        HDRFramebuffer mainFramebuffer = framebuffers[0];
+        CustomFramebuffer mainFramebuffer = framebuffers[0];
         if (mc.displayWidth != mainFramebuffer.framebufferWidth
             || mc.displayHeight != mainFramebuffer.framebufferHeight) {
-            for (HDRFramebuffer framebuffer : framebuffers) {
-                framebuffer.deleteFramebuffer();
+            for (CustomFramebuffer framebuffer : framebuffers) {
+                framebuffer.checkDeleteFramebuffer();
             }
             createFramebuffers();
             mainFramebuffer = framebuffers[0];
         }
 
         needsRendering = true;
-        mainFramebuffer.bindFramebuffer(false);
         mainFramebuffer.copyDepthFromFramebuffer(mc.getFramebuffer());
-        mainFramebuffer.bindFramebuffer(false);
+        // This automatically
     }
 
     public static void unbind() {
@@ -141,27 +119,28 @@ public class BloomShader {
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GL11.glColor4f(1, 1, 1, 1);
-        GLStateManager.disableDepthTest();
-        GLStateManager.enableBlend();
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-        GLStateManager.disableAlphaTest();
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-        QuadRenderer.bindFullscreenVAO();
+        PostProcessingHelper.bindFullscreenVAO();
 
-        final HDRFramebuffer mainFramebuffer = framebuffers[0];
+        final CustomFramebuffer mainFramebuffer = framebuffers[0];
 
         mainFramebuffer.bindFramebufferTexture();
         downscaleProgram.use();
 
         for (int i = 1; i < framebuffers.length; i++) {
-            HDRFramebuffer framebuffer = framebuffers[i];
-            framebuffer.clearBindFramebuffer(true);
+            CustomFramebuffer framebuffer = framebuffers[i];
+            framebuffer.clearBindFramebuffer();
+            framebuffer.setupViewport();
             GL20.glUniform2f(
                 uTexelSize_downscale,
                 1f / framebuffer.framebufferWidth,
                 1f / framebuffer.framebufferHeight);
 
-            QuadRenderer.drawFullscreenQuad();
+            PostProcessingHelper.drawFullscreenQuad();
 
             framebuffer.bindFramebufferTexture();
         }
@@ -169,13 +148,13 @@ public class BloomShader {
         upscaleProgram.use();
 
         for (int i = framebuffers.length - 1; i >= 1; i--) {
-            HDRFramebuffer framebuffer = framebuffers[i];
-            HDRFramebuffer upscaledFramebuffer = framebuffers[i - 1];
+            CustomFramebuffer framebuffer = framebuffers[i];
+            CustomFramebuffer upscaledFramebuffer = framebuffers[i - 1];
             framebuffer.bindFramebufferTexture();
             upscaledFramebuffer.bindFramebuffer(true);
             GL20.glUniform2f(uTexelSize_upscale, 1f / framebuffer.framebufferWidth, 1f / framebuffer.framebufferHeight);
 
-            QuadRenderer.drawFullscreenQuad();
+            PostProcessingHelper.drawFullscreenQuad();
         }
 
         mc.getFramebuffer()
@@ -187,10 +166,10 @@ public class BloomShader {
 
         ShaderProgram.clear();
 
-        GLStateManager.enableDepthTest();
-        GLStateManager.enableAlphaTest();
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        QuadRenderer.unbind();
+        PostProcessingHelper.unbind();
     }
 
     public static BloomShader getInstance() {
