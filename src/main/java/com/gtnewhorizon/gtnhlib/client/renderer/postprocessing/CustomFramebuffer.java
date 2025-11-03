@@ -58,7 +58,7 @@ public class CustomFramebuffer {
         unbindFramebuffer();
     }
 
-    private int createBufferBits() {
+    protected int createBufferBits() {
         int bits = GL11.GL_COLOR_BUFFER_BIT;
         if (isEnabled(DEPTH_ENABLED)) {
             bits |= GL11.GL_DEPTH_BUFFER_BIT;

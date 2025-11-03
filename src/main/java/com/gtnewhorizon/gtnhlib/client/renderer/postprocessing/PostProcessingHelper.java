@@ -4,6 +4,10 @@ import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
+import com.gtnewhorizon.gtnhlib.compat.Mods;
+import net.coderbot.iris.rendertarget.IRenderTargetExt;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.shader.Framebuffer;
 
 public class PostProcessingHelper {
 
@@ -30,6 +34,15 @@ public class PostProcessingHelper {
 
     public static void unbindVAO() {
         fullscreenQuadVAO.unbind();
+    }
+
+    public static int getDepthTexture() {
+        return getDepthTexture(Minecraft.getMinecraft().getFramebuffer());
+    }
+
+    public static int getDepthTexture(Framebuffer framebuffer) {
+        if (!Mods.ANGELICA) throw new UnsupportedOperationException("The depth texture requires Angelica to be loaded.");
+        return ((IRenderTargetExt) framebuffer).iris$getDepthTextureId();
     }
 
     private static VertexBuffer genFullscreenQuadVAO() {
