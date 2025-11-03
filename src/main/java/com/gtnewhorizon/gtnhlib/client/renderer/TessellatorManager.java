@@ -56,6 +56,19 @@ public class TessellatorManager {
         currentlyCapturing.set(true);
     }
 
+    public static CapturingTessellator startCapturingAndGet() {
+        if (currentlyCapturing.get())
+            throw new IllegalStateException("Tried to start capturing when already capturing!");
+        final CapturingTessellator tess = capturingTessellator.get();
+        if (tess.getQuads().size() > 0)
+            throw new IllegalStateException("Tried to start capturing with existing collected Quads!");
+        tess.storeTranslation();
+
+        currentlyCapturing.set(true);
+
+        return tess;
+    }
+
     /*
      * Stop the CapturingTessellator and return the pooled quads. The quads are valid until clearQuads() is called on
      * the CapturingTesselator, which must be done before starting capturing again.

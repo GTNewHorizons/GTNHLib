@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import net.minecraft.client.renderer.Tessellator;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -29,15 +30,12 @@ public class PostProcessingHelper {
         fullscreenQuadVAO.draw();
     }
 
-    public static void unbind() {
+    public static void unbindVAO() {
         fullscreenQuadVAO.unbind();
     }
 
     private static VertexBuffer genFullscreenQuadVAO() {
-        TessellatorManager.startCapturing();
-        // TODO
-        // final CapturingTessellator tessellator = (CapturingTessellator) TessellatorManager.get();
-        final Tessellator tessellator = Tessellator.instance;
+        final CapturingTessellator tessellator = TessellatorManager.startCapturingAndGet();
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(-1, -1, 0, 0, 0);
         tessellator.addVertexWithUV(1, -1, 0, 1, 0);

@@ -1,5 +1,10 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_DEPTH_ENABLED;
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_HDR_COLORS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_NO_ALPHA_CHANNEL;
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +19,7 @@ import org.lwjgl.opengl.GL20;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHelper;
+import com.gtnewhorizon.gtnhlib.client.renderer.shader.AutoShaderUpdater;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -78,12 +84,14 @@ public class BloomShader {
                 framebuffer = new CustomFramebuffer(
                         Math.round(width),
                         Math.round(height),
-                        CustomFramebuffer.FRAMEBUFFER_DEPTH_ENABLED | CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR);
+                        FRAMEBUFFER_DEPTH_ENABLED | FRAMEBUFFER_TEXTURE_LINEAR
+                                | FRAMEBUFFER_HDR_COLORS
+                                | FRAMEBUFFER_NO_ALPHA_CHANNEL);
             } else {
                 framebuffer = new CustomFramebuffer(
                         Math.round(width),
                         Math.round(height),
-                        CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR); // TODO
+                    FRAMEBUFFER_DEPTH_ENABLED | FRAMEBUFFER_TEXTURE_LINEAR | FRAMEBUFFER_HDR_COLORS | FRAMEBUFFER_NO_ALPHA_CHANNEL); // TODO
             }
             framebufferList.add(framebuffer);
 
@@ -106,7 +114,6 @@ public class BloomShader {
 
         needsRendering = true;
         mainFramebuffer.copyDepthFromFramebuffer(mc.getFramebuffer());
-        // This automatically
     }
 
     public static void unbind() {
@@ -130,13 +137,14 @@ public class BloomShader {
 
         final CustomFramebuffer mainFramebuffer = framebuffers[0];
 
+        mainFramebuffer.bindFramebuffer();
         mainFramebuffer.bindFramebufferTexture();
+
         downscaleProgram.use();
 
         for (int i = 1; i < framebuffers.length; i++) {
             CustomFramebuffer framebuffer = framebuffers[i];
-            framebuffer.clearBindFramebuffer();
-            framebuffer.setupViewport();
+            framebuffer.clearBindFramebuffer(true);
             GL20.glUniform2f(
                     uTexelSize_downscale,
                     1f / framebuffer.framebufferWidth,
@@ -169,7 +177,8 @@ public class BloomShader {
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        PostProcessingHelper.unbind();
+
+        PostProcessingHelper.unbindVAO();
     }
 
     public static BloomShader getInstance() {
