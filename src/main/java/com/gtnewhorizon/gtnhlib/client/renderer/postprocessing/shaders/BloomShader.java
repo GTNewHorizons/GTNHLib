@@ -9,6 +9,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -19,6 +20,7 @@ import org.lwjgl.opengl.GL20;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHelper;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.SharedDepthFramebuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -80,10 +82,11 @@ public class BloomShader {
         while (framebufferList.size() < 8 && width + height > 5) {
             final CustomFramebuffer framebuffer;
             if (framebufferList.isEmpty()) {
-                framebuffer = new CustomFramebuffer(
+                framebuffer = new SharedDepthFramebuffer(
                         Math.round(width),
                         Math.round(height),
-                        DEPTH_ENABLED | TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL);
+                        DEPTH_ENABLED | TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL,
+                        mc.getFramebuffer());
             } else {
                 framebuffer = new CustomFramebuffer(
                         Math.round(width),
@@ -110,14 +113,15 @@ public class BloomShader {
         }
 
         needsRendering = true;
-        mainFramebuffer.copyDepthFromFramebuffer(mc.getFramebuffer());
+        mainFramebuffer.bindFramebuffer();
     }
 
     public static void unbind() {
         mc.getFramebuffer().bindFramebuffer(false);
     }
 
-    @SubscribeEvent
+    // LOWEST to make it apply after every other RenderWorldLastEvent renderer
+    @SubscribeEvent (priority = EventPriority.LOWEST)
     public void onOverlayDraw(RenderWorldLastEvent event) {
         if (!needsRendering) return;
 
