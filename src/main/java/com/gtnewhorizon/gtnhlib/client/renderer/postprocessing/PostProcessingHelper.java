@@ -1,25 +1,19 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
+import net.minecraft.client.renderer.Tessellator;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
-import net.minecraft.client.renderer.Tessellator;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-
-import java.nio.ByteBuffer;
-import java.util.List;
 
 public class PostProcessingHelper {
+
     private static VertexBuffer fullscreenQuadVAO;
 
     /**
-     * Ideally, you'd only call bindFullscreenVAO/unbind only once per post-processing pass.
-     * <br>
-     * If you ever want to render any other geometry inside of the post-processing pass for whatever reason, you'll have to unbind() before rendering the other geometry.
+     * Ideally, you'd only call bindFullscreenVAO/unbind only once per post-processing pass. <br>
+     * If you ever want to render any other geometry inside of the post-processing pass for whatever reason, you'll have
+     * to unbind() before rendering the other geometry.
      */
     public static void bindFullscreenVAO() {
         if (fullscreenQuadVAO == null) {
@@ -42,7 +36,7 @@ public class PostProcessingHelper {
     private static VertexBuffer genFullscreenQuadVAO() {
         TessellatorManager.startCapturing();
         // TODO
-        //final CapturingTessellator tessellator = (CapturingTessellator) TessellatorManager.get();
+        // final CapturingTessellator tessellator = (CapturingTessellator) TessellatorManager.get();
         final Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(-1, -1, 0, 0, 0);

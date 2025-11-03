@@ -1,15 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.texture.TextureUtil;
-import net.minecraft.client.shader.Framebuffer;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.*;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
@@ -17,22 +7,40 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import javax.imageio.ImageIO;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.shader.Framebuffer;
+
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.*;
+
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
+
 public class CustomFramebuffer {
+
     public int framebufferWidth;
     public int framebufferHeight;
     public int framebufferObject;
     public int framebufferTexture;
-    public int depthBuffer;
+    public int depthAttachment;
 
     private final int settings;
+    private final int bufferBits;
 
     public static final int FRAMEBUFFER_DEPTH_ENABLED = 0x1;
-    public static final int FRAMEBUFFER_DEPTH_RENDERBUFFER = 0x1;
-    public static final int FRAMEBUFFER_DEPTH_TEXTURE = 0x2 | 0x1;
-    public static final int FRAMEBUFFER_STENCIL_BUFFER = 0x4;
+    public static final int FRAMEBUFFER_DEPTH_TEXTURE = 0x2 | FRAMEBUFFER_DEPTH_ENABLED;
+    public static final int FRAMEBUFFER_STENCIL_BUFFER = 0x4 | FRAMEBUFFER_DEPTH_ENABLED;
     public static final int FRAMEBUFFER_TEXTURE_LINEAR = 0x8;
-    public static final int FRAMEBUFFER_ALPHA_CHANNEL = 0x10;
+    public static final int FRAMEBUFFER_NO_ALPHA_CHANNEL = 0x10;
     public static final int FRAMEBUFFER_HDR_COLORS = 0x20;
+
+    // field_153198_e = GL30.GL_FRAMEBUFFER
+    // field_153200_g = GL30.GL_COLOR_ATTACHMENT0
+    // field_153199_f = GL30.GL_RENDERBUFFER
+    // field_153201_h = GL30.GL_DEPTH_ATTACHMENT
 
     public CustomFramebuffer() {
         this(0);
@@ -40,6 +48,7 @@ public class CustomFramebuffer {
 
     public CustomFramebuffer(int settings) {
         this.settings = settings;
+        this.bufferBits = createBufferBits();
     }
 
     public CustomFramebuffer(int width, int height) {
@@ -47,15 +56,48 @@ public class CustomFramebuffer {
     }
 
     public CustomFramebuffer(int width, int height, int settings) {
+        this(settings);
         createFramebuffer(width, height);
         unbindFramebuffer();
-        this.settings = settings;
     }
 
+    private int createBufferBits() {
+        int bits = GL11.GL_COLOR_BUFFER_BIT;
+        if (isEnabled(FRAMEBUFFER_DEPTH_ENABLED)) {
+            bits |= GL11.GL_DEPTH_BUFFER_BIT;
+        }
+        if (isEnabled(FRAMEBUFFER_STENCIL_BUFFER)) {
+            bits |= GL11.GL_STENCIL_BUFFER_BIT;
+        }
+        return bits;
+    }
+
+    private int getTextureFormat() {
+        if (isEnabled(FRAMEBUFFER_HDR_COLORS)) {
+            if (isEnabled(FRAMEBUFFER_NO_ALPHA_CHANNEL)) {
+                return GL11.GL_RGB16;
+            } else {
+                return GL11.GL_RGBA16;
+            }
+        } else {
+            if (isEnabled(FRAMEBUFFER_NO_ALPHA_CHANNEL)) {
+                return GL11.GL_RGB8;
+            } else {
+                return GL11.GL_RGBA8;
+            }
+        }
+    }
+
+    private int getTextureFilter() {
+        return (settings & FRAMEBUFFER_TEXTURE_LINEAR) != 0 ? GL11.GL_LINEAR : GL11.GL_NEAREST;
+    }
+
+    private boolean isEnabled(int bit) {
+        return (settings & bit) != 0;
+    }
 
     public void createBindFramebuffer(int width, int height) {
         this.createFramebuffer(width, height);
-        OpenGlHelper.func_153171_g(GL30.GL_FRAMEBUFFER, 0);
     }
 
     protected void createFramebuffer(int width, int height) {
@@ -66,36 +108,107 @@ public class CustomFramebuffer {
 
         this.framebufferObject = OpenGlHelper.func_153165_e();
 
-
-        this.depthBuffer = OpenGlHelper.func_153185_f();
-
         bindFramebuffer();
 
         this.framebufferTexture = createFramebufferAttachment();
 
+        final boolean stencil = isEnabled(FRAMEBUFFER_STENCIL_BUFFER);
+        if (isEnabled(FRAMEBUFFER_DEPTH_TEXTURE)) {
+            final int filter = getTextureFilter();
+            this.depthAttachment = GL11.glGenTextures();
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.depthAttachment);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_COMPARE_MODE, 0);
+            if (stencil) {
+                GL11.glTexImage2D(
+                        GL11.GL_TEXTURE_2D,
+                        0,
+                        GL30.GL_DEPTH24_STENCIL8,
+                        width,
+                        height,
+                        0,
+                        GL30.GL_DEPTH_STENCIL,
+                        GL30.GL_UNSIGNED_INT_24_8,
+                        (IntBuffer) null);
+            } else {
+                GL11.glTexImage2D(
+                        GL11.GL_TEXTURE_2D,
+                        0,
+                        GL11.GL_DEPTH_COMPONENT,
+                        width,
+                        height,
+                        0,
+                        GL11.GL_DEPTH_COMPONENT,
+                        GL11.GL_FLOAT,
+                        (IntBuffer) null);
+            }
+            OpenGlHelper.func_153188_a(
+                    GL30.GL_FRAMEBUFFER,
+                    GL30.GL_DEPTH_ATTACHMENT,
+                    GL11.GL_TEXTURE_2D,
+                    this.depthAttachment,
+                    0);
+            if (stencil) {
+                OpenGlHelper.func_153188_a(
+                        GL30.GL_FRAMEBUFFER,
+                        GL30.GL_STENCIL_ATTACHMENT,
+                        GL11.GL_TEXTURE_2D,
+                        this.depthAttachment,
+                        0);
+            }
+        } else {
+            this.depthAttachment = OpenGlHelper.func_153185_f();
+            OpenGlHelper.func_153176_h(GL30.GL_RENDERBUFFER, this.depthAttachment);
+            OpenGlHelper.func_153186_a(
+                    GL30.GL_RENDERBUFFER,
+                    EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT,
+                    this.framebufferWidth,
+                    this.framebufferHeight);
+            OpenGlHelper.func_153190_b(
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
+            OpenGlHelper.func_153190_b(
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
 
-
-        OpenGlHelper.func_153176_h(OpenGlHelper.field_153199_f, this.depthBuffer);
-        OpenGlHelper.func_153186_a(
-            OpenGlHelper.field_153199_f,
-            EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT,
-            this.framebufferWidth, this.framebufferHeight
-        );
-        OpenGlHelper.func_153190_b(
-            GL30.GL_FRAMEBUFFER,
-            EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
-            OpenGlHelper.field_153199_f,
-            this.depthBuffer
-        );
-        OpenGlHelper.func_153190_b(
-            GL30.GL_FRAMEBUFFER,
-            EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
-            OpenGlHelper.field_153199_f,
-            this.depthBuffer
-        );
+            if (stencil) {
+                OpenGlHelper.func_153186_a(
+                        GL30.GL_RENDERBUFFER,
+                        EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT,
+                        framebufferWidth,
+                        framebufferHeight);
+                OpenGlHelper.func_153190_b(
+                        GL30.GL_FRAMEBUFFER,
+                        EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
+                        GL30.GL_RENDERBUFFER,
+                        this.depthAttachment);
+                OpenGlHelper.func_153190_b(
+                        GL30.GL_FRAMEBUFFER,
+                        EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
+                        GL30.GL_RENDERBUFFER,
+                        this.depthAttachment);
+            } else {
+                OpenGlHelper.func_153186_a(
+                        GL30.GL_FRAMEBUFFER,
+                        GL14.GL_DEPTH_COMPONENT24,
+                        framebufferWidth,
+                        framebufferHeight);
+                OpenGlHelper.func_153190_b(
+                        GL30.GL_FRAMEBUFFER,
+                        GL30.GL_DEPTH_ATTACHMENT,
+                        GL30.GL_RENDERBUFFER,
+                        this.depthAttachment);
+            }
+        }
 
         clearCurrentFramebuffer();
-        this.unbindFramebufferTexture();
     }
 
     public int createFramebufferAttachment() {
@@ -104,38 +217,29 @@ public class CustomFramebuffer {
 
     public int createFramebufferAttachment(int slot) {
         int texture = GL11.glGenTextures();
-        // GL30.GL_RGB32F,
 
-        // TODO add params for custom format + interpolation
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
         GL11.glTexImage2D(
-            GL11.GL_TEXTURE_2D,
-            0,
-            GL11.GL_RGBA8,
-            this.framebufferWidth, this.framebufferHeight,
-            0,
-            GL11.GL_RGBA,
-            GL11.GL_UNSIGNED_BYTE,
-            (ByteBuffer) null
-        );
-        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+                GL11.GL_TEXTURE_2D,
+                0,
+                getTextureFormat(),
+                this.framebufferWidth,
+                this.framebufferHeight,
+                0,
+                GL11.GL_RGBA,
+                GL11.GL_UNSIGNED_BYTE,
+                (ByteBuffer) null);
+        final int filter = getTextureFilter();
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter);
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
-        // field_153198_e = GL30.GL_FRAMEBUFFER
-        // field_153200_g = GL30.GL_COLOR_ATTACHMENT0
 
         // glFramebufferTexture2D
-        OpenGlHelper.func_153188_a(
-            GL30.GL_FRAMEBUFFER,
-            GL30.GL_COLOR_ATTACHMENT0 | slot,
-            GL11.GL_TEXTURE_2D,
-            texture,
-            0
-        );
+        OpenGlHelper
+                .func_153188_a(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0 | slot, GL11.GL_TEXTURE_2D, texture, 0);
         return texture;
     }
-
 
     public final void checkDeleteFramebuffer() {
         if (this.framebufferObject > 0) {
@@ -147,9 +251,13 @@ public class CustomFramebuffer {
         this.unbindFramebufferTexture();
         this.unbindFramebuffer();
 
-        if (this.depthBuffer > -1) {
-            OpenGlHelper.func_153184_g(this.depthBuffer);
-            this.depthBuffer = -1;
+        if (this.depthAttachment > -1) {
+            if (isEnabled(FRAMEBUFFER_DEPTH_TEXTURE)) {
+                GL11.glDeleteTextures(this.depthAttachment);
+            } else {
+                OpenGlHelper.func_153184_g(this.depthAttachment);
+            }
+            this.depthAttachment = -1;
         }
 
         if (this.framebufferTexture > -1) {
@@ -164,7 +272,6 @@ public class CustomFramebuffer {
         }
     }
 
-
     public void framebufferClear() {
         this.bindFramebuffer();
         clearCurrentFramebuffer();
@@ -173,23 +280,24 @@ public class CustomFramebuffer {
 
     public void clearCurrentFramebuffer() {
         GL11.glClearColor(0, 0, 0, 0);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
+        GL11.glClearDepth(1.0D);
+        GL11.glClear(bufferBits);
     }
 
     public void copyDepthFromFramebuffer(Framebuffer other) {
         OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, other.framebufferObject);
         OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, framebufferObject);
         GL30.glBlitFramebuffer(
-            0,
-            0,
-            other.framebufferWidth,
-            other.framebufferHeight,
-            0,
-            0,
-            framebufferWidth,
-            framebufferHeight,
-            GL11.GL_DEPTH_BUFFER_BIT,
-            GL11.GL_NEAREST);
+                0,
+                0,
+                other.framebufferWidth,
+                other.framebufferHeight,
+                0,
+                0,
+                framebufferWidth,
+                framebufferHeight,
+                GL11.GL_DEPTH_BUFFER_BIT,
+                GL11.GL_NEAREST);
 
     }
 
@@ -216,24 +324,14 @@ public class CustomFramebuffer {
     }
 
     public void setupViewport() {
-        GL11.glViewport(
-            0,
-            0,
-            framebufferWidth,
-            framebufferHeight
-        );
+        GL11.glViewport(0, 0, framebufferWidth, framebufferHeight);
     }
 
     public void setupOrtho() {
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glPushMatrix();
         GL11.glLoadIdentity();
-        GL11.glOrtho(
-            0.0D, framebufferWidth,
-            framebufferHeight, 0.0D,
-            1000.0D,
-            3000.0D
-        );
+        GL11.glOrtho(0.0D, framebufferWidth, framebufferHeight, 0.0D, 1000.0D, 3000.0D);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glPushMatrix();
         GL11.glLoadIdentity();
@@ -270,33 +368,21 @@ public class CustomFramebuffer {
         GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
         pixelBuffer.clear();
         GL11.glReadPixels(
-            0, 0,
-            framebufferWidth, framebufferHeight,
-            GL12.GL_BGRA,
-            GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
-            pixelBuffer
-        );
+                0,
+                0,
+                framebufferWidth,
+                framebufferHeight,
+                GL12.GL_BGRA,
+                GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
+                pixelBuffer);
         pixelBuffer.get(pixels);
     }
 
     public void readPixels(IntBuffer pixelBuffer, int[] pixels, int component) {
         pixelBuffer.clear();
-        GL11.glReadPixels(
-            0, 0, framebufferWidth, framebufferHeight,
-            component,
-            GL11.GL_FLOAT,
-            pixelBuffer
-        );
+        GL11.glReadPixels(0, 0, framebufferWidth, framebufferHeight, component, GL11.GL_FLOAT, pixelBuffer);
         pixelBuffer.get(pixels);
     }
-
-
-
-
-
-
-
-
 
     // TONEMAP SHADER
 
@@ -307,9 +393,9 @@ public class CustomFramebuffer {
     public void applyTonemapping(float multiplier) {
         if (tonemapShader == null) {
             tonemapShader = new ShaderProgram(
-                GTNHLib.RESOURCE_DOMAIN,
-                "shaders/hdr/tonemap.vert.glsl",
-                "shaders/hdr/tonemap.frag.glsl");
+                    GTNHLib.RESOURCE_DOMAIN,
+                    "shaders/hdr/tonemap.vert.glsl",
+                    "shaders/hdr/tonemap.frag.glsl");
             tonemapShader.use();
             uMultiplier = tonemapShader.getUniformLocation("multiplier");
             tonemapShader.bindTextureSlot("uScene", 0);
@@ -322,9 +408,7 @@ public class CustomFramebuffer {
             GL20.glUniform1f(uMultiplier, multiplier);
             tonemapMultiplier = multiplier;
         }
-        Minecraft.getMinecraft()
-            .getFramebuffer()
-            .bindFramebufferTexture();
+        Minecraft.getMinecraft().getFramebuffer().bindFramebufferTexture();
         GL13.glActiveTexture(GL13.GL_TEXTURE1);
         bindFramebufferTexture();
         GL11.glDisable(GL11.GL_BLEND);
@@ -332,8 +416,6 @@ public class CustomFramebuffer {
         // this.copyTextureToFile("bloomshader", "framebuffer_final.png");
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
     }
-
-
 
     // DEBUG TOOLS
     public void copyTextureToFile(String category, String filename) {
@@ -377,13 +459,7 @@ public class CustomFramebuffer {
         final int[] pixelValues = ((DataBufferInt) bufferedimage.getRaster().getDataBuffer()).getData();
         IntBuffer pixelBuffer = BufferUtils.createIntBuffer(pixelValues.length);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
-        GL11.glGetTexImage(
-            GL11.GL_TEXTURE_2D,
-            0,
-            GL12.GL_BGRA,
-            GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
-            pixelBuffer
-        );
+        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
         pixelBuffer.get(pixelValues);
 
         // Flip texture
@@ -424,8 +500,7 @@ public class CustomFramebuffer {
         bufferedimage.flush();
     }
 
-
-    //TODO unify and faster flipping
+    // TODO unify and faster flipping
     public void copyDepthToFile(File file) {
         copyComponentToFile(GL11.GL_DEPTH_COMPONENT, file);
     }
@@ -439,12 +514,7 @@ public class CustomFramebuffer {
         IntBuffer stencilBuffer = BufferUtils.createIntBuffer(pixelValues.length);
 
         this.bindFramebuffer();
-        GL11.glReadPixels(
-            0, 0, width, height,
-            GL11.GL_STENCIL_INDEX,
-            GL11.GL_FLOAT,
-            stencilBuffer
-        );
+        GL11.glReadPixels(0, 0, width, height, GL11.GL_STENCIL_INDEX, GL11.GL_FLOAT, stencilBuffer);
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 
@@ -470,12 +540,7 @@ public class CustomFramebuffer {
         FloatBuffer depthBuffer = BufferUtils.createFloatBuffer(pixelValues.length);
 
         this.bindFramebuffer();
-        GL11.glReadPixels(
-            0, 0, width, height,
-            component,
-            GL11.GL_FLOAT,
-            depthBuffer
-        );
+        GL11.glReadPixels(0, 0, width, height, component, GL11.GL_FLOAT, depthBuffer);
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 

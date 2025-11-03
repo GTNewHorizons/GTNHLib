@@ -1,20 +1,20 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-import org.lwjgl.opengl.GL15;
+import static com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager.VAO;
 
 import java.nio.ByteBuffer;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager.VAO;
+import org.lwjgl.opengl.GL15;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public class VertexArrayBuffer extends VertexBuffer {
+
     protected final int vaoID;
 
-
     /**
-     * This constructor is protected in order to prevent the usage of VAO's if they are incompatible.
-     * <br>
+     * This constructor is protected in order to prevent the usage of VAO's if they are incompatible. <br>
      * Use VAOManager.createVAO() instead
      */
     protected VertexArrayBuffer(VertexFormat format, int drawMode) {

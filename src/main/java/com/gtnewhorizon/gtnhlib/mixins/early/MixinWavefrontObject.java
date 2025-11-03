@@ -43,7 +43,8 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
         tess.startDrawing(currentGroupObject.glDrawingMode);
         tessellateAll(tess);
 
-        this.vertexBuffer = vao ? TessellatorManager.stopCapturingToVAO(format) : TessellatorManager.stopCapturingToVBO(format);
+        this.vertexBuffer = vao ? TessellatorManager.stopCapturingToVAO(format)
+                : TessellatorManager.stopCapturingToVBO(format);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public class VAOManager {
+
     private static boolean vaoDisabled = false;
     public static final VaoFunctions VAO = UniversalVAO.getImplementation();
 
@@ -12,8 +13,7 @@ public class VAOManager {
     }
 
     /**
-     * Creates a VAO if they are supported, and a VBO otherwise.
-     * <br>
+     * Creates a VAO if they are supported, and a VBO otherwise. <br>
      * If you need a VertexArrayBuffer in your code, make sure to only cast it if isVaoDisabled is false
      */
     public static VertexBuffer createVAO(VertexFormat format, int drawMode) {

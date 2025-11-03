@@ -1,19 +1,22 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.common.MinecraftForge;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
+
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHelper;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.common.MinecraftForge;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class BloomShader {
 
@@ -34,15 +37,15 @@ public class BloomShader {
 
     public BloomShader() {
         downscaleProgram = new ShaderProgram(
-            GTNHLib.RESOURCE_DOMAIN,
-            "shaders/bloom/downscale.vert.glsl",
-            "shaders/bloom/downscale.frag.glsl");
+                GTNHLib.RESOURCE_DOMAIN,
+                "shaders/bloom/downscale.vert.glsl",
+                "shaders/bloom/downscale.frag.glsl");
         uTexelSize_downscale = downscaleProgram.getUniformLocation("texelSize");
 
         upscaleProgram = new ShaderProgram(
-            GTNHLib.RESOURCE_DOMAIN,
-            "shaders/bloom/upscale.vert.glsl",
-            "shaders/bloom/upscale.frag.glsl");
+                GTNHLib.RESOURCE_DOMAIN,
+                "shaders/bloom/upscale.vert.glsl",
+                "shaders/bloom/upscale.frag.glsl");
         uTexelSize_upscale = upscaleProgram.getUniformLocation("texelSize");
 
         createFramebuffers();
@@ -73,14 +76,14 @@ public class BloomShader {
             final CustomFramebuffer framebuffer;
             if (framebufferList.isEmpty()) {
                 framebuffer = new CustomFramebuffer(
-                    Math.round(width),
-                    Math.round(height),
-                    CustomFramebuffer.FRAMEBUFFER_DEPTH_ENABLED | CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR);
+                        Math.round(width),
+                        Math.round(height),
+                        CustomFramebuffer.FRAMEBUFFER_DEPTH_ENABLED | CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR);
             } else {
                 framebuffer = new CustomFramebuffer(
-                    Math.round(width),
-                    Math.round(height),
-                    CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR); //TODO
+                        Math.round(width),
+                        Math.round(height),
+                        CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR); // TODO
             }
             framebufferList.add(framebuffer);
 
@@ -93,7 +96,7 @@ public class BloomShader {
     public void bind() {
         CustomFramebuffer mainFramebuffer = framebuffers[0];
         if (mc.displayWidth != mainFramebuffer.framebufferWidth
-            || mc.displayHeight != mainFramebuffer.framebufferHeight) {
+                || mc.displayHeight != mainFramebuffer.framebufferHeight) {
             for (CustomFramebuffer framebuffer : framebuffers) {
                 framebuffer.checkDeleteFramebuffer();
             }
@@ -107,8 +110,7 @@ public class BloomShader {
     }
 
     public static void unbind() {
-        mc.getFramebuffer()
-            .bindFramebuffer(false);
+        mc.getFramebuffer().bindFramebuffer(false);
     }
 
     @SubscribeEvent
@@ -136,9 +138,9 @@ public class BloomShader {
             framebuffer.clearBindFramebuffer();
             framebuffer.setupViewport();
             GL20.glUniform2f(
-                uTexelSize_downscale,
-                1f / framebuffer.framebufferWidth,
-                1f / framebuffer.framebufferHeight);
+                    uTexelSize_downscale,
+                    1f / framebuffer.framebufferWidth,
+                    1f / framebuffer.framebufferHeight);
 
             PostProcessingHelper.drawFullscreenQuad();
 
@@ -157,12 +159,10 @@ public class BloomShader {
             PostProcessingHelper.drawFullscreenQuad();
         }
 
-        mc.getFramebuffer()
-            .bindFramebuffer(false);
+        mc.getFramebuffer().bindFramebuffer(false);
         mainFramebuffer.applyTonemapping(this.multiplier);
         mainFramebuffer.clearBindFramebuffer();
-        mc.getFramebuffer()
-            .bindFramebuffer(false);
+        mc.getFramebuffer().bindFramebuffer(false);
 
         ShaderProgram.clear();
 
