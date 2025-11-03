@@ -9,7 +9,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import cpw.mods.fml.common.eventhandler.EventPriority;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,6 +22,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHel
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.SharedDepthFramebuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class BloomShader {
@@ -121,7 +121,7 @@ public class BloomShader {
     }
 
     // LOWEST to make it apply after every other RenderWorldLastEvent renderer
-    @SubscribeEvent (priority = EventPriority.LOWEST)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onOverlayDraw(RenderWorldLastEvent event) {
         if (!needsRendering) return;
 
