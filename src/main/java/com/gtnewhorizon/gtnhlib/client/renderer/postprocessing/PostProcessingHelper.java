@@ -1,13 +1,14 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
+import net.coderbot.iris.rendertarget.IRenderTargetExt;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.shader.Framebuffer;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
-import net.coderbot.iris.rendertarget.IRenderTargetExt;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.shader.Framebuffer;
 
 public class PostProcessingHelper {
 
@@ -26,7 +27,10 @@ public class PostProcessingHelper {
     }
 
     /**
-     * This relies on bindFullscreenVAO being called prior to this method call. Else it won't do anything
+     * This relies on bindFullscreenVAO being called prior to this method call. Else it won't do anything. <br>
+     * Keep in mind that the vertices are a fullscreen in opengl space (-1..1), meaning your shader shouldn't multiply
+     * the vertex position by the ModelViewProjection matrix. This also means that you don't need to mess with the
+     * translations in order to render the quad.
      */
     public static void drawFullscreenQuad() {
         fullscreenQuadVAO.draw();
@@ -41,7 +45,8 @@ public class PostProcessingHelper {
     }
 
     public static int getDepthTexture(Framebuffer framebuffer) {
-        if (!Mods.ANGELICA) throw new UnsupportedOperationException("The depth texture requires Angelica to be loaded.");
+        if (!Mods.ANGELICA)
+            throw new UnsupportedOperationException("The depth texture requires Angelica to be loaded.");
         return ((IRenderTargetExt) framebuffer).iris$getDepthTextureId();
     }
 
