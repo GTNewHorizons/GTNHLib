@@ -1,9 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_DEPTH_ENABLED;
-import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_HDR_COLORS;
-import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_NO_ALPHA_CHANNEL;
-import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.FRAMEBUFFER_TEXTURE_LINEAR;
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.DEPTH_ENABLED;
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.HDR_COLORS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.NO_ALPHA_CHANNEL;
+import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.TEXTURE_LINEAR;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ import org.lwjgl.opengl.GL20;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHelper;
-import com.gtnewhorizon.gtnhlib.client.renderer.shader.AutoShaderUpdater;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -84,14 +83,12 @@ public class BloomShader {
                 framebuffer = new CustomFramebuffer(
                         Math.round(width),
                         Math.round(height),
-                        FRAMEBUFFER_DEPTH_ENABLED | FRAMEBUFFER_TEXTURE_LINEAR
-                                | FRAMEBUFFER_HDR_COLORS
-                                | FRAMEBUFFER_NO_ALPHA_CHANNEL);
+                        DEPTH_ENABLED | TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL);
             } else {
                 framebuffer = new CustomFramebuffer(
                         Math.round(width),
                         Math.round(height),
-                    FRAMEBUFFER_DEPTH_ENABLED | FRAMEBUFFER_TEXTURE_LINEAR | FRAMEBUFFER_HDR_COLORS | FRAMEBUFFER_NO_ALPHA_CHANNEL); // TODO
+                        TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL);
             }
             framebufferList.add(framebuffer);
 

@@ -1,8 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
-import net.minecraft.client.renderer.Tessellator;
-
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
