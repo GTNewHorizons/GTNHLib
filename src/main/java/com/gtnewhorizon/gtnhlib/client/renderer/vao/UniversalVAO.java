@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.opengl;
+package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
 import java.nio.IntBuffer;
 
@@ -17,6 +17,10 @@ import org.lwjgl.opengl.GLContext;
  * @author eigenraven
  */
 public final class UniversalVAO {
+
+    public static VaoFunctions getImplementation() {
+        return FUNCTIONS.get();
+    }
 
     /**
      * Resets the cached VAO implementation for this thread, any further method calls will query the GL context
@@ -146,23 +150,6 @@ public final class UniversalVAO {
             };
         }
     };
-
-    private interface VaoFunctions {
-
-        int getCurrentBinding();
-
-        int glGenVertexArrays();
-
-        void glGenVertexArrays(IntBuffer output);
-
-        void glDeleteVertexArrays(int id);
-
-        void glDeleteVertexArrays(IntBuffer ids);
-
-        boolean glIsVertexArray(int id);
-
-        void glBindVertexArray(int id);
-    }
 
     private static final class VaoGL3 implements VaoFunctions {
 

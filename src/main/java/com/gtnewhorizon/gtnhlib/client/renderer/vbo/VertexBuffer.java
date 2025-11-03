@@ -85,7 +85,7 @@ public class VertexBuffer implements AutoCloseable {
         GL11.glPopMatrix();
     }
 
-    public void draw() {
+    public final void draw() {
         GL11.glDrawArrays(drawMode, 0, this.vertexCount);
     }
 

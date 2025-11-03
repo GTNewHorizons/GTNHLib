@@ -11,11 +11,14 @@ import cpw.mods.fml.relauncher.SideOnly;
 public interface IModelCustomExt extends IModelCustom {
 
     @SideOnly(CLIENT)
-    void rebuildVBO();
-
-    @SideOnly(CLIENT)
     void renderAllVBO();
 
     @SideOnly(CLIENT)
+    void renderAllVAO();
+
+    @SideOnly(CLIENT)
     void setVertexFormat(VertexFormat format);
+
+    @SideOnly(CLIENT)
+    void setVertexFormat(VertexFormat format, boolean vao);
 }
