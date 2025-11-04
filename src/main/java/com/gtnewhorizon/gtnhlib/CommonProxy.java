@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
+import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
