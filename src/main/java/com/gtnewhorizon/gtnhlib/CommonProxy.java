@@ -6,9 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
-import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
-import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
-import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
@@ -40,11 +37,6 @@ public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         AutoEventBus.executePhase(Phase.PRE);
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
-        try {
-            ConfigurationManager.registerConfig(GTNHLibConfig.class);
-        } catch (ConfigException e) {
-            GTNHLib.LOG.error("Failed to register GTNHLib config!", e);
-        }
 
         BlockPropertyInit.init();
     }

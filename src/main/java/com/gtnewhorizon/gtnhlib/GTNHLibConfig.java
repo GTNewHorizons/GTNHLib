@@ -9,4 +9,8 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(false)
     public static boolean ignoreNEIVersion;
 
+    @Config.Comment("Font rendering replacements")
+    @Config.DefaultBoolean(true)
+    public static boolean enableFontRendererMixin;
+
 }
