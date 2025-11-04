@@ -21,9 +21,9 @@ public class VertexArrayBuffer extends VertexBuffer {
         super(format, drawMode);
         this.vaoID = UniversalVAO.genVertexArrays();
         VAO.glBindVertexArray(vaoID);
-        super.bind();
+        bindVBO();
         format.setupBufferState(0L);
-        super.unbind();
+        unbindVBO();
         VAO.glBindVertexArray(0);
     }
 
@@ -46,9 +46,9 @@ public class VertexArrayBuffer extends VertexBuffer {
     public final void upload(ByteBuffer buffer, int vertexCount, int type) {
         if (this.id == -1) return;
         this.vertexCount = vertexCount;
-        super.bind();
+        bindVBO();
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, type);
-        super.unbind();
+        unbindVBO();
     }
 
     @Override
@@ -69,6 +69,14 @@ public class VertexArrayBuffer extends VertexBuffer {
     @Override
     public final void cleanupState() {
         unbind();
+    }
+
+    public final void bindVBO() {
+        super.bind();
+    }
+
+    public final void unbindVBO() {
+        super.unbind();
     }
 
     public int getVaoID() {

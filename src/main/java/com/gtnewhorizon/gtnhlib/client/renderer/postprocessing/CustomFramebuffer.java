@@ -36,7 +36,6 @@ public class CustomFramebuffer {
     public static final int TEXTURE_LINEAR = 0x8;
     public static final int NO_ALPHA_CHANNEL = 0x10;
     public static final int HDR_COLORS = 0x20;
-    public static final int SHARED_DEPTH_ATTACHMENT = 0x40;
 
     // field_153198_e = GL30.GL_FRAMEBUFFER
     // field_153200_g = GL30.GL_COLOR_ATTACHMENT0
@@ -70,7 +69,7 @@ public class CustomFramebuffer {
             if (isEnabled(NO_ALPHA_CHANNEL)) {
                 return GL30.GL_RGB16F;
             } else {
-                return GL11.GL_RGBA16;
+                return GL30.GL_RGBA16F;
             }
         } else {
             if (isEnabled(NO_ALPHA_CHANNEL)) {
@@ -91,6 +90,12 @@ public class CustomFramebuffer {
 
     public void createBindFramebuffer(int width, int height) {
         this.createFramebuffer(width, height);
+        this.bindFramebuffer();
+    }
+
+    public void createBindFramebuffer(int width, int height, boolean viewport) {
+        this.createFramebuffer(width, height);
+        this.bindFramebuffer(viewport);
     }
 
     protected void createFramebuffer(int width, int height) {
@@ -105,9 +110,10 @@ public class CustomFramebuffer {
 
         this.framebufferTexture = createFramebufferAttachment();
 
-        this.depthAttachment = createDepthAttachment(width, height);
+        createDepthAttachment(width, height);
 
         clearCurrentFramebuffer();
+        unbindFramebuffer();
     }
 
     protected void createDepthAttachment(int width, int height) {
@@ -241,7 +247,7 @@ public class CustomFramebuffer {
         this.unbindFramebufferTexture();
         this.unbindFramebuffer();
 
-        if (this.depthAttachment > -1) {
+        if (this.depthAttachment > 0) {
             if (isEnabled(DEPTH_TEXTURE)) {
                 GL11.glDeleteTextures(this.depthAttachment);
             } else {
@@ -250,12 +256,11 @@ public class CustomFramebuffer {
             this.depthAttachment = -1;
         }
 
-        if (this.framebufferTexture > -1) {
+        if (this.framebufferTexture > 0) {
             GL11.glDeleteTextures(this.framebufferTexture);
             this.framebufferTexture = -1;
         }
 
-        OpenGlHelper.func_153171_g(GL30.GL_FRAMEBUFFER, 0);
         OpenGlHelper.func_153174_h(this.framebufferObject);
         this.framebufferObject = -1;
     }
@@ -299,6 +304,14 @@ public class CustomFramebuffer {
 
     public void bindFramebuffer() {
         OpenGlHelper.func_153171_g(GL30.GL_FRAMEBUFFER, this.framebufferObject);
+    }
+
+    public void bindReadFramebuffer() {
+        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, this.framebufferObject);
+    }
+
+    public void bindDrawFramebuffer() {
+        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, this.framebufferObject);
     }
 
     public void clearBindFramebuffer() {
@@ -353,7 +366,7 @@ public class CustomFramebuffer {
      * Note: glReadPixels is a very slow and stalling process.
      */
     public void readTexturePixels(IntBuffer pixelBuffer, int[] pixels) {
-        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
+        bindReadFramebuffer();
         pixelBuffer.clear();
         GL11.glReadPixels(
                 0,
@@ -520,7 +533,7 @@ public class CustomFramebuffer {
         int[] pixelValues = new int[width * height];
         IntBuffer stencilBuffer = BufferUtils.createIntBuffer(pixelValues.length);
 
-        this.bindFramebuffer();
+        this.bindReadFramebuffer();
         GL11.glReadPixels(0, 0, width, height, GL11.GL_STENCIL_INDEX, GL11.GL_FLOAT, stencilBuffer);
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -546,7 +559,7 @@ public class CustomFramebuffer {
         int[] pixelValues = new int[width * height];
         FloatBuffer depthBuffer = BufferUtils.createFloatBuffer(pixelValues.length);
 
-        this.bindFramebuffer();
+        this.bindReadFramebuffer();
         GL11.glReadPixels(0, 0, width, height, component, GL11.GL_FLOAT, depthBuffer);
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
