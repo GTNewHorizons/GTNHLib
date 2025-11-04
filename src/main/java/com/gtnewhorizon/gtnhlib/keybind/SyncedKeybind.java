@@ -233,4 +233,9 @@ public final class SyncedKeybind {
     public int getKeyCode() {
         return keybinding != null ? keybinding.getKeyCode() : keyCode;
     }
+
+    @SideOnly(Side.CLIENT)
+    public KeyBinding getKeybinding() {
+        return keybinding;
+    }
 }
