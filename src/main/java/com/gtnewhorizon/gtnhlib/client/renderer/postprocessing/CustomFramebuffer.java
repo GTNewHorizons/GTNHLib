@@ -222,7 +222,7 @@ public class CustomFramebuffer {
                 this.framebufferWidth,
                 this.framebufferHeight,
                 0,
-                GL11.GL_RGBA,
+                isEnabled(NO_ALPHA_CHANNEL) ? GL11.GL_RGB : GL11.GL_RGBA,
                 GL11.GL_UNSIGNED_BYTE,
                 (ByteBuffer) null);
         final int filter = getTextureFilter();
@@ -280,18 +280,53 @@ public class CustomFramebuffer {
     public void copyDepthFromFramebuffer(Framebuffer other) {
         OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, other.framebufferObject);
         OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, framebufferObject);
-        GL30.glBlitFramebuffer(
-                0,
-                0,
+        blitFramebuffer(
                 other.framebufferWidth,
                 other.framebufferHeight,
-                0,
-                0,
                 framebufferWidth,
                 framebufferHeight,
-                GL11.GL_DEPTH_BUFFER_BIT,
-                GL11.GL_NEAREST);
+                GL11.GL_DEPTH_BUFFER_BIT);
 
+    }
+
+    public void copyDepthToFramebuffer(Framebuffer other) {
+        // TODO
+        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
+        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, other.framebufferObject);
+        blitFramebuffer(
+                framebufferWidth,
+                framebufferHeight,
+                other.framebufferWidth,
+                other.framebufferHeight,
+                GL11.GL_DEPTH_BUFFER_BIT);
+    }
+
+    public void copyStencilFromFramebuffer(Framebuffer other) {
+        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, other.framebufferObject);
+        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, framebufferObject);
+        blitFramebuffer(
+                other.framebufferWidth,
+                other.framebufferHeight,
+                framebufferWidth,
+                framebufferHeight,
+                GL11.GL_STENCIL_BUFFER_BIT);
+
+    }
+
+    public void copyStencilToFramebuffer(Framebuffer other) {
+        // TODO
+        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
+        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, other.framebufferObject);
+        blitFramebuffer(
+                framebufferWidth,
+                framebufferHeight,
+                other.framebufferWidth,
+                other.framebufferHeight,
+                GL11.GL_STENCIL_BUFFER_BIT);
+    }
+
+    public void blitFramebuffer(int srcWidth, int srcHeight, int dstWidth, int dstHeight, int bit) {
+        GL30.glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, dstWidth, dstHeight, bit, GL11.GL_NEAREST);
     }
 
     public void bindFramebuffer(boolean viewport) {
