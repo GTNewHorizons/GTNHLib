@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
+import static com.gtnewhorizon.gtnhlib.ClientProxy.mc;
 import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.DEPTH_ENABLED;
 import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.HDR_COLORS;
 import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.NO_ALPHA_CHANNEL;
@@ -8,10 +9,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFram
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.common.MinecraftForge;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -22,13 +19,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHel
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.SharedDepthFramebuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-
-public class BloomShader {
+public class BloomShader extends PostProcessingRenderer {
 
     private static BloomShader instance;
-    private static final Minecraft mc = Minecraft.getMinecraft();
 
     private CustomFramebuffer[] framebuffers;
 
@@ -40,9 +33,8 @@ public class BloomShader {
 
     private float multiplier;
 
-    private boolean needsRendering;
-
     public BloomShader() {
+        super();
         downscaleProgram = new ShaderProgram(
                 GTNHLib.RESOURCE_DOMAIN,
                 "shaders/bloom/downscale.vert.glsl",
@@ -85,8 +77,7 @@ public class BloomShader {
                 framebuffer = new SharedDepthFramebuffer(
                         Math.round(width),
                         Math.round(height),
-                        DEPTH_ENABLED | TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL,
-                        mc.getFramebuffer());
+                        DEPTH_ENABLED | TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL);
             } else {
                 framebuffer = new CustomFramebuffer(
                         Math.round(width),
@@ -101,7 +92,15 @@ public class BloomShader {
         framebuffers = framebufferList.toArray(new CustomFramebuffer[0]);
     }
 
-    public void bind() {
+    public static BloomShader getInstance() {
+        if (instance == null) {
+            instance = new BloomShader();
+        }
+        return instance;
+    }
+
+    @Override
+    public void bindFramebuffer() {
         CustomFramebuffer mainFramebuffer = framebuffers[0];
         if (mc.displayWidth != mainFramebuffer.framebufferWidth
                 || mc.displayHeight != mainFramebuffer.framebufferHeight) {
@@ -116,16 +115,9 @@ public class BloomShader {
         mainFramebuffer.bindFramebuffer();
     }
 
-    public static void unbind() {
-        mc.getFramebuffer().bindFramebuffer(false);
-    }
-
-    // LOWEST to make it apply after every other RenderWorldLastEvent renderer
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onOverlayDraw(RenderWorldLastEvent event) {
-        if (!needsRendering) return;
-
-        needsRendering = false;
+    @Override
+    public void render(float partialTicks) {
+        PostProcessingHelper.bindFullscreenVAO();
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GL11.glColor4f(1, 1, 1, 1);
@@ -133,8 +125,6 @@ public class BloomShader {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
         GL11.glDisable(GL11.GL_ALPHA_TEST);
-
-        PostProcessingHelper.bindFullscreenVAO();
 
         final CustomFramebuffer mainFramebuffer = framebuffers[0];
 
@@ -180,13 +170,5 @@ public class BloomShader {
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         PostProcessingHelper.unbindVAO();
-    }
-
-    public static BloomShader getInstance() {
-        if (instance == null) {
-            instance = new BloomShader();
-            MinecraftForge.EVENT_BUS.register(instance);
-        }
-        return instance;
     }
 }

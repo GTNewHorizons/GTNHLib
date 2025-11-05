@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
 import net.coderbot.iris.rendertarget.IRenderTargetExt;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 
@@ -21,6 +22,14 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
     public SharedDepthFramebuffer(int width, int height, int settings, Framebuffer linkedBuffer) {
         super(width, height, settings);
         this.linkedBuffer = linkedBuffer;
+    }
+
+    public SharedDepthFramebuffer(int settings) {
+        this(settings, Minecraft.getMinecraft().getFramebuffer());
+    }
+
+    public SharedDepthFramebuffer(int width, int height, int settings) {
+        this(width, height, settings, Minecraft.getMinecraft().getFramebuffer());
     }
 
     @Override
