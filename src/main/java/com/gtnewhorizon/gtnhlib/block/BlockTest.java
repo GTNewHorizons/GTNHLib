@@ -16,10 +16,16 @@ public class BlockTest extends Block {
         // it's wood
         setHardness(2.0F);
         setResistance(5.0F);
+        setLightOpacity(255);
     }
 
     @Override
     public boolean isOpaqueCube() {
+        return false;
+    }
+
+    @Override
+    public boolean renderAsNormalBlock() {
         return false;
     }
 

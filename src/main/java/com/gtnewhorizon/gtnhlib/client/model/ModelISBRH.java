@@ -82,7 +82,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 final float g = (color >> 8 & 255) / 255f;
                 final float b = (color >> 16 & 255) / 255f;
 
-                final int lm = getLightMap(block, quad, dir, world, x, y, z);
+                final int lm = getLightMap(block, quad, world, x, y, z);
                 tesselator.setBrightness(lm);
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
@@ -128,38 +128,34 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         return ret;
     }
 
-    private int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
-            int z) {
+    private int getLightMap(Block block, ModelQuadView quad, IBlockAccess world, int x, int y, int z) {
+        final var dir = quad.getLightFace();
+
         // If the face is aligned or external, pick light outside
         final float avgPos = getAveragePos(quad, dir);
-        switch (dir) {
-            case POS_X, POS_Y, POS_Z -> {
-                if (avgPos >= 1.0) {
-                    final int lx = x + dir.getStepX();
-                    final int ly = y + dir.getStepY();
-                    final int lz = z + dir.getStepZ();
-                    return block.getMixedBrightnessForBlock(world, lx, ly, lz);
-                }
-            }
-            case NEG_X, NEG_Y, NEG_Z -> {
-                if (avgPos <= 0.0) {
-                    final int lx = x + dir.getStepX();
-                    final int ly = y + dir.getStepY();
-                    final int lz = z + dir.getStepZ();
-                    return block.getMixedBrightnessForBlock(world, lx, ly, lz);
-                }
-            }
+        final var useOuterLight = switch (dir) {
+            case POS_X, POS_Y, POS_Z -> avgPos >= 1.0;
+            case NEG_X, NEG_Y, NEG_Z -> avgPos <= 0.0;
+            case UNASSIGNED -> throw new AssertionError("Light face should never be unassigned!");
+        };
+        if (useOuterLight) {
+            final int lx = x + dir.getStepX();
+            final int ly = y + dir.getStepY();
+            final int lz = z + dir.getStepZ();
+            return block.getMixedBrightnessForBlock(world, lx, ly, lz);
         }
 
         // The face is inset to some degree, pick self light (if transparent)
-        if (block.getLightOpacity(world, x, y, z) != 0) {
+        if (block.getLightOpacity(world, x, y, z) != 255) {
             return block.getMixedBrightnessForBlock(world, x, y, z);
         }
 
-        // ...or greatest among neighbors otherwise
+        // ...or greatest among neighbors otherwise. Skip the ones in the wrong direction, though.
         int lm = block.getMixedBrightnessForBlock(world, x, y, z);;
         for (int i = 0; i < 6; i++) {
             final var neighbor = DIRECTIONS[i];
+            if (neighbor == dir.getOpposite()) continue;
+
             final int lx = x + neighbor.getStepX();
             final int ly = y + neighbor.getStepY();
             final int lz = z + neighbor.getStepZ();
