@@ -1,8 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.PositionTextureVertex;
 import net.minecraft.client.model.TexturedQuad;
@@ -17,7 +14,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -143,13 +139,7 @@ public class BakedModelBuilder {
     }
 
     public VertexBuffer finish(VertexFormat format) {
-        VertexBuffer vertexBuffer = new VertexBuffer(format, GL11.GL_QUADS);
-        List<QuadView> quads = TessellatorManager.stopCapturingToPooledQuads();
-        ByteBuffer bytes = CapturingTessellator.quadsToBuffer(quads, format);
-        vertexBuffer.upload(bytes);
-        tessellator.clearQuads();
-
-        return vertexBuffer;
+        return TessellatorManager.stopCapturingToVBO(format);
     }
 
     // spotless:off
