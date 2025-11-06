@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "meta=2": { "model": "gtnhlib:blocks/old_stairs", "y": 270 },
+    "meta=3": { "model": "gtnhlib:blocks/old_stairs", "y": 90 },
+    "meta=4": { "model": "gtnhlib:blocks/old_stairs", "y": 0 },
+    "meta=5": { "model": "gtnhlib:blocks/old_stairs", "y": 180 }
+  }
+}

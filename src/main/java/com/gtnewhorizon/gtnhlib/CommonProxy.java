@@ -1,12 +1,13 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.block.FullTestBlock;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
-import com.gtnewhorizon.gtnhlib.block.BlockTest;
+import com.gtnewhorizon.gtnhlib.block.StairTestBlock;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
@@ -41,7 +42,8 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
 
         if (GTNHLibConfig.enableTestBlocks) {
-            GameRegistry.registerBlock(new BlockTest(), "model_test");
+            GameRegistry.registerBlock(new FullTestBlock(), "full_test_model");
+            GameRegistry.registerBlock(new StairTestBlock(), "stair_test_model");
         }
     }
 
