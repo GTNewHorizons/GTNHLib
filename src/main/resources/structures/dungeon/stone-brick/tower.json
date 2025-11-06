@@ -1,0 +1,332 @@
+{
+  "DataVersion": 1,
+  "aabb": {
+    "origin": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "a": {
+      "x": -5,
+      "y": 0,
+      "z": 5
+    },
+    "b": {
+      "x": 6,
+      "y": 21,
+      "z": -6
+    }
+  },
+  "budget": [
+    {
+      "action": "reset-random",
+      "category": "stairs1",
+      "lower": 4,
+      "upper": 8
+    }
+  ],
+  "sockets": [
+    {
+      "pos": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "connects-to": ["stairs1"],
+      "forward": "DOWN"
+    }
+  ],
+  "entities": [],
+  "blocks": {
+    "offsetX": -5,
+    "offsetY": 0,
+    "offsetZ": -5,
+    "structure": [
+      [
+        "           ",
+        "           ",
+        "    AAA    ",
+        "   AAAAA   ",
+        "  AABBBAA  ",
+        "  AAAABAA  ",
+        "  AAACBAA  ",
+        "   AAAAA   ",
+        "    AAA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AAA    ",
+        "   ABBBA   ",
+        "  ABABBBA  ",
+        "  ABDABBA  ",
+        "  ABBBBBA  ",
+        "   ABBBA   ",
+        "    ABA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AEA    ",
+        "   ABBBA   ",
+        "  ABBFABA  ",
+        "  EBBABBE  ",
+        "  ABBGBBA  ",
+        "   ABBBA   ",
+        "    ABA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AEA    ",
+        "   ABBBA   ",
+        "  ABBBBBA  ",
+        "  EBBAHBE  ",
+        "  ABBBABA  ",
+        "   ABBBA   ",
+        "    AAA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AEA    ",
+        "   ABBBA   ",
+        "  ABBBBBA  ",
+        "  EBBABBE  ",
+        "  ABACBBA  ",
+        "   ABBBA   ",
+        "    AAA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AAA    ",
+        "   ABBBA   ",
+        "  ABABBBA  ",
+        "  ABDABBA  ",
+        "  ABBBBBA  ",
+        "   ABBBA   ",
+        "    AAA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AEA    ",
+        "   ABBBA   ",
+        "  ABBFABA  ",
+        "  EBBABBE  ",
+        "  ABBGBBA  ",
+        "   ABBBA   ",
+        "    AEA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AEA    ",
+        "   ABBBA   ",
+        "  ABBBBBA  ",
+        "  EBBAHBE  ",
+        "  ABBBABA  ",
+        "   ABBBA   ",
+        "    AEA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AAA    ",
+        "   ABBBA   ",
+        "  ABBBBBA  ",
+        "  ABBABBA  ",
+        "  ABACBBA  ",
+        "   ABBBA   ",
+        "    AAA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "    AAA    ",
+        "   AAAAA   ",
+        "  AAAAAAA  ",
+        " AAAAABAAA ",
+        " AAADABAAA ",
+        " AAABBBAAA ",
+        "  AAAAAAA  ",
+        "   AAAAA   ",
+        "    AAA    ",
+        "           "
+      ],
+      [
+        "     A     ",
+        "    AAA    ",
+        "   ABBBA   ",
+        "  ABBBBBA  ",
+        " ABBBIBBBA ",
+        "AABBBABBBAA",
+        " ABBBGBBBA ",
+        "  ABBBBBA  ",
+        "   ABBBA   ",
+        "    AAA    ",
+        "     A     "
+      ],
+      [
+        "     A     ",
+        "     A     ",
+        "  AABBBAA  ",
+        "  ABBBBBA  ",
+        "           ",
+        "AABBBABBBAA",
+        "           ",
+        "  ABBBBBA  ",
+        "  AABBBAA  ",
+        "     A     ",
+        "     A     "
+      ],
+      [
+        "     A     ",
+        "     A     ",
+        "  AABBBAA  ",
+        "  ABBBBBA  ",
+        "           ",
+        "AABBBABBBAA",
+        "           ",
+        "  ABBBBBA  ",
+        "  AABBBAA  ",
+        "     A     ",
+        "     A     "
+      ],
+      [
+        "     A     ",
+        "    AAA    ",
+        "  HABABAH  ",
+        "  ABBABBA  ",
+        " ABBBABBBA ",
+        "AAAAAAAAAAA",
+        " ABBBABBBA ",
+        "  ABBABBA  ",
+        "  DABABAD  ",
+        "    AAA    ",
+        "     A     "
+      ],
+      [
+        "     H     ",
+        "    AAA    ",
+        "   ABBBA   ",
+        "  ABBBBBA  ",
+        " ABBBIBBBA ",
+        "FABBBABBBAC",
+        " ABBBGBBBA ",
+        "  ABBBBBA  ",
+        "   ABBBA   ",
+        "    AAA    ",
+        "     D     "
+      ],
+      [
+        "           ",
+        "    FHC    ",
+        "   HAAAH   ",
+        "  FABBBAC  ",
+        " HABBBBBAH ",
+        " FABBABBAC ",
+        " DABBBBBAD ",
+        "  FABBBAC  ",
+        "   DAAAD   ",
+        "    FDC    ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    AAA    ",
+        "   ABBBA   ",
+        "  ABBBBBA  ",
+        "  ABBABBA  ",
+        "  ABBBBBA  ",
+        "   ABBBA   ",
+        "    AAA    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "    FHC    ",
+        "   HAAAH   ",
+        "  HABBBAH  ",
+        "  FABABAC  ",
+        "  DABBBAD  ",
+        "   DAAAD   ",
+        "    FDC    ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "           ",
+        "    FHC    ",
+        "   HAAAH   ",
+        "   FAAAC   ",
+        "   DAAAD   ",
+        "    FDC    ",
+        "           ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "           ",
+        "           ",
+        "    HHC    ",
+        "    FAC    ",
+        "    FDD    ",
+        "           ",
+        "           ",
+        "           ",
+        "           "
+      ],
+      [
+        "           ",
+        "           ",
+        "           ",
+        "           ",
+        "           ",
+        "     A     ",
+        "           ",
+        "           ",
+        "           ",
+        "           ",
+        "           "
+      ]
+    ]
+  },
+  "palette": [
+    "minecraft:stonebrick:0",
+    "minecraft:air:0",
+    "minecraft:stone_brick_stairs:1",
+    "minecraft:stone_brick_stairs:3",
+    "minecraft:iron_bars:0",
+    "minecraft:stone_brick_stairs:0",
+    "minecraft:torch:3",
+    "minecraft:stone_brick_stairs:2",
+    "minecraft:torch:4"
+  ],
+  "weight": 1.0
+}

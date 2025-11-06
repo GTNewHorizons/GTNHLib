@@ -1,0 +1,140 @@
+{
+  "DataVersion": 1,
+  "aabb": {
+    "origin": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "a": {
+      "x": 3,
+      "y": -1,
+      "z": -2
+    },
+    "b": {
+      "x": -3,
+      "y": 4,
+      "z": 2
+    }
+  },
+  "budget": [
+    {
+      "action": "consume",
+      "category": "tunnel1",
+      "amount": 1
+    }
+  ],
+  "sockets": [
+    {
+      "pos": {
+        "x": 0,
+        "y": 1,
+        "z": -3
+      },
+      "category": "tunnel1",
+      "forward": "NORTH",
+      "budget": []
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 1,
+        "z": -2
+      },
+      "connects-to": ["tunnel1"],
+      "forward": "NORTH",
+      "budget": []
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 1,
+        "z": 3
+      },
+      "category": "tunnel1",
+      "forward": "SOUTH",
+      "budget": []
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 1,
+        "z": 2
+      },
+      "connects-to": ["tunnel1"],
+      "forward": "SOUTH",
+      "budget": []
+    }
+  ],
+  "entities": [],
+  "blocks": {
+    "offsetX": -3,
+    "offsetY": -1,
+    "offsetZ": -3,
+    "structure": [
+      [
+        " AAAAA ",
+        " ACCCA ",
+        " ACCCA ",
+        " ACCCA ",
+        " ACCCA ",
+        " ACCCA ",
+        " AAAAA "
+      ],
+      [
+        " ABBBA ",
+        "DBBBBBD",
+        "EBBBBBE",
+        "EBBBBBE",
+        "EBBBBBE",
+        "DBBBBBD",
+        " ABBBA "
+      ],
+      [
+        " ABBBA ",
+        "DBBBBBD",
+        "EBBBBBE",
+        "EBBBBBE",
+        "EBBBBBE",
+        "DBBBBBD",
+        " ABBBA "
+      ],
+      [
+        " ABBBA ",
+        "DBBBBBD",
+        "EBBBBBE",
+        "EBBBBBE",
+        "EBBBBBE",
+        "DBBBBBD",
+        " ABBBA "
+      ],
+      [
+        " AAAAA ",
+        " ABBBA ",
+        " ABBBA ",
+        " ABBBA ",
+        " ABBBA ",
+        " ABBBA ",
+        " AAAAA "
+      ],
+      [
+        "       ",
+        "  CCC  ",
+        "  CFC  ",
+        "  CCC  ",
+        "  CFC  ",
+        "  CCC  ",
+        "       "
+      ]
+    ]
+  },
+  "palette": [
+    "minecraft:stonebrick:0",
+    "minecraft:air:0",
+    "minecraft:planks:1",
+    "minecraft:log:0",
+    "minecraft:planks:0",
+    "minecraft:glowstone:0"
+  ],
+  "weight": 1.0
+}

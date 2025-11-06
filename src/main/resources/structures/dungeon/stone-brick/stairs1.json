@@ -1,0 +1,92 @@
+{
+  "DataVersion": 1,
+  "aabb": {
+    "origin": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "a": {
+      "x": 2,
+      "y": 4,
+      "z": 2
+    },
+    "b": {
+      "x": -2,
+      "y": 0,
+      "z": -2
+    }
+  },
+  "budget": [
+    {
+      "action": "consume",
+      "category": "stairs1",
+      "amount": 1
+    }
+  ],
+  "sockets": [
+    {
+      "pos": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "connects-to": ["stairs1"],
+      "forward": "DOWN"
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 3,
+        "z": 0
+      },
+      "category": "stairs1",
+      "forward": "UP"
+    }
+  ],
+  "entities": [],
+  "blocks": {
+    "offsetX": -2,
+    "offsetY": 0,
+    "offsetZ": -2,
+    "structure": [
+      [
+        "BBBBB",
+        "BAAAB",
+        "BABAB",
+        "BBFAB",
+        "BBBBB"
+      ],
+      [
+        "BBBBB",
+        "BBAAB",
+        "BDBAB",
+        "BAAAB",
+        "BBBBB"
+      ],
+      [
+        "BBBBB",
+        "BACBB",
+        "BABAB",
+        "BAAAB",
+        "BBBBB"
+      ],
+      [
+        "BBBBB",
+        "BAAAB",
+        "BABEB",
+        "BAABB",
+        "BBBBB"
+      ]
+    ]
+  },
+  "palette": [
+    "minecraft:air:0",
+    "minecraft:stonebrick:0",
+    "minecraft:stone_brick_stairs:0",
+    "minecraft:stone_brick_stairs:3",
+    "minecraft:stone_brick_stairs:2",
+    "minecraft:stone_brick_stairs:1"
+  ],
+  "weight": 1.0
+}

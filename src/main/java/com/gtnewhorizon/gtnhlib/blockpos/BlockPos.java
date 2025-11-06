@@ -65,6 +65,18 @@ public class BlockPos extends Vector3i implements IMutableBlockPos {
     }
 
     @Override
+    public BlockPos add(ForgeDirection d) {
+        add(d.offsetX, d.offsetY, d.offsetZ);
+        return this;
+    }
+
+    @Override
+    public BlockPos sub(ForgeDirection d) {
+        sub(d.offsetX, d.offsetY, d.offsetZ);
+        return this;
+    }
+
+    @Override
     public long asLong() {
         return CoordinatePacker.pack(this.x, this.y, this.z);
     }

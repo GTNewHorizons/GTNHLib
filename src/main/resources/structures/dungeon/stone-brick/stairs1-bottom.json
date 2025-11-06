@@ -1,0 +1,199 @@
+{
+  "DataVersion": 1,
+  "aabb": {
+    "origin": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "a": {
+      "x": 4,
+      "y": 0,
+      "z": -4
+    },
+    "b": {
+      "x": -4,
+      "y": 5,
+      "z": 4
+    }
+  },
+  "budget": [
+    {
+      "action": "require-exact",
+      "category": "stairs1",
+      "amount": 0
+    },
+    {
+      "action": "reset",
+      "category": "stairs1",
+      "amount": 0
+    }
+  ],
+  "sockets": [
+    {
+      "pos": {
+        "x": 0,
+        "y": 5,
+        "z": 0
+      },
+      "category": "stairs1",
+      "forward": "UP"
+    },
+    {
+      "pos": {
+        "x": 3,
+        "y": 2,
+        "z": 0
+      },
+      "connects-to": ["tunnel1"],
+      "forward": "EAST",
+      "budget": [
+        {
+          "action": "reset-random",
+          "category": "tunnel1",
+          "upper": 10,
+          "lower": 3
+        }
+      ]
+    },
+    {
+      "pos": {
+        "x": -3,
+        "y": 2,
+        "z": 0
+      },
+      "connects-to": ["tunnel1"],
+      "forward": "WEST",
+      "budget": [
+        {
+          "action": "reset-random",
+          "category": "tunnel1",
+          "upper": 10,
+          "lower": 3
+        }
+      ]
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 2,
+        "z": 3
+      },
+      "connects-to": ["tunnel1"],
+      "forward": "SOUTH",
+      "budget": [
+        {
+          "action": "reset-random",
+          "category": "tunnel1",
+          "upper": 10,
+          "lower": 3
+        }
+      ]
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 2,
+        "z": -3
+      },
+      "connects-to": ["tunnel1"],
+      "forward": "NORTH",
+      "budget": [
+        {
+          "action": "reset-random",
+          "category": "tunnel1",
+          "upper": 10,
+          "lower": 3
+        }
+      ]
+    }
+  ],
+  "weight": 1.0,
+  "entities": [],
+  "blocks": {
+    "offsetX": -4,
+    "offsetY": 0,
+    "offsetZ": -4,
+    "structure": [
+      [
+        "  BBBBB  ",
+        " BBBBBBB ",
+        "BBBBBBBBB",
+        "BBBBBBBBB",
+        "BBBBBBBBB",
+        "BBBBBBBBB",
+        "BBBBBBBBB",
+        " BBBBBBB ",
+        "  BBBBB  "
+      ],
+      [
+        "  BCCCB  ",
+        " BAAAAAB ",
+        "BAAAAAAAB",
+        "CAAAAAAAC",
+        "CAAABGAAC",
+        "CAAAABAAC",
+        "BAAAAAAAB",
+        " BAAAAAB ",
+        "  BCCCB  "
+      ],
+      [
+        "  BCCCB  ",
+        " BAAAAAB ",
+        "BAAAAAAAB",
+        "CAAAEAAAC",
+        "CAAABAAAC",
+        "CAABKAAAC",
+        "BAAAAAAAB",
+        " BAAAAAB ",
+        "  BCCCB  "
+      ],
+      [
+        "  BCCCB  ",
+        " BAAAAAB ",
+        "BAAAAAAAB",
+        "CAABAAAAC",
+        "CAAHBAAAC",
+        "CAAAAAAAC",
+        "BAAAAAAAB",
+        " BAAAAAB ",
+        "  BCCCB  "
+      ],
+      [
+        "  BBBBB  ",
+        " BAADAAB ",
+        "BAAAAAAAB",
+        "BAAAFBAAB",
+        "BIAABAAJB",
+        "BAAADAAAB",
+        "BAAAAAAAB",
+        " BAAEAAB ",
+        "  BBBBB  "
+      ],
+      [
+        "  BBBBB  ",
+        " BBBBBBB ",
+        "BBBBBBBBB",
+        "BBBAAABBB",
+        "BBBABGBBB",
+        "BBBAABBBB",
+        "BBBBBBBBB",
+        " BBBBBBB ",
+        "  BBBBB  "
+      ]
+    ]
+  },
+  "palette": [
+    "minecraft:air:0",
+    "minecraft:stonebrick:0",
+    "minecraft:iron_bars:0",
+    "minecraft:torch:3",
+    "minecraft:torch:4",
+    "minecraft:stone_brick_stairs:0",
+    "minecraft:stone_brick_stairs:2",
+    "minecraft:stone_brick_stairs:3",
+    "minecraft:torch:1",
+    "minecraft:torch:2",
+    "minecraft:stone_brick_stairs:1"
+  ]
+}

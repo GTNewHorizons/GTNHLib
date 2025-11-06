@@ -23,7 +23,8 @@ public enum Mixins implements IMixins {
             .addClientMixins("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite").setPhase(Phase.EARLY)
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
-            .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin));
+            .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin)),
+    STRUCTURE_HOOKS(Side.COMMON, "MixinMapGenStructure", "MixinStructureStart");
 
     private final MixinBuilder builder;
 

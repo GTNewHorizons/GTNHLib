@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib;
 
+import java.io.IOException;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
@@ -15,7 +17,8 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
-
+import com.gtnewhorizon.gtnhlib.worldgen.structure.core.StructurePieceCommand;
+import com.gtnewhorizon.gtnhlib.worldgen.structure.test.TestStructurePieceGenerator;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -56,11 +59,19 @@ public class CommonProxy {
         }
     }
 
-    public void postInit(FMLPostInitializationEvent event) {}
+    public void postInit(FMLPostInitializationEvent event) {
+        try {
+            new TestStructurePieceGenerator();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {}
 
-    public void serverStarting(FMLServerStartingEvent event) {}
+    public void serverStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new StructurePieceCommand());
+    }
 
     public void serverStarted(FMLServerStartedEvent event) {}
 

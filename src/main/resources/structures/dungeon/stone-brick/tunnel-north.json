@@ -1,0 +1,112 @@
+{
+  "DataVersion": 1,
+  "aabb": {
+    "origin": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "a": {
+      "x": 3,
+      "y": -1,
+      "z": -2
+    },
+    "b": {
+      "x": -3,
+      "y": 4,
+      "z": 2
+    }
+  },
+  "sockets": [
+    {
+      "pos": {
+        "x": 0,
+        "y": 1,
+        "z": -2
+      },
+      "connects-to": ["tunnel1"],
+      "forward": "NORTH"
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 1,
+        "z": 3
+      },
+      "category": "tunnel1",
+      "forward": "SOUTH"
+    }
+  ],
+  "budget": [
+    {
+      "action": "consume",
+      "category": "tunnel1",
+      "amount": 1
+    }
+  ],
+  "entities": [],
+  "blocks": {
+    "offsetX": -3,
+    "offsetY": -1,
+    "offsetZ": -2,
+    "structure": [
+      [
+        " BCCCB ",
+        " BCCCB ",
+        " BCCCB ",
+        " BCCCB ",
+        " BCCCB ",
+        " BBBBB "
+      ],
+      [
+        "DAAAAAD",
+        "EAAAAAE",
+        "EAAAAAE",
+        "EAAAAAE",
+        "DAAAAAD",
+        " BAAAB "
+      ],
+      [
+        "DAAAAAD",
+        "EAAAAAE",
+        "EAAAAAE",
+        "EAAAAAE",
+        "DAAAAAD",
+        " BAAAB "
+      ],
+      [
+        "DAAAAAD",
+        "EAAAAAE",
+        "EAAAAAE",
+        "EAAAAAE",
+        "DAAAAAD",
+        " BAAAB "
+      ],
+      [
+        " BAAAB ",
+        " BAAAB ",
+        " BAAAB ",
+        " BAAAB ",
+        " BAAAB ",
+        " BBBBB "
+      ],
+      [
+        "  CCC  ",
+        "  CFC  ",
+        "  CCC  ",
+        "  CFC  ",
+        "  CCC  ",
+        "       "
+      ]
+    ]
+  },
+  "palette": [
+    "minecraft:air:0",
+    "minecraft:stonebrick:0",
+    "minecraft:planks:1",
+    "minecraft:log:0",
+    "minecraft:planks:0",
+    "minecraft:glowstone:0"
+  ],
+  "weight": 1.0
+}
