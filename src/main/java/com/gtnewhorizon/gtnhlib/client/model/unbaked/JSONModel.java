@@ -7,6 +7,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFlags.getQuadFlags;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
@@ -214,6 +215,9 @@ public class JSONModel implements UnbakedModel {
 
                 // Set AO
                 quad.setHasAmbientOcclusion(this.useAO);
+
+                // Set quad flags
+                quad.setFlags(getQuadFlags(quad, lightFace));
 
                 // Bake and add it
                 sidedQuadStore.computeIfAbsent(quad.getNormalFace(), d -> new ArrayList<>()).add(quad);
