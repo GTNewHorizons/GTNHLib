@@ -32,7 +32,6 @@ import lombok.Getter;
 @EventBusSubscriber(side = Side.CLIENT)
 public class ClientProxy extends CommonProxy {
 
-    private static boolean modelsBaked = false;
     public static boolean doThreadSafetyChecks = true;
     @Getter
     public static int currentServerViewDistance = 12;
