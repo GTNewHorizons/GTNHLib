@@ -11,6 +11,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
 import org.jetbrains.annotations.NotNull;
 
 public class StairTestBlock extends Block {
@@ -56,11 +57,7 @@ public class StairTestBlock extends Block {
         for (var dir : VALID_DIRECTIONS) {
             if (dir == DOWN || dir == getOrientation(meta).getOpposite()) continue;
 
-            var lm = worldIn.getLightBrightnessForSkyBlocks(
-                x + dir.offsetX,
-                y + dir.offsetY,
-                z + dir.offsetZ,
-                0);
+            var lm = worldIn.getLightBrightnessForSkyBlocks(x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, 0);
             blockLight = max(blockLight, (lm >> 4 & 0xFF) - 1);
             skyLight = max(skyLight, (lm >> 20 & 0xFF) - 1);
         }

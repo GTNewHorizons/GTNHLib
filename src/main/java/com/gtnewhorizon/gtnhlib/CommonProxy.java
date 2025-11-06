@@ -1,12 +1,12 @@
 package com.gtnewhorizon.gtnhlib;
 
-import com.gtnewhorizon.gtnhlib.block.FullTestBlock;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
+import com.gtnewhorizon.gtnhlib.block.FullTestBlock;
 import com.gtnewhorizon.gtnhlib.block.StairTestBlock;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
