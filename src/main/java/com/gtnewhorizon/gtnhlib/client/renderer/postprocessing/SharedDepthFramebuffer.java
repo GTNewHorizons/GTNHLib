@@ -16,11 +16,17 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
 
     public SharedDepthFramebuffer(int settings, Framebuffer linkedBuffer) {
         super(settings);
+        if (linkedBuffer == null) {
+            throw new IllegalArgumentException("linkedBuffer cannot be null!");
+        }
         this.linkedBuffer = linkedBuffer;
     }
 
     public SharedDepthFramebuffer(int width, int height, int settings, Framebuffer linkedBuffer) {
         super(width, height, settings);
+        if (linkedBuffer == null) {
+            throw new IllegalArgumentException("linkedBuffer cannot be null!");
+        }
         this.linkedBuffer = linkedBuffer;
     }
 
@@ -33,7 +39,9 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
     }
 
     @Override
-    protected void createDepthAttachment(int width, int height) {}
+    protected void createDepthAttachment(int width, int height) {
+        depthAttachment = -1;
+    }
 
     @Override
     protected final int createBufferBits() {
@@ -62,6 +70,8 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
     protected void deleteFramebuffer() {
         unbindFramebufferTexture();
         unbindFramebuffer();
+
+        this.depthAttachment = -1;
 
         if (this.framebufferTexture > -1) {
             GL11.glDeleteTextures(this.framebufferTexture);

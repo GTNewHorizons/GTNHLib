@@ -290,7 +290,6 @@ public class CustomFramebuffer {
     }
 
     public void copyDepthToFramebuffer(Framebuffer other) {
-        // TODO
         OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
         OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, other.framebufferObject);
         blitFramebuffer(
@@ -555,7 +554,6 @@ public class CustomFramebuffer {
         bufferedimage.flush();
     }
 
-    // TODO unify and faster flipping
     public void copyDepthToFile(File file) {
         copyComponentToFile(GL11.GL_DEPTH_COMPONENT, file);
     }
@@ -601,7 +599,7 @@ public class CustomFramebuffer {
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                float depth = depthBuffer.get(y * width + x);
+                float depth = linearizeDepth(depthBuffer.get(y * width + x));
 
                 int gray = (int) ((1.0f - depth) * 255.0f);
                 gray = Math.max(0, Math.min(255, gray));
@@ -620,5 +618,14 @@ public class CustomFramebuffer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static float linearizeDepth(float d, float zNear, float zFar) {
+        float z_n = 2 * d - 1;
+        return 2 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+    }
+
+    private static float linearizeDepth(float d) {
+        return linearizeDepth(d, 0.05F, Minecraft.getMinecraft().gameSettings.renderDistanceChunks * 16);
     }
 }

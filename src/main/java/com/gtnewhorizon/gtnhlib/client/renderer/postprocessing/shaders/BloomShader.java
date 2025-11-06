@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
 import static com.gtnewhorizon.gtnhlib.ClientProxy.mc;
-import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.DEPTH_ENABLED;
 import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.HDR_COLORS;
 import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.NO_ALPHA_CHANNEL;
 import static com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.CustomFramebuffer.TEXTURE_LINEAR;
@@ -77,7 +76,7 @@ public class BloomShader extends PostProcessingRenderer {
                 framebuffer = new SharedDepthFramebuffer(
                         Math.round(width),
                         Math.round(height),
-                        DEPTH_ENABLED | TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL);
+                        TEXTURE_LINEAR | HDR_COLORS | NO_ALPHA_CHANNEL);
             } else {
                 framebuffer = new CustomFramebuffer(
                         Math.round(width),

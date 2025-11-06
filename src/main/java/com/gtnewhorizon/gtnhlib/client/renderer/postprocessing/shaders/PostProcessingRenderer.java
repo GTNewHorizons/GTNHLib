@@ -1,12 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingManager;
-
 import static com.gtnewhorizon.gtnhlib.ClientProxy.mc;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingManager;
 
 public abstract class PostProcessingRenderer {
 
-    protected boolean needsRendering;
+    public boolean needsRendering;
 
     public PostProcessingRenderer() {
         PostProcessingManager.getInstance().registerPostProcessingRenderer(this);
@@ -27,7 +27,7 @@ public abstract class PostProcessingRenderer {
         mc.getFramebuffer().bindFramebuffer(false);
     }
 
-    protected abstract void render(float partialTicks);
+    public abstract void render(float partialTicks);
 
     public abstract void bindFramebuffer();
 }

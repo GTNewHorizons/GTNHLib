@@ -16,9 +16,9 @@ public interface I3DGeometryRenderer {
      * "View space" refers to the space of the object in relation to the player's view. It is calculated as
      * (object.position - view.position) <br>
      *
-     * @param x      The x-coordinate in view space
-     * @param y      The y-coordinate in view space
-     * @param z      The z-coordinate in view space
+     * @param x    The x-coordinate in view space
+     * @param y    The y-coordinate in view space
+     * @param z    The z-coordinate in view space
      * @param data The object that stores any additional data needed to render properly. (ex: an Entity or TileEntity)
      */
     void render(double x, double y, double z, Object data);

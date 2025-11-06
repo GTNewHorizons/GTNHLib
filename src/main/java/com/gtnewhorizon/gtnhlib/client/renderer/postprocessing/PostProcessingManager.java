@@ -32,7 +32,10 @@ public class PostProcessingManager {
 
         final int length = postProcessingRenderers.size();
         for (int i = 0; i < length; i++) {
-            postProcessingRenderers.get(i).checkRender(event.partialTicks);
+            final PostProcessingRenderer renderer = postProcessingRenderers.get(i);
+            if (renderer.needsRendering) {
+                renderer.render(event.partialTicks);
+            }
         }
     }
 
@@ -52,7 +55,8 @@ public class PostProcessingManager {
         addDelayedRenderer(renderer, viewX, viewY, viewZ, null);
     }
 
-    public void addDelayedRenderer(I3DGeometryRenderer renderer, double viewX, double viewY, double viewZ, Object data) {
+    public void addDelayedRenderer(I3DGeometryRenderer renderer, double viewX, double viewY, double viewZ,
+            Object data) {
         if (delayedRenderers.size() > renderersSize) {
             delayedRenderers.get(renderersSize).set(renderer, viewX, viewY, viewZ, data);
         } else {
