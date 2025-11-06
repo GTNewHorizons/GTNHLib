@@ -98,7 +98,6 @@ public class BloomShader extends PostProcessingRenderer {
         return instance;
     }
 
-    @Override
     public void bindFramebuffer() {
         CustomFramebuffer mainFramebuffer = framebuffers[0];
         if (mc.displayWidth != mainFramebuffer.framebufferWidth
