@@ -2,6 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.X;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static java.lang.Math.max;
@@ -151,33 +154,42 @@ public class JSONModel implements UnbakedModel {
 
             for (Face f : e.faces()) {
 
-                float x = Float.MAX_VALUE;
-                float y = Float.MAX_VALUE;
-                float z = Float.MAX_VALUE;
-                float X = Float.MIN_VALUE;
-                float Y = Float.MIN_VALUE;
-                float Z = Float.MIN_VALUE;
+                float minX = Float.MAX_VALUE;
+                float minY = Float.MAX_VALUE;
+                float minZ = Float.MAX_VALUE;
+                float maxX = Float.MIN_VALUE;
+                float maxY = Float.MIN_VALUE;
+                float maxZ = Float.MIN_VALUE;
 
                 // Assign vertexes
                 final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
-
                     final Vector3f vert = mapSideToVertex(from, to, i, f.name()).mulPosition(rot).mulPosition(vRot);
+                    // Need to set these now, so we can calculate normals
                     quad.setX(i, vert.x);
                     quad.setY(i, vert.y);
                     quad.setZ(i, vert.z);
 
-                    x = min(x, vert.x);
-                    y = min(y, vert.y);
-                    z = min(z, vert.z);
-                    X = max(X, vert.x);
-                    Y = max(Y, vert.y);
-                    Z = max(Z, vert.z);
+                    minX = min(minX, vert.x);
+                    minY = min(minY, vert.y);
+                    minZ = min(minZ, vert.z);
+                    maxX = max(maxX, vert.x);
+                    maxY = max(maxY, vert.y);
+                    maxZ = max(maxZ, vert.z);
                 }
 
                 // Set culling and nominal faces
                 final var normFace = quad.getNormalFace();
-                quad.setLightFace(normFace != UNASSIGNED ? normFace : POS_Y);
+                final var lightFace = normFace != UNASSIGNED ? normFace : POS_Y;
+                quad.setLightFace(lightFace);
+
+                // Rewind the vertices to be canonical - starting from the top-left vertex, going counter-clockwise.
+                // TODO: do we actually need this check, or do they come out canonical normally?
+                for (int i = 0; i < 4; ++i) {
+                    quad.setX(i, canonicalVert(X, i, lightFace, minX, minY, minZ, maxX, maxY, maxZ));
+                    quad.setY(i, canonicalVert(Y, i, lightFace, minX, minY, minZ, maxX, maxY, maxZ));
+                    quad.setZ(i, canonicalVert(Z, i, lightFace, minX, minY, minZ, maxX, maxY, maxZ));
+                }
 
                 // Set UV
                 // TODO: UV locking
@@ -272,5 +284,97 @@ public class JSONModel implements UnbakedModel {
 
     public Map<String, String> getTextures() {
         return Object2ObjectMaps.unmodifiable(textures);
+    }
+
+    /// Canonical vertex order:
+    /// Top left 0 00
+    /// Bottom left 1 01
+    /// Bottom right 2 10
+    /// Top right 3 11
+    /// Top = bitCount != 1
+    /// Left = id < 2
+    public static float canonicalVert(ModelQuadFacing.Axis coord, int idx, ModelQuadFacing dir, float minX, float minY,
+            float minZ, float maxX, float maxY, float maxZ) {
+        return switch (dir) {
+            case NEG_Y -> switch (coord) {
+                    case X -> switch (idx) {
+                            case 0, 1 -> minX; // left
+                            case 2, 3 -> maxX; // right
+                            default -> throw new AssertionError();
+                        };
+                    case Y -> minY;
+                    case Z -> switch (idx) {
+                            case 0, 3 -> maxZ; // top
+                            case 1, 2 -> minZ; // bottom
+                            default -> throw new AssertionError();
+                        };
+                };
+            case POS_Y -> switch (coord) {
+                    case X -> switch (idx) {
+                            case 0, 1 -> minX; // left
+                            case 2, 3 -> maxX; // right
+                            default -> throw new AssertionError();
+                        };
+                    case Y -> maxY;
+                    case Z -> switch (idx) {
+                            case 0, 3 -> minZ; // top
+                            case 1, 2 -> maxZ; // bottom
+                            default -> throw new AssertionError();
+                        };
+                };
+            case NEG_Z -> switch (coord) {
+                    case X -> switch (idx) {
+                            case 0, 1 -> maxX; // left
+                            case 2, 3 -> minX; // right
+                            default -> throw new AssertionError();
+                        };
+                    case Y -> switch (idx) {
+                            case 0, 3 -> maxY; // top
+                            case 1, 2 -> minY; // bottom
+                            default -> throw new AssertionError();
+                        };
+                    case Z -> minZ;
+                };
+            case POS_Z -> switch (coord) {
+                    case X -> switch (idx) {
+                            case 0, 1 -> minX; // left
+                            case 2, 3 -> maxX; // right
+                            default -> throw new AssertionError();
+                        };
+                    case Y -> switch (idx) {
+                            case 0, 3 -> maxY; // top
+                            case 1, 2 -> minY; // bottom
+                            default -> throw new AssertionError();
+                        };
+                    case Z -> maxZ;
+                };
+            case NEG_X -> switch (coord) {
+                    case X -> minX;
+                    case Y -> switch (idx) {
+                            case 0, 3 -> maxY; // top
+                            case 1, 2 -> minY; // bottom
+                            default -> throw new AssertionError();
+                        };
+                    case Z -> switch (idx) {
+                            case 0, 1 -> minZ; // left
+                            case 2, 3 -> maxZ; // right
+                            default -> throw new AssertionError();
+                        };
+                };
+            case POS_X -> switch (coord) {
+                    case X -> maxX;
+                    case Y -> switch (idx) {
+                            case 0, 3 -> maxY; // top
+                            case 1, 2 -> minY; // bottom
+                            default -> throw new AssertionError();
+                        };
+                    case Z -> switch (idx) {
+                            case 0, 1 -> maxZ; // left
+                            case 2, 3 -> minZ; // right
+                            default -> throw new AssertionError();
+                        };
+                };
+            case UNASSIGNED -> throw new AssertionError("Light face must be assigned!");
+        };
     }
 }
