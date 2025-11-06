@@ -1,14 +1,17 @@
 package com.gtnewhorizon.gtnhlib;
 
-import static com.gtnewhorizon.gtnhlib.client.model.ModelLoader.shouldLoadModels;
+import static com.gtnewhorizon.gtnhlib.GTNHLib.MODID;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.MinecraftForge;
 
-import com.gtnewhorizon.gtnhlib.client.model.ModelLoader;
+import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
@@ -17,10 +20,11 @@ import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 
+import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.event.*;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.relauncher.Side;
 import lombok.Getter;
 
@@ -33,6 +37,17 @@ public class ClientProxy extends CommonProxy {
     @Getter
     public static int currentServerViewDistance = 12;
     public static final Minecraft mc = Minecraft.getMinecraft();
+
+    @Override
+    public void preInit(FMLPreInitializationEvent event) {
+        super.preInit(event);
+
+        RenderingRegistry.registerBlockHandler(new ModelISBRH());
+
+        // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
+        // you too can automatically load textures for your models!
+        ModelRegistry.registerModid(MODID);
+    }
 
     @Override
     public void init(FMLInitializationEvent event) {
@@ -54,12 +69,12 @@ public class ClientProxy extends CommonProxy {
             FMLCommonHandler.instance().bus().register(new NotEnoughItemsVersionChecker());
         }
 
-        if (shouldLoadModels()) {
-            Minecraft.getMinecraft().refreshResources();
-            ModelLoader.loadModels();
-        }
-
         LoreHandler.postInit();
+
+        // Internal model loader handlers
+        final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
+        resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
+        MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
     }
 
     @Override
@@ -121,13 +136,5 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void printMessageAboveHotbar(String message, int displayDuration, boolean drawShadow, boolean shouldFade) {
         AboveHotbarHUD.renderTextAboveHotbar(message, displayDuration, drawShadow, shouldFade);
-    }
-
-    @SubscribeEvent
-    public static void onTick(TickEvent.ClientTickEvent event) {
-        if (!modelsBaked) {
-            ModelLoader.bakeModels();
-            modelsBaked = true;
-        }
     }
 }
