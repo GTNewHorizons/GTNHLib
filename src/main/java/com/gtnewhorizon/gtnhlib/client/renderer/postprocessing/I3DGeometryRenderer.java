@@ -7,14 +7,12 @@ package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
  * framebuffer), as they require the depth buffer to already be fully populated before the geometry is being rendered
  * (or else, the post-processed result may not have the correct depth values)
  * </p>
- *
+ * For more details on how it gets implemented for post-processing effects, see {@link PostProcessingManager}
  */
 public interface I3DGeometryRenderer {
 
     /**
-     * Renders the geometry of the given renderer. <br>
-     * "View space" refers to the space of the object in relation to the player's view. It is calculated as
-     * (object.position - view.position) <br>
+     * Renders the geometry of renderer implementation. <br>
      *
      * @param data The object that stores any additional data needed to render properly. (ex: an Entity or TileEntity)
      *             The reason it's not a generic is simply because it makes reusing the objects a lot more annoying.

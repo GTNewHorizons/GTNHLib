@@ -66,10 +66,23 @@ public class PostProcessingManager {
         addDelayedRenderer(renderer, viewX, viewY, viewZ, null);
     }
 
-    // Reduce object allocations
+    /**
+     * Adds a delayed renderer. The given renderer will be called during {@link RenderWorldLastEvent}. <br>
+     *
+     * "View space" refers to the space of the object in relation to the player's view. It is calculated as
+     * (object.position - view.position) <br>
+     *
+     * @param renderer The implementation of the geometry renderer
+     * @param viewX    The x-coordinate of the object in view space
+     * @param viewY    The x-coordinate of the object in view space
+     * @param viewZ    The x-coordinate of the object in view space
+     * @param data     Any additional data that's necessary for the rendering of the object (ex: an Entity or
+     *                 TileEntity)
+     */
     public void addDelayedRenderer(I3DGeometryRenderer renderer, double viewX, double viewY, double viewZ,
             Object data) {
         if (delayedRenderers.size() > renderersIndex) {
+            // Reduce object allocations
             delayedRenderers.get(renderersIndex).set(renderer, (float) viewX, (float) viewY, (float) viewZ, data);
         } else {
             delayedRenderers.add(new GeometryRenderer(renderer, (float) viewX, (float) viewY, (float) viewZ, data));
@@ -77,7 +90,6 @@ public class PostProcessingManager {
         renderersIndex++;
     }
 
-    //
     private static final class GeometryRenderer {
 
         private I3DGeometryRenderer renderer;
