@@ -20,6 +20,8 @@ dependencies {
     compileOnly("com.github.GTNewHorizons:lwjgl3ify:2.1.17") { transitive = false }
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.10") { transitive = false }
 
+    // Annotation things
+    compileOnly("com.github.GTNewHorizons:Angelica:1.0.0-beta62:dev") { transitive = false }
     compileOnly('org.jetbrains:annotations:26.0.1')
     compileOnly("org.projectlombok:lombok:1.18.36") {transitive = false }
     annotationProcessor("org.projectlombok:lombok:1.18.36")

@@ -2,7 +2,7 @@ package com.gtnewhorizon.gtnhlib.util.map;
 
 /*
  * Copyright (c) 2022, GTNH Team, glee8e, Code Chicken, This file is originally part of NotEnoughtItem by Code Chicken.
- * It is adapted to implement the standard Map interface by glee8e This program is free software: you can redistribute
+ * It is adapted to implement the standard Maps interface by glee8e This program is free software: you can redistribute
  * it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software
  * Foundation, either version 2.1 of the License, or (at your option) any later version. This program is distributed in
  * the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -39,7 +39,7 @@ import com.google.common.collect.Iterators;
  * <p>
  * This map does NOT support null values or null keys! null will be silently ignored!
  * <p>
- * Originally created by CodeChicken for NotEnoughItems. Adapted to {@code Map<ItemStack, T>} interface by glee8e
+ * Originally created by CodeChicken for NotEnoughItems. Adapted to {@code Maps<ItemStack, T>} interface by glee8e
  * <p>
  * Edited later to add the option to ignore NBT tags to match vanilla furnace recipe map behavior.
  *
