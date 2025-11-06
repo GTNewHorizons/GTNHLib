@@ -1,14 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
-
-import com.gtnewhorizon.gtnhlib.client.renderer.util.DirectionUtil;
 
 public class NormalHelper {
 
