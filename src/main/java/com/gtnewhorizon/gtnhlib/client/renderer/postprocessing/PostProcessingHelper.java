@@ -17,7 +17,7 @@ public class PostProcessingHelper {
     /**
      * Ideally, you'd only call bindFullscreenVAO/unbind only once per post-processing pass. <br>
      * If you ever want to render any other geometry inside of the post-processing pass for whatever reason, you'll have
-     * to unbind() before rendering the other geometry.
+     * to call unbindVAO() before rendering the other geometry.
      */
     public static void bindFullscreenVAO() {
         if (fullscreenQuadVAO == null) {

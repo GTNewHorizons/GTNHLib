@@ -6,11 +6,12 @@ import java.util.List;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.lwjgl.opengl.GL11;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.PostProcessingRenderer;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.opengl.GL11;
 
 public class PostProcessingManager {
 
@@ -43,6 +44,7 @@ public class PostProcessingManager {
         for (int i = 0; i < length; i++) {
             final PostProcessingRenderer renderer = postProcessingRenderers.get(i);
             if (renderer.needsRendering) {
+                renderer.needsRendering = false;
                 renderer.render(event.partialTicks);
             }
         }
@@ -65,7 +67,8 @@ public class PostProcessingManager {
     }
 
     // Reduce object allocations
-    public void addDelayedRenderer(I3DGeometryRenderer renderer, double viewX, double viewY, double viewZ, Object data) {
+    public void addDelayedRenderer(I3DGeometryRenderer renderer, double viewX, double viewY, double viewZ,
+            Object data) {
         if (delayedRenderers.size() > renderersIndex) {
             delayedRenderers.get(renderersIndex).set(renderer, (float) viewX, (float) viewY, (float) viewZ, data);
         } else {
