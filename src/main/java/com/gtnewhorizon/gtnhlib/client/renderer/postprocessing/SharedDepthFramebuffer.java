@@ -4,6 +4,7 @@ import net.coderbot.iris.rendertarget.IRenderTargetExt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -93,5 +94,9 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
                 linkDepthAttachment();
             }
         }
+    }
+
+    public static boolean isMinecraftStencilEnabled() {
+        return MinecraftForgeClient.getStencilBits() != 0;
     }
 }
