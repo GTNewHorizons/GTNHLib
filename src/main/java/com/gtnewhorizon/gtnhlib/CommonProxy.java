@@ -9,6 +9,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
+import com.gtnewhorizon.gtnhlib.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
@@ -29,6 +30,7 @@ import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
 
 @EventBusSubscriber
 public class CommonProxy {
@@ -40,10 +42,9 @@ public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         AutoEventBus.executePhase(Phase.PRE);
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
-        try {
-            ConfigurationManager.registerConfig(GTNHLibConfig.class);
-        } catch (ConfigException e) {
-            GTNHLib.LOG.error("Failed to register GTNHLib config!", e);
+
+        if (GTNHLibConfig.enableTestBlocks) {
+            GameRegistry.registerBlock(new BlockTest(), "model_test");
         }
 
         BlockPropertyInit.init();
