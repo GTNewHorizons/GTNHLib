@@ -9,6 +9,10 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(false)
     public static boolean ignoreNEIVersion;
 
+    @Config.Comment("Font rendering replacements")
+    @Config.DefaultBoolean(true)
+    public static boolean enableFontRendererMixin;
+
     @Config.Comment("Larger values take more RAM, but require less model rebuilding (may reduce lag spikes). Unless you are very short on RAM, reducing this is not advised.")
     @Config.DefaultInt(1000)
     @Config.RangeInt(min = 1, max = 1_000_000)
