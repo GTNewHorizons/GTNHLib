@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.mixins;
 
-import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
