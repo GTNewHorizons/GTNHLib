@@ -1,5 +1,8 @@
 package com.gtnewhorizon.gtnhlib.mixins;
 
+import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
+
+import com.gtnewhorizon.gtnhlib.util.EarlyConfig;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
@@ -21,7 +24,14 @@ public enum Mixins implements IMixins {
     DEBUG_TEXTURES(new MixinBuilder("Dump textures sizes")
             .addClientMixins("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite").setPhase(Phase.EARLY)
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))),
-    BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp");
+    BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
+    FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
+            .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin)),
+    MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures").addClientMixins(
+            "models.FRMAccessor",
+            "models.MixinFileResourcePack",
+            "models.MixinFolderResourcePack",
+            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading));
 
     private final MixinBuilder builder;
 
