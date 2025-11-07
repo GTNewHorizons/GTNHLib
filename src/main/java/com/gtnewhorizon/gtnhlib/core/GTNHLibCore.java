@@ -9,7 +9,6 @@ import net.minecraft.launchwrapper.Launch;
 import org.spongepowered.asm.launch.GlobalProperties;
 import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -27,14 +26,6 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     private static Boolean isObf;
-
-    static {
-        try {
-            ConfigurationManager.registerConfig(GTNHLibConfig.class);
-        } catch (ConfigException e) {
-            GTNHLib.LOG.error("Failed to register GTNHLib config!", e);
-        }
-    }
 
     public GTNHLibCore() {
         try {
