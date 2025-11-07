@@ -7,7 +7,6 @@ import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.block.BlockTest;
-import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
@@ -44,6 +43,8 @@ public class CommonProxy {
         if (GTNHLibConfig.enableTestBlocks) {
             GameRegistry.registerBlock(new BlockTest(), "model_test");
         }
+
+        BlockPropertyInit.init();
     }
 
     public void init(FMLInitializationEvent event) {
@@ -63,7 +64,9 @@ public class CommonProxy {
         BrigadierApi.init();
     }
 
-    public void serverStarting(FMLServerStartingEvent event) {}
+    public void serverStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new BlockStateCommand());
+    }
 
     public void serverStarted(FMLServerStartedEvent event) {}
 
