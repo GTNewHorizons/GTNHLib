@@ -7,7 +7,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
-import static java.lang.Integer.bitCount;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 
@@ -146,13 +145,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     private int getLightMap(Block block, ModelQuadView quad, IBlockAccess world, int x, int y, int z) {
         final var dir = quad.getLightFace();
 
-        // If the face is aligned or external, pick light outside
-        final float avgPos = getAveragePos(quad, dir);
-        final var useOuterLight = switch (dir) {
-            case POS_X, POS_Y, POS_Z -> avgPos >= 1.0;
-            case NEG_X, NEG_Y, NEG_Z -> avgPos <= 0.0;
-            case UNASSIGNED -> throw new AssertionError("Light face should never be unassigned!");
-        };
+        final var useOuterLight = !isQuadInset(quad, dir);
         if (useOuterLight) {
             final int lx = x + dir.getStepX();
             final int ly = y + dir.getStepY();
@@ -180,42 +173,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         return lm;
     }
 
-    private void getLightMapSmooth(Block block, ModelQuadView quad, IBlockAccess world, int x, int y, int z) {
-        final var dir = quad.getLightFace();
-
-        // Models have canonical vertex order - top left, top right, bottom right, bottom left.
-        for (int i = 0; i < 4; ++i) {
-            float blockLight = 0;
-            float skyLight = 0;
-            int counter = 0;
-
-            // Average light from surrounding blocks
-            for (int ii = 0; ii < 4; ++ii) {
-                final int qx = x + getOffset(X, ii, i, dir);
-                final int qy = y + getOffset(Y, ii, i, dir);
-                final int qz = z + getOffset(Z, ii, i, dir);
-                final var qBlock = world.getBlock(qx, qy, qz);
-                // Ignore opaque blocks
-                if (qBlock.getLightOpacity() == 255) continue;
-
-                final var mixed = world.getLightBrightnessForSkyBlocks(
-                        x + getOffset(X, ii, i, dir),
-                        y + getOffset(Y, ii, i, dir),
-                        z + getOffset(Z, ii, i, dir),
-                        0);
-
-                blockLight += ((mixed >> 4) & 0xFF) / 4f;
-                skyLight += ((mixed >> 20) & 0xFF) / 4f;
-                ++counter;
-            }
-
-            int isky = round(skyLight) << 20;
-            int iblock = round(blockLight) << 4;
-            lm[i] = isky | iblock;
-        }
-    }
-
-    private float getAveragePos(ModelQuadView quad, ModelQuadFacing dir) {
+    private boolean isQuadInset(ModelQuadView quad, ModelQuadFacing dir) {
         float avg = 0;
         for (int i = 0; i < 4; i++) {
             avg += switch (dir.getAxis()) {
@@ -224,7 +182,90 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 case Z -> quad.getZ(i);
             };
         }
-        return avg / 4;
+        final float avgPos = avg / 4;
+
+        // If the face is, on average, inside the block (on the given axis), it's inset.
+        return switch (dir) {
+            case POS_X, POS_Y, POS_Z -> avgPos < 1;
+            case NEG_X, NEG_Y, NEG_Z -> avgPos > 0;
+            case UNASSIGNED -> throw new AssertionError("Light face should never be unassigned!");
+        };
+    }
+
+    private void getLightMapSmooth(Block block, ModelQuadView quad, IBlockAccess world, int x, int y, int z) {
+        final var dir = quad.getLightFace();
+        // final int flags = quad.getFlags();
+
+        // Calculate lightmaps for full faces (and inset faces)
+        calcLMFull(world, x, y, z, dir, isQuadInset(quad, dir));
+    }
+
+    private void calcLMFull(IBlockAccess world, int x, int y, int z, ModelQuadFacing dir, boolean inset) {
+        // Models have canonical vertex order - top left, top right, bottom right, bottom left.
+        for (int i = 0; i < 4; ++i) {
+            int blockLight = 0;
+            int skyLight = 0;
+            float counter = 0;
+
+            int qx;
+            int qy;
+            int qz;
+
+            // Average light from surrounding blocks
+            qx = x + getOffset(X, 1, i, dir, inset);
+            qy = y + getOffset(Y, 1, i, dir, inset);
+            qz = z + getOffset(Z, 1, i, dir, inset);
+            final var edge0Block = world.getBlock(qx, qy, qz);
+            boolean edge0Clear = edge0Block.getLightOpacity(world, qx, qy, qz) < 255;
+            if (edge0Clear) {
+                ++counter;
+                final int lm = edge0Block.getMixedBrightnessForBlock(world, qx, qy, qz);
+                skyLight += lm >>> 20;
+                blockLight += lm >>> 4 & 0xFF;
+            }
+
+            qx = x + getOffset(X, 3, i, dir, inset);
+            qy = y + getOffset(Y, 3, i, dir, inset);
+            qz = z + getOffset(Z, 3, i, dir, inset);
+            final var edge1Block = world.getBlock(qx, qy, qz);
+            boolean edge1Clear = edge1Block.getLightOpacity(world, qx, qy, qz) < 255;
+            if (edge1Clear) {
+                ++counter;
+                final int lm = edge1Block.getMixedBrightnessForBlock(world, qx, qy, qz);
+                skyLight += lm >>> 20;
+                blockLight += lm >>> 4 & 0xFF;
+            }
+
+            qx = x + getOffset(X, 0, i, dir, inset);
+            qy = y + getOffset(Y, 0, i, dir, inset);
+            qz = z + getOffset(Z, 0, i, dir, inset);
+            final var cornerBlock = world.getBlock(qx, qy, qz);
+            boolean cornerClear = cornerBlock.getLightOpacity(world, qx, qy, qz) < 255;
+            // Corner only matters if one of the edges is clear
+            if (cornerClear && (edge0Clear | edge1Clear)) {
+                ++counter;
+                final int lm = cornerBlock.getMixedBrightnessForBlock(world, qx, qy, qz);
+                skyLight += lm >>> 20;
+                blockLight += lm >>> 4 & 0xFF;
+            }
+
+            qx = x + getOffset(X, 2, i, dir, inset);
+            qy = y + getOffset(Y, 2, i, dir, inset);
+            qz = z + getOffset(Z, 2, i, dir, inset);
+            final var selfBlock = world.getBlock(qx, qy, qz);
+            boolean selfClear = selfBlock.getLightOpacity(world, qx, qy, qz) < 255;
+            if (selfClear) {
+                ++counter;
+                final int lm = selfBlock.getMixedBrightnessForBlock(world, qx, qy, qz);
+                skyLight += lm >>> 20;
+                blockLight += lm >>> 4 & 0xFF;
+            }
+
+            int isky = round(skyLight / counter) << 20;
+            int iblock = round(blockLight / counter) << 4;
+
+            lm[i] = isky | iblock;
+        }
     }
 
     @Override
@@ -252,41 +293,41 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     /// - -Y: starts from max, min, min
     /// - +Z: starts from min, max, max
     /// - -Z: starts from max, max, min
-    private int getOffset(ModelQuadFacing.Axis axis, int offsetIdx, int vertIdx, ModelQuadFacing dir) {
+    private int getOffset(ModelQuadFacing.Axis axis, int offsetIdx, int vertIdx, ModelQuadFacing dir, boolean inset) {
         return switch (dir) {
             // -Y is "out", Z is "top" and -X is "left"
             case NEG_Y -> switch (axis) {
                     case X -> -leftOffset(offsetIdx, vertIdx);
-                    case Y -> -1;
+                    case Y -> inset ? 0 : -1;
                     case Z -> topOffset(offsetIdx, vertIdx);
                 };
             // +Y is "out", -Z as "top" and -X is "left"
             case POS_Y -> switch (axis) {
                     case X -> -leftOffset(offsetIdx, vertIdx);
-                    case Y -> 1;
+                    case Y -> inset ? 0 : 1;
                     case Z -> -topOffset(offsetIdx, vertIdx);
                 };
             // -Z is "out", +Y as "top" and +X as "left"
             case NEG_Z -> switch (axis) {
                     case X -> leftOffset(offsetIdx, vertIdx);
                     case Y -> topOffset(offsetIdx, vertIdx);
-                    case Z -> -1;
+                    case Z -> inset ? 0 : -1;
                 };
             // +Z is "out", +Y as "top" and -X as "left"
             case POS_Z -> switch (axis) {
                     case X -> -leftOffset(offsetIdx, vertIdx);
                     case Y -> topOffset(offsetIdx, vertIdx);
-                    case Z -> 1;
+                    case Z -> inset ? 0 : 1;
                 };
             // -X is "out", +Y is "top", -Z is "left"
             case NEG_X -> switch (axis) {
-                    case X -> -1;
+                    case X -> inset ? 0 : -1;
                     case Y -> topOffset(offsetIdx, vertIdx);
                     case Z -> -leftOffset(offsetIdx, vertIdx);
                 };
             // +X is "out", +Y is "top", +Z is "left"
             case POS_X -> switch (axis) {
-                    case X -> 1;
+                    case X -> inset ? 0 : 1;
                     case Y -> topOffset(offsetIdx, vertIdx);
                     case Z -> leftOffset(offsetIdx, vertIdx);
                 };
@@ -294,27 +335,33 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         };
     }
 
-    // Canonical vertex order:
-    // Top left 0 00
-    // Bottom left 1 01
-    // Bottom right 2 10
-    // Top right 3 11
-    // Top = bitCount != 1
-    // Left = id < 2
-
+    /// The offset order is corner, edge, self, edge, going CCW. For the top left vertex, that'd be top left, left,
+    /// self, top.
+    ///
+    /// Offset table:
+    /// | Offset Index | Vertex 0 | Vertex 1 | Vertex 2 | Vertex 3 |
+    /// | ------------ | -------- | -------- | -------- | -------- |
+    /// | 0 | 1, 1 | -1, 1 | -1,-1 | 1,-1 |
+    /// | 1 | 0, 1 | -1, 0 | 0,-1 | 1, 0 |
+    /// | 2 | 0, 0 | 0, 0 | 0, 0 | 0, 0 |
+    /// | 3 | 1, 0 | 0, 1 | -1, 0 | 0,-1 |
     private static int topOffset(int offsetIdx, int vertIdx) {
-        int ret = -1;
-        // Add one if it's a top offset
-        ret += bitCount(offsetIdx) != 1 ? 1 : 0;
-        // Or a top vertex
-        return ret + (bitCount(vertIdx) != 1 ? 1 : 0);
+        return OFFSETS_TOP[offsetIdx + (vertIdx << 2)];
     }
 
     private static int leftOffset(int offsetIdx, int vertIdx) {
-        int ret = -1;
-        // Add one if it's a left offset
-        ret += offsetIdx < 2 ? 1 : 0;
-        // Or a left vertex
-        return ret + (vertIdx < 2 ? 1 : 0);
+        return OFFSETS_LEFT[offsetIdx + (vertIdx << 2)];
     }
+
+    private static final int[] OFFSETS_TOP = { 1, 0, 0, 1, // vert 0
+            -1, -1, 0, 0, // vert 1
+            -1, 0, 0, -1, // vert 2
+            1, 1, 0, 0, // vert 3
+    };
+
+    private static final int[] OFFSETS_LEFT = { 1, 1, 0, 0, // vert 0
+            1, 0, 0, 1, // vert 1
+            -1, -1, 0, 0, // vert 2
+            -1, 0, 0, -1 // vert 3
+    };
 }
