@@ -13,6 +13,16 @@ public abstract class SimpleItemIO implements ItemIO {
     protected int[] allowedSinkSlots;
 
     @Override
+    public void resetSink() {
+        allowedSinkSlots = null;
+    }
+
+    @Override
+    public void resetSource() {
+        allowedSourceSlots = null;
+    }
+
+    @Override
     public void setAllowedSinkSlots(int @Nullable [] slots) {
         allowedSinkSlots = slots;
     }

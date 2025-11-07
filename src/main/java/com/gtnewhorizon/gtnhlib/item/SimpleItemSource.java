@@ -12,6 +12,11 @@ public abstract class SimpleItemSource implements ItemSource {
     protected int[] allowedSourceSlots;
 
     @Override
+    public void resetSource() {
+        allowedSourceSlots = null;
+    }
+
+    @Override
     public void setAllowedSourceSlots(int @Nullable [] slots) {
         allowedSourceSlots = slots;
     }

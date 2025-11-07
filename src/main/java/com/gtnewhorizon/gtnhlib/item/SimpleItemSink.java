@@ -10,6 +10,11 @@ public abstract class SimpleItemSink implements ItemSink {
     protected int[] allowedSinkSlots;
 
     @Override
+    public void resetSink() {
+        allowedSinkSlots = null;
+    }
+
+    @Override
     public void setAllowedSinkSlots(int @Nullable [] slots) {
         allowedSinkSlots = slots;
     }
