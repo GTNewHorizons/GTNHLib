@@ -6,9 +6,6 @@ import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.eigenraven.lwjgl3ify.rfb.EarlyConfig;
-
-import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
 
 @Getter
 @RequiredArgsConstructor
@@ -28,15 +25,15 @@ public enum Mixins implements IMixins {
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
-        .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
+            .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
     MODEL_TEXTURE_LOADING(
-        new MixinBuilder("Automatically load model textures")
-            .addClientMixins(
-                "models.FRMAccessor",
-                "models.MixinFileResourcePack",
-                "models.MixinFolderResourcePack",
-                "models.SRRMAccessor")
-            .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading));
+            new MixinBuilder("Automatically load model textures")
+                    .addClientMixins(
+                            "models.FRMAccessor",
+                            "models.MixinFileResourcePack",
+                            "models.MixinFolderResourcePack",
+                            "models.SRRMAccessor")
+                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading));
 
     private final MixinBuilder builder;
 
