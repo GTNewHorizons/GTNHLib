@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.mixins;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
@@ -27,12 +28,15 @@ public enum Mixins implements IMixins {
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
-            .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin)),
-    MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures").addClientMixins(
-            "models.FRMAccessor",
-            "models.MixinFileResourcePack",
-            "models.MixinFolderResourcePack",
-            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading));
+        .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
+    MODEL_TEXTURE_LOADING(
+        new MixinBuilder("Automatically load model textures")
+            .addClientMixins(
+                "models.FRMAccessor",
+                "models.MixinFileResourcePack",
+                "models.MixinFolderResourcePack",
+                "models.SRRMAccessor")
+            .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading));
 
     private final MixinBuilder builder;
 
