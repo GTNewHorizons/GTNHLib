@@ -5,6 +5,9 @@ import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import me.eigenraven.lwjgl3ify.rfb.EarlyConfig;
+
+import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
 
 @Getter
 @RequiredArgsConstructor
