@@ -13,6 +13,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemIO;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
@@ -20,6 +21,12 @@ import com.gtnewhorizon.gtnhlib.capability.item.ItemSource;
 import com.gtnewhorizon.gtnhlib.item.InventoryItemSink;
 import com.gtnewhorizon.gtnhlib.item.InventoryItemSource;
 import com.gtnewhorizon.gtnhlib.item.WrappedItemIO;
+import com.gtnewhorizon.gtnhlib.item.impl.mfr.DSUItemIO;
+import com.gtnewhorizon.gtnhlib.item.impl.mfr.DSUItemSink;
+import com.gtnewhorizon.gtnhlib.item.impl.mfr.DSUItemSource;
+
+import cpw.mods.fml.common.Optional;
+import powercrystals.minefactoryreloaded.api.IDeepStorageUnit;
 
 public class ItemUtil {
 
@@ -27,7 +34,9 @@ public class ItemUtil {
     public static final int WRAP_INVENTORIES = 0b1 << counter++;
     public static final int FOR_INSERTS = 0b1 << counter++;
     public static final int FOR_EXTRACTS = 0b1 << counter++;
-    public static final int DEFAULT = WRAP_INVENTORIES | FOR_INSERTS | FOR_EXTRACTS;
+    /// Create [ItemSink]s / [ItemSource]s for [IDeepStorageUnit]s.
+    public static final int WRAP_DSUS = 0b1 << counter++;
+    public static final int DEFAULT = WRAP_INVENTORIES | FOR_INSERTS | FOR_EXTRACTS | WRAP_DSUS;
 
     public static int getStackMeta(ItemStack stack) {
         return Items.feather.getDamage(stack);
@@ -117,6 +126,12 @@ public class ItemUtil {
             if (inv != null) return new InventoryItemSource(inv, side);
         }
 
+        if ((usage & WRAP_DSUS) != 0 && GTNHLib.isMFRLoaded) {
+            ItemSource source = getDSUSource(obj);
+
+            if (source != null) return source;
+        }
+
         return null;
     }
 
@@ -142,6 +157,12 @@ public class ItemUtil {
             IInventory inv = getInventory(obj, side);
 
             if (inv != null) return new InventoryItemSink(inv, side);
+        }
+
+        if ((usage & WRAP_DSUS) != 0 && GTNHLib.isMFRLoaded) {
+            ItemSink sink = getDSUSink(obj);
+
+            if (sink != null) return sink;
         }
 
         return null;
@@ -170,6 +191,12 @@ public class ItemUtil {
             if (itemIO != null) return itemIO;
         }
 
+        if ((usage & WRAP_DSUS) != 0 && GTNHLib.isMFRLoaded) {
+            ItemIO io = getDSUIO(obj);
+
+            if (io != null) return io;
+        }
+
         ItemSource source = getItemSource(obj, side, usage);
         ItemSink sink = getItemSink(obj, side, usage);
 
@@ -177,4 +204,32 @@ public class ItemUtil {
 
         return new WrappedItemIO(source, sink);
     }
+
+    @Optional.Method(modid = "MineFactoryReloaded")
+    private static ItemIO getDSUIO(Object obj) {
+        if (obj instanceof IDeepStorageUnit dsu) {
+            return new DSUItemIO(dsu);
+        } else {
+            return null;
+        }
+    }
+
+    @Optional.Method(modid = "MineFactoryReloaded")
+    private static ItemSource getDSUSource(Object obj) {
+        if (obj instanceof IDeepStorageUnit dsu) {
+            return new DSUItemSource(dsu);
+        } else {
+            return null;
+        }
+    }
+
+    @Optional.Method(modid = "MineFactoryReloaded")
+    private static ItemSink getDSUSink(Object obj) {
+        if (obj instanceof IDeepStorageUnit dsu) {
+            return new DSUItemSink(dsu);
+        } else {
+            return null;
+        }
+    }
+
 }

@@ -26,4 +26,6 @@ dependencies {
 
     // For CapturingTesselator compat
     compileOnly("com.falsepattern:falsetweaks-mc1.7.10:3.8.4:api")
+
+    compileOnly('curse.maven:minefactory-reloaded-66672:2366150') { transitive = false }
 }
