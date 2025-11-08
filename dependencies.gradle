@@ -6,8 +6,10 @@ configurations {
 dependencies {
     shadowImplementation("it.unimi.dsi:fastutil:8.5.15") // Apache 2.0
     shadowImplementation("org.joml:joml:1.10.8") { transitive = false } // MIT
+    shadowImplementation("com.mojang:brigadier:1.0.18") // MIT
     shadowSources("it.unimi.dsi:fastutil:8.5.15:sources")
     shadowSources("org.joml:joml:1.10.8:sources") { transitive = false }
+    shadowSources("com.mojang:brigadier:1.0.18")
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -21,7 +23,7 @@ dependencies {
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.10") { transitive = false }
 
     // Annotation things
-    compileOnly("com.github.GTNewHorizons:Angelica:1.0.0-beta62:dev") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:Angelica:1.0.0-beta67:dev") { transitive = false }
     compileOnly('org.jetbrains:annotations:26.0.1')
     compileOnly("org.projectlombok:lombok:1.18.36") {transitive = false }
     annotationProcessor("org.projectlombok:lombok:1.18.36")
