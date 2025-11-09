@@ -8,4 +8,11 @@ repositories {
             includeGroup 'com.falsepattern'
         }
     }
+    maven {
+        name = "Mojang Maven"
+        url = "https://libraries.minecraft.net"
+        content {
+            includeGroup 'com.mojang'
+        }
+    }
 }
