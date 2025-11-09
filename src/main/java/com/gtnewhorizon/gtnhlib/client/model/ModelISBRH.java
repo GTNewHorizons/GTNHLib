@@ -43,6 +43,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     private final Random RAND = new Random();
     private final int[] lm = new int[4];
+    private final float[] br = new float[4];
 
     public ModelISBRH() {}
 
@@ -85,10 +86,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                     color = block.colorMultiplier(world, x, y, z);
                 }
 
-                final float r = (color & 255) / 255f;
-                final float g = (color >> 8 & 255) / 255f;
-                final float b = (color >> 16 & 255) / 255f;
-
                 if (!smoothLight) {
                     final int lm = getLightMap(block, quad, world, x, y, z);
                     tesselator.setBrightness(lm);
@@ -96,9 +93,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                     getLightMapSmooth(block, quad, world, x, y, z);
                 }
 
-                final float shade = diffuseLight(quad.getComputedFaceNormal());
-                tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-                renderQuad(quad, x, y, z, tesselator, renderer.overrideBlockTexture, smoothLight);
+                renderQuad(quad, x, y, z, tesselator, renderer.overrideBlockTexture, smoothLight, color);
             }
         }
 
@@ -106,10 +101,18 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     }
 
     protected void renderQuad(ModelQuadView quad, int x, int y, int z, Tessellator tessellator,
-            @Nullable IIcon overrideIcon, boolean smoothLight) {
+            @Nullable IIcon overrideIcon, boolean smoothLight, int color) {
+        final float shade = diffuseLight(quad.getComputedFaceNormal());
+
+        final float r = (color & 255) / 255f;
+        final float g = (color >> 8 & 255) / 255f;
+        final float b = (color >> 16 & 255) / 255f;
+        tessellator.setColorOpaque_F(r * shade, g * shade, b * shade);
+
         for (int i = 0; i < 4; ++i) {
             if (smoothLight) {
                 tessellator.setBrightness(lm[i]);
+                tessellator.setColorOpaque_F(r * shade * br[i], g * shade * br[i], b * shade * br[i]);
             }
 
             tessellator.addVertexWithUV(
@@ -202,9 +205,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     private void calcLMFull(IBlockAccess world, int x, int y, int z, ModelQuadFacing dir, boolean inset) {
         // Models have canonical vertex order - top left, top right, bottom right, bottom left.
+        int ooo = 9;
         for (int i = 0; i < 4; ++i) {
             int blockLight = 0;
             int skyLight = 0;
+            float brightness = 0;
             float counter = 0;
 
             int qx;
@@ -217,6 +222,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             qz = z + getOffset(Z, 1, i, dir, inset);
             final var edge0Block = world.getBlock(qx, qy, qz);
             boolean edge0Clear = edge0Block.getLightOpacity(world, qx, qy, qz) < 255;
+            brightness += edge0Block.getAmbientOcclusionLightValue();
             if (edge0Clear) {
                 ++counter;
                 final int lm = edge0Block.getMixedBrightnessForBlock(world, qx, qy, qz);
@@ -229,6 +235,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             qz = z + getOffset(Z, 3, i, dir, inset);
             final var edge1Block = world.getBlock(qx, qy, qz);
             boolean edge1Clear = edge1Block.getLightOpacity(world, qx, qy, qz) < 255;
+            brightness += edge1Block.getAmbientOcclusionLightValue();
             if (edge1Clear) {
                 ++counter;
                 final int lm = edge1Block.getMixedBrightnessForBlock(world, qx, qy, qz);
@@ -242,11 +249,17 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             final var cornerBlock = world.getBlock(qx, qy, qz);
             boolean cornerClear = cornerBlock.getLightOpacity(world, qx, qy, qz) < 255;
             // Corner only matters if one of the edges is clear
-            if (cornerClear && (edge0Clear | edge1Clear)) {
-                ++counter;
-                final int lm = cornerBlock.getMixedBrightnessForBlock(world, qx, qy, qz);
-                skyLight += lm >>> 20;
-                blockLight += lm >>> 4 & 0xFF;
+            if (edge0Clear | edge1Clear) {
+                brightness += cornerBlock.getAmbientOcclusionLightValue();
+                if (cornerClear) {
+                    ++counter;
+                    final int lm = cornerBlock.getMixedBrightnessForBlock(world, qx, qy, qz);
+                    skyLight += lm >>> 20;
+                    blockLight += lm >>> 4 & 0xFF;
+                }
+            } else {
+                // If both edges are full, the corner is effectively full.
+                brightness += 1;
             }
 
             qx = x + getOffset(X, 2, i, dir, inset);
@@ -256,6 +269,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             boolean selfClear = selfBlock.getLightOpacity(world, qx, qy, qz) < 255;
             if (selfClear) {
                 ++counter;
+                brightness += selfBlock.getAmbientOcclusionLightValue();
                 final int lm = selfBlock.getMixedBrightnessForBlock(world, qx, qy, qz);
                 skyLight += lm >>> 20;
                 blockLight += lm >>> 4 & 0xFF;
@@ -265,6 +279,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             int iblock = round(blockLight / counter) << 4;
 
             lm[i] = isky | iblock;
+            br[i] = brightness / 4;
         }
     }
 
