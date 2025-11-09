@@ -14,14 +14,29 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 @SuppressWarnings("unused")
 public class TessellatorManager {
 
+    /**
+     * Callback interface for per-draw notifications during display list compilation.
+     */
+    public interface DrawCallback {
+
+        /**
+         * Called after each Tessellator.draw() during compiling mode. The quads are pooled objects - caller MUST copy
+         * them if needed beyond this call. After this callback returns, the quads will be released back to the pool.
+         *
+         * @param quads The quads from this specific draw call (sublist of collected quads)
+         */
+        void onDraw(List<ModelQuadViewMutable> quads);
+    }
+
     private static final ThreadLocal<CapturingTessellator> capturingTessellator = ThreadLocal
             .withInitial(CapturingTessellator::new);
 
     private static final ThreadLocal<Boolean> currentlyCapturing = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static final ThreadLocal<DrawCallback> compilingCallback = ThreadLocal.withInitial(() -> null);
     private static final Thread mainThread = Thread.currentThread();
 
     public static Tessellator get() {
-        if (currentlyCapturing.get()) {
+        if (currentlyCapturing.get() || compilingCallback.get() != null) {
             return capturingTessellator.get();
         } else if (isOnMainThread()) {
             return Tessellator.instance;
@@ -47,6 +62,8 @@ public class TessellatorManager {
     public static void startCapturing() {
         if (currentlyCapturing.get())
             throw new IllegalStateException("Tried to start capturing when already capturing!");
+        if (compilingCallback.get() != null)
+            throw new IllegalStateException("Tried to start capturing when already compiling!");
         final CapturingTessellator tess = capturingTessellator.get();
         if (!tess.getQuads().isEmpty())
             throw new IllegalStateException("Tried to start capturing with existing collected Quads!");
@@ -95,7 +112,62 @@ public class TessellatorManager {
         final CapturingTessellator tessellator = capturingTessellator.get();
 
         currentlyCapturing.set(false);
+        compilingCallback.set(null);
         tessellator.discard();
         tessellator.clearQuads();
+    }
+
+    /**
+     * Set display list compiling mode with per-draw callbacks. While compiling, each Tessellator.draw() will
+     * automatically invoke the callback. The callback receives only the quads from that specific draw call.
+     *
+     * @param callback Called for each draw() with the newly captured quads
+     * @throws IllegalArgumentException if callback is null
+     * @throws IllegalStateException    if already compiling or already capturing
+     */
+    public static void setCompiling(DrawCallback callback) {
+        if (callback == null) throw new IllegalArgumentException("Callback cannot be null");
+        if (compilingCallback.get() != null) throw new IllegalStateException("Already compiling!");
+        if (currentlyCapturing.get())
+            throw new IllegalStateException("Tried to start compiling when already capturing!");
+        final CapturingTessellator tess = capturingTessellator.get();
+        if (!tess.getQuads().isEmpty())
+            throw new IllegalStateException("Tried to start compiling with existing collected Quads!");
+        tess.storeTranslation();
+
+        compilingCallback.set(callback);
+    }
+
+    /**
+     * Stop display list compiling mode. If there's a pending draw, flushes it and invokes callback one final time.
+     * Clears the callback and any remaining quads.
+     *
+     * @throws IllegalStateException if not currently compiling
+     */
+    public static void stopCompiling() {
+        if (compilingCallback.get() == null) throw new IllegalStateException("Not currently compiling!");
+
+        final CapturingTessellator tess = capturingTessellator.get();
+
+        // If there's a pending draw, flush it (this will trigger callback one last time)
+        if (tess.isDrawing) {
+            tess.draw();
+        }
+
+        // Clear any remaining quads (shouldn't be any if callback worked correctly)
+        tess.clearQuads();
+        tess.discard();
+        tess.restoreTranslation();
+
+        compilingCallback.set(null);
+    }
+
+    /**
+     * Package-private accessor for CapturingTessellator to get the current compiling callback.
+     *
+     * @return The current callback, or null if not compiling
+     */
+    static DrawCallback getCompilingCallback() {
+        return compilingCallback.get();
     }
 }

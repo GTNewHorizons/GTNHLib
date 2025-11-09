@@ -119,6 +119,16 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
             this.collectedQuads.add(quad);
         }
 
+        // Check for compiling callback
+        final TessellatorManager.DrawCallback callback = TessellatorManager.getCompilingCallback();
+        if (callback != null) {
+            // Invoke callback with all quads from this draw - Quads are invalid after the callback
+            callback.onDraw(collectedQuads);
+
+            // In compiling mode, collectedQuads should always be empty at the start of each draw
+            clearQuads();
+        }
+
         final int i = this.rawBufferIndex * 4;
         this.discard();
         return i;
