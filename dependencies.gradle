@@ -31,5 +31,5 @@ dependencies {
     // For CapturingTesselator compat
     compileOnly("com.falsepattern:falsetweaks-mc1.7.10:3.8.4:api")
 
-    compileOnly('com.github.GTNewHorizons:Angelica:1.0.0-beta66:dev') { transitive = false }
+    compileOnly('curse.maven:minefactory-reloaded-66672:2366150') { transitive = false }
 }
