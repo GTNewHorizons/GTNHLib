@@ -86,6 +86,10 @@ public class VertexBuffer implements AutoCloseable {
         }
     }
 
+    public final void delete() {
+        this.close();
+    }
+
     public void draw(FloatBuffer floatBuffer) {
         GL11.glPushMatrix();
         GL11.glLoadIdentity();

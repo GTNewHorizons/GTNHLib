@@ -15,7 +15,7 @@ public class VAOManager {
 
     /**
      * Creates a VAO if they are supported, and a VBO otherwise. <br>
-     * If you need a VertexArrayBuffer in your code, make sure to only cast it if isVaoDisabled is false
+     * Don't blindly cast it to a VertexArrayBuffer, your code shouldn't need to know if it's a VBO/VAO anyway
      */
     public static VertexBuffer createVAO(VertexFormat format, int drawMode) {
         return vaoEnabled ? new VertexArrayBuffer(format, drawMode) : new VertexBuffer(format, drawMode);
@@ -25,12 +25,12 @@ public class VAOManager {
         return vaoEnabled;
     }
 
-    public static void disableVAO() {
+    public static void disableVao() {
         vaoEnabled = false;
     }
 
     // Only allow VAO's to be enabled if they are supported
-    public static void enableVAO() {
+    public static void enableVao() {
         vaoEnabled = !vaoUnsupported;
     }
 
