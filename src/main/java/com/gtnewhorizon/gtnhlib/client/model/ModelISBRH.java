@@ -7,6 +7,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.Axis.Z;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFlags.contains;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 
@@ -28,6 +29,7 @@ import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFlags;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -43,7 +45,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     private final Random RAND = new Random();
     private final int[] lm = new int[4];
+    private final int[] lmScratchPartial = new int[4];
     private final float[] br = new float[4];
+    private final float[] brScratchPartial = new float[4];
 
     public ModelISBRH() {}
 
@@ -197,15 +201,18 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     private void getLightMapSmooth(Block block, ModelQuadView quad, IBlockAccess world, int x, int y, int z) {
         final var dir = quad.getLightFace();
-        // final int flags = quad.getFlags();
 
         // Calculate lightmaps for full faces (and inset faces)
         calcLMFull(world, x, y, z, dir, isQuadInset(quad, dir));
+
+        // Adjust if needed
+        if (contains(quad.getFlags(), ModelQuadFlags.IS_PARTIAL)) {
+            adjustLMPartial(quad, dir);
+        }
     }
 
     private void calcLMFull(IBlockAccess world, int x, int y, int z, ModelQuadFacing dir, boolean inset) {
         // Models have canonical vertex order - top left, top right, bottom right, bottom left.
-        int ooo = 9;
         for (int i = 0; i < 4; ++i) {
             int blockLight = 0;
             int skyLight = 0;
@@ -259,7 +266,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
                 }
             } else {
                 // If both edges are full, the corner is effectively full.
-                brightness += 1;
+                brightness += 0.2f;
             }
 
             qx = x + getOffset(X, 2, i, dir, inset);
@@ -267,9 +274,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             qz = z + getOffset(Z, 2, i, dir, inset);
             final var selfBlock = world.getBlock(qx, qy, qz);
             boolean selfClear = selfBlock.getLightOpacity(world, qx, qy, qz) < 255;
+            brightness += selfBlock.getAmbientOcclusionLightValue();
             if (selfClear) {
                 ++counter;
-                brightness += selfBlock.getAmbientOcclusionLightValue();
                 final int lm = selfBlock.getMixedBrightnessForBlock(world, qx, qy, qz);
                 skyLight += lm >>> 20;
                 blockLight += lm >>> 4 & 0xFF;
@@ -281,6 +288,64 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             lm[i] = isky | iblock;
             br[i] = brightness / 4;
         }
+    }
+
+    private void adjustLMPartial(ModelQuadView quad, ModelQuadFacing dir) {
+        // Save original values
+        System.arraycopy(lm, 0, lmScratchPartial, 0, lm.length);
+        System.arraycopy(br, 0, brScratchPartial, 0, br.length);
+
+        for (int i = 0; i < 4; ++i) {
+            float left = getLeft(quad, dir, i);
+            float top = getTop(quad, dir, i);
+
+            // Bilinearly interpolate weights for the vertex, i.e. get how close is it to the full-face vertices.
+            float w0 = left * top;
+            float w1 = left * (1 - top);
+            float w2 = (1 - left) * (1 - top);
+            float w3 = (1 - left) * top;
+
+            // Reassign brightness and lightmaps accordingly
+            br[i] = w0 * brScratchPartial[0] + w1 * brScratchPartial[1]
+                    + w2 * brScratchPartial[2]
+                    + w3 * brScratchPartial[3];
+            lm[i] = blendLM(w0, w1, w2, w3);
+        }
+    }
+
+    private int blendLM(float w0, float w1, float w2, float w3) {
+        int sky0 = lm[0] >>> 20;
+        int sky1 = lm[1] >>> 20;
+        int sky2 = lm[2] >>> 20;
+        int sky3 = lm[3] >>> 20;
+        int sky = round(sky0 * w0 + sky1 * w1 + sky2 * w2 + sky3 * w3);
+
+        int blk0 = lm[0] >>> 4;
+        int blk1 = lm[1] >>> 4;
+        int blk2 = lm[2] >>> 4;
+        int blk3 = lm[3] >>> 4;
+        int blk = round(blk0 * w0 + blk1 * w1 + blk2 * w2 + blk3 * w3);
+
+        return sky << 20 | blk << 4;
+    }
+
+    private static float getLeft(ModelQuadView quad, ModelQuadFacing dir, int idx) {
+        return switch (dir) {
+            case NEG_Y, POS_Y, POS_Z -> 1 - quad.getX(idx);
+            case NEG_Z -> quad.getX(idx);
+            case NEG_X -> 1 - quad.getZ(idx);
+            case POS_X -> quad.getZ(idx);
+            case UNASSIGNED -> throw new AssertionError("No offset for unassigned quads!");
+        };
+    }
+
+    private static float getTop(ModelQuadView quad, ModelQuadFacing dir, int idx) {
+        return switch (dir) {
+            case NEG_Y -> quad.getZ(idx);
+            case POS_Y -> 1 - quad.getZ(idx);
+            case NEG_Z, POS_Z, NEG_X, POS_X -> quad.getY(idx);
+            case UNASSIGNED -> throw new AssertionError("No offset for unassigned quads!");
+        };
     }
 
     @Override
