@@ -4,6 +4,8 @@ import net.coderbot.iris.rendertarget.IRenderTargetExt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.shader.Framebuffer;
 
+import org.lwjgl.opengl.GL11;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
@@ -40,10 +42,30 @@ public class PostProcessingHelper {
         fullscreenQuadVAO.unbind();
     }
 
+    public static void setupPostProcessingGL() {
+        bindFullscreenVAO();
+
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+        GL11.glColor4f(1, 1, 1, 1);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
+    }
+
+    public static void clearPostProcessingGL() {
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+        unbindVAO();
+    }
+
     public static int getDepthTexture() {
         return getDepthTexture(Minecraft.getMinecraft().getFramebuffer());
     }
 
+    // TODO Sisyphus: move IRenderTargetExt to GTNHLib in a non-invasive way
     public static int getDepthTexture(Framebuffer framebuffer) {
         if (!Mods.ANGELICA)
             throw new UnsupportedOperationException("The depth texture requires Angelica to be loaded.");

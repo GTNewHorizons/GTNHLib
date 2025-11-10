@@ -18,8 +18,19 @@ import org.lwjgl.opengl.GLContext;
  */
 public final class UniversalVAO {
 
-    public static VaoFunctions getImplementation() {
-        return FUNCTIONS.get();
+    /**
+     * Returns the implementation based on the ContextCapabilities.
+     */
+    public static VaoFunctions getImplementation(ContextCapabilities caps) {
+        if (caps.OpenGL30) {
+            return new VaoGL3();
+        } else if (caps.GL_APPLE_vertex_array_object) {
+            return new VaoApple();
+        } else if (caps.GL_ARB_vertex_array_object) {
+            return new VaoArb();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -116,40 +127,8 @@ public final class UniversalVAO {
         FUNCTIONS.get().glBindVertexArray(id);
     }
 
-    /**
-     * Utility for querying which VAO mechanism is supported by the current OpenGL context.
-     */
-    public enum Implementation {
-
-        GL3,
-        APPLE,
-        ARB;
-
-        public static Implementation querySupported() {
-            final ContextCapabilities caps = GLContext.getCapabilities();
-            if (caps.OpenGL30) {
-                return GL3;
-            } else if (caps.GL_APPLE_vertex_array_object) {
-                return APPLE;
-            } else if (caps.GL_ARB_vertex_array_object) {
-                return ARB;
-            } else {
-                throw new UnsupportedOperationException("VAO not supported by the current OpenGL implementation.");
-            }
-        }
-    }
-
-    private static final ThreadLocal<VaoFunctions> FUNCTIONS = new ThreadLocal<>() {
-
-        @Override
-        protected VaoFunctions initialValue() {
-            return switch (Implementation.querySupported()) {
-                case GL3 -> new VaoGL3();
-                case APPLE -> new VaoApple();
-                case ARB -> new VaoArb();
-            };
-        }
-    };
+    private static final ThreadLocal<VaoFunctions> FUNCTIONS = ThreadLocal
+            .withInitial(() -> getImplementation(GLContext.getCapabilities()));
 
     private static final class VaoGL3 implements VaoFunctions {
 

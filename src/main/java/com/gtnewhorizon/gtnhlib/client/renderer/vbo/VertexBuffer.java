@@ -30,6 +30,15 @@ public class VertexBuffer implements AutoCloseable {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
 
+    // Same as the methods above, but these are safer to use internally (due to VertexArrayBuffer override)
+    protected final void bindVBO() {
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.id);
+    }
+
+    protected final void unbindVBO() {
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+    }
+
     public void upload(ByteBuffer buffer, int vertexCount) {
         upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
     }
@@ -37,9 +46,9 @@ public class VertexBuffer implements AutoCloseable {
     public void upload(ByteBuffer buffer, int vertexCount, int type) {
         if (this.id == -1) return;
         this.vertexCount = vertexCount;
-        this.bind();
+        this.bindVBO();
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, type);
-        this.unbind();
+        this.unbindVBO();
     }
 
     public VertexBuffer upload(ByteBuffer buffer) {
@@ -90,13 +99,13 @@ public class VertexBuffer implements AutoCloseable {
     }
 
     public void setupState() {
-        bind();
+        bindVBO();
         format.setupBufferState(0L);
     }
 
     public void cleanupState() {
         format.clearBufferState();
-        unbind();
+        unbindVBO();
     }
 
     public void render() {
