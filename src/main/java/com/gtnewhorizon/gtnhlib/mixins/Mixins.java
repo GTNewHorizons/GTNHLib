@@ -31,7 +31,12 @@ public enum Mixins implements IMixins {
             "models.FRMAccessor",
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
-            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading));
+            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading)),
+    DYNAMIC_BLOCK_SOUNDS(Side.COMMON, "block_sounds.MixinEntity", "block_sounds.MixinEntityLivingBase",
+            "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
+            "block_sounds.MixinPlayerControllerMP", "block_sounds.MixinRenderGlobal"),
+    //
+    ;
 
     private final MixinBuilder builder;
 
