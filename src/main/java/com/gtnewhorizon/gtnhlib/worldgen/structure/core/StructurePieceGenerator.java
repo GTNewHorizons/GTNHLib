@@ -396,11 +396,17 @@ public abstract class StructurePieceGenerator extends MapGenStructure implements
                             // Structure-local location of the next component's origin
                             testOrigin.sub(candidateSocket.pos);
 
-                            logger.info("Checking for overlaps if piece {} had origin {}", candidatePiece.path, testOrigin);
+                            VoxelAABB aabb = candidatePiece.aabb.clone().moveOrigin(testOrigin);
+
+                            logger.info("Checking for overlaps if piece {} had origin {} (aabb: {})", candidatePiece.path, testOrigin, aabb);
 
                             List<StructurePieceComponent> conflicts = new ArrayList<>();
 
-                            tracker.tree.detectOverlaps(candidatePiece.aabb.clone().moveOrigin(testOrigin).getAABB(), conflicts);
+                            for (StructurePieceComponent component : tracker.byId.values()) {
+                                if (component.caabb.contains(aabb)) {
+                                    conflicts.add(component);
+                                }
+                            }
 
                             if (!conflicts.isEmpty()) {
                                 logger.info("Piece overlapped with the following other pieces: {}", conflicts);
@@ -808,7 +814,7 @@ public abstract class StructurePieceGenerator extends MapGenStructure implements
 
         @Override
         public AABBf getAABB(AABBf dest) {
-            return dest;
+            return caabb.getAABB(dest);
         }
 
         @Override
@@ -828,6 +834,8 @@ public abstract class StructurePieceGenerator extends MapGenStructure implements
                 + id
                 + ", caabb="
                 + caabb
+                + ", aabb="
+                + getAABB(new AABBf())
                 + '}';
         }
     }

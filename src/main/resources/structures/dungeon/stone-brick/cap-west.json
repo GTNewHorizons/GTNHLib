@@ -7,23 +7,16 @@
       "z": 0
     },
     "a": {
-      "x": 2,
+      "x": 0,
       "y": -1,
-      "z": 0
+      "z": 2
     },
     "b": {
-      "x": -2,
+      "x": 0,
       "y": 3,
-      "z": 0
+      "z": -2
     }
   },
-  "budget": [
-    {
-      "action": "require-exact",
-      "category": "tunnel1",
-      "amount": 0
-    }
-  ],
   "sockets": [
     {
       "pos": {
@@ -32,35 +25,57 @@
         "z": 0
       },
       "category": "tunnel1",
-      "forward": "NORTH",
+      "forward": "WEST",
       "budget": []
+    }
+  ],
+  "budget": [
+    {
+      "action": "require-exact",
+      "category": "tunnel1",
+      "amount": 0
     }
   ],
   "entities": [],
   "blocks": {
-    "offsetX": -2,
+    "offsetX": 0,
     "offsetY": -1,
-    "offsetZ": 0,
+    "offsetZ": -2,
     "structure": [
       [
-        "AAAAA",
-        "     "
+        "A ",
+        "A ",
+        "A ",
+        "A ",
+        "A "
       ],
       [
-        "ABBBA",
-        " CCC "
+        "A ",
+        "BC",
+        "BC",
+        "BC",
+        "A "
       ],
       [
-        "ABBBA",
-        " CCC "
+        "A ",
+        "BC",
+        "BC",
+        "BC",
+        "A "
       ],
       [
-        "ABBBA",
-        " CCC "
+        "A ",
+        "BC",
+        "BC",
+        "BC",
+        "A "
       ],
       [
-        "AAAAA",
-        "     "
+        "A ",
+        "A ",
+        "A ",
+        "A ",
+        "A "
       ]
     ]
   },

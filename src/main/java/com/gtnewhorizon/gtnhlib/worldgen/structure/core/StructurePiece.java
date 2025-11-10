@@ -222,7 +222,24 @@ public class StructurePiece {
 
     @Override
     public String toString() {
-        return "StructurePiece{" + "path='" + path + '\'' + '}';
+        return "StructurePiece{"
+            + "dataVersion="
+            + dataVersion
+            + ", aabb="
+            + aabb
+            + ", aabbChannel='"
+            + aabbChannel
+            + '\''
+            + ", sockets="
+            + sockets
+            + ", weight="
+            + weight
+            + ", budgetOperations="
+            + budgetOperations
+            + ", path='"
+            + path
+            + '\''
+            + '}';
     }
 
     public static final Gson GSON = new GsonBuilder()

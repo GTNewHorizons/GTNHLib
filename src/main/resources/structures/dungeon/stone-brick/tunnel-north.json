@@ -17,6 +17,13 @@
       "z": 2
     }
   },
+  "budget": [
+    {
+      "action": "consume",
+      "category": "tunnel1",
+      "amount": 1
+    }
+  ],
   "sockets": [
     {
       "pos": {
@@ -35,13 +42,6 @@
       },
       "category": "tunnel1",
       "forward": "SOUTH"
-    }
-  ],
-  "budget": [
-    {
-      "action": "consume",
-      "category": "tunnel1",
-      "amount": 1
     }
   ],
   "entities": [],

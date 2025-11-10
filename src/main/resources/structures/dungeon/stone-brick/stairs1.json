@@ -8,15 +8,16 @@
     },
     "a": {
       "x": 2,
-      "y": 4,
-      "z": 2
+      "y": 0,
+      "z": -2
     },
     "b": {
       "x": -2,
-      "y": 0,
-      "z": -2
+      "y": 3,
+      "z": 2
     }
   },
+  "entities": [],
   "budget": [
     {
       "action": "consume",
@@ -28,61 +29,64 @@
     {
       "pos": {
         "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "connects-to": ["stairs1"],
-      "forward": "DOWN"
-    },
-    {
-      "pos": {
-        "x": 0,
         "y": 3,
         "z": 0
       },
       "category": "stairs1",
-      "forward": "UP"
+      "connects-to": [],
+      "forward": "UP",
+      "budget": []
+    },
+    {
+      "pos": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "category": "stairs1",
+      "connects-to": [],
+      "forward": "DOWN",
+      "budget": []
     }
   ],
-  "entities": [],
   "blocks": {
     "offsetX": -2,
     "offsetY": 0,
     "offsetZ": -2,
     "structure": [
       [
-        "BBBBB",
-        "BAAAB",
-        "BABAB",
-        "BBFAB",
-        "BBBBB"
+        "AAAAA",
+        "ABBBA",
+        "ABABA",
+        "AAFBA",
+        "AAAAA"
       ],
       [
-        "BBBBB",
-        "BBAAB",
-        "BDBAB",
-        "BAAAB",
-        "BBBBB"
+        "AAAAA",
+        "AABBA",
+        "ADABA",
+        "ABBBA",
+        "AAAAA"
       ],
       [
-        "BBBBB",
-        "BACBB",
-        "BABAB",
-        "BAAAB",
-        "BBBBB"
+        "AAAAA",
+        "ABCAA",
+        "ABABA",
+        "ABBBA",
+        "AAAAA"
       ],
       [
-        "BBBBB",
-        "BAAAB",
-        "BABEB",
-        "BAABB",
-        "BBBBB"
+        "AAAAA",
+        "ABBBA",
+        "ABAEA",
+        "ABBAA",
+        "AAAAA"
       ]
     ]
   },
   "palette": [
-    "minecraft:air:0",
     "minecraft:stonebrick:0",
+    "minecraft:air:0",
     "minecraft:stone_brick_stairs:0",
     "minecraft:stone_brick_stairs:3",
     "minecraft:stone_brick_stairs:2",

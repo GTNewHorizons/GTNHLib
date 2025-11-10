@@ -1,0 +1,88 @@
+{
+  "DataVersion": 1,
+  "aabb": {
+    "origin": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "a": {
+      "x": 0,
+      "y": -1,
+      "z": 2
+    },
+    "b": {
+      "x": 0,
+      "y": 3,
+      "z": -2
+    }
+  },
+  "sockets": [
+    {
+      "pos": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "category": "tunnel1",
+      "forward": "EAST",
+      "budget": []
+    }
+  ],
+  "budget": [
+    {
+      "action": "require-exact",
+      "category": "tunnel1",
+      "amount": 0
+    }
+  ],
+  "entities": [],
+  "blocks": {
+    "offsetX": -1,
+    "offsetY": -1,
+    "offsetZ": -2,
+    "structure": [
+      [
+        " B",
+        " B",
+        " B",
+        " B",
+        " B"
+      ],
+      [
+        " B",
+        "CA",
+        "CA",
+        "CA",
+        " B"
+      ],
+      [
+        " B",
+        "CA",
+        "CA",
+        "CA",
+        " B"
+      ],
+      [
+        " B",
+        "CA",
+        "CA",
+        "CA",
+        " B"
+      ],
+      [
+        " B",
+        " B",
+        " B",
+        " B",
+        " B"
+      ]
+    ]
+  },
+  "palette": [
+    "minecraft:air:0",
+    "minecraft:stonebrick:0",
+    "minecraft:planks:0"
+  ],
+  "weight": 1.0
+}

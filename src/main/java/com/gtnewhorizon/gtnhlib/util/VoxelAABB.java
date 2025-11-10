@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.util;
 
+import java.text.MessageFormat;
 import java.util.Iterator;
 
 import javax.annotation.Nonnull;
@@ -104,6 +105,33 @@ public class VoxelAABB implements Iterable<Vector3ic>, Boundable {
             && z >= Math.min(a.z, b.z) && z <= Math.max(a.z, b.z);
     }
 
+    public boolean contains(VoxelAABB other) {
+        final Vector3i a1 = a;
+        final Vector3i b1 = b;
+        final int xmin1 = Math.min(a1.x, b1.x);
+        final int ymin1 = Math.min(a1.y, b1.y);
+        final int zmin1 = Math.min(a1.z, b1.z);
+        final int xmax1 = Math.max(a1.x, b1.x);
+        final int ymax1 = Math.max(a1.y, b1.y);
+        final int zmax1 = Math.max(a1.z, b1.z);
+
+        final Vector3i a2 = other.a;
+        final Vector3i b2 = other.b;
+        final int xmin2 = Math.min(a2.x, b2.x);
+        final int ymin2 = Math.min(a2.y, b2.y);
+        final int zmin2 = Math.min(a2.z, b2.z);
+        final int xmax2 = Math.max(a2.x, b2.x);
+        final int ymax2 = Math.max(a2.y, b2.y);
+        final int zmax2 = Math.max(a2.z, b2.z);
+
+        return xmax2 > xmin1
+            && xmin2 < xmax1
+            && ymax2 > ymin1
+            && ymin2 < ymax1
+            && zmax2 > zmin1
+            && zmin2 < zmax1;
+    }
+
     @Override
     public @Nonnull Iterator<Vector3ic> iterator() {
         Vector3i min = min();
@@ -176,8 +204,8 @@ public class VoxelAABB implements Iterable<Vector3ic>, Boundable {
 
         Vector3i min = min(), max = max();
 
-        dest.setMin(min.x, min.y, min.z);
-        dest.setMax(max.x + 1, max.y + 1, max.z + 1);
+        dest.setMin(min.x + 0.1f, min.y + 0.1f, min.z + 0.1f);
+        dest.setMax(max.x + 0.9f, max.y + 0.9f, max.z + 0.9f);
 
         return dest;
     }
@@ -191,5 +219,10 @@ public class VoxelAABB implements Iterable<Vector3ic>, Boundable {
             Math.abs(size.y),
             Math.abs(size.z),
             size.x * size.y * size.z);
+    }
+
+    @Override
+    public String toString() {
+        return MessageFormat.format("VoxelAABB'{'origin={0},{1},{2}, a={3},{4},{5}, b={6},{7},{8}'}'", origin.x, origin.y, origin.z, a.x, a.y, a.z, b.x, b.y, b.z);
     }
 }

@@ -17,10 +17,13 @@ public class TestStructurePieceGenerator extends StructurePieceGenerator {
         registerPiece("stairs", StructurePiece.load("structures/dungeon/stone-brick/stairs1.json"));
         registerPiece("stairs-bottom", StructurePiece.load("structures/dungeon/stone-brick/stairs1-bottom.json"));
 
+        registerPiece("tunnel-x", StructurePiece.load("structures/dungeon/stone-brick/tunnel-x.json"));
         registerPiece("tunnel-z", StructurePiece.load("structures/dungeon/stone-brick/tunnel-z.json"));
 
         registerPiece("cap-north", StructurePiece.load("structures/dungeon/stone-brick/cap-north.json"));
         registerPiece("cap-south", StructurePiece.load("structures/dungeon/stone-brick/cap-south.json"));
+        registerPiece("cap-east", StructurePiece.load("structures/dungeon/stone-brick/cap-east.json"));
+        registerPiece("cap-west", StructurePiece.load("structures/dungeon/stone-brick/cap-west.json"));
 
         this.setRarity(10);
         GameRegistry.registerWorldGenerator(this, 50);

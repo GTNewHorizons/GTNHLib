@@ -29,30 +29,10 @@
       "pos": {
         "x": 0,
         "y": 1,
-        "z": -3
-      },
-      "category": "tunnel1",
-      "forward": "NORTH",
-      "budget": []
-    },
-    {
-      "pos": {
-        "x": 0,
-        "y": 1,
         "z": -2
       },
-      "connects-to": ["tunnel1"],
-      "forward": "NORTH",
-      "budget": []
-    },
-    {
-      "pos": {
-        "x": 0,
-        "y": 1,
-        "z": 3
-      },
       "category": "tunnel1",
-      "forward": "SOUTH",
+      "forward": "NORTH",
       "budget": []
     },
     {
@@ -61,7 +41,7 @@
         "y": 1,
         "z": 2
       },
-      "connects-to": ["tunnel1"],
+      "category": "tunnel1",
       "forward": "SOUTH",
       "budget": []
     }
