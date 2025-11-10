@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
+import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
 import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
@@ -7,6 +8,7 @@ import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.IResourcePack;
@@ -18,8 +20,6 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ducks.BackingResourceManager;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ducks.GlobalResourceManager;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
@@ -146,14 +146,14 @@ public class ModelRegistry {
             STATE_MODEL_MAP_CACHE.clear();
             JSON_MODEL_CACHE.clear();
 
-            if (!(irm instanceof GlobalResourceManager manager)) return;
+            if (autoTextureLoading) detectAndLoadTextures();
+        }
 
-            final var domains = manager.nhlib$getDomainResourceManagers();
+        private void detectAndLoadTextures() {
+            // Scan resourcepacks for model files
             final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
-            for (var domain : domains.entrySet()) {
-                final var files = domain.getValue();
-                resourcePacks.addAll(((BackingResourceManager) files).nhlib$getResourcePacks());
-            }
+            Minecraft.getMinecraft().getResourcePackRepository().getRepositoryEntries()
+                    .forEach(e -> resourcePacks.add(e.getResourcePack()));
 
             final var texturesToLoad = new ObjectArrayList<String>();
             for (var pack : resourcePacks) {

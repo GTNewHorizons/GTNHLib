@@ -27,11 +27,9 @@ public enum Mixins implements IMixins {
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin)),
-    MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures").addClientMixins(
-            "models.FRMAccessor",
-            "models.MixinFileResourcePack",
-            "models.MixinFolderResourcePack",
-            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading)),
+    MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures")
+            .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
+            .setApplyIf(() -> autoTextureLoading)),
     DYNAMIC_BLOCK_SOUNDS(Side.COMMON, "block_sounds.MixinEntity", "block_sounds.MixinEntityLivingBase",
             "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
             "block_sounds.MixinPlayerControllerMP", "block_sounds.MixinRenderGlobal"),
