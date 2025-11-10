@@ -18,7 +18,6 @@ public abstract class MixinEntityLivingBase {
 
     @WrapOperation(
             method = "fall",
-            require = 1,
             at = @At(
                     value = "FIELD",
                     target = "Lnet/minecraft/block/Block;stepSound:Lnet/minecraft/block/Block$SoundType;"))
