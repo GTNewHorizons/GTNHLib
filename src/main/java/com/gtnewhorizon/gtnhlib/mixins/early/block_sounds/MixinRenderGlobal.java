@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-import com.gtnewhorizon.gtnhlib.api.BlockWithCustomSound;
+import com.gtnewhorizon.gtnhlib.api.IBlockWithCustomSound;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -28,7 +28,7 @@ public class MixinRenderGlobal {
     public SoundType redirectStepSound(Block instance, Operation<SoundType> original,
             @Local(argsOnly = true, ordinal = 1) int x, @Local(argsOnly = true, ordinal = 2) int y,
             @Local(argsOnly = true, ordinal = 3) int z) {
-        if (instance instanceof BlockWithCustomSound sound) {
+        if (instance instanceof IBlockWithCustomSound sound) {
             return sound.getSound(this.mc.thePlayer.worldObj, x, y, z);
         }
 

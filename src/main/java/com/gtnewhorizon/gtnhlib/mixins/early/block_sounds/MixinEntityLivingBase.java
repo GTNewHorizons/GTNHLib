@@ -9,7 +9,7 @@ import net.minecraft.util.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-import com.gtnewhorizon.gtnhlib.api.BlockWithCustomSound;
+import com.gtnewhorizon.gtnhlib.api.IBlockWithCustomSound;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
@@ -22,7 +22,7 @@ public abstract class MixinEntityLivingBase {
                     value = "FIELD",
                     target = "Lnet/minecraft/block/Block;stepSound:Lnet/minecraft/block/Block$SoundType;"))
     public SoundType redirectStepSound(Block instance, Operation<SoundType> original) {
-        if (instance instanceof BlockWithCustomSound sound) {
+        if (instance instanceof IBlockWithCustomSound sound) {
             Entity self = (Entity) (Object) this;
 
             int x = MathHelper.floor_double(self.posX);
