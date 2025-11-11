@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.*;
@@ -23,6 +24,8 @@ public class GTNHLib {
     @SidedProxy(clientSide = GTNHLib.GROUPNAME + ".ClientProxy", serverSide = GTNHLib.GROUPNAME + ".CommonProxy")
     public static CommonProxy proxy;
 
+    public static boolean isMFRLoaded;
+
     @Mod.EventHandler
     public void construct(FMLConstructionEvent event) {
         proxy.construct(event);
@@ -30,6 +33,8 @@ public class GTNHLib {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        isMFRLoaded = Loader.isModLoaded("MineFactoryReloaded");
+
         proxy.preInit(event);
     }
 
