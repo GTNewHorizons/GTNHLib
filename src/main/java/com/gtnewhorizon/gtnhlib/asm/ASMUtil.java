@@ -17,6 +17,9 @@ import org.objectweb.asm.util.ASMifier;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceClassVisitor;
 
+// This class might be loaded by different class loaders,
+// it should not reference any code from the main mod.
+// See {@link com.gtnewhorizon.gtnhlib.core.shared.package-info}
 public class ASMUtil {
 
     private static final Logger logger = LogManager.getLogger("ASM GTNH");
