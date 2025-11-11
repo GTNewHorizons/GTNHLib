@@ -30,9 +30,10 @@ public enum Mixins implements IMixins {
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures")
             .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
             .setApplyIf(() -> autoTextureLoading)),
-    DYNAMIC_BLOCK_SOUNDS(Side.COMMON, "block_sounds.MixinEntity", "block_sounds.MixinEntityLivingBase",
+    DYNAMIC_BLOCK_SOUNDS_COMMON(Side.COMMON, "block_sounds.MixinEntity", "block_sounds.MixinEntityLivingBase",
             "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
-            "block_sounds.MixinPlayerControllerMP", "block_sounds.MixinRenderGlobal"),
+            "block_sounds.MixinPlayerControllerMP"),
+    DYNAMIC_BLOCK_SOUNDS_CLIENT(Side.CLIENT, "block_sounds.MixinRenderGlobal"),
     //
     ;
 
