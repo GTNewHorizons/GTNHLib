@@ -56,7 +56,7 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
                 GL11.GL_TEXTURE_2D,
                 this.depthAttachment,
                 0);
-        if (isEnabled(STENCIL_BUFFER)) {
+        if (isEnabled(STENCIL_BUFFER) && isMinecraftStencilEnabled()) {
             OpenGlHelper.func_153188_a(
                     GL30.GL_FRAMEBUFFER,
                     GL30.GL_STENCIL_ATTACHMENT,
