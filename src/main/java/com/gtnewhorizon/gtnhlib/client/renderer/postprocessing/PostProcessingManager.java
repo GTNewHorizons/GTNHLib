@@ -32,9 +32,9 @@ public class PostProcessingManager {
             for (int i = 0; i < renderersIndex; i++) {
                 final GeometryRenderer renderer = delayedRenderers.get(i);
 
-                GL11.glTranslatef(renderer.viewX, renderer.viewY, renderer.viewZ);
+                GL11.glTranslated(renderer.viewX, renderer.viewY, renderer.viewZ);
                 renderer.renderer.render(renderer.data);
-                GL11.glTranslatef(-renderer.viewX, -renderer.viewY, -renderer.viewZ);
+                GL11.glTranslated(-renderer.viewX, -renderer.viewY, -renderer.viewZ);
 
                 renderer.data = null; // Prevent potential memory leaks
             }
@@ -110,16 +110,16 @@ public class PostProcessingManager {
     private static final class GeometryRenderer {
 
         private I3DGeometryRenderer renderer;
-        private float viewX;
-        private float viewY;
-        private float viewZ;
+        private double viewX;
+        private double viewY;
+        private double viewZ;
         private Object data;
 
-        public GeometryRenderer(I3DGeometryRenderer renderer, float viewX, float viewY, float viewZ, Object data) {
+        public GeometryRenderer(I3DGeometryRenderer renderer, double viewX, double viewY, double viewZ, Object data) {
             set(renderer, viewX, viewY, viewZ, data);
         }
 
-        public void set(I3DGeometryRenderer renderer, float viewX, float viewY, float viewZ, Object data) {
+        public void set(I3DGeometryRenderer renderer, double viewX, double viewY, double viewZ, Object data) {
             this.renderer = renderer;
             this.viewX = viewX;
             this.viewY = viewY;
