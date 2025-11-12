@@ -27,7 +27,6 @@ public class PostProcessingManager {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void applyPostProcessingEffects(RenderWorldLastEvent event) {
 
-
         final int cachedRenderers = delayedRenderers.size();
         if (cachedRenderers >= 16) {
             final int upperLimit = cachedRenderers / 4;
