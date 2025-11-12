@@ -11,6 +11,26 @@ import org.lwjgl.opengl.GL30;
 
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 
+/**
+ * A framebuffer that shares the depth buffer of another {@link Framebuffer}.
+ * <p>
+ * This class is useful when rendering multiple targets that need to maintain consistent depth information — for
+ * example, when rendering color and post-processing passes that must use the same depth data.
+ * </p>
+ *
+ * <p>
+ * Unlike a normal {@link CustomFramebuffer}, a {@code SharedDepthFramebuffer} does not create or own its own depth
+ * attachment. Instead, it reuses the depth buffer from the specified source framebuffer. This allows multiple
+ * framebuffers to share the same depth information without redundant depth copies or memory usage.
+ * </p>
+ *
+ * <p>
+ * By default, {@link #DEPTH_ENABLED} will be {@code true}. <br>
+ * Keep in mind that the framebuffer will only use a stencil if the linked {@link Framebuffer} has stencil enabled.
+ * </p>
+ *
+ * @see CustomFramebuffer
+ */
 public class SharedDepthFramebuffer extends CustomFramebuffer {
 
     private final Framebuffer linkedBuffer;
