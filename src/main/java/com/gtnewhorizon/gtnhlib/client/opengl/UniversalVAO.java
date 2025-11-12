@@ -2,13 +2,14 @@ package com.gtnewhorizon.gtnhlib.client.opengl;
 
 import java.nio.IntBuffer;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
 import org.lwjgl.opengl.APPLEVertexArrayObject;
 import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
 
 /**
  * Universal methods for handling Vertex Array Objects in the OpenGL versions supported by Minecraft. Uses the GL 3.0
