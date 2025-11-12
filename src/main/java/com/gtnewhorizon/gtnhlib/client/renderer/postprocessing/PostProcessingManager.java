@@ -70,6 +70,9 @@ public class PostProcessingManager {
     /**
      * Adds a delayed renderer. The given renderer will be called during {@link RenderWorldLastEvent}. <br>
      *
+     * These need to be registered every render tick <strong>before</strong> the {@link RenderWorldLastEvent} gets
+     * called.<br>
+     *
      * "View space" refers to the space of the object in relation to the player's view. It is calculated as
      * (object.position - view.position) <br>
      *
