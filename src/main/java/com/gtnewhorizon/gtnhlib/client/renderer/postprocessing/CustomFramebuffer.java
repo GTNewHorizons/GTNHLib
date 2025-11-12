@@ -29,8 +29,8 @@ import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
  *
  * <p><b>Example:</b></p>
  * <pre>{@code
- * Framebuffer fb = new Framebuffer(
- *         Framebuffer.DEPTH_TEXTURE | Framebuffer.HDR_COLORS);
+ * CustomFramebuffer fb = new CustomFramebuffer(
+ *         CustomFramebuffer.DEPTH_TEXTURE | CustomFramebuffer.HDR_COLORS);
  * }</pre>
  *
  * <p><b>Available Flags:</b></p>
