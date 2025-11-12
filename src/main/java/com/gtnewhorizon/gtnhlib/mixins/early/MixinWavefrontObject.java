@@ -31,6 +31,11 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     @Unique
     private VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
 
+    @Override
+    public void rebuildVBO() {
+        rebuild(false);
+    }
+
     private void rebuild(boolean vao) {
         if (currentGroupObject == null) {
             throw new RuntimeException("No group object selected");

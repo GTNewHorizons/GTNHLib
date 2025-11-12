@@ -1,7 +1,8 @@
-package com.gtnewhorizon.gtnhlib.client.renderer.vao;
+package com.gtnewhorizon.gtnhlib.client.opengl;
 
 import java.nio.IntBuffer;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
 import org.lwjgl.opengl.APPLEVertexArrayObject;
 import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;

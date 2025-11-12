@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
+import com.gtnewhorizon.gtnhlib.client.opengl.UniversalVAO;
 import org.lwjgl.opengl.GLContext;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
