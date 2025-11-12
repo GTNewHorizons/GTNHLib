@@ -27,6 +27,15 @@ public class PostProcessingManager {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void applyPostProcessingEffects(RenderWorldLastEvent event) {
 
+
+        final int cachedRenderers = delayedRenderers.size();
+        if (cachedRenderers >= 16) {
+            final int upperLimit = cachedRenderers / 4;
+            if (upperLimit > renderersIndex) {
+                delayedRenderers.subList(upperLimit, cachedRenderers).clear();
+            }
+        }
+
         if (renderersIndex != 0) {
             for (int i = 0; i < renderersIndex; i++) {
                 final GeometryRenderer renderer = delayedRenderers.get(i);
