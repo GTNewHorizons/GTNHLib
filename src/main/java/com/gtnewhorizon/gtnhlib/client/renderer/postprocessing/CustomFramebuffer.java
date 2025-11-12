@@ -19,8 +19,32 @@ import org.lwjgl.opengl.*;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
+/**
+ * Constructs a new framebuffer with the specified configuration flags.
+ * <p>
+ * The framebuffer behavior is controlled using a bitmask of flags. Each flag
+ * enables or modifies a specific feature. Multiple flags can be combined using
+ * the bitwise OR operator ({@code |}).
+ * </p>
+ *
+ * <p><b>Example:</b></p>
+ * <pre>{@code
+ * Framebuffer fb = new Framebuffer(
+ *         Framebuffer.DEPTH_TEXTURE | Framebuffer.HDR_COLORS);
+ * }</pre>
+ *
+ * <p><b>Available Flags:</b></p>
+ * <ul>
+ *   <li>{@link #DEPTH_ENABLED} — Enables depth buffering.
+ *       Automatically included by {@link #DEPTH_TEXTURE} and {@link #STENCIL_BUFFER}.</li>
+ *   <li>{@link #DEPTH_TEXTURE} — Adds a depth texture attachment (also enables depth buffering).</li>
+ *   <li>{@link #STENCIL_BUFFER} — Adds a stencil buffer (also enables depth buffering).</li>
+ *   <li>{@link #TEXTURE_LINEAR} — Uses linear filtering for the color texture instead of nearest-neighbor.</li>
+ *   <li>{@link #NO_ALPHA_CHANNEL} — Disables the alpha channel in the color texture.</li>
+ *   <li>{@link #HDR_COLORS} — Uses a high dynamic range (floating-point) color format.</li>
+ * </ul>
+ */
 public class CustomFramebuffer {
-
     public int framebufferWidth;
     public int framebufferHeight;
     public int framebufferObject;
