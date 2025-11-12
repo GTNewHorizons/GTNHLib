@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
