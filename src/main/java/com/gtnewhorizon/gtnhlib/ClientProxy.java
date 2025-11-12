@@ -36,7 +36,7 @@ public class ClientProxy extends CommonProxy {
     public static boolean doThreadSafetyChecks = true;
     @Getter
     public static int currentServerViewDistance = 12;
-    private final Minecraft mc = Minecraft.getMinecraft();
+    public static final Minecraft mc = Minecraft.getMinecraft();
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
