@@ -3,6 +3,8 @@ package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -88,6 +90,21 @@ public class PostProcessingManager {
             delayedRenderers.add(new GeometryRenderer(renderer, (float) viewX, (float) viewY, (float) viewZ, data));
         }
         renderersIndex++;
+    }
+
+    /**
+     * Helper methods to convert the coordinates of a block to view space.
+     */
+    public static double viewX(double x) {
+        return x - RenderManager.renderPosX;
+    }
+
+    public static double viewY(double y) {
+        return y - RenderManager.renderPosY;
+    }
+
+    public static double viewZ(double z) {
+        return z - RenderManager.renderPosZ;
     }
 
     private static final class GeometryRenderer {
