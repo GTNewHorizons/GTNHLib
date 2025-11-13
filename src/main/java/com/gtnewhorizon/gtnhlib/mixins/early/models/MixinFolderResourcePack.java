@@ -19,6 +19,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelResourcePack;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 
+import it.unimi.dsi.fastutil.objects.ObjectLists;
+
 @SuppressWarnings("UnusedMixin")
 @Mixin(FolderResourcePack.class)
 public abstract class MixinFolderResourcePack extends AbstractResourcePack implements ModelResourcePack {
@@ -55,6 +57,6 @@ public abstract class MixinFolderResourcePack extends AbstractResourcePack imple
             MODEL_LOGGER.warn(e);
         }
 
-        return ModelResourcePack.super.nhlib$getReferencedTextures(jsonParser);
+        return ObjectLists.emptyList();
     }
 }

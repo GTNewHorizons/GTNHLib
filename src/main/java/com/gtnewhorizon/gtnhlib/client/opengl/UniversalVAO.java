@@ -9,6 +9,8 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
+
 /**
  * Universal methods for handling Vertex Array Objects in the OpenGL versions supported by Minecraft. Uses the GL 3.0
  * VAO methods if available, and falls back to GL_APPLE_vertex_array_object or ARB_vertex_array_object if needed. This
@@ -17,6 +19,21 @@ import org.lwjgl.opengl.GLContext;
  * @author eigenraven
  */
 public final class UniversalVAO {
+
+    /**
+     * Returns the implementation based on the ContextCapabilities.
+     */
+    public static VaoFunctions getImplementation(ContextCapabilities caps) {
+        if (caps.OpenGL30) {
+            return new VaoGL3();
+        } else if (caps.GL_APPLE_vertex_array_object) {
+            return new VaoApple();
+        } else if (caps.GL_ARB_vertex_array_object) {
+            return new VaoArb();
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Resets the cached VAO implementation for this thread, any further method calls will query the GL context
@@ -112,57 +129,8 @@ public final class UniversalVAO {
         FUNCTIONS.get().glBindVertexArray(id);
     }
 
-    /**
-     * Utility for querying which VAO mechanism is supported by the current OpenGL context.
-     */
-    public enum Implementation {
-
-        GL3,
-        APPLE,
-        ARB;
-
-        public static Implementation querySupported() {
-            final ContextCapabilities caps = GLContext.getCapabilities();
-            if (caps.OpenGL30) {
-                return GL3;
-            } else if (caps.GL_APPLE_vertex_array_object) {
-                return APPLE;
-            } else if (caps.GL_ARB_vertex_array_object) {
-                return ARB;
-            } else {
-                throw new UnsupportedOperationException("VAO not supported by the current OpenGL implementation.");
-            }
-        }
-    }
-
-    private static final ThreadLocal<VaoFunctions> FUNCTIONS = new ThreadLocal<>() {
-
-        @Override
-        protected VaoFunctions initialValue() {
-            return switch (Implementation.querySupported()) {
-                case GL3 -> new VaoGL3();
-                case APPLE -> new VaoApple();
-                case ARB -> new VaoArb();
-            };
-        }
-    };
-
-    private interface VaoFunctions {
-
-        int getCurrentBinding();
-
-        int glGenVertexArrays();
-
-        void glGenVertexArrays(IntBuffer output);
-
-        void glDeleteVertexArrays(int id);
-
-        void glDeleteVertexArrays(IntBuffer ids);
-
-        boolean glIsVertexArray(int id);
-
-        void glBindVertexArray(int id);
-    }
+    private static final ThreadLocal<VaoFunctions> FUNCTIONS = ThreadLocal
+            .withInitial(() -> getImplementation(GLContext.getCapabilities()));
 
     private static final class VaoGL3 implements VaoFunctions {
 
