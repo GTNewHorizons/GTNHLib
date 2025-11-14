@@ -32,6 +32,7 @@ public enum Mixins implements IMixins {
             "models.MixinFolderResourcePack",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading))
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
+    BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures")
             .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
