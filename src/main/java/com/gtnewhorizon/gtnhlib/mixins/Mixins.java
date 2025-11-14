@@ -24,6 +24,7 @@ public enum Mixins implements IMixins {
     DEBUG_TEXTURES(new MixinBuilder("Dump textures sizes")
             .addClientMixins("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite").setPhase(Phase.EARLY)
             .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))),
+    BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin)),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
@@ -31,7 +32,11 @@ public enum Mixins implements IMixins {
             "models.FRMAccessor",
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
-            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading))
+            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> autoTextureLoading)),
+    DYNAMIC_BLOCK_SOUNDS_COMMON(Side.COMMON, "block_sounds.MixinEntity", "block_sounds.MixinEntityLivingBase",
+        "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
+        "block_sounds.MixinPlayerControllerMP"),
+    DYNAMIC_BLOCK_SOUNDS_CLIENT(Side.CLIENT, "block_sounds.MixinRenderGlobal"),
     //
     ;
 
