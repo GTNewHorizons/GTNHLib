@@ -1,9 +1,6 @@
 package com.gtnewhorizon.gtnhlib.mixins;
 
-import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
-
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
-import com.gtnewhorizon.gtnhlib.util.EarlyConfig;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
@@ -30,11 +27,11 @@ public enum Mixins implements IMixins {
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures")
-        .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
-        .setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+            .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
+            .setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
     DYNAMIC_BLOCK_SOUNDS_COMMON(Side.COMMON, "block_sounds.MixinEntity", "block_sounds.MixinEntityLivingBase",
-        "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
-        "block_sounds.MixinPlayerControllerMP"),
+            "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
+            "block_sounds.MixinPlayerControllerMP"),
     DYNAMIC_BLOCK_SOUNDS_CLIENT(Side.CLIENT, "block_sounds.MixinRenderGlobal"),
     //
     ;
