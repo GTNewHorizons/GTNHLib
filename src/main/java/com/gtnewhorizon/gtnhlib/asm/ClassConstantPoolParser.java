@@ -29,6 +29,9 @@ import java.util.Arrays;
  * Using this class to search for a (single) String reference is > 40 times faster than parsing a class with a
  * ClassReader + ClassNode while using way less RAM
  */
+// This class might be loaded by different class loaders,
+// it should not reference any code from the main mod.
+// See {@link com.gtnewhorizon.gtnhlib.core.shared.package-info}
 public class ClassConstantPoolParser {
 
     enum ConstantTypes {
