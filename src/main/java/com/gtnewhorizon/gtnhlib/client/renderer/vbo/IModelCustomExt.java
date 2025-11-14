@@ -10,6 +10,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public interface IModelCustomExt extends IModelCustom {
 
+    // There's no reason for another mod to call this, it should only be used internally.
+    @Deprecated
     @SideOnly(CLIENT)
     void rebuildVBO();
 
@@ -17,5 +19,11 @@ public interface IModelCustomExt extends IModelCustom {
     void renderAllVBO();
 
     @SideOnly(CLIENT)
+    void renderAllVAO();
+
+    @SideOnly(CLIENT)
     void setVertexFormat(VertexFormat format);
+
+    @SideOnly(CLIENT)
+    void setVertexFormat(VertexFormat format, boolean vao);
 }

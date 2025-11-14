@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.Tessellator;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -45,6 +46,10 @@ public class TessellatorManager {
     }
 
     public static void startCapturing() {
+        startCapturingAndGet();
+    }
+
+    public static CapturingTessellator startCapturingAndGet() {
         if (currentlyCapturing.get())
             throw new IllegalStateException("Tried to start capturing when already capturing!");
         final CapturingTessellator tess = capturingTessellator.get();
@@ -53,6 +58,8 @@ public class TessellatorManager {
         tess.storeTranslation();
 
         currentlyCapturing.set(true);
+
+        return tess;
     }
 
     /// Stop the CapturingTessellator and return the pooled quads. The quads are valid until clearQuads() is called on
@@ -84,6 +91,15 @@ public class TessellatorManager {
     /// buffer to a new VertexBuffer, and clears the quads.
     public static VertexBuffer stopCapturingToVBO(VertexFormat format) {
         return new VertexBuffer(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
+    }
+
+    /**
+     * Same as stopCapturingToVBO, but now wrapping the VBO inside of a VAO for safer & cached attrib pointers. <br>
+     * This method is in 99% of cases better since it's both faster and safer. <br>
+     * If VAO's are not supported, this will create a VBO instead.
+     */
+    public static VertexBuffer stopCapturingToVAO(VertexFormat format) {
+        return VAOManager.createVAO(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
     }
 
     static {
