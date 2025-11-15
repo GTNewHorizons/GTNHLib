@@ -35,7 +35,7 @@ public interface ItemSink {
     /**
      * Injects a stack into this sink. This operation is not atomic. There is no guarantee that the sink is completely
      * full when items are rejected, this is just a best-effort operation.
-     * 
+     *
      * @return The number of rejected items.
      */
     @Nonnegative
@@ -83,6 +83,8 @@ public interface ItemSink {
 
         while (iter.hasNext()) {
             ImmutableItemStack stack = iter.next();
+
+            if (stack == null) continue;
 
             if (filter != null && !filter.test(stack)) continue;
 
