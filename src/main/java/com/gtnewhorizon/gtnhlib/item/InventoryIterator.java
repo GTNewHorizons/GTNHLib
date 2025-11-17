@@ -6,6 +6,8 @@ import javax.annotation.Nonnegative;
 
 import net.minecraft.item.ItemStack;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * It is assumed that this object is never stored in a field. It must not last for more than one discrete operation. The
  * backing data source (inventory, ME system, etc) can be modified, but no guarantees are made that the returned data is
@@ -38,11 +40,12 @@ public interface InventoryIterator extends ListIterator<ImmutableItemStack> {
      * @param forced When true, all inventory slot validation should be ignored.
      * @return The extracted stack
      */
+    @Nullable
     ItemStack extract(int amount, boolean forced);
 
     /**
      * Inserts items into the current index. Returns the number of items that could not be inserted.
-     * 
+     *
      * @param forced When true, all inventory slot validation should be ignored.
      */
     @Nonnegative
