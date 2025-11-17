@@ -57,6 +57,10 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
     }
 
     @Override
+    protected boolean canAccess(ItemStack stack, int slot) {
+        return canExtract(stack, slot) || canInsert(stack, slot);
+    }
+
     protected boolean canExtract(ItemStack stack, int slot) {
         if (!inv.isItemValidForSlot(slot, stack)) return false;
 

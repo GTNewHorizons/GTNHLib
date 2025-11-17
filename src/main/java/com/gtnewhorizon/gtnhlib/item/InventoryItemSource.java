@@ -69,6 +69,11 @@ public class InventoryItemSource implements ItemSource {
         return new StandardInventoryIterator(inv, side, getSlots(), allowedSlots) {
 
             @Override
+            protected boolean canAccess(ItemStack stack, int slot) {
+                return canExtract(stack, slot);
+            }
+
+            @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {
                 return InventoryItemSource.this.getSlotStackLimit(slot, stack);
             }
