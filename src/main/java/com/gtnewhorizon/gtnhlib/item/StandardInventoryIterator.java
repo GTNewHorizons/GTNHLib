@@ -117,8 +117,9 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
             return stack.getStackSize();
         }
 
+        int maxStack = getSlotStackLimit(slotIndex, partialCopy);
+
         if (!ItemUtil.isStackEmpty(inSlot)) {
-            int maxStack = getSlotStackLimit(slotIndex, partialCopy);
             int toInsert = forced ? stack.getStackSize() : Math.min(maxStack - inSlot.stackSize, stack.getStackSize());
 
             inSlot.stackSize += toInsert;
@@ -129,11 +130,13 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
 
             return stack.getStackSize() - toInsert;
         } else {
-            setInventorySlotContents(slotIndex, stack.toStack());
+            int toInsert = forced ? stack.getStackSize() : Math.min(maxStack, stack.getStackSize());
+
+            setInventorySlotContents(slotIndex, stack.toStack(toInsert));
 
             markDirty();
 
-            return 0;
+            return stack.getStackSize() - toInsert;
         }
     }
 
