@@ -53,7 +53,7 @@ public abstract class AbstractInventoryIterator implements InventoryIterator {
      */
     protected abstract ItemStack getStackInSlot(int slot);
 
-    protected boolean canExtract(ItemStack stack, int slot) {
+    protected boolean canAccess(ItemStack stack, int slot) {
         return true;
     }
 
@@ -67,7 +67,7 @@ public abstract class AbstractInventoryIterator implements InventoryIterator {
         last = i++;
 
         pooled.stack = getStackInSlot(slots[last]);
-        return pooled.stack == null || !canExtract(pooled.stack, slots[last]) ? null : pooled;
+        return pooled.stack == null || !canAccess(pooled.stack, slots[last]) ? null : pooled;
     }
 
     @Override
@@ -80,7 +80,7 @@ public abstract class AbstractInventoryIterator implements InventoryIterator {
         last = --i;
 
         pooled.stack = getStackInSlot(slots[last]);
-        return pooled.stack == null || !canExtract(pooled.stack, slots[last]) ? null : pooled;
+        return pooled.stack == null || !canAccess(pooled.stack, slots[last]) ? null : pooled;
     }
 
     @Override

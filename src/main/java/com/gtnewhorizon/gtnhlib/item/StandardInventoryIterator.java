@@ -57,25 +57,25 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
     }
 
     @Override
-    protected boolean canExtract(ItemStack stack, int slot) {
-        if (!inv.isItemValidForSlot(slot, stack)) return false;
+    protected boolean canAccess(ItemStack stack, int slot) {
+        return canExtract(stack, slot) || canInsert(stack, slot);
+    }
 
+    protected boolean canExtract(ItemStack stack, int slot) {
         if (inv instanceof ISidedInventory sided) {
             if (side == ForgeDirection.UNKNOWN) return true;
             return sided.canExtractItem(slot, stack, side.ordinal());
         } else {
-            return true;
+            return inv.isItemValidForSlot(slot, stack);
         }
     }
 
     protected boolean canInsert(ItemStack stack, int slot) {
-        if (!inv.isItemValidForSlot(slot, stack)) return false;
-
         if (inv instanceof ISidedInventory sided) {
             if (side == ForgeDirection.UNKNOWN) return true;
             return sided.canInsertItem(slot, stack, side.ordinal());
         } else {
-            return true;
+            return inv.isItemValidForSlot(slot, stack);
         }
     }
 
