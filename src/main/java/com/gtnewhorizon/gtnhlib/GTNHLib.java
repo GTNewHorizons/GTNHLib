@@ -26,6 +26,7 @@ public class GTNHLib {
     public static CommonProxy proxy;
 
     public static boolean isMFRLoaded;
+    public static boolean isCoFHCoreLoaded;
 
     @Mod.EventHandler
     public void construct(FMLConstructionEvent event) {
@@ -35,6 +36,7 @@ public class GTNHLib {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         isMFRLoaded = Loader.isModLoaded("MineFactoryReloaded");
+        isCoFHCoreLoaded = Loader.isModLoaded("CoFHCore");
 
         proxy.preInit(event);
     }
