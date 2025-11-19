@@ -32,7 +32,7 @@ public class VertexArrayBuffer extends VertexBuffer {
             this.vaoID = VAO.glGenVertexArrays();
             VAO.glBindVertexArray(vaoID);
             bindVBO();
-            format.setupBufferStateUnsafe();
+            format.setupBufferState(0);
             unbindVBO();
         } else {
             VAO.glBindVertexArray(vaoID);
