@@ -7,7 +7,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public class VertexArrayBuffer extends VertexBuffer {
 
-    protected final int vaoID;
+    protected int vaoID = -1;
 
     /**
      * This constructor is protected in order to prevent the usage of VAO's if they are incompatible. <br>
@@ -15,12 +15,6 @@ public class VertexArrayBuffer extends VertexBuffer {
      */
     protected VertexArrayBuffer(VertexFormat format, int drawMode) {
         super(format, drawMode);
-        this.vaoID = VAO.glGenVertexArrays();
-        VAO.glBindVertexArray(vaoID);
-        bindVBO();
-        format.setupBufferState(0L);
-        unbindVBO();
-        VAO.glBindVertexArray(0);
     }
 
     @Override
@@ -28,19 +22,21 @@ public class VertexArrayBuffer extends VertexBuffer {
         super.close();
         if (vaoID >= 0) {
             VAO.glDeleteVertexArrays(vaoID);
+            vaoID = -1;
         }
     }
 
     @Override
-    public final void render() {
-        VAO.glBindVertexArray(vaoID);
-        draw();
-        VAO.glBindVertexArray(0);
-    }
-
-    @Override
     public final void bind() {
-        VAO.glBindVertexArray(vaoID);
+        if (vaoID == -1) {
+            this.vaoID = VAO.glGenVertexArrays();
+            VAO.glBindVertexArray(vaoID);
+            bindVBO();
+            format.setupBufferStateUnsafe();
+            unbindVBO();
+        } else {
+            VAO.glBindVertexArray(vaoID);
+        }
     }
 
     @Override
