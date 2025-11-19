@@ -28,10 +28,18 @@ public enum Mixins implements IMixins {
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures")
             .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
-    DYNAMIC_BLOCK_SOUNDS_COMMON(Side.COMMON, "block_sounds.MixinEntity", "block_sounds.MixinEntityLivingBase",
-            "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
-            "block_sounds.MixinPlayerControllerMP"),
-    DYNAMIC_BLOCK_SOUNDS_CLIENT(Side.CLIENT, "block_sounds.MixinRenderGlobal"),
+    DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
+            .addCommonMixins(
+                    "block_sounds.MixinEntity",
+                    "block_sounds.MixinEntityLivingBase",
+                    "block_sounds.MixinEntityHorse",
+                    "block_sounds.MixinItemBlock",
+                    "block_sounds.MixinItemSlab",
+                    "block_sounds.MixinPlayerControllerMP")
+            .addClientMixins("block_sounds.MixinRenderGlobal").setPhase(Phase.EARLY)
+            .setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
+    ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
+            .addCommonMixins("EntityRendererAccessor")),
     //
     ;
 
