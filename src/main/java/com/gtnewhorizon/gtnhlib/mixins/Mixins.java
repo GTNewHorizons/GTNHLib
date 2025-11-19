@@ -38,7 +38,7 @@ public enum Mixins implements IMixins {
                     "block_sounds.MixinPlayerControllerMP")
             .addClientMixins("block_sounds.MixinRenderGlobal").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
-      ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
+    ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
             .addCommonMixins("EntityRendererAccessor")),
     //
     ;
