@@ -21,10 +21,12 @@ import com.gtnewhorizon.gtnhlib.capability.item.ItemSource;
 import com.gtnewhorizon.gtnhlib.item.InventoryItemSink;
 import com.gtnewhorizon.gtnhlib.item.InventoryItemSource;
 import com.gtnewhorizon.gtnhlib.item.WrappedItemIO;
+import com.gtnewhorizon.gtnhlib.item.impl.ItemDuctSink;
 import com.gtnewhorizon.gtnhlib.item.impl.mfr.DSUItemIO;
 import com.gtnewhorizon.gtnhlib.item.impl.mfr.DSUItemSink;
 import com.gtnewhorizon.gtnhlib.item.impl.mfr.DSUItemSource;
 
+import cofh.api.transport.IItemDuct;
 import cpw.mods.fml.common.Optional;
 import powercrystals.minefactoryreloaded.api.IDeepStorageUnit;
 
@@ -36,7 +38,9 @@ public class ItemUtil {
     public static final int FOR_EXTRACTS = 0b1 << counter++;
     /// Create [ItemSink]s / [ItemSource]s for [IDeepStorageUnit]s.
     public static final int WRAP_DSUS = 0b1 << counter++;
-    public static final int DEFAULT = WRAP_INVENTORIES | FOR_INSERTS | FOR_EXTRACTS | WRAP_DSUS;
+    /// Create [ItemSink]s for [IItemDuct]s.
+    public static final int WRAP_ITEM_DUCTS = 0b1 << counter++;
+    public static final int DEFAULT = WRAP_INVENTORIES | FOR_INSERTS | FOR_EXTRACTS | WRAP_DSUS | WRAP_ITEM_DUCTS;
 
     public static int getStackMeta(ItemStack stack) {
         return Items.feather.getDamage(stack);
@@ -165,6 +169,12 @@ public class ItemUtil {
             if (sink != null) return sink;
         }
 
+        if ((usage & WRAP_ITEM_DUCTS) != 0 && GTNHLib.isCoFHCoreLoaded) {
+            ItemSink sink = getDuctSink(obj, side);
+
+            if (sink != null) return sink;
+        }
+
         return null;
     }
 
@@ -227,6 +237,15 @@ public class ItemUtil {
     private static ItemSink getDSUSink(Object obj) {
         if (obj instanceof IDeepStorageUnit dsu) {
             return new DSUItemSink(dsu);
+        } else {
+            return null;
+        }
+    }
+
+    @Optional.Method(modid = "CoFHCore")
+    private static ItemSink getDuctSink(Object obj, ForgeDirection side) {
+        if (obj instanceof IItemDuct duct) {
+            return new ItemDuctSink(duct, side);
         } else {
             return null;
         }
