@@ -32,6 +32,8 @@ public enum Mixins implements IMixins {
             "block_sounds.MixinEntityHorse", "block_sounds.MixinItemBlock", "block_sounds.MixinItemSlab",
             "block_sounds.MixinPlayerControllerMP"),
     DYNAMIC_BLOCK_SOUNDS_CLIENT(Side.CLIENT, "block_sounds.MixinRenderGlobal"),
+    ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
+            .addCommonMixins("EntityRendererAccessor"))
     //
     ;
 
