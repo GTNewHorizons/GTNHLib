@@ -45,7 +45,7 @@ public class UniverseShader extends ShaderProgram {
 
     @SubscribeEvent
     public static void letsMakeAQuilt(TextureStitchEvent.Pre event) {
-        if (event.map.getTextureType() != 0) {
+        if (event.map.getTextureType() != 1) {
             return;
         }
 
@@ -69,7 +69,8 @@ public class UniverseShader extends ShaderProgram {
         }
     }
 
-    private static boolean inventoryRender = false;
+    public static boolean inventoryRender = false;
+    public static float cosmicOpacity = 1.0f;
 
     @SubscribeEvent
     public static void makeCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Pre event) {
@@ -120,7 +121,7 @@ public class UniverseShader extends ShaderProgram {
         GL20.glUniform1f(s, scale);
 
         int o = INSTANCE.getUniformLocation("opacity");
-        GL20.glUniform1f(o, 1f);
+        GL20.glUniform1f(o, cosmicOpacity);
     }
 
     public static void setLightFromLocation(World world, int x, int y, int z) {
