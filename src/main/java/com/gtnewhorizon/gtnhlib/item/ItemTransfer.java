@@ -153,10 +153,11 @@ public class ItemTransfer {
                 int toTransferThisOP = Math.min(remainingTransferAllowance, maxItemsPerTransfer);
 
                 ItemStack extracted = iter.extract(Math.min(availableCount, toTransferThisOP), false);
-                availableCount -= extracted.stackSize;
 
                 // We couldn't extract anything, even though we should've been able to: go to the next source slot
                 if (ItemUtil.isStackEmpty(extracted)) break;
+
+                availableCount -= extracted.stackSize;
 
                 // This should never happen, but extract() might return a stack that doesn't match the request, so check
                 // it again
@@ -174,7 +175,7 @@ public class ItemTransfer {
                         }
                     }
 
-                    break;
+                    continue;
                 }
 
                 // Try to insert the extracted stack

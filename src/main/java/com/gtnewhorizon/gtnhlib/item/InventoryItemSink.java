@@ -81,6 +81,11 @@ public class InventoryItemSink implements ItemSink {
         return new StandardInventoryIterator(inv, side, getSlots(), allowedSlots) {
 
             @Override
+            protected boolean canAccess(ItemStack stack, int slot) {
+                return canInsert(stack, slot);
+            }
+
+            @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {
                 return InventoryItemSink.this.getSlotStackLimit(slot, stack);
             }
