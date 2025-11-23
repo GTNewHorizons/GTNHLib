@@ -19,9 +19,6 @@ public enum Mixins implements IMixins {
     EQUIPMENT_CHANGE_EVENT(Side.COMMON, "MixinEntityLivingBase"),
     BACKPORT_SERVER_TICKING(Side.COMMON, "MixinMinecraftServer"),
     GAME_RULES_API(Side.COMMON, "MixinGameRules"),
-    DEBUG_TEXTURES(new MixinBuilder("Dump textures sizes")
-            .addClientMixins("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite").setPhase(Phase.EARLY)
-            .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))),
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
