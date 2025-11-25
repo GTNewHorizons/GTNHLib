@@ -27,6 +27,7 @@ import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
+import org.lwjgl.opengl.GL11;
 
 @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler {
@@ -47,8 +48,48 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     }
 
     @Override
-    public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
+    public void renderInventoryBlock(Block block, int meta, int modelId, RenderBlocks renderer) {
+        final Tessellator tesselator = TessellatorManager.get();
+        final BakedModel model = getModel(null, block, meta, 0, 0, 0);
 
+        GL11.glPushMatrix();
+        GL11.glDisable(GL11.GL_LIGHTING);
+        tesselator.startDrawingQuads();
+
+        int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
+
+        float ox = -0.5F, oy = -0.5F, oz = -0.5F;
+
+        for (ModelQuadFacing dir : DIRECTIONS) {
+
+            final var quads = model.getQuads(null, 0, 0, 0, block, meta, dir, RAND, -1, null);
+            if (quads.isEmpty()) {
+                continue;
+            }
+
+            for (ModelQuadView quad : quads) {
+                int quadColor = color;
+                if (quad.getColorIndex() != -1) {
+                    quadColor = block.getRenderColor(meta);
+                }
+
+                float r = 1f, g = 1f, b = 1f;
+                if (quadColor != -1) {
+                    r = (quadColor & 0xFF) / 255f;
+                    g = (quadColor >> 8 & 0xFF) / 255f;
+                    b = (quadColor >> 16 & 0xFF) / 255f;
+                }
+
+                final float shade = diffuseLight(quad.getComputedFaceNormal());
+                tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
+                renderQuad(quad, ox, oy, oz, tesselator, null);
+            }
+        }
+
+        GL11.glRotated(180f, 0f, 1f, 0f);
+        tesselator.draw();
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glPopMatrix();
     }
 
     @Override
@@ -161,7 +202,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     @Override
     public boolean shouldRender3DInInventory(int modelId) {
-        return false;
+        return true;
     }
 
     @Override
