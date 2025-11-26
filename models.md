@@ -14,7 +14,8 @@ trivial mixin, but the requirement is still there to avoid
 spurious lookups on the vast majority of blocks that (currently)
 don't have models. This may change in the future.
 
-### Example: BlockColor registration
+## Examples
+### BlockColor
 <p>
 Example using BlockColor register:
 
@@ -69,4 +70,4 @@ public class BlockTestTint extends Block implements IBlockColor {
 - Add face culling to models.
 - Implement UV locking.
 - Integrate with a proper BlockState API.
-- BlockItem json display.
+- BlockItem display (Use BlockBench display transforms provided in '{}.display').
