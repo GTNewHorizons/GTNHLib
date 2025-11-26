@@ -1,0 +1,26 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "minecraft:stone",
+    "north": "minecraft:stone",
+    "south": "minecraft:stone",
+    "east":  "minecraft:stone",
+    "west":  "minecraft:stone",
+    "up":    "minecraft:stone",
+    "down":  "minecraft:stone"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#north", "tintindex": 0 },
+        "south": { "texture": "#south", "tintindex": 1 },
+        "east":  { "texture": "#east",  "tintindex": 2 },
+        "west":  { "texture": "#west",  "tintindex": 3 },
+        "up":    { "texture": "#up",    "tintindex": 4 },
+        "down":  { "texture": "#down",  "tintindex": 5 }
+      }
+    }
+  ]
+}

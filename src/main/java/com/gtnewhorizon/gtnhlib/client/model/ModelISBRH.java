@@ -115,7 +115,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 // If true use tintIndex color
                 if (quad.getColorIndex() != -1) {
-                    quadColor = BlockColor.getColor(block, world, x, y, z, quad.getColorIndex());
+                    quadColor = BlockColor.getColor(block, world, x, y, z, meta, quad.getColorIndex());
                 }
 
                 final float r = (quadColor & 255) / 255f;

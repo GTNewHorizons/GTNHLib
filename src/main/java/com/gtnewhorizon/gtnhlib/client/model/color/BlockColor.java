@@ -55,31 +55,12 @@ public class BlockColor {
         return HANDLERS.get(block);
     }
 
-    /**
-     * Gets the color of a block in the world at a given position.
-     *
-     * @param block     The block.
-     * @param world     The world access.
-     * @param x         X coordinate.
-     * @param y         Y coordinate.
-     * @param z         Z coordinate.
-     * @param tintIndex Tint index of the block texture.
-     * @return The color multiplier as 0xRRGGBB.
-     */
-    public static int getColor(Block block, IBlockAccess world, int x, int y, int z, int tintIndex) {
-        return getColor(block, world, null, x, y, z, tintIndex);
+    public static int getColor(Block block, IBlockAccess world, int x, int y, int z, int meta, int tintIndex) {
+        return getColor(block, world, null, x, y, z, meta, tintIndex);
     }
 
-    /**
-     * Gets the color of an item stack.
-     *
-     * @param block     The block corresponding to the item.
-     * @param stack     The item stack.
-     * @param tintIndex Tint index of the item texture.
-     * @return The color multiplier as 0xRRGGBB.
-     */
     public static int getColor(Block block, ItemStack stack, int tintIndex) {
-        return getColor(block, null, stack, 0, 0, 0, tintIndex);
+        return getColor(block, null, stack, 0, 0, 0, stack.getItemDamage(), tintIndex);
     }
 
     /**
@@ -103,42 +84,57 @@ public class BlockColor {
      * @param tintIndex Tint index.
      * @return The final color multiplier as 0xRRGGBB.
      */
+
     public static int getColor(Block block, @Nullable IBlockAccess world, @Nullable ItemStack stack, int x, int y,
-            int z, int tintIndex) {
+            int z, int meta, int tintIndex) {
+
         int color = -1;
 
-        // block implements IBlockColor
+        // 1. Block implements IBlockColor
         if (block instanceof IBlockColor blockColor) {
-            if (stack != null) {
-                color = blockColor.colorMultiplier(stack, tintIndex);
-            } else if (world != null) {
-                color = blockColor.colorMultiplier(world, x, y, z, tintIndex);
-            }
+            color = applyHandler(blockColor, world, stack, x, y, z, tintIndex);
         }
 
-        // Use Register
-        if (color == -1) {
-            IBlockColor handler = HANDLERS.get(block);
-            if (handler != null) {
-                if (stack != null) {
-                    color = handler.colorMultiplier(stack, tintIndex);
-                } else if (world != null) {
-                    color = handler.colorMultiplier(world, x, y, z, tintIndex);
-                }
-            }
+        if (color != -1) {
+            return color;
         }
 
-        // Use flask back
-        if (color == -1) {
-            if (stack != null && stack.getItem() != null) {
-                color = stack.getItem().getColorFromItemStack(stack, tintIndex);
-            } else if (world != null) {
-                color = block.colorMultiplier(world, x, y, z);
-            } else {
-                color = 0xFFFFFF;
-            }
+        // 2. Registered handler
+        color = applyHandler(HANDLERS.get(block), world, stack, x, y, z, tintIndex);
+        if (color != -1) {
+            return color;
         }
 
-        return color;
+        // 3. ItemStack color
+        if (stack != null && stack.getItem() != null) {
+            return stack.getItem().getColorFromItemStack(stack, tintIndex);
+        }
+
+        // 4. World color
+        if (world != null) {
+            return block.colorMultiplier(world, x, y, z);
+        }
+
+        // 5. Meta color fallback
+        return block.getRenderColor(meta);
+    }
+
+    /**
+     * Helper method to invoke the handler with correct parameters.
+     */
+    private static int applyHandler(@Nullable IBlockColor handler, @Nullable IBlockAccess world,
+            @Nullable ItemStack stack, int x, int y, int z, int tintIndex) {
+
+        if (handler == null) return -1;
+
+        if (stack != null) {
+            return handler.colorMultiplier(stack, tintIndex);
+        }
+
+        if (world != null) {
+            return handler.colorMultiplier(world, x, y, z, tintIndex);
+        }
+
+        return -1;
     }
 }
