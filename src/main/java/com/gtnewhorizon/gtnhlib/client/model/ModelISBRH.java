@@ -58,8 +58,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
         int color = model.getColor(renderer.blockAccess, 0, 0, 0, block, meta, RAND);
 
-        float ox = -0.5F, oy = -0.5F, oz = -0.5F;
-
         for (ModelQuadFacing dir : DIRECTIONS) {
 
             final var quads = model.getQuads(renderer.blockAccess, 0, 0, 0, block, meta, dir, RAND, -1, null);
@@ -68,26 +66,22 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             }
 
             for (ModelQuadView quad : quads) {
-                int quadColor = color;
-                if (quad.getColorIndex() != -1) {
-                    quadColor = block.getRenderColor(meta);
+                if (quad.getColorIndex() != -1 && color == -1) {
+                    color = block.getRenderColor(meta);
                 }
 
-                float r = 1f, g = 1f, b = 1f;
-                if (quadColor != -1) {
-                    r = (quadColor & 0xFF) / 255f;
-                    g = (quadColor >> 8 & 0xFF) / 255f;
-                    b = (quadColor >> 16 & 0xFF) / 255f;
-                }
+                float r = (color & 0xFF) / 255f;
+                float g = (color >> 8 & 0xFF) / 255f;
+                float b = (color >> 16 & 0xFF) / 255f;
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-                renderQuad(quad, ox, oy, oz, tesselator, null);
+                renderQuad(quad, -0.5f, -0.5f, -0.5f, tesselator, null);
             }
         }
 
-        GL11.glRotated(180f, 0f, 1f, 0f);
         tesselator.draw();
+        GL11.glRotated(-90f, 0f, 1f, 0f);
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
     }
