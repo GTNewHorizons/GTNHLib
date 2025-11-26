@@ -235,7 +235,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         // Rotated to exact side
         GL11.glRotated(-90f, 0f, 1f, 0f);
 
-        // TODO add display
+        // TODO: Use BlockBench display transforms provided in '{}.display'
         // Translated to vanilla position
         if (type == ItemRenderType.EQUIPPED) {
             GL11.glTranslated(0.5f, 0.5f, -0.5f);
