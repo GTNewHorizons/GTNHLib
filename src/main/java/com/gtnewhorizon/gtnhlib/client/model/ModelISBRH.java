@@ -50,19 +50,19 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
     @Override
     public void renderInventoryBlock(Block block, int meta, int modelId, RenderBlocks renderer) {
         final Tessellator tesselator = TessellatorManager.get();
-        final BakedModel model = getModel(null, block, meta, 0, 0, 0);
+        final BakedModel model = getModel(renderer.blockAccess, block, meta, 0, 0, 0);
 
         GL11.glPushMatrix();
         GL11.glDisable(GL11.GL_LIGHTING);
         tesselator.startDrawingQuads();
 
-        int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
+        int color = model.getColor(renderer.blockAccess, 0, 0, 0, block, meta, RAND);
 
         float ox = -0.5F, oy = -0.5F, oz = -0.5F;
 
         for (ModelQuadFacing dir : DIRECTIONS) {
 
-            final var quads = model.getQuads(null, 0, 0, 0, block, meta, dir, RAND, -1, null);
+            final var quads = model.getQuads(renderer.blockAccess, 0, 0, 0, block, meta, dir, RAND, -1, null);
             if (quads.isEmpty()) {
                 continue;
             }
