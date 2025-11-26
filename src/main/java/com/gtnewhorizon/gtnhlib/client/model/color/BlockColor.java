@@ -70,20 +70,18 @@ public class BlockColor {
 
         int color = -1;
 
-        // 1. Block implements IBlockColor
-        if (block instanceof IBlockColor blockColor) {
-            color = applyHandler(blockColor, world, stack, x, y, z, tintIndex);
-        }
+    // 1. Check for registered handler first, fallback to block's own IBlockColor implementation
+    IBlockColor handler = HANDLERS.get(block);
+    if (handler == null && block instanceof IBlockColor) {
+        handler = (IBlockColor) block;
+    }
 
+    if (handler != null) {
+        color = applyHandler(handler, world, stack, x, y, z, tintIndex);
         if (color != -1) {
             return color;
         }
-
-        // 2. Registered handler
-        color = applyHandler(HANDLERS.get(block), world, stack, x, y, z, tintIndex);
-        if (color != -1) {
-            return color;
-        }
+    }
 
         // 3. ItemStack color
         if (stack != null && stack.getItem() != null) {
