@@ -51,43 +51,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     }
 
     @Override
-    public void renderInventoryBlock(Block block, int meta, int modelId, RenderBlocks renderer) {
-        // final Tessellator tesselator = TessellatorManager.get();
-        // final BakedModel model = getModel(renderer.blockAccess, block, meta, 0, 0, 0);
-        //
-        // GL11.glPushMatrix();
-        // GL11.glDisable(GL11.GL_LIGHTING);
-        // tesselator.startDrawingQuads();
-        //
-        // int color = model.getColor(renderer.blockAccess, 0, 0, 0, block, meta, RAND);
-        //
-        // for (ModelQuadFacing dir : DIRECTIONS) {
-        //
-        // final var quads = model.getQuads(renderer.blockAccess, 0, 0, 0, block, meta, dir, RAND, -1, null);
-        // if (quads.isEmpty()) {
-        // continue;
-        // }
-        //
-        // for (ModelQuadView quad : quads) {
-        // if (quad.getColorIndex() != -1 && color == -1) {
-        // color = block.getRenderColor(meta);
-        // }
-        //
-        // float r = (color & 0xFF) / 255f;
-        // float g = (color >> 8 & 0xFF) / 255f;
-        // float b = (color >> 16 & 0xFF) / 255f;
-        //
-        // final float shade = diffuseLight(quad.getComputedFaceNormal());
-        // tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-        // renderQuad(quad, -0.5f, -0.5f, -0.5f, tesselator, null);
-        // }
-        // }
-        //
-        // tesselator.draw();
-        // GL11.glRotated(-90f, 0f, 1f, 0f);
-        // GL11.glEnable(GL11.GL_LIGHTING);
-        // GL11.glPopMatrix();
-    }
+    public void renderInventoryBlock(Block block, int meta, int modelId, RenderBlocks renderer) {}
 
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,

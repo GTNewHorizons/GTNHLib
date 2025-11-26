@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model.color;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 
@@ -21,7 +23,7 @@ public interface IBlockColor {
      * @param tintIndex The tint index, usually 0 for the main texture.
      * @return Color multiplier as 0xRRGGBB or -1 to use default.
      */
-    default int colorMultiplier(IBlockAccess world, int x, int y, int z, int tintIndex) {
+    default int colorMultiplier(@Nullable IBlockAccess world, int x, int y, int z, int tintIndex) {
         return -1;
     }
 
@@ -34,7 +36,7 @@ public interface IBlockColor {
      * @param tintIndex The tint index, usually 0 for the main texture.
      * @return Color multiplier as 0xRRGGBB or -1 to use default.
      */
-    default int colorMultiplier(ItemStack stack, int tintIndex) {
+    default int colorMultiplier(@Nullable ItemStack stack, int tintIndex) {
         return -1;
     }
 }

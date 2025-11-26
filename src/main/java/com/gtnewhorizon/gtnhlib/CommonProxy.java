@@ -47,19 +47,6 @@ public class CommonProxy {
 
             BlockTestTint blockTestTint = new BlockTestTint();
             GameRegistry.registerBlock(blockTestTint, "model_test_tint");
-
-            // Register example
-            // BlockColor.registerBlockColors(new IBlockColor() {
-            // @Override
-            // public int colorMultiplier(IBlockAccess world, int x, int y, int z, int tintIndex) {
-            // return -1;
-            // }
-            //
-            // @Override
-            // public int colorMultiplier(ItemStack stack, int tintIndex) {
-            // return -1;
-            // }
-            // }, blockTestTint);
         }
     }
 

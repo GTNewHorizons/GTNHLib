@@ -22,26 +22,6 @@ public class BlockColor {
     /**
      * Registers a color handler for one or more blocks.
      *
-     * <p>
-     * Example usage:
-     *
-     * <pre>
-     * BlockColor.registerBlockColors(new IBlockColor() {
-     *
-     *     &#64;Override
-     *     public int colorMultiplier(IBlockAccess world, int x, int y, int z, int tintIndex) {
-     *         // Return red for main layer, green for secondary
-     *         return tintIndex == 0 ? 0xFF0000 : 0x00FF00;
-     *     }
-     *
-     *     &#64;Override
-     *     public int colorMultiplier(ItemStack stack, int tintIndex) {
-     *         // Return blue for main layer, yellow for secondary
-     *         return tintIndex == 0 ? 0x0000FF : 0xFFFF00;
-     *     }
-     * }, ModBlocks.MY_CUSTOM_BLOCK);
-     * </pre>
-     *
      * @param handler The IBlockColor handler.
      * @param blocks  The blocks to register the handler for.
      */
