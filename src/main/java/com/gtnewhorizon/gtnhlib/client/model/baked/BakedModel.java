@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
 
-import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;

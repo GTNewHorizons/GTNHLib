@@ -4,7 +4,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
-import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
@@ -28,6 +27,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -261,17 +261,17 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             default -> pos = Position.GROUND;
         }
 
-        Position.ModelDisplay display = model.getDisplay(pos, meta,RAND);
+        Position.ModelDisplay display = model.getDisplay(pos, meta, RAND);
         System.out.println(display.toString());
 
         Vector3f r = display.rotation();
         Vector3f t = display.translation();
         Vector3f s = display.scale();
-        Vector3f rotation = new Vector3f(0,0,0);
-        Vector3f translation = new Vector3f(0,0,0);
-        Vector3f scale = new Vector3f(1,1,1);
+        Vector3f rotation = new Vector3f(0, 0, 0);
+        Vector3f translation = new Vector3f(0, 0, 0);
+        Vector3f scale = new Vector3f(1, 1, 1);
 
-        //Block Bench to Position
+        // Block Bench to Position
         if (type == EQUIPPED) {
             if (!r.equals(rotation)) {
                 GL11.glRotatef(r.x - 75, 1f, 0f, 0f);
@@ -285,13 +285,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
             if (!t.equals(translation)) {
                 GL11.glTranslated(t.x + 0.5f, t.y + 0.5f - 2.5f, t.z - 0.5f);
-            } else  {
+            } else {
                 GL11.glTranslated(t.x + 0.5f, t.y + 0.5f, t.z - 0.5f);
             }
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.375f, s.y / 0.375f, s.z / 0.375f);
-            } else  {
+            } else {
                 GL11.glScalef(s.x, s.y, s.z);
             }
         }
@@ -311,7 +311,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.4f, s.y / 0.4f, s.z / 0.4f);
-            } else  {
+            } else {
                 GL11.glScalef(s.x, s.y, s.z);
             }
         }
@@ -321,16 +321,15 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             GL11.glRotatef(r.y, 0f, 1f, 0f);
             GL11.glRotatef(r.z, 0f, 0f, 1f);
 
-
             if (!t.equals(translation)) {
-                GL11.glTranslated(t.x - 0f, t.y  - 3f, t.z - 0f);
-            } else  {
-                GL11.glTranslated(t.x , t.y , t.z );
+                GL11.glTranslated(t.x - 0f, t.y - 3f, t.z - 0f);
+            } else {
+                GL11.glTranslated(t.x, t.y, t.z);
             }
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.25f, s.y / 0.25f, s.z / 0.25f);
-            } else  {
+            } else {
                 GL11.glScalef(s.x, s.y, s.z);
             }
         }
@@ -346,11 +345,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 GL11.glRotatef(r.z, 0f, 0f, 1f);
             }
 
-            GL11.glTranslated(t.x , t.y , t.z );
+            GL11.glTranslated(t.x, t.y, t.z);
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.625f, s.y / 0.625f, s.z / 0.625f);
-            } else  {
+            } else {
                 GL11.glScalef(s.x, s.y, s.z);
             }
         }

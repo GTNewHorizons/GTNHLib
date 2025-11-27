@@ -1,15 +1,17 @@
 package com.gtnewhorizon.gtnhlib.block;
 
-import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
+import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import org.jetbrains.annotations.NotNull;
 
-import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
+import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
 
 public class BlockTestTintMul extends Block implements IBlockColor {
 

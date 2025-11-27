@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib;
 
-import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
@@ -9,6 +8,7 @@ import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.block.BlockTestTint;
+import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;

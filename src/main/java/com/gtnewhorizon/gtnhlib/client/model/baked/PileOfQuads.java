@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -31,16 +31,15 @@ public final class PileOfQuads implements BakedModel {
 
     public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>(), new HashMap<>());
     private final SidedQuadStore sidedQuadStore;
-    private final Map<ModelDeserializer.Position, ModelDeserializer.Position.ModelDisplay> display;
+    private final Map<Position, Position.ModelDisplay> display;
 
-    public PileOfQuads(SidedQuadStore sidedQuadStore,
-                       Map<ModelDeserializer.Position, ModelDeserializer.Position.ModelDisplay> display) {
+    public PileOfQuads(SidedQuadStore sidedQuadStore, Map<Position, Position.ModelDisplay> display) {
         this.sidedQuadStore = sidedQuadStore;
         this.display = display;
     }
 
     public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore,
-                       Map<ModelDeserializer.Position, ModelDeserializer.Position.ModelDisplay> display) {
+            Map<Position, Position.ModelDisplay> display) {
         this(new SidedQuadStore(sidedQuadStore), display);
     }
 
@@ -51,8 +50,8 @@ public final class PileOfQuads implements BakedModel {
     }
 
     @Override
-    public ModelDeserializer.Position.ModelDisplay getDisplay(ModelDeserializer.Position pos, int meta, Random random) {
-        return display.getOrDefault(pos, ModelDeserializer.Position.ModelDisplay.DEFAULT);
+    public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
+        return display.getOrDefault(pos, Position.ModelDisplay.DEFAULT);
     }
 
     public static class SidedQuadStore {

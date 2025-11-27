@@ -279,19 +279,6 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             public Vector3f scale() {
                 return scale;
             }
-
-            @Override
-            public String toString() {
-                return "ModelDisplay{" +
-                    "rotation=" + vectorToString(rotation) +
-                    ", translation=" + vectorToString(translation) +
-                    ", scale=" + vectorToString(scale) +
-                    '}';
-            }
-
-            private static String vectorToString(Vector3f vec) {
-                return String.format("[%.3f, %.3f, %.3f]", vec.x, vec.y, vec.z);
-            }
         }
     }
 

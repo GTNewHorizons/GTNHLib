@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -32,10 +32,9 @@ public final class MonopartModel implements BakedModel {
     }
 
     @Override
-    public ModelDeserializer.Position.ModelDisplay getDisplay(ModelDeserializer.Position pos, int meta, Random random) {
-        return Weighted.selectOne(models, random).getDisplay(pos, meta,random);
+    public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
+        return Weighted.selectOne(models, random).getDisplay(pos, meta, random);
     }
-
 
     public ObjectArrayList<Weighted<BakedModel>> models() {
         return models;

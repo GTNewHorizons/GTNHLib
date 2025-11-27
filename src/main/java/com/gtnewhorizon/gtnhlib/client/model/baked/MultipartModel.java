@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
@@ -48,13 +48,13 @@ public final class MultipartModel implements BakedModel {
     }
 
     @Override
-    public ModelDeserializer.Position.ModelDisplay getDisplay(ModelDeserializer.Position pos, int meta, Random random) {
+    public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
         for (Map.Entry<Condition, BakedModel> entry : piles.entrySet()) {
             if (entry.getKey().matches(stateMap(meta))) {
-                return entry.getValue().getDisplay(pos,meta, random);
+                return entry.getValue().getDisplay(pos, meta, random);
             }
         }
-        return ModelDeserializer.Position.ModelDisplay.DEFAULT;
+        return Position.ModelDisplay.DEFAULT;
     }
 
     private static Map<String, String> stateMap(int meta) {
