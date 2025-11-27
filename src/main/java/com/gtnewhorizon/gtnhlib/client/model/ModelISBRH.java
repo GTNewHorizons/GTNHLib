@@ -8,6 +8,7 @@ import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.FIRST_PERSON_MAP;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
@@ -234,14 +235,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-                renderQuad(quad, -0.5f, -0.5f, -0.5f, tesselator, null);
+                renderQuad(quad, 0f, 0f, 0f, tesselator, null);
             }
         }
 
-        // Rotated to exact side
-        GL11.glRotated(-90f, 0f, 1f, 0f);
-
-        // TODO: Use BlockBench display transforms provided in '{}.display'
+        // Apply ItemBlock BlockBench Display
         applyItemDisplay(model, meta, type);
 
         tesselator.draw();
@@ -271,48 +269,34 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         Vector3f translation = new Vector3f(0, 0, 0);
         Vector3f scale = new Vector3f(1, 1, 1);
 
-        // Block Bench to Position
+        // BlockBench to Position
         if (type == EQUIPPED) {
             if (!r.equals(rotation)) {
                 GL11.glRotatef(r.x - 75, 1f, 0f, 0f);
                 GL11.glRotatef(r.y - 45, 0f, 1f, 0f);
                 GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
-            } else {
-                GL11.glRotatef(r.x, 1f, 0f, 0f);
-                GL11.glRotatef(r.y, 0f, 1f, 0f);
-                GL11.glRotatef(r.z, 0f, 0f, 1f);
             }
 
             if (!t.equals(translation)) {
-                GL11.glTranslated(t.x + 0.5f, t.y + 0.5f - 2.5f, t.z - 0.5f);
-            } else {
-                GL11.glTranslated(t.x + 0.5f, t.y + 0.5f, t.z - 0.5f);
+                GL11.glTranslated(t.x - 0, t.y - 2.5f, t.z - 0f);
             }
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.375f, s.y / 0.375f, s.z / 0.375f);
-            } else {
-                GL11.glScalef(s.x, s.y, s.z);
             }
         }
 
-        if (type == EQUIPPED_FIRST_PERSON) {
+        if (type == EQUIPPED_FIRST_PERSON || type == FIRST_PERSON_MAP) {
             if (!r.equals(rotation)) {
                 GL11.glRotatef(r.x - 0, 1f, 0f, 0f);
                 GL11.glRotatef(r.y - 45, 0f, 1f, 0f);
                 GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
-            } else {
-                GL11.glRotatef(r.x, 1f, 0f, 0f);
-                GL11.glRotatef(r.y, 0f, 1f, 0f);
-                GL11.glRotatef(r.z, 0f, 0f, 1f);
             }
 
-            GL11.glTranslated(t.x + 0.5f, t.y + 0.5f, t.z - 0.5f);
+            GL11.glTranslated(t.x, t.y, t.z);
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.4f, s.y / 0.4f, s.z / 0.4f);
-            } else {
-                GL11.glScalef(s.x, s.y, s.z);
             }
         }
 
@@ -323,14 +307,10 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
             if (!t.equals(translation)) {
                 GL11.glTranslated(t.x - 0f, t.y - 3f, t.z - 0f);
-            } else {
-                GL11.glTranslated(t.x, t.y, t.z);
             }
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.25f, s.y / 0.25f, s.z / 0.25f);
-            } else {
-                GL11.glScalef(s.x, s.y, s.z);
             }
         }
 
@@ -339,20 +319,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 GL11.glRotatef(r.x - 30, 1f, 0f, 0f);
                 GL11.glRotatef(r.y + 135, 0f, 1f, 0f);
                 GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
-            } else {
-                GL11.glRotatef(r.x, 1f, 0f, 0f);
-                GL11.glRotatef(r.y, 0f, 1f, 0f);
-                GL11.glRotatef(r.z, 0f, 0f, 1f);
             }
 
-            GL11.glTranslated(t.x, t.y, t.z);
+            GL11.glTranslated(t.x, t.y - 0.1f, t.z);
 
             if (!s.equals(scale)) {
                 GL11.glScalef(s.x / 0.625f, s.y / 0.625f, s.z / 0.625f);
-            } else {
-                GL11.glScalef(s.x, s.y, s.z);
             }
         }
-
     }
 }
