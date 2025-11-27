@@ -209,7 +209,7 @@ public class JSONModel implements UnbakedModel {
         }
 
         // Add them to the model
-        return new PileOfQuads(sidedQuadStore);
+        return new PileOfQuads(sidedQuadStore, this.display);
     }
 
     // TODO fix

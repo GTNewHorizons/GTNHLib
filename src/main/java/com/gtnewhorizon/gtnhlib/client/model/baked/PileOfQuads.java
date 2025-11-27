@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 
@@ -28,21 +29,30 @@ import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
 public final class PileOfQuads implements BakedModel {
 
-    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>());
+    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>(), new HashMap<>());
     private final SidedQuadStore sidedQuadStore;
+    private final Map<ModelDeserializer.Position, ModelDeserializer.Position.ModelDisplay> display;
 
-    public PileOfQuads(SidedQuadStore sidedQuadStore) {
+    public PileOfQuads(SidedQuadStore sidedQuadStore,
+                       Map<ModelDeserializer.Position, ModelDeserializer.Position.ModelDisplay> display) {
         this.sidedQuadStore = sidedQuadStore;
+        this.display = display;
     }
 
-    public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore) {
-        this(new SidedQuadStore(sidedQuadStore));
+    public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore,
+                       Map<ModelDeserializer.Position, ModelDeserializer.Position.ModelDisplay> display) {
+        this(new SidedQuadStore(sidedQuadStore), display);
     }
 
     @Override
     public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
             ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
         return sidedQuadStore.getQuads(dir);
+    }
+
+    @Override
+    public ModelDeserializer.Position.ModelDisplay getDisplay(ModelDeserializer.Position pos, int meta, Random random) {
+        return display.getOrDefault(pos, ModelDeserializer.Position.ModelDisplay.DEFAULT);
     }
 
     public static class SidedQuadStore {

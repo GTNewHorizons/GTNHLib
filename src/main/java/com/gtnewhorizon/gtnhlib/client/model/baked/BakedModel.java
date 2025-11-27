@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 
@@ -59,4 +60,6 @@ public interface BakedModel {
     /// @return A list of quads from the model. These are *not* adjusted for the given xyz - that is up to the renderer.
     List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
             ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool);
+
+    Position.ModelDisplay getDisplay(Position pos, int meta, Random random);
 }

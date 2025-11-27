@@ -1,13 +1,13 @@
 {
   "parent": "block/cube",
   "textures": {
-    "particle": "minecraft:stone",
-    "north": "minecraft:stone",
-    "south": "minecraft:stone",
-    "east":  "minecraft:stone",
-    "west":  "minecraft:stone",
-    "up":    "minecraft:stone",
-    "down":  "minecraft:stone"
+    "particle": "minecraft:planks_oak",
+    "north": "minecraft:planks_oak",
+    "south": "minecraft:planks_oak",
+    "east":  "minecraft:planks_oak",
+    "west":  "minecraft:planks_oak",
+    "up":    "minecraft:planks_oak",
+    "down":  "minecraft:planks_oak"
   },
   "elements": [
     {
@@ -25,12 +25,12 @@
   ],
   "display": {
     "thirdperson_righthand": {
-      "rotation": [75, 45, 0],
+      "rotation": [90, 45, 0],
       "translation": [0, 2.5, 0],
       "scale": [0.375, 0.375, 0.375]
     },
     "firstperson_righthand": {
-      "rotation": [0, 45, 0],
+      "rotation": [0, 60, 0],
       "scale": [0.4, 0.4, 0.4]
     },
     "ground": {

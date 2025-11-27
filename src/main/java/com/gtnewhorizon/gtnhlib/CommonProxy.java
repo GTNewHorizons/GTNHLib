@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
@@ -45,6 +46,7 @@ public class CommonProxy {
         if (GTNHLibConfig.enableTestBlocks) {
             GameRegistry.registerBlock(new BlockTest(), "model_test");
             GameRegistry.registerBlock(new BlockTestTint(), "model_test_tint");
+            GameRegistry.registerBlock(new BlockTestTintMul(), "model_test_tint_mul");
         }
     }
 

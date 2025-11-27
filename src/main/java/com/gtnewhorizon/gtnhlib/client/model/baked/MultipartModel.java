@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 
@@ -44,6 +45,16 @@ public final class MultipartModel implements BakedModel {
                 quads.addAll(e.getValue().getQuads(world, x, y, z, block, meta, dir, random, color, quadPool));
         });
         return quads;
+    }
+
+    @Override
+    public ModelDeserializer.Position.ModelDisplay getDisplay(ModelDeserializer.Position pos, int meta, Random random) {
+        for (Map.Entry<Condition, BakedModel> entry : piles.entrySet()) {
+            if (entry.getKey().matches(stateMap(meta))) {
+                return entry.getValue().getDisplay(pos,meta, random);
+            }
+        }
+        return ModelDeserializer.Position.ModelDisplay.DEFAULT;
     }
 
     private static Map<String, String> stateMap(int meta) {

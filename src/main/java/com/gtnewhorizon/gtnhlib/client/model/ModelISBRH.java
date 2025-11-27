@@ -4,7 +4,12 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import static java.lang.Math.max;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
 
@@ -18,6 +23,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
@@ -98,7 +104,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         return rendered;
     }
 
-    protected void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
+    public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
         for (int i = 0; i < 4; ++i) {
             tessellator.addVertexWithUV(
@@ -110,7 +116,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
     }
 
-    private int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
+    public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
             int z, RenderBlocks rb) {
         // If the face is aligned or external, pick light outside
         final float avgPos = getAveragePos(quad, dir);
@@ -236,23 +242,118 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         GL11.glRotated(-90f, 0f, 1f, 0f);
 
         // TODO: Use BlockBench display transforms provided in '{}.display'
-        // Translated to vanilla position
-        if (type == ItemRenderType.EQUIPPED) {
-            GL11.glTranslated(0.5f, 0.5f, -0.5f);
-        }
-        if (type == ItemRenderType.EQUIPPED_FIRST_PERSON) {
-            GL11.glTranslated(0.5f, 0.5f, -0.5f);
-        }
-        if (type == ItemRenderType.ENTITY) {
-            // No op
-        }
-        if (type == ItemRenderType.INVENTORY) {
-            // No op
-        }
+        applyItemDisplay(model, meta, type);
 
         tesselator.draw();
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopMatrix();
+    }
+
+    private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
+        Position pos;
+        switch (type) {
+            case EQUIPPED -> pos = Position.THIRDPERSON_RIGHTHAND;
+            case EQUIPPED_FIRST_PERSON -> pos = Position.FIRSTPERSON_RIGHTHAND;
+            case ENTITY -> pos = Position.GROUND;
+            case INVENTORY -> pos = Position.GUI;
+            case FIRST_PERSON_MAP -> pos = Position.FIRSTPERSON_RIGHTHAND;
+            default -> pos = Position.GROUND;
+        }
+
+        Position.ModelDisplay display = model.getDisplay(pos, meta,RAND);
+        System.out.println(display.toString());
+
+        Vector3f r = display.rotation();
+        Vector3f t = display.translation();
+        Vector3f s = display.scale();
+        Vector3f rotation = new Vector3f(0,0,0);
+        Vector3f translation = new Vector3f(0,0,0);
+        Vector3f scale = new Vector3f(1,1,1);
+
+        //Block Bench to Position
+        if (type == EQUIPPED) {
+            if (!r.equals(rotation)) {
+                GL11.glRotatef(r.x - 75, 1f, 0f, 0f);
+                GL11.glRotatef(r.y - 45, 0f, 1f, 0f);
+                GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
+            } else {
+                GL11.glRotatef(r.x, 1f, 0f, 0f);
+                GL11.glRotatef(r.y, 0f, 1f, 0f);
+                GL11.glRotatef(r.z, 0f, 0f, 1f);
+            }
+
+            if (!t.equals(translation)) {
+                GL11.glTranslated(t.x + 0.5f, t.y + 0.5f - 2.5f, t.z - 0.5f);
+            } else  {
+                GL11.glTranslated(t.x + 0.5f, t.y + 0.5f, t.z - 0.5f);
+            }
+
+            if (!s.equals(scale)) {
+                GL11.glScalef(s.x / 0.375f, s.y / 0.375f, s.z / 0.375f);
+            } else  {
+                GL11.glScalef(s.x, s.y, s.z);
+            }
+        }
+
+        if (type == EQUIPPED_FIRST_PERSON) {
+            if (!r.equals(rotation)) {
+                GL11.glRotatef(r.x - 0, 1f, 0f, 0f);
+                GL11.glRotatef(r.y - 45, 0f, 1f, 0f);
+                GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
+            } else {
+                GL11.glRotatef(r.x, 1f, 0f, 0f);
+                GL11.glRotatef(r.y, 0f, 1f, 0f);
+                GL11.glRotatef(r.z, 0f, 0f, 1f);
+            }
+
+            GL11.glTranslated(t.x + 0.5f, t.y + 0.5f, t.z - 0.5f);
+
+            if (!s.equals(scale)) {
+                GL11.glScalef(s.x / 0.4f, s.y / 0.4f, s.z / 0.4f);
+            } else  {
+                GL11.glScalef(s.x, s.y, s.z);
+            }
+        }
+
+        if (type == ENTITY) {
+            GL11.glRotatef(r.x, 1f, 0f, 0f);
+            GL11.glRotatef(r.y, 0f, 1f, 0f);
+            GL11.glRotatef(r.z, 0f, 0f, 1f);
+
+
+            if (!t.equals(translation)) {
+                GL11.glTranslated(t.x - 0f, t.y  - 3f, t.z - 0f);
+            } else  {
+                GL11.glTranslated(t.x , t.y , t.z );
+            }
+
+            if (!s.equals(scale)) {
+                GL11.glScalef(s.x / 0.25f, s.y / 0.25f, s.z / 0.25f);
+            } else  {
+                GL11.glScalef(s.x, s.y, s.z);
+            }
+        }
+
+        if (type == INVENTORY) {
+            if (!r.equals(rotation)) {
+                GL11.glRotatef(r.x - 30, 1f, 0f, 0f);
+                GL11.glRotatef(r.y + 135, 0f, 1f, 0f);
+                GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
+            } else {
+                GL11.glRotatef(r.x, 1f, 0f, 0f);
+                GL11.glRotatef(r.y, 0f, 1f, 0f);
+                GL11.glRotatef(r.z, 0f, 0f, 1f);
+            }
+
+            GL11.glTranslated(t.x , t.y , t.z );
+
+            if (!s.equals(scale)) {
+                GL11.glScalef(s.x / 0.625f, s.y / 0.625f, s.z / 0.625f);
+            } else  {
+                GL11.glScalef(s.x, s.y, s.z);
+            }
+        }
+
     }
 }
