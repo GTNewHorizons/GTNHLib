@@ -129,4 +129,8 @@ public class VertexBuffer implements AutoCloseable {
     public int getVertexCount() {
         return vertexCount;
     }
+
+    public int getId() {
+        return id;
+    }
 }

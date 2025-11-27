@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
 import org.lwjgl.opengl.GLContext;
 
+import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.opengl.UniversalVAO;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
@@ -12,6 +13,7 @@ public class VAOManager {
     private static boolean vaoEnabled;
 
     private static final boolean vaoUnsupported;
+    @Beta
     public static final VaoFunctions VAO;
 
     /**

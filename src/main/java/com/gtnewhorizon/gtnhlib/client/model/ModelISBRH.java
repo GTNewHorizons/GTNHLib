@@ -11,13 +11,17 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.IItemRenderer;
 
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -29,7 +33,7 @@ import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
 @ThreadSafeISBRH(perThread = true)
-public class ModelISBRH implements ISimpleBlockRenderingHandler {
+public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     /**
      * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
@@ -42,14 +46,12 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
 
     /// Override this if you want programmatic model selection
     @SuppressWarnings("unused")
-    protected BakedModel getModel(IBlockAccess world, Block block, int meta, int x, int y, int z) {
+    public BakedModel getModel(IBlockAccess world, Block block, int meta, int x, int y, int z) {
         return ModelRegistry.getBakedModel(new BlockState(block, meta));
     }
 
     @Override
-    public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
-
-    }
+    public void renderInventoryBlock(Block block, int meta, int modelId, RenderBlocks renderer) {}
 
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
@@ -73,14 +75,16 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
             // iterates over the quads and dumps em into the tesselator, nothing special
             rendered = true;
             for (final var quad : quads) {
+                int quadColor = color;
 
-                if (quad.getColorIndex() != -1 && color == -1) {
-                    color = block.colorMultiplier(world, x, y, z);
+                // If true use tintIndex color
+                if (quad.getColorIndex() != -1) {
+                    quadColor = BlockColor.getColor(block, world, x, y, z, meta, quad.getColorIndex());
                 }
 
-                final float r = (color & 255) / 255f;
-                final float g = (color >> 8 & 255) / 255f;
-                final float b = (color >> 16 & 255) / 255f;
+                final float r = (quadColor & 255) / 255f;
+                final float g = (quadColor >> 8 & 255) / 255f;
+                final float b = (quadColor >> 16 & 255) / 255f;
 
                 final int lm = getLightMap(block, quad, dir, world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
@@ -174,5 +178,81 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler {
         final var ny = unpackY(normal);
         final var nz = unpackZ(normal);
         return Math.min(nx * nx * 0.6F + ny * ny * ((3.0F + ny) / 4.0F) + nz * nz * 0.8F, 1.0F);
+    }
+
+    @Override
+    public boolean handleRenderType(ItemStack item, ItemRenderType type) {
+        return true;
+    }
+
+    @Override
+    public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item, ItemRendererHelper helper) {
+        return true;
+    }
+
+    @Override
+    public void renderItem(ItemRenderType type, ItemStack stack, Object... data) {
+        Block block = Block.getBlockFromItem(stack.getItem());
+        if (block == null) return;
+        int meta = stack.getItemDamage();
+
+        final Tessellator tesselator = TessellatorManager.get();
+        final BakedModel model = getModel(null, block, meta, 0, 0, 0);
+
+        GL11.glPushMatrix();
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        tesselator.startDrawingQuads();
+
+        int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
+
+        for (ModelQuadFacing dir : DIRECTIONS) {
+
+            final var quads = model.getQuads(null, 0, 0, 0, block, meta, dir, RAND, color, null);
+            if (quads.isEmpty()) {
+                continue;
+            }
+
+            for (ModelQuadView quad : quads) {
+                int quadColor = color;
+
+                // If true use tintIndex color
+                if (quad.getColorIndex() != -1) {
+                    quadColor = BlockColor.getColor(block, stack, quad.getColorIndex());
+                }
+
+                float r = (quadColor & 0xFF) / 255f;
+                float g = (quadColor >> 8 & 0xFF) / 255f;
+                float b = (quadColor >> 16 & 0xFF) / 255f;
+
+                final float shade = diffuseLight(quad.getComputedFaceNormal());
+                tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
+                renderQuad(quad, -0.5f, -0.5f, -0.5f, tesselator, null);
+            }
+        }
+
+        // Rotated to exact side
+        GL11.glRotated(-90f, 0f, 1f, 0f);
+
+        // TODO: Use BlockBench display transforms provided in '{}.display'
+        // Translated to vanilla position
+        if (type == ItemRenderType.EQUIPPED) {
+            GL11.glTranslated(0.5f, 0.5f, -0.5f);
+        }
+        if (type == ItemRenderType.EQUIPPED_FIRST_PERSON) {
+            GL11.glTranslated(0.5f, 0.5f, -0.5f);
+        }
+        if (type == ItemRenderType.ENTITY) {
+            // No op
+        }
+        if (type == ItemRenderType.INVENTORY) {
+            // No op
+        }
+
+        tesselator.draw();
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glPopMatrix();
     }
 }

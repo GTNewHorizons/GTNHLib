@@ -94,12 +94,34 @@ public class TessellatorManager {
     }
 
     /**
+     * Populates the passed-in VBO with the data from the CapturingTessellator. If the passed-in VBO is null, it will
+     * create & return a new one.
+     */
+    public static VertexBuffer stopCapturingToVBO(VertexBuffer vbo, VertexFormat format) {
+        if (vbo == null) {
+            vbo = new VertexBuffer(format, GL11.GL_QUADS);
+        }
+        return vbo.upload(stopCapturingToBuffer(format));
+    }
+
+    /**
      * Same as stopCapturingToVBO, but now wrapping the VBO inside of a VAO for safer & cached attrib pointers. <br>
      * This method is in 99% of cases better since it's both faster and safer. <br>
      * If VAO's are not supported, this will create a VBO instead.
      */
     public static VertexBuffer stopCapturingToVAO(VertexFormat format) {
         return VAOManager.createVAO(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
+    }
+
+    /**
+     * Populates the passed-in VAO with the data from the CapturingTessellator. If the passed-in VAO is null, it will
+     * create & return a new one.
+     */
+    public static VertexBuffer stopCapturingToVAO(VertexBuffer vao, VertexFormat format) {
+        if (vao == null) {
+            vao = VAOManager.createVAO(format, GL11.GL_QUADS);
+        }
+        return vao.upload(stopCapturingToBuffer(format));
     }
 
     static {
