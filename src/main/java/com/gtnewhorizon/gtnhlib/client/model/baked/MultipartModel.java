@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +57,16 @@ public final class MultipartModel implements BakedModel {
             }
         }
         return Position.ModelDisplay.DEFAULT;
+    }
+
+    @Override
+    public IIcon getParticle(int meta, Random random) {
+        for (Map.Entry<Condition, BakedModel> entry : piles.entrySet()) {
+            if (entry.getKey().matches(stateMap(meta))) {
+                return entry.getValue().getParticle(meta, random);
+            }
+        }
+        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("stone");
     }
 
     private static Map<String, String> stateMap(int meta) {

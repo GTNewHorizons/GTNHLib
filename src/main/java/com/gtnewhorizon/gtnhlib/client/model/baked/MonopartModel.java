@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,11 @@ public final class MonopartModel implements BakedModel {
     @Override
     public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
         return Weighted.selectOne(models, random).getDisplay(pos, meta, random);
+    }
+
+    @Override
+    public IIcon getParticle(int meta, Random random) {
+        return Weighted.selectOne(models, random).getParticle(meta, random);
     }
 
     public ObjectArrayList<Weighted<BakedModel>> models() {

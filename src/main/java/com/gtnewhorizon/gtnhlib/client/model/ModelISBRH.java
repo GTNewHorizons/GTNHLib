@@ -14,10 +14,14 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.client.particle.EffectRenderer;
+import net.minecraft.client.particle.EntityDiggingFX;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.IItemRenderer;
@@ -39,6 +43,8 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 
 @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
+
+    public static final ModelISBRH INSTANCE = new ModelISBRH();
 
     /**
      * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
@@ -265,12 +271,123 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         if (type == ENTITY) {
-            // No op
+            GL11.glTranslated(-0.5f, -0.5f, -0.5f);
         }
 
         if (type == INVENTORY) {
             // Translated to correct position
             GL11.glTranslated(0f, -0.1f, 0f);
         }
+    }
+
+    public boolean addDestroyEffects(World world, int x, int y, int z, int meta, EffectRenderer effectRenderer) {
+        Block block = world.getBlock(x, y, z);
+
+        if (block.getRenderType() != JSON_ISBRH_ID) {
+            return false;
+        }
+
+        final var model = getModel(world, block, meta, x, y, z);
+
+        byte b0 = 4;
+
+        for (int i1 = 0; i1 < b0; ++i1) {
+            for (int j1 = 0; j1 < b0; ++j1) {
+                for (int k1 = 0; k1 < b0; ++k1) {
+                    double d0 = (double) x + ((double) i1 + 0.5D) / (double) b0;
+                    double d1 = (double) y + ((double) j1 + 0.5D) / (double) b0;
+                    double d2 = (double) z + ((double) k1 + 0.5D) / (double) b0;
+
+                    IIcon particle = model.getParticle(meta, RAND);
+
+                    EntityDiggingFX entity = new EntityDiggingFX(
+                            world,
+                            d0,
+                            d1,
+                            d2,
+                            d0 - (double) x - 0.5D,
+                            d1 - (double) y - 0.5D,
+                            d2 - (double) z - 0.5D,
+                            block,
+                            meta);
+
+                    entity.setParticleIcon(particle);
+
+                    entity.applyColourMultiplier(x, y, z);
+
+                    effectRenderer.addEffect(entity);
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean addHitEffects(World worldObj, MovingObjectPosition target, EffectRenderer effectRenderer) {
+
+        Block block = worldObj.getBlock(target.blockX, target.blockY, target.blockZ);
+
+        int meta = worldObj.getBlockMetadata(target.blockX, target.blockY, target.blockZ);
+
+        if (block.getMaterial() != Material.air && block.getRenderType() == JSON_ISBRH_ID) {
+
+            final var model = getModel(worldObj, block, meta, target.blockX, target.blockY, target.blockZ);
+
+            IIcon particle = model.getParticle(meta, RAND);
+
+            float f = 0.1F;
+            double d0 = (double) target.blockX
+                    + RAND.nextDouble()
+                            * (block.getBlockBoundsMaxX() - block.getBlockBoundsMinX() - (double) (f * 2.0F))
+                    + (double) f
+                    + block.getBlockBoundsMinX();
+            double d1 = (double) target.blockY
+                    + RAND.nextDouble()
+                            * (block.getBlockBoundsMaxY() - block.getBlockBoundsMinY() - (double) (f * 2.0F))
+                    + (double) f
+                    + block.getBlockBoundsMinY();
+            double d2 = (double) target.blockZ
+                    + RAND.nextDouble()
+                            * (block.getBlockBoundsMaxZ() - block.getBlockBoundsMinZ() - (double) (f * 2.0F))
+                    + (double) f
+                    + block.getBlockBoundsMinZ();
+
+            if (target.sideHit == 0) {
+                d1 = (double) target.blockY + block.getBlockBoundsMinY() - (double) f;
+            }
+
+            if (target.sideHit == 1) {
+                d1 = (double) target.blockY + block.getBlockBoundsMaxY() + (double) f;
+            }
+
+            if (target.sideHit == 2) {
+                d2 = (double) target.blockZ + block.getBlockBoundsMinZ() - (double) f;
+            }
+
+            if (target.sideHit == 3) {
+                d2 = (double) target.blockZ + block.getBlockBoundsMaxZ() + (double) f;
+            }
+
+            if (target.sideHit == 4) {
+                d0 = (double) target.blockX + block.getBlockBoundsMinX() - (double) f;
+            }
+
+            if (target.sideHit == 5) {
+                d0 = (double) target.blockX + block.getBlockBoundsMaxX() + (double) f;
+            }
+
+            EntityDiggingFX entity = new EntityDiggingFX(worldObj, d0, d1, d2, 0.0D, 0.0D, 0.0D, block, meta);
+
+            entity.applyColourMultiplier(target.blockX, target.blockY, target.blockZ);
+
+            entity.multipleParticleScaleBy(0.6F);
+
+            entity.setParticleIcon(particle);
+
+            effectRenderer.addEffect(entity);
+
+            return true;
+        }
+
+        return false;
     }
 }

@@ -16,6 +16,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
@@ -29,18 +30,20 @@ import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
 public final class PileOfQuads implements BakedModel {
 
-    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>(), new HashMap<>());
+    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>(), new HashMap<>(), null);
     private final SidedQuadStore sidedQuadStore;
     private final Map<Position, Position.ModelDisplay> display;
+    private final IIcon particle;
 
-    public PileOfQuads(SidedQuadStore sidedQuadStore, Map<Position, Position.ModelDisplay> display) {
+    public PileOfQuads(SidedQuadStore sidedQuadStore, Map<Position, Position.ModelDisplay> display, IIcon particle) {
         this.sidedQuadStore = sidedQuadStore;
         this.display = display;
+        this.particle = particle;
     }
 
     public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore,
-            Map<Position, Position.ModelDisplay> display) {
-        this(new SidedQuadStore(sidedQuadStore), display);
+            Map<Position, Position.ModelDisplay> display, IIcon particle) {
+        this(new SidedQuadStore(sidedQuadStore), display, particle);
     }
 
     @Override
@@ -52,6 +55,11 @@ public final class PileOfQuads implements BakedModel {
     @Override
     public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
         return display.getOrDefault(pos, Position.ModelDisplay.DEFAULT);
+    }
+
+    @Override
+    public IIcon getParticle(int meta, Random random) {
+        return particle;
     }
 
     public static class SidedQuadStore {

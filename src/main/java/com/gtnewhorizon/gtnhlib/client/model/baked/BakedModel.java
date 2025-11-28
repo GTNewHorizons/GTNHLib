@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
@@ -71,4 +72,6 @@ public interface BakedModel {
      * @return The {@link Position.ModelDisplay} containing rotation, translation, and scale.
      */
     Position.ModelDisplay getDisplay(Position pos, int meta, Random random);
+
+    IIcon getParticle(int meta, Random random);
 }

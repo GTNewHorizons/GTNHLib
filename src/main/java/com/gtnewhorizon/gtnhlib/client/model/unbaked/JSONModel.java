@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.IIcon;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
@@ -209,7 +210,7 @@ public class JSONModel implements UnbakedModel {
         }
 
         // Add them to the model
-        return new PileOfQuads(sidedQuadStore, this.display);
+        return new PileOfQuads(sidedQuadStore, this.display, this.getParticle());
     }
 
     // TODO fix
@@ -268,6 +269,18 @@ public class JSONModel implements UnbakedModel {
             }
             this.textures.putAll(tmp);
         }
+    }
+
+    private IIcon getParticle() {
+        String key = "particle";
+        if (!textures.containsKey(key) && !textures.isEmpty()) {
+            key = textures.keySet().iterator().next();
+        }
+
+        String texName = textures.getOrDefault(key, "minecraft:stone");
+        texName = texName.replaceFirst("^minecraft:", "");
+
+        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(texName);
     }
 
     public Map<String, String> getTextures() {

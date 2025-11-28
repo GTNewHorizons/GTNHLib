@@ -10,7 +10,7 @@ import cpw.mods.fml.common.event.*;
 
 @Mod(
         modid = GTNHLib.MODID,
-        version = Tags.VERSION,
+        version = "0.8.5",
         name = GTNHLib.MODNAME,
         acceptedMinecraftVersions = "[1.7.10]",
         acceptableRemoteVersions = "[0.0.13,)")
