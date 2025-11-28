@@ -4,8 +4,10 @@
 
 const int cosmiccount = 10;
 const int cosmicoutof = 101;
+const float uSize = 1.0 / float(cosmiccount);
 
 uniform sampler2D texture0;
+uniform sampler2D cosmicTexture;
 uniform vec3 lightlevel;
 
 uniform float time2;
@@ -17,7 +19,12 @@ uniform float externalScale;
 uniform float lightmix;
 uniform float opacity;
 
-uniform mat2 cosmicuvs[cosmiccount];
+uniform float starColorMultiplier;
+
+uniform vec3 bgColor;
+
+uniform vec2 cosmicuvs[cosmiccount];
+
 
 varying vec3 position;
 
@@ -32,29 +39,24 @@ mat4 rotationMatrix(vec3 axis, float angle) {
     float oc = 1.0 - c;
 
     return mat4(
-        oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-        oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-        oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-        0.0,                                0.0,                                0.0,                                1.0);
+    oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+    0.0,                                0.0,                                0.0,                                1.0);
 }
 
 void main (void) {
-    vec4 light = gl_Color;
+    vec3 light = gl_Color.rgb * lightlevel;
     vec4 mask = texture2D(texture0, gl_TexCoord[0].xy);
-    light.rgb *= lightlevel;
     float correctTime = mod(time2,12000);
 
     float oneOverExternalScale = 1.0/externalScale;
 
     int uvtiles = 16;
 
-    // background colour
-    vec4 col = vec4(0.1,0.0,0.0,1.0);
-
-    float pulse = mod(correctTime,400)/400.0;
-
-    col.g = sin(pulse*M_PI*2) * 0.075 + 0.225;
-    col.b = cos(pulse*M_PI*2) * 0.05 + 0.3;
+    // background color
+    // vec4 col = vec4(0.1, sin(pulse*M_PI*2) * 0.075 + 0.225, cos(pulse*M_PI*2) * 0.05 + 0.3, 1.0);
+    vec3 col = bgColor;
 
     // get ray from camera to fragment
     vec4 dir = normalize(vec4( -position, 0));
@@ -115,9 +117,6 @@ void main (void) {
         // if it's an icon, then add the colour!
         if (symbol >= 0 && symbol < cosmiccount) {
 
-            vec2 cosmictex = vec2(1.0,1.0);
-            vec4 tcol = vec4(1.0,0.0,0.0,1.0);
-
             // get uv within the tile
             float ru = clamp(mod(u,1.0)*uvtiles - tu, 0.0, 1.0);
             float rv = clamp(mod(v,1.0)*uvtiles - tv, 0.0, 1.0);
@@ -142,39 +141,29 @@ void main (void) {
             }
 
             // get the iicon uvs for the tile
-            float umin = cosmicuvs[symbol][0][0];
-            float umax = cosmicuvs[symbol][1][0];
-            float vmin = cosmicuvs[symbol][0][1];
-            float vmax = cosmicuvs[symbol][1][1];
+            float umin = float(symbol) * uSize;
+            vec2 v = cosmicuvs[symbol];
+            float vmin = v.x;
+            float vmax = v.y;
 
             // interpolate based on tile uvs
-            cosmictex.x = umin * (1.0-oru) + umax * oru;
-            cosmictex.y = vmin * (1.0-orv) + vmax * orv;
-
-            tcol = texture2D(texture0, cosmictex);
+            vec2 tileuv = vec2(umin + uSize * oru, vmin * (1.0-orv) + vmax * orv);
+            vec4 tcol = texture2D(cosmicTexture, tileuv);
 
             // set the alpha, blending out at the bunched ends
-            float a = tcol.r * (0.5 + (1.0/mult) * 1.0) * (1.0-smoothstep(0.15, 0.48, abs(rawv-0.5)));
+            float a = tcol.r * (0.5 + (1.0/mult)) * (1.0-smoothstep(0.15, 0.48, abs(rawv-0.5)));
 
             // get fancy colours
             float r = (mod(rand1, 29.0)/29.0) * 0.3 + 0.4;
             float g = (mod(rand2, 35.0)/35.0) * 0.4 + 0.6;
             float b = (mod(rand1, 17.0)/17.0) * 0.3 + 0.7;
 
-            // mix the colours
-            //col = col*(1-a) + vec4(r,g,b,1)*a;
-            col = col + vec4(r,g,b,1)*a;
+            col = col + (vec3(r,g,b) * a * starColorMultiplier);
         }
     }
 
     // apply lighting
-    vec3 shade = light.rgb * (lightmix) + vec3(1.0-lightmix,1.0-lightmix,1.0-lightmix);
-    col.rgb *= shade;
+    vec3 shade = light * (lightmix) + vec3(1.0-lightmix,1.0-lightmix,1.0-lightmix);
 
-    // apply mask
-    col.a *= mask.a * opacity;
-
-    col = clamp(col,0.0,1.0);
-
-    gl_FragColor = col;
+    gl_FragColor = vec4(col * shade, mask.a * opacity);
 }

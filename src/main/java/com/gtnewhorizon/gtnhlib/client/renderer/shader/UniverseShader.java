@@ -1,84 +1,69 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.shader;
 
-import java.nio.FloatBuffer;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.IIcon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.common.MinecraftForge;
 
-import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.client.renderer.textures.TextureAtlas;
 import com.gtnewhorizon.gtnhlib.mixins.early.EntityRendererAccessor;
+import com.gtnewhorizons.angelica.glsm.debug.OpenGLDebugging;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.gameevent.TickEvent.RenderTickEvent;
 
-/// This was largely copied from avaritia
-@EventBusSubscriber
+// This was largely copied from avaritia
 public class UniverseShader extends ShaderProgram {
 
-    public static final UniverseShader INSTANCE = new UniverseShader();
+    private static UniverseShader instance;
+
+    public final float[] LIGHT_LEVEL = new float[3];
+
+    private TextureAtlas textureAtlas;
 
     private UniverseShader() {
-        super(GTNHLib.MODID, "shaders/universe/universe.vert", "shaders/universe/universe.frag");
+        super(GTNHLib.RESOURCE_DOMAIN, "shaders/universe/universe.vert", "shaders/universe/universe.frag");
+        super.use();
+        bindTextureSlot("texture0", 0);
+        bindTextureSlot("cosmicTexture", 1);
+        clear();
+        MinecraftForge.EVENT_BUS.register(this);
+
+        this.textureAtlas = TextureAtlas
+                .createTextureAtlas(GTNHLib.RESOURCE_DOMAIN, "textures/items/universe/cosmic", 10);
+
+        // AutoShaderUpdater.getInstance().registerShaderReload(
+        // this,
+        // GregTech.resourceDomain,
+        // "shaders/universe.vert.glsl", "shaders/universe.frag.glsl"
+        // );
     }
 
-    private static final int COSMIC_COUNT = 10;
-    public static final String[] COSMIC_TEXTURES = new String[COSMIC_COUNT];
-
-    static {
-        for (int i = 0; i < COSMIC_COUNT; i++) {
-            COSMIC_TEXTURES[i] = GTNHLib.MODID + ":universe/cosmic" + i;
+    public static UniverseShader getInstance() {
+        if (instance == null) {
+            instance = new UniverseShader();
         }
+        return instance;
     }
 
-    public static final FloatBuffer COSMIC_UVS = BufferUtils.createFloatBuffer(4 * COSMIC_TEXTURES.length);
-    public static final IIcon[] COSMIC_ICONS = new IIcon[COSMIC_TEXTURES.length];
-
-    public static final float[] LIGHT_LEVEL = new float[3];
-
-    @SubscribeEvent
-    public static void letsMakeAQuilt(TextureStitchEvent.Pre event) {
-        if (event.map.getTextureType() != 1) {
-            return;
-        }
-
-        for (int i = 0; i < COSMIC_TEXTURES.length; i++) {
-            IIcon icon = event.map.registerIcon(COSMIC_TEXTURES[i]);
-            COSMIC_ICONS[i] = icon;
-        }
-    }
-
-    @SubscribeEvent
-    public static void pushTheCosmicFancinessToTheLimit(RenderTickEvent event) {
-        if (event.phase == Phase.START) {
-            for (IIcon icon : COSMIC_ICONS) {
-                COSMIC_UVS.put(icon.getMinU());
-                COSMIC_UVS.put(icon.getMinV());
-                COSMIC_UVS.put(icon.getMaxU());
-                COSMIC_UVS.put(icon.getMaxV());
-            }
-
-            COSMIC_UVS.flip();
-        }
+    public static void load() {
+        getInstance();
     }
 
     public static boolean inventoryRender = false;
     public static float cosmicOpacity = 1.0f;
 
     @SubscribeEvent
-    public static void makeCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Pre event) {
+    public void makeCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Pre event) {
         inventoryRender = true;
     }
 
     @SubscribeEvent
-    public static void finishMakingCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Post event) {
+    public void finishMakingCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Post event) {
         inventoryRender = false;
     }
 
@@ -99,32 +84,73 @@ public class UniverseShader extends ShaderProgram {
             scale = 25.0f;
         }
 
-        int time2 = INSTANCE.getUniformLocation("time2");
-        GL20.glUniform1f(time2, mc.thePlayer.ticksExisted);
+        final int time = mc.thePlayer.ticksExisted;
+        int time2 = getUniformLocation("time2");
+        GL20.glUniform1f(time2, time);
 
-        int x = INSTANCE.getUniformLocation("yaw");
+        int x = getUniformLocation("yaw");
         GL20.glUniform1f(x, yaw);
 
-        int z = INSTANCE.getUniformLocation("pitch");
+        int z = getUniformLocation("pitch");
         GL20.glUniform1f(z, pitch);
 
-        int l = INSTANCE.getUniformLocation("lightlevel");
+        int l = getUniformLocation("lightlevel");
         GL20.glUniform3f(l, LIGHT_LEVEL[0], LIGHT_LEVEL[1], LIGHT_LEVEL[2]);
 
-        int lightmix = INSTANCE.getUniformLocation("lightmix");
+        final int lightmix = getUniformLocation("lightmix");
         GL20.glUniform1f(lightmix, 0.2f);
 
-        int uvs = INSTANCE.getUniformLocation("cosmicuvs");
-        GL20.glUniformMatrix2(uvs, false, COSMIC_UVS);
+        // COSMIC_UVS.clear();
+        // for (int i = 0; i < COSMIC_COUNT; i++) {
+        // COSMIC_UVS.put(i / (float) COSMIC_COUNT);
+        // COSMIC_UVS.put(i / (float) COSMIC_COUNT);
+        // COSMIC_UVS.put((i + 1) / (float) COSMIC_COUNT);
+        // COSMIC_UVS.put((i + 1) / (float) COSMIC_COUNT);
+        // }
+        // COSMIC_UVS.flip();
 
-        int s = INSTANCE.getUniformLocation("externalScale");
+        // int uvs = getUniformLocation("cosmicuvs");
+        // GL20.glUniformMatrix2(uvs, false, COSMIC_UVS);
+
+        int s = getUniformLocation("externalScale");
         GL20.glUniform1f(s, scale);
 
-        int o = INSTANCE.getUniformLocation("opacity");
+        int o = getUniformLocation("opacity");
         GL20.glUniform1f(o, cosmicOpacity);
+
+        int h = getUniformLocation("starColorMultiplier");
+        GL20.glUniform1f(h, 1f);
+
+        int c = getUniformLocation("bgColor");
+        final float pulse = (time % 400) / 400f;
+        GL20.glUniform3f(
+                c,
+                0.1f,
+                MathHelper.sin((float) (pulse * Math.PI * 2)) * 0.075f + 0.225f,
+                MathHelper.cos((float) (pulse * Math.PI * 2)) * 0.05f + 0.3f);
+        // this.textureAtlas = TextureAtlas.createTextureAtlas(GTNHLib.RESOURCE_DOMAIN,
+        // "textures/items/universe/cosmic", 10);
+
+        int v = getUniformLocation("cosmicuvs");
+        textureAtlas.uploadUVBuffer(v);
+
+        GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        textureAtlas.bindTexture();
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        OpenGLDebugging.checkGLSM();
     }
 
-    public static void setLightFromLocation(World world, int x, int y, int z) {
+    public void setStarColorMultiplier(float multiplier) {
+        int h = getUniformLocation("starColorMultiplier");
+        GL20.glUniform1f(h, multiplier);
+    }
+
+    public void setBackgroundColor(float r, float g, float b) {
+        int c = getUniformLocation("bgColor");
+        GL20.glUniform3f(c, r, g, b);
+    }
+
+    public void setLightFromLocation(World world, int x, int y, int z) {
         if (world == null) {
             setLightLevel(1.0f);
             return;
@@ -150,11 +176,11 @@ public class UniverseShader extends ShaderProgram {
                 ((lightColour) & 0xFF) / 256.0f);
     }
 
-    public static void setLightLevel(float level) {
+    public void setLightLevel(float level) {
         setLightLevel(level, level, level);
     }
 
-    public static void setLightLevel(float r, float g, float b) {
+    public void setLightLevel(float r, float g, float b) {
         LIGHT_LEVEL[0] = Math.max(0.0f, Math.min(1.0f, r));
         LIGHT_LEVEL[1] = Math.max(0.0f, Math.min(1.0f, g));
         LIGHT_LEVEL[2] = Math.max(0.0f, Math.min(1.0f, b));
