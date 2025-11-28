@@ -23,12 +23,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -249,83 +247,30 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     }
 
     private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
-        Position pos;
-        switch (type) {
-            case EQUIPPED -> pos = Position.THIRDPERSON_RIGHTHAND;
-            case EQUIPPED_FIRST_PERSON -> pos = Position.FIRSTPERSON_RIGHTHAND;
-            case ENTITY -> pos = Position.GROUND;
-            case INVENTORY -> pos = Position.GUI;
-            case FIRST_PERSON_MAP -> pos = Position.FIRSTPERSON_RIGHTHAND;
-            default -> pos = Position.GROUND;
-        }
-
-        Position.ModelDisplay display = model.getDisplay(pos, meta, RAND);
-        System.out.println(display.toString());
-
-        Vector3f r = display.rotation();
-        Vector3f t = display.translation();
-        Vector3f s = display.scale();
-        Vector3f rotation = new Vector3f(0, 0, 0);
-        Vector3f translation = new Vector3f(0, 0, 0);
-        Vector3f scale = new Vector3f(1, 1, 1);
+        // TODO: Use BlockBench display transforms provided in '{}.display'
 
         // BlockBench to Position
         if (type == EQUIPPED) {
-            if (!r.equals(rotation)) {
-                GL11.glRotatef(r.x - 75, 1f, 0f, 0f);
-                GL11.glRotatef(r.y - 45, 0f, 1f, 0f);
-                GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
-            }
-
-            if (!t.equals(translation)) {
-                GL11.glTranslated(t.x - 0, t.y - 2.5f, t.z - 0f);
-            }
-
-            if (!s.equals(scale)) {
-                GL11.glScalef(s.x / 0.375f, s.y / 0.375f, s.z / 0.375f);
-            }
+            // Rotated to correct Face
+            GL11.glRotatef(180f, 0f, 1f, 0f);
+            // Translated to correct position
+            GL11.glTranslated(-1f, 0f, -1f);
         }
 
         if (type == EQUIPPED_FIRST_PERSON || type == FIRST_PERSON_MAP) {
-            if (!r.equals(rotation)) {
-                GL11.glRotatef(r.x - 0, 1f, 0f, 0f);
-                GL11.glRotatef(r.y - 45, 0f, 1f, 0f);
-                GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
-            }
-
-            GL11.glTranslated(t.x, t.y, t.z);
-
-            if (!s.equals(scale)) {
-                GL11.glScalef(s.x / 0.4f, s.y / 0.4f, s.z / 0.4f);
-            }
+            // Rotated to correct Face
+            GL11.glRotatef(90f, 0f, 1f, 0f);
+            // Translated to correct position
+            GL11.glTranslated(-1f, 0f, 0f);
         }
 
         if (type == ENTITY) {
-            GL11.glRotatef(r.x, 1f, 0f, 0f);
-            GL11.glRotatef(r.y, 0f, 1f, 0f);
-            GL11.glRotatef(r.z, 0f, 0f, 1f);
-
-            if (!t.equals(translation)) {
-                GL11.glTranslated(t.x - 0f, t.y - 3f, t.z - 0f);
-            }
-
-            if (!s.equals(scale)) {
-                GL11.glScalef(s.x / 0.25f, s.y / 0.25f, s.z / 0.25f);
-            }
+            // No op
         }
 
         if (type == INVENTORY) {
-            if (!r.equals(rotation)) {
-                GL11.glRotatef(r.x - 30, 1f, 0f, 0f);
-                GL11.glRotatef(r.y + 135, 0f, 1f, 0f);
-                GL11.glRotatef(r.z - 0, 0f, 0f, 1f);
-            }
-
-            GL11.glTranslated(t.x, t.y - 0.1f, t.z);
-
-            if (!s.equals(scale)) {
-                GL11.glScalef(s.x / 0.625f, s.y / 0.625f, s.z / 0.625f);
-            }
+            // Translated to correct position
+            GL11.glTranslated(0f, -0.1f, 0f);
         }
     }
 }
