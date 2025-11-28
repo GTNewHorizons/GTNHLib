@@ -70,14 +70,4 @@ public class BlockTestTintMul extends Block implements IBlockColor {
         // Like block
         return colorMultiplier(null, 0, 0, 0, tintIndex);
     }
-
-    @Override
-    public boolean addDestroyEffects(World world, int x, int y, int z, int meta, EffectRenderer effectRenderer) {
-        return ModelISBRH.INSTANCE.addDestroyEffects(world, x, y, z, meta, effectRenderer);
-    }
-
-    @Override
-    public boolean addHitEffects(World worldObj, MovingObjectPosition target, EffectRenderer effectRenderer) {
-        return ModelISBRH.INSTANCE.addHitEffects(worldObj, target, effectRenderer);
-    }
 }

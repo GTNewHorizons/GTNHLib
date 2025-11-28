@@ -283,10 +283,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     public boolean addDestroyEffects(World world, int x, int y, int z, int meta, EffectRenderer effectRenderer) {
         Block block = world.getBlock(x, y, z);
 
-        if (block.getRenderType() != JSON_ISBRH_ID) {
-            return false;
-        }
-
         final var model = getModel(world, block, meta, x, y, z);
 
         byte b0 = 4;
@@ -319,6 +315,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 }
             }
         }
+
         return true;
     }
 
@@ -326,9 +323,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         Block block = worldObj.getBlock(target.blockX, target.blockY, target.blockZ);
 
-        int meta = worldObj.getBlockMetadata(target.blockX, target.blockY, target.blockZ);
+        if (block.getMaterial() != Material.air) {
 
-        if (block.getMaterial() != Material.air && block.getRenderType() == JSON_ISBRH_ID) {
+            int meta = worldObj.getBlockMetadata(target.blockX, target.blockY, target.blockZ);
 
             final var model = getModel(worldObj, block, meta, target.blockX, target.blockY, target.blockZ);
 
