@@ -17,19 +17,21 @@ import com.gtnewhorizons.angelica.glsm.debug.OpenGLDebugging;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 // This was largely copied from avaritia
-public class UniverseShader extends ShaderProgram {
+public class UniversiumShader extends ShaderProgram {
 
-    private static UniverseShader instance;
+    private static UniversiumShader instance;
 
     public final float[] LIGHT_LEVEL = new float[3];
 
-    private TextureAtlas textureAtlas;
+    private final TextureAtlas textureAtlas;
 
-    private UniverseShader() {
-        super(GTNHLib.RESOURCE_DOMAIN, "shaders/universe/universe.vert", "shaders/universe/universe.frag");
+    private final int location
+
+    private UniversiumShader() {
+        super(GTNHLib.RESOURCE_DOMAIN, "shaders/universe/universium.vert", "shaders/universe/universium.frag");
         super.use();
         bindTextureSlot("texture0", 0);
-        bindTextureSlot("cosmicTexture", 1);
+        bindTextureSlot("cosmicTexture", 2);
         clear();
         MinecraftForge.EVENT_BUS.register(this);
 
@@ -39,18 +41,18 @@ public class UniverseShader extends ShaderProgram {
         // AutoShaderUpdater.getInstance().registerShaderReload(
         // this,
         // GregTech.resourceDomain,
-        // "shaders/universe.vert.glsl", "shaders/universe.frag.glsl"
+        // "shaders/universium.vert.glsl", "shaders/universium.frag.glsl"
         // );
     }
 
-    public static UniverseShader getInstance() {
+    public static UniversiumShader getInstance() {
         if (instance == null) {
-            instance = new UniverseShader();
+            instance = new UniversiumShader();
         }
         return instance;
     }
 
-    public static void load() {
+    public static void ensureLoaded() {
         getInstance();
     }
 
@@ -100,18 +102,6 @@ public class UniverseShader extends ShaderProgram {
         final int lightmix = getUniformLocation("lightmix");
         GL20.glUniform1f(lightmix, 0.2f);
 
-        // COSMIC_UVS.clear();
-        // for (int i = 0; i < COSMIC_COUNT; i++) {
-        // COSMIC_UVS.put(i / (float) COSMIC_COUNT);
-        // COSMIC_UVS.put(i / (float) COSMIC_COUNT);
-        // COSMIC_UVS.put((i + 1) / (float) COSMIC_COUNT);
-        // COSMIC_UVS.put((i + 1) / (float) COSMIC_COUNT);
-        // }
-        // COSMIC_UVS.flip();
-
-        // int uvs = getUniformLocation("cosmicuvs");
-        // GL20.glUniformMatrix2(uvs, false, COSMIC_UVS);
-
         int s = getUniformLocation("externalScale");
         GL20.glUniform1f(s, scale);
 
@@ -128,16 +118,13 @@ public class UniverseShader extends ShaderProgram {
                 0.1f,
                 MathHelper.sin((float) (pulse * Math.PI * 2)) * 0.075f + 0.225f,
                 MathHelper.cos((float) (pulse * Math.PI * 2)) * 0.05f + 0.3f);
-        // this.textureAtlas = TextureAtlas.createTextureAtlas(GTNHLib.RESOURCE_DOMAIN,
-        // "textures/items/universe/cosmic", 10);
 
         int v = getUniformLocation("cosmicuvs");
         textureAtlas.uploadUVBuffer(v);
 
-        GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        GL13.glActiveTexture(GL13.GL_TEXTURE2);
         textureAtlas.bindTexture();
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        OpenGLDebugging.checkGLSM();
     }
 
     public void setStarColorMultiplier(float multiplier) {
