@@ -160,14 +160,6 @@ public class ModelRegistry {
             final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
 
             for (var entry : domains.entrySet()) {
-                String domainName = entry.getKey();
-
-                // Skip DragonAPI domains
-                if (domainName.equals("custom_path")) {
-                    System.out.println("Skipping DragonAPI DirectResourceManager: " + domainName);
-                    continue;
-                }
-
                 var files = entry.getValue();
                 if (files instanceof FallbackResourceManager) {
                     resourcePacks.addAll(((BackingResourceManager) files).nhlib$getResourcePacks());
