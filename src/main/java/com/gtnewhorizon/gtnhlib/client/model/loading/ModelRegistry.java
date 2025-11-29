@@ -8,7 +8,7 @@ import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.FallbackResourceManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.IResourcePack;
@@ -146,14 +146,33 @@ public class ModelRegistry {
             STATE_MODEL_MAP_CACHE.clear();
             JSON_MODEL_CACHE.clear();
 
-            if (autoTextureLoading) detectAndLoadTextures();
+            if (!(irm instanceof GlobalResourceManager manager)) {
+                return;
+            }
+
+            System.out.println(manager.nhlib$getDomainResourceManagers().toString());
+            if (autoTextureLoading) detectAndLoadTextures(manager);
         }
 
-        private void detectAndLoadTextures() {
+        private void detectAndLoadTextures(GlobalResourceManager manager) {
             // Scan resourcepacks for model files
+            final var domains = manager.nhlib$getDomainResourceManagers();
             final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
-            Minecraft.getMinecraft().getResourcePackRepository().getRepositoryEntries()
-                    .forEach(e -> resourcePacks.add(e.getResourcePack()));
+
+            for (var entry : domains.entrySet()) {
+                String domainName = entry.getKey();
+
+                // Skip DragonAPI domains
+                if (domainName.equals("custom_path")) {
+                    System.out.println("Skipping DragonAPI DirectResourceManager: " + domainName);
+                    continue;
+                }
+
+                var files = entry.getValue();
+                if (files instanceof FallbackResourceManager) {
+                    resourcePacks.addAll(((BackingResourceManager) files).nhlib$getResourcePacks());
+                }
+            }
 
             final var texturesToLoad = new ObjectArrayList<String>();
             for (var pack : resourcePacks) {
