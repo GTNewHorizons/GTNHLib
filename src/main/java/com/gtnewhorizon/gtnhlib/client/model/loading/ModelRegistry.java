@@ -150,12 +150,13 @@ public class ModelRegistry {
                 return;
             }
 
-            System.out.println(manager.nhlib$getDomainResourceManagers().toString());
-            if (autoTextureLoading) detectAndLoadTextures(manager);
+            if (autoTextureLoading) {
+                detectAndLoadTextures(manager);
+            }
         }
 
         private void detectAndLoadTextures(GlobalResourceManager manager) {
-            // Scan resourcepacks for model files
+            // Scan resource packs for model files
             final var domains = manager.nhlib$getDomainResourceManagers();
             final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
 
@@ -168,15 +169,18 @@ public class ModelRegistry {
 
             final var texturesToLoad = new ObjectArrayList<String>();
             for (var pack : resourcePacks) {
-                if (!(pack instanceof ModelResourcePack mrp)) continue;
+                if (!(pack instanceof ModelResourcePack mrp)) {
+                    continue;
+                }
 
                 // Skip unregistered mods
                 if (mrp instanceof FMLContainerHolder fmlch
-                        && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
+                        && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId())) {
                     continue;
+                }
 
-                final var texs = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
-                texturesToLoad.addAll(texs);
+                final var texture = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
+                texturesToLoad.addAll(texture);
             }
 
             EventHandler.texturesToLoad = texturesToLoad;
@@ -190,7 +194,9 @@ public class ModelRegistry {
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
         public void onTextureStitch(TextureStitchEvent.Pre event) {
-            for (var tex : texturesToLoad) event.map.registerIcon(tex.replaceFirst("^minecraft:", ""));
+            for (var texture : texturesToLoad) {
+                event.map.registerIcon(texture.replaceFirst("^minecraft:", ""));
+            }
         }
     }
 }

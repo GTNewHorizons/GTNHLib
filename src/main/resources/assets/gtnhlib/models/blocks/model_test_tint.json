@@ -1,13 +1,13 @@
 {
   "parent": "block/cube",
   "textures": {
-    "particle": "minecraft:stone",
-    "north": "minecraft:stone",
-    "south": "minecraft:stone",
-    "east":  "minecraft:stone",
-    "west":  "minecraft:stone",
-    "up":    "minecraft:stone",
-    "down":  "minecraft:stone"
+    "particle": "gtnhlib:block/test",
+    "north": "gtnhlib:block/test",
+    "south": "gtnhlib:block/test",
+    "east":  "gtnhlib:block/test",
+    "west":  "gtnhlib:block/test",
+    "up":    "gtnhlib:block/test",
+    "down":  "gtnhlib:block/test"
   },
   "elements": [
     {

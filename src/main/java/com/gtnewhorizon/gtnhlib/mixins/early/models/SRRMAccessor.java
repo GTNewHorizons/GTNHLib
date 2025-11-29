@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.mixins.early.models;
 
 import java.util.Map;
 
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,5 +16,5 @@ public interface SRRMAccessor extends GlobalResourceManager {
 
     @Override
     @Accessor("domainResourceManagers")
-    Map<String, net.minecraft.client.resources.IResourceManager> nhlib$getDomainResourceManagers();
+    Map<String, IResourceManager> nhlib$getDomainResourceManagers();
 }

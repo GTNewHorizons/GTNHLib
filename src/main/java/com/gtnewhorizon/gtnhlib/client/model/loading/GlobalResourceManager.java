@@ -2,7 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import java.util.Map;
 
+import net.minecraft.client.resources.IResourceManager;
+
 public interface GlobalResourceManager {
 
-    Map<String, net.minecraft.client.resources.IResourceManager> nhlib$getDomainResourceManagers();
+    Map<String, IResourceManager> nhlib$getDomainResourceManagers();
 }
