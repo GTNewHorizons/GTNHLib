@@ -150,9 +150,7 @@ public class ModelRegistry {
                 return;
             }
 
-            if (autoTextureLoading) {
-                detectAndLoadTextures(manager);
-            }
+            if (autoTextureLoading) detectAndLoadTextures(manager);
         }
 
         private void detectAndLoadTextures(GlobalResourceManager manager) {
@@ -169,15 +167,12 @@ public class ModelRegistry {
 
             final var texturesToLoad = new ObjectArrayList<String>();
             for (var pack : resourcePacks) {
-                if (!(pack instanceof ModelResourcePack mrp)) {
-                    continue;
-                }
+                if (!(pack instanceof ModelResourcePack mrp)) continue;
 
                 // Skip unregistered mods
                 if (mrp instanceof FMLContainerHolder fmlch
-                        && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId())) {
+                        && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
                     continue;
-                }
 
                 final var texture = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
                 texturesToLoad.addAll(texture);

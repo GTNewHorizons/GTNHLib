@@ -277,7 +277,7 @@ public class JSONModel implements UnbakedModel {
             key = textures.keySet().iterator().next();
         }
 
-        String texName = textures.getOrDefault(key, "minecraft:stone");
+        String texName = textures.getOrDefault(key, "missingno");
         texName = texName.replaceFirst("^minecraft:", "");
 
         return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(texName);

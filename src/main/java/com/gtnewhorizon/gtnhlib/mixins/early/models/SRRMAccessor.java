@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import com.gtnewhorizon.gtnhlib.client.model.loading.GlobalResourceManager;
 
-@SuppressWarnings("UnusedMixin")
 @Mixin(SimpleReloadableResourceManager.class)
 public interface SRRMAccessor extends GlobalResourceManager {
 

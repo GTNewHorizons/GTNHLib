@@ -58,7 +58,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
     }
 
     private static Vector3f loadVec3(JsonObject in, String name, Vector3f defaultv) {
-        if (!in.has(name)) return defaultv;
+        if (!in.isJsonArray() || !in.has(name)) return defaultv;
         return loadVec3(in, name);
     }
 

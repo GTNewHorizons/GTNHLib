@@ -66,7 +66,7 @@ public final class MultipartModel implements BakedModel {
                 return entry.getValue().getParticle(meta, random);
             }
         }
-        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("stone");
+        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");
     }
 
     private static Map<String, String> stateMap(int meta) {

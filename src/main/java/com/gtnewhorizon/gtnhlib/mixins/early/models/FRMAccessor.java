@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import com.gtnewhorizon.gtnhlib.client.model.loading.BackingResourceManager;
 
-@SuppressWarnings("UnusedMixin")
 @Mixin(FallbackResourceManager.class)
 public interface FRMAccessor extends BackingResourceManager {
 

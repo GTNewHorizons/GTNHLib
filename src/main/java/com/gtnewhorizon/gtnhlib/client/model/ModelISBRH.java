@@ -240,7 +240,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         // Apply ItemBlock BlockBench Display
-        applyItemDisplay(model, meta, type);
+        applyItemDisplay(type);
 
         tesselator.draw();
         GL11.glEnable(GL11.GL_LIGHTING);
@@ -248,7 +248,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         GL11.glPopMatrix();
     }
 
-    private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
+    private void applyItemDisplay(ItemRenderType type) {
         // TODO: Use BlockBench display transforms provided in '{}.display'
 
         // BlockBench to Position
