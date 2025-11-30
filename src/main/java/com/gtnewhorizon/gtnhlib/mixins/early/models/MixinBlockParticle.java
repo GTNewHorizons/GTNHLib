@@ -16,19 +16,33 @@ public class MixinBlockParticle {
     @WrapMethod(method = "getIcon(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;")
     private IIcon nhlib$wrapGetIcon(IBlockAccess world, int x, int y, int z, int side, Operation<IIcon> original) {
         Block block = (Block) (Object) this;
-        int meta = world.getBlockMetadata(x, y, z);
+
+        IIcon icon = original.call(world, x, y, z, side);
+        if (!ModelISBRH.INSTANCE.isMissingIcon(icon)) {
+            return icon;
+        }
+
         if (block.getRenderType() == ModelISBRH.JSON_ISBRH_ID) {
+            int meta = world.getBlockMetadata(x, y, z);
             return ModelISBRH.INSTANCE.getParticleIcon(block, world, x, y, z, meta);
         }
-        return original.call(world, x, y, z, side);
+
+        return icon;
     }
 
     @WrapMethod(method = "getIcon(II)Lnet/minecraft/util/IIcon;")
     private IIcon nhlib$wrapGetIcon(int side, int meta, Operation<IIcon> original) {
         Block block = (Block) (Object) this;
+
+        IIcon icon = original.call(meta, side);
+        if (!ModelISBRH.INSTANCE.isMissingIcon(icon)) {
+            return icon;
+        }
+
         if (block.getRenderType() == ModelISBRH.JSON_ISBRH_ID) {
             return ModelISBRH.INSTANCE.getParticleIcon(block, null, 0, 0, 0, meta);
         }
-        return original.call(meta, side);
+
+        return icon;
     }
 }

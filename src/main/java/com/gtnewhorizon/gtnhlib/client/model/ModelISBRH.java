@@ -280,4 +280,15 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         final var model = getModel(world, block, meta, x, y, z);
         return model.getParticle(meta, RAND);
     }
+
+    public boolean isMissingIcon(IIcon icon) {
+        if (icon == null) return true;
+
+        String name = icon.getIconName();
+        if (name == null) return true;
+
+        if (name.equals("missingno")) return true;
+
+        return name.startsWith("MISSING_ICON_BLOCK_");
+    }
 }
