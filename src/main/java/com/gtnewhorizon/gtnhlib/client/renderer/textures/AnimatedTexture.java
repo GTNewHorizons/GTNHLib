@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.textures;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,12 +62,10 @@ public class AnimatedTexture {
     }
 
     public final float getMinU() {
-        checkUpdateTexture();
         return 0;
     }
 
     public final float getMaxU() {
-        checkUpdateTexture();
         return 1;
     }
 

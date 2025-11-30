@@ -10,7 +10,7 @@ uniform sampler2D texture0;
 uniform sampler2D cosmicTexture;
 uniform vec3 lightlevel;
 
-uniform float time2;
+uniform float time;
 
 uniform float yaw;
 uniform float pitch;
@@ -45,17 +45,16 @@ mat4 rotationMatrix(vec3 axis, float angle) {
     0.0,                                0.0,                                0.0,                                1.0);
 }
 
-void main (void) {
+void main() {
     vec3 light = gl_Color.rgb * lightlevel;
     vec4 mask = texture2D(texture0, gl_TexCoord[0].xy);
-    float correctTime = mod(time2,12000);
+    float correctTime = mod(time,12000);
 
     float oneOverExternalScale = 1.0/externalScale;
 
     int uvtiles = 16;
 
     // background color
-    // vec4 col = vec4(0.1, sin(pulse*M_PI*2) * 0.075 + 0.225, cos(pulse*M_PI*2) * 0.05 + 0.3, 1.0);
     vec3 col = bgColor;
 
     // get ray from camera to fragment

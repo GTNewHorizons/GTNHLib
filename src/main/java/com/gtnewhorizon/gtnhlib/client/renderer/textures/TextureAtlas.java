@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.textures;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
