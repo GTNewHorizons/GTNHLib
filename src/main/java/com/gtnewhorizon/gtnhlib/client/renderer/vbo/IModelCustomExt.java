@@ -21,13 +21,4 @@ public interface IModelCustomExt extends IModelCustom {
 
     @SideOnly(CLIENT)
     void renderAllVAO();
-
-    // These will likely get removed/changed sooner or later
-    @Beta
-    @SideOnly(CLIENT)
-    void setVertexFormat(VertexFormat format);
-
-    @Beta
-    @SideOnly(CLIENT)
-    void setVertexFormat(VertexFormat format, boolean vao);
 }

@@ -28,9 +28,6 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     @Shadow
     public abstract void tessellateAll(Tessellator tessellator);
 
-    @Unique
-    private VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
-
     @Override
     public void rebuildVBO() {
         rebuild(false);
@@ -48,8 +45,8 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
         tess.startDrawing(currentGroupObject.glDrawingMode);
         tessellateAll(tess);
 
-        this.vertexBuffer = vao ? TessellatorManager.stopCapturingToVAO(format)
-                : TessellatorManager.stopCapturingToVBO(format);
+        this.vertexBuffer = vao ? TessellatorManager.stopCapturingToVAO(DefaultVertexFormat.POSITION_TEXTURE_NORMAL)
+                : TessellatorManager.stopCapturingToVBO(DefaultVertexFormat.POSITION_TEXTURE_NORMAL);
     }
 
     @Override
@@ -66,18 +63,5 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
             rebuild(true);
         }
         vertexBuffer.render();
-    }
-
-    @Override
-    public void setVertexFormat(VertexFormat format) {
-        setVertexFormat(format, false);
-    }
-
-    @Override
-    public void setVertexFormat(VertexFormat format, boolean vao) {
-        this.format = format;
-        if (this.vertexBuffer != null && this.vertexBuffer.getVertexFormat() != format) {
-            rebuild(vao);
-        }
     }
 }
