@@ -249,7 +249,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     }
 
     private void applyItemDisplay(ItemRenderType type) {
-        // TODO: Use BlockBench display transforms provided in '{}.display'
 
         // BlockBench to Position
         if (type == EQUIPPED) {
@@ -282,13 +281,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     }
 
     public boolean isMissingIcon(IIcon icon) {
-        if (icon == null) return true;
+        if (icon == null) return false;
 
         String name = icon.getIconName();
-        if (name == null) return true;
+        if (name == null) return false;
 
-        if (name.equals("missingno")) return true;
+        if (name.equals("missingno")) return false;
 
-        return name.startsWith("MISSING_ICON_BLOCK_");
+        return !name.startsWith("MISSING_ICON_BLOCK_");
     }
 }

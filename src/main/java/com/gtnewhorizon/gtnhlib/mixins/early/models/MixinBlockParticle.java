@@ -18,7 +18,7 @@ public class MixinBlockParticle {
         Block block = (Block) (Object) this;
 
         IIcon icon = original.call(world, x, y, z, side);
-        if (!ModelISBRH.INSTANCE.isMissingIcon(icon)) {
+        if (ModelISBRH.INSTANCE.isMissingIcon(icon)) {
             return icon;
         }
 
@@ -35,7 +35,7 @@ public class MixinBlockParticle {
         Block block = (Block) (Object) this;
 
         IIcon icon = original.call(meta, side);
-        if (!ModelISBRH.INSTANCE.isMissingIcon(icon)) {
+        if (ModelISBRH.INSTANCE.isMissingIcon(icon)) {
             return icon;
         }
 

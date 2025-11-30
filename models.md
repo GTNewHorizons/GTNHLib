@@ -18,7 +18,7 @@ don't have models. This may change in the future.
 ### BlockColor
 Use to color to TintIndex
 <p>
-Example: using BlockColor register (Static Color)
+Example: using BlockColor register
 
 <pre>
 BlockColor.registerBlockColors(new IBlockColor() {
@@ -37,7 +37,7 @@ BlockColor.registerBlockColors(new IBlockColor() {
 }, ModBlocks.MY_CUSTOM_BLOCK);
 </pre>
 
-Example: implement IBlockColor directly in a block (Dynamic Color)
+Example: implement IBlockColor directly in a block
 <pre>
 public class BlockTestTint extends Block implements IBlockColor {
 
