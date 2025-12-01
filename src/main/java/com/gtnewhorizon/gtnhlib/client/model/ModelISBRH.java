@@ -5,6 +5,11 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 import static java.lang.Math.max;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.FIRST_PERSON_MAP;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
 
@@ -34,6 +39,8 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 
 @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
+
+    public static final ModelISBRH INSTANCE = new ModelISBRH();
 
     /**
      * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
@@ -98,7 +105,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         return rendered;
     }
 
-    protected void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
+    public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
         for (int i = 0; i < 4; ++i) {
             tessellator.addVertexWithUV(
@@ -110,7 +117,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
     }
 
-    private int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
+    public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
             int z, RenderBlocks rb) {
         // If the face is aligned or external, pick light outside
         final float avgPos = getAveragePos(quad, dir);
@@ -228,31 +235,59 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-                renderQuad(quad, -0.5f, -0.5f, -0.5f, tesselator, null);
+                renderQuad(quad, 0f, 0f, 0f, tesselator, null);
             }
         }
 
-        // Rotated to exact side
-        GL11.glRotated(-90f, 0f, 1f, 0f);
-
-        // TODO: Use BlockBench display transforms provided in '{}.display'
-        // Translated to vanilla position
-        if (type == ItemRenderType.EQUIPPED) {
-            GL11.glTranslated(0.5f, 0.5f, -0.5f);
-        }
-        if (type == ItemRenderType.EQUIPPED_FIRST_PERSON) {
-            GL11.glTranslated(0.5f, 0.5f, -0.5f);
-        }
-        if (type == ItemRenderType.ENTITY) {
-            // No op
-        }
-        if (type == ItemRenderType.INVENTORY) {
-            // No op
-        }
+        // Apply ItemBlock BlockBench Display
+        applyItemDisplay(type);
 
         tesselator.draw();
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopMatrix();
+    }
+
+    private void applyItemDisplay(ItemRenderType type) {
+
+        // BlockBench to Position
+        if (type == EQUIPPED) {
+            // Rotated to correct Face
+            GL11.glRotatef(180f, 0f, 1f, 0f);
+            // Translated to correct position
+            GL11.glTranslated(-1f, 0f, -1f);
+        }
+
+        if (type == EQUIPPED_FIRST_PERSON || type == FIRST_PERSON_MAP) {
+            // Rotated to correct Face
+            GL11.glRotatef(90f, 0f, 1f, 0f);
+            // Translated to correct position
+            GL11.glTranslated(-1f, 0f, 0f);
+        }
+
+        if (type == ENTITY) {
+            GL11.glTranslated(-0.5f, -0.5f, -0.5f);
+        }
+
+        if (type == INVENTORY) {
+            // Translated to correct position
+            GL11.glTranslated(0f, -0.1f, 0f);
+        }
+    }
+
+    public IIcon getParticleIcon(Block block, IBlockAccess world, int x, int y, int z, int meta) {
+        final var model = getModel(world, block, meta, x, y, z);
+        return model.getParticle(meta, RAND);
+    }
+
+    public boolean isMissingIcon(IIcon icon) {
+        if (icon == null) return false;
+
+        String name = icon.getIconName();
+        if (name == null) return false;
+
+        if (name.equals("missingno")) return false;
+
+        return !name.startsWith("MISSING_ICON_BLOCK_");
     }
 }

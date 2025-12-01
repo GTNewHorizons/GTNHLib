@@ -13,9 +13,9 @@ import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
 
-public class BlockTestTint extends Block implements IBlockColor {
+public class BlockTestTintMul extends Block implements IBlockColor {
 
-    public BlockTestTint() {
+    public BlockTestTintMul() {
         super(Material.wood);
         setHardness(2f);
     }
