@@ -1,6 +1,6 @@
-package com.gtnewhorizon.gtnhlib.core.transformer;
+package com.gtnewhorizon.gtnhlib.core.fml.transformers;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,8 +20,6 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
 
-import lombok.val;
-
 /**
  * Transformer the Tessellator and inject draw() interception.
  */
@@ -31,15 +29,8 @@ public class TessellatorTransformer implements IClassTransformer {
 
     private static final ClassConstantPoolParser cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
 
-    private static final List<String> TransformerExclusions = Arrays.asList(
-            "org.lwjgl",
-            "com.gtnewhorizons.angelica.glsm.",
-            "com.gtnewhorizons.angelica.transform",
-            "me.eigenraven.lwjgl3ify",
-            "com.gtnewhorizon.gtnhlib");
-
     public static List<String> getTransformerExclusions() {
-        return Collections.unmodifiableList(TransformerExclusions);
+        return Collections.unmodifiableList(new ArrayList<>());
     }
 
     public boolean shouldRfbTransform(byte[] basicClass) {
@@ -49,10 +40,6 @@ public class TessellatorTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (basicClass == null) return null;
-
-        for (val exclusion : TransformerExclusions) {
-            if (transformedName.startsWith(exclusion)) return basicClass;
-        }
 
         // Only transform the Tessellator class itself
         if (!transformedName.equals("net.minecraft.client.renderer.Tessellator")) {

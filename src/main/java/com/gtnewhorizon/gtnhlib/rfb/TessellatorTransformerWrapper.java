@@ -6,7 +6,7 @@ import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.core.transformer.TessellatorTransformer;
+import com.gtnewhorizon.gtnhlib.core.fml.transformers.TessellatorTransformer;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
