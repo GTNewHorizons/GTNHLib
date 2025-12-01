@@ -16,8 +16,9 @@ don't have models. This may change in the future.
 
 ## Examples
 ### BlockColor
+Use to color to TintIndex
 <p>
-Example using BlockColor register:
+Example: using BlockColor register
 
 <pre>
 BlockColor.registerBlockColors(new IBlockColor() {

@@ -5,10 +5,12 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -59,4 +61,17 @@ public interface BakedModel {
     /// @return A list of quads from the model. These are *not* adjusted for the given xyz - that is up to the renderer.
     List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
             ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool);
+
+    /**
+     * Returns the display transformation for a specific position and metadata. Used to position/rotate/scale the model
+     * when rendering in different contexts (e.g., first person, third person, GUI).
+     *
+     * @param pos    The display position (e.g., GUI, first person right hand).
+     * @param meta   The metadata of the block.
+     * @param random Random generator to use for variations.
+     * @return The {@link Position.ModelDisplay} containing rotation, translation, and scale.
+     */
+    Position.ModelDisplay getDisplay(Position pos, int meta, Random random);
+
+    IIcon getParticle(int meta, Random random);
 }

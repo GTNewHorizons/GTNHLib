@@ -22,9 +22,17 @@ public enum Mixins implements IMixins {
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
-    MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures")
-            .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
-            .setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    MODEL_TEXTURE_LOADING(
+            new MixinBuilder("Automatically load model textures")
+                    .addClientMixins(
+                            "models.FRMAccessor",
+                            "models.MixinFileResourcePack",
+                            "models.MixinFolderResourcePack",
+                            "models.SRRMAccessor")
+                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    BLOCK_PARTICLE(
+            new MixinBuilder("Automatically override model block particle").addClientMixins("models.MixinBlockParticle")
+                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
             .addCommonMixins(
                     "block_sounds.MixinEntity",
