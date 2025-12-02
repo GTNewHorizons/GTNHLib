@@ -33,9 +33,7 @@ public enum Mixins implements IMixins {
     BLOCK_PARTICLE(
             new MixinBuilder("Automatically override model block particle").addClientMixins("models.MixinBlockParticle")
                     .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
-    MODEL_ITEM_RENDERER(
-        new MixinBuilder().addClientMixins("models.MixinModelIIR")
-            .setPhase(Phase.EARLY)),
+    MODEL_ITEM_RENDERER(new MixinBuilder().addClientMixins("models.MixinModelFHC","models.MixinModelItemRenderer").setPhase(Phase.EARLY)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
             .addCommonMixins(
                     "block_sounds.MixinEntity",

@@ -13,7 +13,6 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -29,6 +28,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -250,17 +250,17 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         GL11.glPopMatrix();
     }
 
-    private final Vector3f rotated = new Vector3f(0f,0f,0f);
-    private final Vector3f translated = new Vector3f(0f,0f,0f);
-    private final Vector3f scaled = new Vector3f(1f,1f,1f);
+    private final Vector3f rotated = new Vector3f(0f, 0f, 0f);
+    private final Vector3f translated = new Vector3f(0f, 0f, 0f);
+    private final Vector3f scaled = new Vector3f(1f, 1f, 1f);
 
-    private void applyItemDisplay(BakedModel model, int  meta, ItemRenderType type) {
+    private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
         Position pos;
         switch (type) {
             case EQUIPPED -> pos = Position.THIRDPERSON_RIGHTHAND;
             case ENTITY -> pos = Position.GROUND;
             case INVENTORY -> pos = Position.GUI;
-            case EQUIPPED_FIRST_PERSON,FIRST_PERSON_MAP -> pos = Position.FIRSTPERSON_RIGHTHAND;
+            case EQUIPPED_FIRST_PERSON -> pos = Position.FIRSTPERSON_RIGHTHAND;
             default -> pos = Position.GROUND;
         }
 
@@ -282,19 +282,56 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             GL11.glTranslated(-1f, 0f, -1f);
         }
 
-        if (type == EQUIPPED_FIRST_PERSON || type == FIRST_PERSON_MAP) {
-            // Rotated to correct Face
-            GL11.glRotatef(90f, 0f, 1f, 0f);
-            // Translated to correct position
-            GL11.glTranslated(-1f, 0f, 0f);
+        if (type == EQUIPPED_FIRST_PERSON) {
+            if (!t.equals(translated)) {
+                GL11.glTranslatef(t.x / 16f, t.y / 16f, t.z / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            GL11.glRotatef(90f, 0.0f, 1.0f, 0.0f);
+            if (r.equals(rotated)) {
+                GL11.glRotatef(0f, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(45f, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(0f, 1.0f, 0.0f, 0.0f);
+            } else {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(r.z, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.4f, 0.4f, 0.4f);
+            } else {
+                GL11.glScaled(s.z, s.y, s.x);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
         }
 
         if (type == ENTITY) {
-            GL11.glTranslated(-0.5f, -0.5f, -0.5f);
+//            Translate to center
+            GL11.glTranslatef(-px, -py, -pz);
+            if (t.equals(translated)) {
+                GL11.glTranslatef(0f, 3f / 16f, 0f);
+            } else {
+                GL11.glTranslatef(t.z / 16f, t.y / 16f, t.x / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            if (!r.equals(rotated)) {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(r.z, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.25f, 0.25f, 0.25f);
+            } else {
+                GL11.glScaled(s.z, s.y, s.x);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
         }
 
         if (type == INVENTORY) {
-
             if (!t.equals(translated)) {
                 GL11.glTranslatef(t.z / 16f, t.y / 16f, t.x / 16f);
             }
@@ -307,15 +344,15 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             } else {
                 GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
                 GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
-                GL11.glRotatef(r.z, 1.0f, 0.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
             }
-            GL11.glTranslatef(-px, -py, -pz);
 
             if (s.equals(scaled)) {
                 GL11.glScaled(0.625f, 0.625f, 0.625f);
             } else {
-                GL11.glScaled(s.x, s.y, s.z);
+                GL11.glScaled(s.z, s.y, s.x);
             }
+            GL11.glTranslatef(-px, -py, -pz);
         }
     }
 
