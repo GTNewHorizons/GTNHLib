@@ -255,7 +255,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
 
-        Position pos =  switch (type) {
+        Position pos = switch (type) {
             case EQUIPPED -> Position.THIRDPERSON_RIGHTHAND;
             case ENTITY -> Position.GROUND;
             case INVENTORY -> Position.GUI;
