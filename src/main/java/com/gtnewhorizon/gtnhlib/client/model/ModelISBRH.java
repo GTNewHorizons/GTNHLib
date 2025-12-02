@@ -330,6 +330,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             }
             GL11.glTranslatef(-px, -py, -pz);
         }
+    }
 
         if (type == INVENTORY) {
             if (!t.equals(translated)) {
