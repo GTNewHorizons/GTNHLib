@@ -13,6 +13,7 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -23,6 +24,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
@@ -240,7 +242,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         // Apply ItemBlock BlockBench Display
-        applyItemDisplay(type);
+        applyItemDisplay(model, meta, type);
 
         tesselator.draw();
         GL11.glEnable(GL11.GL_LIGHTING);
@@ -248,7 +250,29 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         GL11.glPopMatrix();
     }
 
-    private void applyItemDisplay(ItemRenderType type) {
+    private final Vector3f rotated = new Vector3f(0f,0f,0f);
+    private final Vector3f translated = new Vector3f(0f,0f,0f);
+    private final Vector3f scaled = new Vector3f(1f,1f,1f);
+
+    private void applyItemDisplay(BakedModel model, int  meta, ItemRenderType type) {
+        Position pos;
+        switch (type) {
+            case EQUIPPED -> pos = Position.THIRDPERSON_RIGHTHAND;
+            case ENTITY -> pos = Position.GROUND;
+            case INVENTORY -> pos = Position.GUI;
+            case EQUIPPED_FIRST_PERSON,FIRST_PERSON_MAP -> pos = Position.FIRSTPERSON_RIGHTHAND;
+            default -> pos = Position.GROUND;
+        }
+
+        float px = 0.5f;
+        float py = 0.5f;
+        float pz = 0.5f;
+
+        Position.ModelDisplay display = model.getDisplay(pos, meta, RAND);
+
+        Vector3f r = display.rotation();
+        Vector3f t = display.translation();
+        Vector3f s = display.scale();
 
         // BlockBench to Position
         if (type == EQUIPPED) {
@@ -270,8 +294,28 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         if (type == INVENTORY) {
-            // Translated to correct position
-            GL11.glTranslated(0f, -0.1f, 0f);
+
+            if (!t.equals(translated)) {
+                GL11.glTranslatef(t.z / 16f, t.y / 16f, t.x / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            if (r.equals(rotated)) {
+                GL11.glRotatef(30f, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(-135f, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(0f, 1.0f, 0.0f, 0.0f);
+            } else {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(r.z, 1.0f, 0.0f, 0.0f);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.625f, 0.625f, 0.625f);
+            } else {
+                GL11.glScaled(s.x, s.y, s.z);
+            }
         }
     }
 
