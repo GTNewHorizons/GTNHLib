@@ -295,7 +295,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             } else {
                 GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
                 GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
-                GL11.glRotatef(r.z, 1.0f, 0.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
             }
 
             if (s.equals(scaled)) {
@@ -319,7 +319,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             if (!r.equals(rotated)) {
                 GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
                 GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
-                GL11.glRotatef(r.z, 1.0f, 0.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
             }
 
             if (s.equals(scaled)) {
