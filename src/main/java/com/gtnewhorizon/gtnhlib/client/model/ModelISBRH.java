@@ -249,9 +249,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         GL11.glPopMatrix();
     }
 
-    private final Vector3f rotated = new Vector3f(0f, 0f, 0f);
-    private final Vector3f translated = new Vector3f(0f, 0f, 0f);
-    private final Vector3f scaled = new Vector3f(1f, 1f, 1f);
+    private static final Vector3f rotated = new Vector3f(0f, 0f, 0f);
+    private static final Vector3f translated = new Vector3f(0f, 0f, 0f);
+    private static final Vector3f scaled = new Vector3f(1f, 1f, 1f);
 
     private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
 

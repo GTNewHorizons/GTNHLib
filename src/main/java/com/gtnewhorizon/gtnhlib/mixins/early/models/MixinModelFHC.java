@@ -33,7 +33,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 public class MixinModelFHC {
 
     @WrapMethod(method = "renderInventoryItem")
-    private static boolean nhlib$warpRenderInventoryItem(RenderBlocks renderBlocks, TextureManager engine,
+    private static boolean nhlib$renderModeledInventoryItem(RenderBlocks renderBlocks, TextureManager engine,
             ItemStack item, boolean inColor, float zLevel, float x, float y, Operation<Boolean> original) {
         IItemRenderer customRenderer = MinecraftForgeClient.getItemRenderer(item, INVENTORY);
         if (!(customRenderer instanceof ModelISBRH modelISBRH)) {
@@ -68,8 +68,9 @@ public class MixinModelFHC {
     }
 
     @WrapMethod(method = "renderEntityItem")
-    private static boolean nhlib$warpRenderEntityItem(EntityItem entity, ItemStack item, float bobing, float rotation,
-            Random random, TextureManager engine, RenderBlocks renderBlocks, int count, Operation<Boolean> original) {
+    private static boolean nhlib$renderModeledEntityItem(EntityItem entity, ItemStack item, float bobing,
+            float rotation, Random random, TextureManager engine, RenderBlocks renderBlocks, int count,
+            Operation<Boolean> original) {
         IItemRenderer customRenderer = MinecraftForgeClient.getItemRenderer(item, ENTITY);
         if (!(customRenderer instanceof ModelISBRH modelISBRH)) {
             return original.call(entity, item, bobing, rotation, random, engine, renderBlocks, count);
@@ -119,7 +120,7 @@ public class MixinModelFHC {
     }
 
     @WrapMethod(method = "renderEquippedItem")
-    private static void nhlib$wrapRenderEquippedItem(IItemRenderer.ItemRenderType type, IItemRenderer customRenderer,
+    private static void nhlib$renderModeledEquippedItem(IItemRenderer.ItemRenderType type, IItemRenderer customRenderer,
             RenderBlocks renderBlocks, EntityLivingBase entity, ItemStack item, Operation<Void> original) {
         if (customRenderer instanceof ModelISBRH modelISBRH) {
             if (type == EQUIPPED) {
