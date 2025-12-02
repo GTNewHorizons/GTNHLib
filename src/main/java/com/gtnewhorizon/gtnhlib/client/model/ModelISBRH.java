@@ -8,7 +8,6 @@ import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON;
-import static net.minecraftforge.client.IItemRenderer.ItemRenderType.FIRST_PERSON_MAP;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
@@ -308,7 +307,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         if (type == ENTITY) {
-//            Translate to center
+            // Translate to center
             GL11.glTranslatef(-px, -py, -pz);
             if (t.equals(translated)) {
                 GL11.glTranslatef(0f, 3f / 16f, 0f);
@@ -330,7 +329,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             }
             GL11.glTranslatef(-px, -py, -pz);
         }
-    }
 
         if (type == INVENTORY) {
             if (!t.equals(translated)) {
