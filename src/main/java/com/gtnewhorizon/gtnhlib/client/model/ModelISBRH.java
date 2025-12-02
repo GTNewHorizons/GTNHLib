@@ -329,7 +329,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             if (t.equals(translated)) {
                 GL11.glTranslatef(0f, 3f / 16f, 0f);
             } else {
-                GL11.glTranslatef(t.z / 16f, t.y / 16f, t.x / 16f);
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
             }
 
             GL11.glTranslatef(px, py, pz);
@@ -349,7 +349,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         if (type == INVENTORY) {
             if (!t.equals(translated)) {
-                GL11.glTranslatef(t.z / 16f, t.y / 16f, t.x / 16f);
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
             }
 
             GL11.glTranslatef(px, py, pz);
