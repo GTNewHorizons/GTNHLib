@@ -275,10 +275,29 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         // BlockBench to Position
         if (type == EQUIPPED) {
-            // Rotated to correct Face
-            GL11.glRotatef(180f, 0f, 1f, 0f);
-            // Translated to correct position
-            GL11.glTranslated(-1f, 0f, -1f);
+            if (t.equals(translated)) {
+                GL11.glTranslatef(0f, 2.5f / 16f, 0f);
+            } else {
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            if (r.equals(rotated)) {
+                GL11.glRotatef(75f, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(45f, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(0f, 1.0f, 0.0f, 0.0f);
+            } else {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.375f, 0.375f, 0.375f);
+            } else {
+                GL11.glScaled(s.z, s.y, s.x);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
         }
 
         if (type == EQUIPPED_FIRST_PERSON) {

@@ -1,6 +1,8 @@
 package com.gtnewhorizon.gtnhlib.mixins.early.models;
 
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 import static net.minecraftforge.client.IItemRenderer.ItemRendererHelper.ENTITY_BOBBING;
 import static net.minecraftforge.client.IItemRenderer.ItemRendererHelper.ENTITY_ROTATION;
@@ -13,6 +15,7 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -113,4 +116,44 @@ public class MixinModelFHC {
         }
         return true;
     }
+    @WrapMethod(method = "renderEquippedItem")
+    private static void nhlib$wrapRenderEquippedItem(
+        IItemRenderer.ItemRenderType type,
+        IItemRenderer customRenderer,
+        RenderBlocks renderBlocks,
+        EntityLivingBase entity,
+        ItemStack item,
+        Operation<Void> original
+    ) {
+        if (customRenderer instanceof ModelISBRH modelISBRH) {
+            if (type == EQUIPPED) {
+                GL11.glPushMatrix();
+
+                GL11.glTranslatef(0.5F, 0.5F, 0.5F);
+                GL11.glRotatef(135f, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(-75f, 0.0f, 0.0f, 1.0f);
+                GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
+
+                GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
+                GL11.glTranslatef(0.25F, -0.25F, -0.25F);
+                GL11.glScaled(1f / 0.375F, 1f / 0.375F, 1f / 0.375F);
+                modelISBRH.renderItem(type, item, renderBlocks, entity);
+
+                GL11.glPopMatrix();
+                return;
+            }
+
+            if (type == EQUIPPED_FIRST_PERSON) {
+                GL11.glPushMatrix();
+
+                modelISBRH.renderItem(type, item, renderBlocks, entity);
+
+                GL11.glPopMatrix();
+                return;
+            }
+        }
+
+        original.call(type, customRenderer, renderBlocks, entity, item);
+    }
+
 }
