@@ -68,7 +68,6 @@ public class CustomFramebuffer {
     public CustomFramebuffer(int width, int height, int settings) {
         this(settings);
         createFramebuffer(width, height);
-        unbindFramebuffer();
     }
 
     protected int createBufferBits() {
