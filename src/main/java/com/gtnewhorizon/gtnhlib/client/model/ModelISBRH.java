@@ -254,14 +254,14 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     private final Vector3f scaled = new Vector3f(1f, 1f, 1f);
 
     private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
-        Position pos;
-        switch (type) {
-            case EQUIPPED -> pos = Position.THIRDPERSON_RIGHTHAND;
-            case ENTITY -> pos = Position.GROUND;
-            case INVENTORY -> pos = Position.GUI;
-            case EQUIPPED_FIRST_PERSON -> pos = Position.FIRSTPERSON_RIGHTHAND;
-            default -> pos = Position.GROUND;
-        }
+
+        Position pos =  switch (type) {
+            case EQUIPPED -> Position.THIRDPERSON_RIGHTHAND;
+            case ENTITY -> Position.GROUND;
+            case INVENTORY -> Position.GUI;
+            case EQUIPPED_FIRST_PERSON -> Position.FIRSTPERSON_RIGHTHAND;
+            default -> Position.GROUND;
+        };
 
         float px = 0.5f;
         float py = 0.5f;
