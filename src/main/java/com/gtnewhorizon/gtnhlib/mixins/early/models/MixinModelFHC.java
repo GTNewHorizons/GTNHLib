@@ -146,7 +146,7 @@ public class MixinModelFHC {
                 GL11.glRotatef(-45f, 0.0f, 1.0f, 0.0f);
                 GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
 
-                GL11.glTranslatef(-1.5f, -1.25f, 1.5f);
+                GL11.glTranslatef(-1.45f, -1.25f, 1.75f);
                 GL11.glScaled(1f / 0.4f, 1f / 0.4f, 1f / 0.4f);
                 GL11.glRotatef(90f, 0.0f, 1.0f, 0.0f);
                 modelISBRH.renderItem(type, item, renderBlocks, entity);

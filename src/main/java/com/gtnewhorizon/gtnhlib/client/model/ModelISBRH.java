@@ -276,7 +276,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         // BlockBench to Position
         if (type == EQUIPPED) {
             if (t.equals(translated)) {
-                GL11.glTranslatef(0f, 2.5f / 16f, 0f);
+                GL11.glTranslatef(0f / 16f, 2.5f / 16f, 0f / 16f);
             } else {
                 GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
             }
@@ -327,7 +327,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         if (type == ENTITY) {
             // Translate to center
             if (t.equals(translated)) {
-                GL11.glTranslatef(0f, 3f / 16f, 0f);
+                GL11.glTranslatef(0f / 16f, 3f / 16f, 0f / 16f);
             } else {
                 GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
             }
