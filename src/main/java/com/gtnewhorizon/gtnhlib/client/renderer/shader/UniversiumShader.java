@@ -16,11 +16,15 @@ import com.gtnewhorizon.gtnhlib.mixins.early.EntityRendererAccessor;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 // This was largely copied from avaritia
-public class UniversiumShader extends ShaderProgram {
+public final class UniversiumShader extends ShaderProgram {
 
     private static UniversiumShader instance;
 
     private final TextureAtlas textureAtlas;
+
+    private boolean inventoryRenderPass = false;
+    private boolean renderInInventory;
+    private boolean lastInventoryRender;
 
     private final int location_lightlevel;
     public final float[] LIGHT_LEVEL = new float[3];
@@ -33,108 +37,116 @@ public class UniversiumShader extends ShaderProgram {
 
     private final int location_externalScale;
 
-    private final int location_lightmix;
-
     private final int location_opacity;
+    private float lastOpacity = -1;
     public static float cosmicOpacity = 1.0f;
 
     private final int location_starColorMultiplier;
+    private float lastStarColorMultiplier = -1;
     private float starColorMultiplier = 1;
 
     private final int location_bgColor;
-    private final float[] BG_COLORS = new float[] { -1, -1, -1 };
+    private float bgColorR;
+    private float bgColorG;
+    private float bgColorB;
+    private boolean useCustomColor;
 
     private final int location_cosmicuvs;
 
     private UniversiumShader() {
         super(GTNHLib.RESOURCE_DOMAIN, "shaders/avaritia/universium.vert", "shaders/avaritia/universium.frag");
         super.use();
-        bindTextureSlot("texture0", 0);
-        bindTextureSlot("cosmicTexture", 2);
-        clear();
-        MinecraftForge.EVENT_BUS.register(this);
-
-        this.textureAtlas = TextureAtlas
-                .createTextureAtlas(GTNHLib.RESOURCE_DOMAIN, "textures/avaritia/cosmic", 10);
 
         location_lightlevel = getUniformLocation("lightlevel");
         location_time = getUniformLocation("time");
         location_yaw = getUniformLocation("yaw");
         location_pitch = getUniformLocation("pitch");
         location_externalScale = getUniformLocation("externalScale");
-        location_lightmix = getUniformLocation("lightmix");
+        int location_lightmix = getUniformLocation("lightmix");
         location_opacity = getUniformLocation("opacity");
         location_starColorMultiplier = getUniformLocation("starColorMultiplier");
         location_bgColor = getUniformLocation("bgColor");
         location_cosmicuvs = getUniformLocation("cosmicuvs");
-        // AutoShaderUpdater.getInstance().registerShaderReload(
-        // this,
-        // GregTech.resourceDomain,
-        // "shaders/universium.vert.glsl", "shaders/universium.frag.glsl"
-        // );
+
+        GL20.glUniform1f(location_lightmix, 0.2f);
+
+        bindTextureSlot("texture0", 0);
+        bindTextureSlot("cosmicTexture", 2);
+
+        unbind();
+
+        MinecraftForge.EVENT_BUS.register(this);
+
+        this.textureAtlas = TextureAtlas.createTextureAtlas(GTNHLib.RESOURCE_DOMAIN, "textures/avaritia/cosmic", 10);
     }
 
     public static UniversiumShader getInstance() {
-        if (instance == null) {
-            instance = new UniversiumShader();
-        }
         return instance;
     }
 
-    public static void ensureLoaded() {
-        getInstance();
+    public static void init() {
+        instance = new UniversiumShader();
     }
-
-    public static boolean inventoryRender = false;
 
     @SubscribeEvent
     public void makeCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Pre event) {
-        inventoryRender = true;
+        inventoryRenderPass = true;
     }
 
     @SubscribeEvent
     public void finishMakingCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Post event) {
-        inventoryRender = false;
+        inventoryRenderPass = false;
     }
 
     @Override
     public void use() {
         super.use();
 
-        Minecraft mc = Minecraft.getMinecraft();
-
-        float yaw = 0;
-        float pitch = 0;
-        float scale = 1.0f;
-
-        if (!inventoryRender) {
-            yaw = (float) ((mc.thePlayer.rotationYaw * 2 * Math.PI) / 360.0);
-            pitch = -(float) ((mc.thePlayer.rotationPitch * 2 * Math.PI) / 360.0);
-        } else {
-            scale = 25.0f;
-        }
-
-        final int time = mc.thePlayer.ticksExisted;
+        final float time = (System.currentTimeMillis() % 600_000) / 50f;
         GL20.glUniform1f(location_time, time);
 
-        GL20.glUniform1f(location_yaw, yaw);
+        final boolean shouldRenderInventory = inventoryRenderPass || renderInInventory;
 
-        GL20.glUniform1f(location_pitch, pitch);
+        if (shouldRenderInventory) {
+            if (!lastInventoryRender) {
+                GL20.glUniform1f(location_yaw, 0);
+                GL20.glUniform1f(location_pitch, 0);
+                GL20.glUniform1f(location_externalScale, 25);
+                lastInventoryRender = true;
+            }
+        } else {
+            Minecraft mc = Minecraft.getMinecraft();
+            float yaw = (float) ((mc.thePlayer.rotationYaw * 2 * Math.PI) / 360.0);
+            float pitch = -(float) ((mc.thePlayer.rotationPitch * 2 * Math.PI) / 360.0);
+            GL20.glUniform1f(location_yaw, yaw);
+
+            GL20.glUniform1f(location_pitch, pitch);
+
+            if (lastInventoryRender) {
+                GL20.glUniform1f(location_externalScale, 1);
+                lastInventoryRender = false;
+            }
+        }
 
         GL20.glUniform3f(location_lightlevel, LIGHT_LEVEL[0], LIGHT_LEVEL[1], LIGHT_LEVEL[2]);
 
-        GL20.glUniform1f(location_lightmix, 0.2f);
+        if (lastOpacity != cosmicOpacity) {
+            GL20.glUniform1f(location_opacity, cosmicOpacity);
 
-        GL20.glUniform1f(location_externalScale, scale);
+            lastOpacity = cosmicOpacity;
+            cosmicOpacity = 1.0f;
+        }
 
-        GL20.glUniform1f(location_opacity, cosmicOpacity);
+        if (lastStarColorMultiplier != starColorMultiplier) {
+            GL20.glUniform1f(location_starColorMultiplier, starColorMultiplier);
 
-        GL20.glUniform1f(location_starColorMultiplier, starColorMultiplier);
-        starColorMultiplier = 1;
+            lastStarColorMultiplier = starColorMultiplier;
+            starColorMultiplier = 1;
+        }
 
-        if (BG_COLORS[0] != -1) {
-            GL20.glUniform3f(location_bgColor, BG_COLORS[0], BG_COLORS[1], BG_COLORS[2]);
-            BG_COLORS[0] = -1;
+        if (useCustomColor) {
+            GL20.glUniform3f(location_bgColor, bgColorR, bgColorG, bgColorB);
+            useCustomColor = false;
         } else {
             final float pulse = (System.currentTimeMillis() % 20_000) / 20_000f;
             GL20.glUniform3f(
@@ -156,10 +168,16 @@ public class UniversiumShader extends ShaderProgram {
         return this;
     }
 
+    public UniversiumShader setRenderInInventory() {
+        renderInInventory = true;
+        return this;
+    }
+
     public UniversiumShader setBackgroundColor(float r, float g, float b) {
-        BG_COLORS[0] = r;
-        BG_COLORS[1] = g;
-        BG_COLORS[2] = b;
+        bgColorR = r;
+        bgColorG = g;
+        bgColorB = b;
+        useCustomColor = true;
         return this;
     }
 
@@ -182,9 +200,9 @@ public class UniversiumShader extends ShaderProgram {
         int lightColour = map[Math.max(0, Math.min(map.length - 1, my * 16 + mx))];
 
         return setLightLevel(
-                ((lightColour >> 16) & 0xFF) / 256.0f,
-                ((lightColour >> 8) & 0xFF) / 256.0f,
-                ((lightColour) & 0xFF) / 256.0f);
+                ((lightColour >> 16) & 0xFF) / 255.0f,
+                ((lightColour >> 8) & 0xFF) / 255.0f,
+                ((lightColour) & 0xFF) / 255.0f);
     }
 
     public UniversiumShader setLightLevel(float level) {

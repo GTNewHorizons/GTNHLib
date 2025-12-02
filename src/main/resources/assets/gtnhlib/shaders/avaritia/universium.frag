@@ -32,23 +32,22 @@ float rand2d(vec2 x) {
     return fract(sin(mod(dot(x, vec2(12.9898, 78.233)), 3.14)) * 43758.5453);
 }
 
-mat4 rotationMatrix(vec3 axis, float angle) {
+mat3 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
     float s = sin(angle);
     float c = cos(angle);
     float oc = 1.0 - c;
 
-    return mat4(
-    oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-    0.0,                                0.0,                                0.0,                                1.0);
+    return mat3(
+    oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
+    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
+    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c
+    );
 }
 
 void main() {
     vec3 light = gl_Color.rgb * lightlevel;
     vec4 mask = texture2D(texture0, gl_TexCoord[0].xy);
-    float correctTime = mod(time,12000);
 
     float oneOverExternalScale = 1.0/externalScale;
 
@@ -58,18 +57,18 @@ void main() {
     vec3 col = bgColor;
 
     // get ray from camera to fragment
-    vec4 dir = normalize(vec4( -position, 0));
+    vec3 dir = normalize(-position);
 
     // rotate the ray to show the right bit of the sphere for the angle
     float sb = sin(pitch);
     float cb = cos(pitch);
-    dir = normalize(vec4(dir.x, dir.y * cb - dir.z * sb, dir.y * sb + dir.z * cb, 0));
+    dir = normalize(vec3(dir.x, dir.y * cb - dir.z * sb, dir.y * sb + dir.z * cb));
 
     float sa = sin(-yaw);
     float ca = cos(-yaw);
-    dir = normalize(vec4(dir.z * sa + dir.x * ca, dir.y, dir.z * ca - dir.x * sa, 0));
+    dir = normalize(vec3(dir.z * sa + dir.x * ca, dir.y, dir.z * ca - dir.x * sa));
 
-    vec4 ray;
+    vec3 ray;
 
     // draw the layers
     for (int i=0; i<16; i++) {
@@ -96,7 +95,7 @@ void main() {
         float scale = mult*0.5 + 2.75;
         float u = rawu * scale * externalScale;
         //float v = (rawv + time * 0.00006) * scale * 0.6;
-        float v = (rawv + correctTime * 0.0002 * oneOverExternalScale) * scale * 0.6 * externalScale;
+        float v = (rawv + time * 0.0002 * oneOverExternalScale) * scale * 0.6 * externalScale;
 
         vec2 tex = vec2( u, v );
 

@@ -23,7 +23,7 @@ import org.lwjgl.opengl.GL20;
  * Unlike Minecraft's texture atlas, it does not upload the image data every animation update, but instead changes the
  * UV coordinates, resulting in better performance.
  */
-public class TextureAtlas {
+public final class TextureAtlas {
 
     private final int texture;
     private final SpriteAnimationMetadata[] animationMetadata;
@@ -86,23 +86,37 @@ public class TextureAtlas {
     }
 
     public void bindTexture() {
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, getTexture());
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
     }
 
+    public boolean needsAnimationUpdate() {
+        return Minecraft.getMinecraft().thePlayer.ticksExisted != lastTextureUpdate;
+    }
+
+    /**
+     * Updates the animation and returns a new FloatBuffer with the UV coordinates. This method should only be called if
+     * {@link #needsAnimationUpdate()} returns {@code true}, else there animation will be sped up.
+     */
+    public FloatBuffer updateUVBuffer() {
+        lastTextureUpdate = Minecraft.getMinecraft().thePlayer.ticksExisted;
+        FloatBuffer uvs = BufferUtils.createFloatBuffer(animationMetadata.length * 2);
+
+        for (SpriteAnimationMetadata metadata : animationMetadata) {
+            metadata.updateAnimation();
+            final float v = metadata.index * heightUnit;
+            uvs.put(v);
+            uvs.put(v + heightUnit);
+        }
+        uvs.flip();
+        return uvs;
+    }
+
+    /**
+     * Uploads the UV coordinates to a given uniform. It will only perform the upload if {@link #needsAnimationUpdate()} returns {@code true}
+     */
     public void uploadUVBuffer(int location) {
-        if (Minecraft.getMinecraft().thePlayer.ticksExisted != lastTextureUpdate) {
-            lastTextureUpdate = Minecraft.getMinecraft().thePlayer.ticksExisted;
-
-            FloatBuffer uvs = BufferUtils.createFloatBuffer(20);
-
-            for (SpriteAnimationMetadata metadata : animationMetadata) {
-                metadata.updateAnimation();
-                final float v = metadata.index * heightUnit;
-                uvs.put(v);
-                uvs.put(v + heightUnit);
-            }
-            uvs.flip();
-            GL20.glUniform2(location, uvs);
+        if (needsAnimationUpdate()) {
+            GL20.glUniform2(location, updateUVBuffer());
         }
     }
 

@@ -206,8 +206,12 @@ public class ShaderProgram implements AutoCloseable {
         GL20.glUseProgram(this.program);
     }
 
-    public static void clear() {
+    public static void unbind() {
         GL20.glUseProgram(0);
+    }
+
+    public static void clear() {
+        unbind();
     }
 
     public int getUniformLocation(String name) {
