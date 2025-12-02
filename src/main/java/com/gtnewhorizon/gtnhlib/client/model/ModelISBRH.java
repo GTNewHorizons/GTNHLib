@@ -302,11 +302,10 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         if (type == EQUIPPED_FIRST_PERSON) {
             if (!t.equals(translated)) {
-                GL11.glTranslatef(t.x / 16f, t.y / 16f, t.z / 16f);
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
             }
 
             GL11.glTranslatef(px, py, pz);
-            GL11.glRotatef(90f, 0.0f, 1.0f, 0.0f);
             if (r.equals(rotated)) {
                 GL11.glRotatef(0f, 0.0f, 0.0f, 1.0f);
                 GL11.glRotatef(45f, 0.0f, 1.0f, 0.0f);
@@ -327,7 +326,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         if (type == ENTITY) {
             // Translate to center
-            GL11.glTranslatef(-px, -py, -pz);
             if (t.equals(translated)) {
                 GL11.glTranslatef(0f, 3f / 16f, 0f);
             } else {

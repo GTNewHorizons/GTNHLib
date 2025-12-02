@@ -41,10 +41,10 @@
 			"scale": [0.375, 0.64, 0.375]
 		},
 		"firstperson_righthand": {
-			"rotation": [-45, 125, 45],
-			"translation": [-7.5, 1.5, -7.5],
-			"scale": [0.4, 1, 0.4]
-		},
+      "rotation": [-45, 125, 45],
+      "translation": [-7.5, 1.5, -7.5],
+      "scale": [0.4, 1, 0.4]
+    },
 		"ground": {
 			"rotation": [10, -10, 10],
 			"translation": [-10, 10, -10],

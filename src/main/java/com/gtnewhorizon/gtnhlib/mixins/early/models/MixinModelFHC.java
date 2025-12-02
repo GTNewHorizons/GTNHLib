@@ -107,6 +107,7 @@ public class MixinModelFHC {
                         ((random.nextFloat() * 2.0F - 1.0F) * 0.2F),
                         ((random.nextFloat() * 2.0F - 1.0F) * 0.2F));
             }
+            GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
             modelISBRH.renderItem(ENTITY, item, renderBlocks, entity);
             GL11.glPopMatrix();
         }
@@ -116,15 +117,10 @@ public class MixinModelFHC {
         }
         return true;
     }
+
     @WrapMethod(method = "renderEquippedItem")
-    private static void nhlib$wrapRenderEquippedItem(
-        IItemRenderer.ItemRenderType type,
-        IItemRenderer customRenderer,
-        RenderBlocks renderBlocks,
-        EntityLivingBase entity,
-        ItemStack item,
-        Operation<Void> original
-    ) {
+    private static void nhlib$wrapRenderEquippedItem(IItemRenderer.ItemRenderType type, IItemRenderer customRenderer,
+            RenderBlocks renderBlocks, EntityLivingBase entity, ItemStack item, Operation<Void> original) {
         if (customRenderer instanceof ModelISBRH modelISBRH) {
             if (type == EQUIPPED) {
                 GL11.glPushMatrix();
@@ -146,6 +142,13 @@ public class MixinModelFHC {
             if (type == EQUIPPED_FIRST_PERSON) {
                 GL11.glPushMatrix();
 
+                GL11.glTranslatef(0.5f, 0.5f, 0.5f);
+                GL11.glRotatef(-45f, 0.0f, 1.0f, 0.0f);
+                GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
+
+                GL11.glTranslatef(-1.5f, -1.25f, 1.5f);
+                GL11.glScaled(1f / 0.4f, 1f / 0.4f, 1f / 0.4f);
+                GL11.glRotatef(90f, 0.0f, 1.0f, 0.0f);
                 modelISBRH.renderItem(type, item, renderBlocks, entity);
 
                 GL11.glPopMatrix();
