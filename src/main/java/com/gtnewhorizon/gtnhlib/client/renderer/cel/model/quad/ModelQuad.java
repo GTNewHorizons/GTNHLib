@@ -33,6 +33,12 @@ public class ModelQuad implements ModelQuadViewMutable {
     private boolean hasAmbientOcclusion = true;
     private int shaderBlockId;
 
+    public ModelQuad() {}
+
+    public ModelQuad(ModelQuadView source) {
+        copyFrom(source);
+    }
+
     @Override
     public void setX(int idx, float x) {
         this.data[vertexOffset(idx) + POSITION_INDEX] = Float.floatToRawIntBits(x);
@@ -257,5 +263,47 @@ public class ModelQuad implements ModelQuadViewMutable {
         setLight(0, DEFAULT_LIGHTMAP);
         setLight(0, DEFAULT_LIGHTMAP);
         setLight(0, DEFAULT_LIGHTMAP);
+    }
+
+    /**
+     * Deep copies all data from the source quad into this quad. Used when quads need to be retained beyond their pool
+     * lifecycle.
+     *
+     * @param source The quad to copy from
+     */
+    public ModelQuad copyFrom(ModelQuadView source) {
+        // Optimize for ModelQuad-to-ModelQuad copies
+        if (source instanceof ModelQuad sourceQuad) {
+            System.arraycopy(sourceQuad.data, 0, this.data, 0, VERTEX_SIZE * 4);
+            this.flags = sourceQuad.flags;
+            this.normal = sourceQuad.normal;
+            this.sprite = sourceQuad.sprite;
+            this.colorIdx = sourceQuad.colorIdx;
+            this.direction = sourceQuad.direction;
+            this.hasAmbientOcclusion = sourceQuad.hasAmbientOcclusion;
+            this.shaderBlockId = sourceQuad.shaderBlockId;
+        } else {
+            // Fallback for generic ModelQuadView sources - copy element by element
+            for (int i = 0; i < 4; i++) {
+                setX(i, source.getX(i));
+                setY(i, source.getY(i));
+                setZ(i, source.getZ(i));
+                setColor(i, source.getColor(i));
+                setTexU(i, source.getTexU(i));
+                setTexV(i, source.getTexV(i));
+                setLight(i, source.getLight(i));
+                setForgeNormal(i, source.getForgeNormal(i));
+            }
+
+            // Copy metadata
+            this.flags = source.getFlags();
+            this.normal = source.getComputedFaceNormal();
+            this.sprite = source.celeritas$getSprite();
+            this.colorIdx = source.getColorIndex();
+            this.direction = source.getLightFace();
+            this.hasAmbientOcclusion = source.hasAmbientOcclusion();
+            this.shaderBlockId = source.getShaderBlockId();
+        }
+        return this;
     }
 }
