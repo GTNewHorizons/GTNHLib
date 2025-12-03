@@ -107,7 +107,8 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
     public void bindFramebuffer() {
         super.bindFramebuffer();
         if (linkedBuffer != null) {
-            final int attachment = Mods.ANGELICA ? ((IRenderTargetExt) linkedBuffer).iris$getDepthTextureId()
+            final int attachment = Mods.ANGELICA && linkedBuffer instanceof IRenderTargetExt
+                    ? ((IRenderTargetExt) linkedBuffer).iris$getDepthTextureId()
                     : linkedBuffer.depthBuffer;
             if (attachment != depthAttachment) {
                 depthAttachment = attachment;
