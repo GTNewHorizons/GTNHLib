@@ -9,6 +9,8 @@ import net.minecraftforge.client.MinecraftForgeClient;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
+import com.gtnewhorizon.gtnhlib.compat.Mods;
+
 /**
  * A framebuffer that shares the depth buffer of another {@link Framebuffer}.
  * <p>
@@ -105,7 +107,7 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
     public void bindFramebuffer() {
         super.bindFramebuffer();
         if (linkedBuffer != null) {
-            final int attachment = linkedBuffer instanceof IRenderTargetExt
+            final int attachment = Mods.ANGELICA && linkedBuffer instanceof IRenderTargetExt
                     ? ((IRenderTargetExt) linkedBuffer).iris$getDepthTextureId()
                     : linkedBuffer.depthBuffer;
             if (attachment != depthAttachment) {
