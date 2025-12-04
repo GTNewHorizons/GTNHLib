@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.mixins;
 
-import com.gtnewhorizon.gtnhlib.util.EarlyConfig;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
@@ -19,11 +19,37 @@ public enum Mixins implements IMixins {
     EQUIPMENT_CHANGE_EVENT(Side.COMMON, "MixinEntityLivingBase"),
     BACKPORT_SERVER_TICKING(Side.COMMON, "MixinMinecraftServer"),
     GAME_RULES_API(Side.COMMON, "MixinGameRules"),
-    DEBUG_TEXTURES(new MixinBuilder("Dump textures sizes")
-            .addClientMixins("debug.MixinDynamicTexture", "debug.MixinTextureAtlasSprite").setPhase(Phase.EARLY)
-            .setApplyIf(() -> Boolean.parseBoolean(System.getProperty("gtnhlib.debugtextures", "false")))),
+    BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
-            .setPhase(Phase.EARLY).setApplyIf(() -> EarlyConfig.enableFontRendererMixin));
+            .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
+    MODEL_TEXTURE_LOADING(
+            new MixinBuilder("Automatically load model textures")
+                    .addClientMixins(
+                            "models.FRMAccessor",
+                            "models.MixinFileResourcePack",
+                            "models.MixinFolderResourcePack",
+                            "models.SRRMAccessor")
+                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    BLOCK_PARTICLE(
+            new MixinBuilder("Automatically override model block particle").addClientMixins("models.MixinBlockParticle")
+                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
+            .addCommonMixins(
+                    "block_sounds.MixinEntity",
+                    "block_sounds.MixinEntityLivingBase",
+                    "block_sounds.MixinEntityHorse",
+                    "block_sounds.MixinItemBlock",
+                    "block_sounds.MixinItemSlab",
+                    "block_sounds.MixinPlayerControllerMP")
+            .addClientMixins("block_sounds.MixinRenderGlobal").setPhase(Phase.EARLY)
+            .setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
+    ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
+            .addCommonMixins("EntityRendererAccessor")),
+    ITEM_TRANSLUCENCY(new MixinBuilder("ItemRenderer & RenderItem ITranslucentItem support")
+            .addClientMixins("MixinItemRenderer_Translucency", "MixinRenderItem_Translucency").setPhase(Phase.EARLY)
+            .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
+    //
+    ;
 
     private final MixinBuilder builder;
 
