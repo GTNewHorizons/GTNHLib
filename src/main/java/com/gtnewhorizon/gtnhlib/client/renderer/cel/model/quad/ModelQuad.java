@@ -260,9 +260,9 @@ public class ModelQuad implements ModelQuadViewMutable {
 
     private void clearLightmap() {
         setLight(0, DEFAULT_LIGHTMAP);
-        setLight(0, DEFAULT_LIGHTMAP);
-        setLight(0, DEFAULT_LIGHTMAP);
-        setLight(0, DEFAULT_LIGHTMAP);
+        setLight(1, DEFAULT_LIGHTMAP);
+        setLight(2, DEFAULT_LIGHTMAP);
+        setLight(3, DEFAULT_LIGHTMAP);
     }
 
     /**

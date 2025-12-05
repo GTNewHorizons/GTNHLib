@@ -9,6 +9,7 @@ import static net.minecraft.util.MathHelper.clamp_int;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -18,10 +19,14 @@ import net.minecraft.client.renderer.Tessellator;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
 import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
@@ -35,8 +40,32 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 @SuppressWarnings("unused")
 public class CapturingTessellator extends Tessellator implements ITessellatorInstance {
 
-    final ObjectPooler<ModelQuad> quadBuf = new ObjectPooler<>(ModelQuad::new);
+    // Object pools reduce allocations over time by reusing primitive instances across multiple
+    // capture sessions. Not meant to avoid allocations within a single call, but to amortize
+    // allocation costs across the lifetime of the CapturingTessellator.
+    final ObjectPooler<ModelQuad> quadPool = new ObjectPooler<>(ModelQuad::new);
+    final ObjectPooler<ModelTriangle> triPool = new ObjectPooler<>(ModelTriangle::new);
+    final ObjectPooler<ModelLine> linePool = new ObjectPooler<>(ModelLine::new);
+
+    /**
+     * Stores ModelQuad objects for GL_QUADS and GL_TRIANGLES draw modes. Triangles are stored as "degenerate quads" via
+     * quadrangulation (v2 duplicated to v3) for backward compatibility with code expecting all geometry in this list.
+     * Populated by QuadExtractor.
+     */
     final List<ModelQuadViewMutable> collectedQuads = new ObjectArrayList<>();
+
+    /**
+     * Stores primitives from other draw modes: GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP (as ModelLine), GL_TRIANGLE_STRIP,
+     * GL_TRIANGLE_FAN (as ModelTriangle). These are converted to their base primitive types. Populated by
+     * PrimitiveExtractor.
+     */
+    final List<ModelPrimitiveView> collectedPrimitives = new ObjectArrayList<>();
+
+    // Reusable lists for stopCapturingToGeometry to avoid allocations
+    final List<ModelLine> lineListCache = new ArrayList<>();
+    final List<ModelTriangle> triangleListCache = new ArrayList<>();
+    final List<ModelQuad> quadListCache = new ArrayList<>();
+
     int shaderBlockId = -1;
 
     // Any offset we need to the Tesselator's offset!
@@ -82,13 +111,32 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         return collectedQuads;
     }
 
+    public List<ModelPrimitiveView> getPrimitives() {
+        return collectedPrimitives;
+    }
+
     public void clearQuads() {
         // noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < collectedQuads.size(); i++) {
             final var quad = collectedQuads.get(i);
-            if (quad instanceof ModelQuad mq) quadBuf.releaseInstance(mq);
+            if (quad instanceof ModelQuad mq) quadPool.releaseInstance(mq);
         }
         collectedQuads.clear();
+    }
+
+    public void clearPrimitives() {
+        // noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < collectedPrimitives.size(); i++) {
+            final var prim = collectedPrimitives.get(i);
+            if (prim instanceof ModelQuad mq) {
+                quadPool.releaseInstance(mq);
+            } else if (prim instanceof ModelTriangle mt) {
+                triPool.releaseInstance(mt);
+            } else if (prim instanceof ModelLine ml) {
+                linePool.releaseInstance(ml);
+            }
+        }
+        collectedPrimitives.clear();
     }
 
     public static ByteBuffer quadsToBuffer(List<ModelQuadViewMutable> quads, VertexFormat format) {
@@ -242,6 +290,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         public boolean hasBrightness;
         public boolean hasColor;
         public boolean hasNormals;
+        public int drawMode = GL11.GL_QUADS;
 
         public Flags(boolean hasTexture, boolean hasBrightness, boolean hasColor, boolean hasNormals) {
             this.hasTexture = hasTexture;
@@ -258,6 +307,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
             this.hasBrightness = other.hasBrightness;
             this.hasColor = other.hasColor;
             this.hasNormals = other.hasNormals;
+            this.drawMode = other.drawMode;
         }
 
         /**
@@ -270,18 +320,31 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
             this.hasNormals = hasNormals;
         }
 
+        /**
+         * Updates this Flags instance with new values including draw mode.
+         */
+        public void copyFrom(boolean hasTexture, boolean hasBrightness, boolean hasColor, boolean hasNormals,
+                int drawMode) {
+            this.hasTexture = hasTexture;
+            this.hasBrightness = hasBrightness;
+            this.hasColor = hasColor;
+            this.hasNormals = hasNormals;
+            this.drawMode = drawMode;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Flags flags)) return false;
             return hasTexture == flags.hasTexture && hasBrightness == flags.hasBrightness
                     && hasColor == flags.hasColor
-                    && hasNormals == flags.hasNormals;
+                    && hasNormals == flags.hasNormals
+                    && drawMode == flags.drawMode;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(hasTexture, hasBrightness, hasColor, hasNormals);
+            return Objects.hash(hasTexture, hasBrightness, hasColor, hasNormals, drawMode);
         }
 
     }

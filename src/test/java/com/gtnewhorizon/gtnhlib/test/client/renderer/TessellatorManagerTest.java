@@ -7,7 +7,6 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.CapturedDraw;
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
@@ -171,13 +170,13 @@ public class TessellatorManagerTest {
         parentTess.pos(0, 1, 0).tex(0, 1).endVertex();
         parentTess.draw();
 
-        // After draw(), quads are moved to capturedDraws, so tess.getQuads() is empty
-        assertEquals(0, parentTess.getQuads().size(), "After draw(), quads moved to capturedDraws");
+        // In index-based mode, quads accumulate in collectedQuads until nesting or stop
+        assertEquals(1, parentTess.getQuads().size(), "After draw(), quads accumulate in collectedQuads");
 
-        // Start nested child capture
+        // Start nested child capture - parent's quads are preserved, list cleared for child
         CapturingTessellator childTess = TessellatorManager.startCapturingAndGet();
         assertSame(parentTess, childTess, "Should reuse same tessellator instance");
-        assertEquals(0, childTess.getQuads().size(), "Child should start with 0 quads");
+        assertEquals(0, childTess.getQuads().size(), "Child should start with 0 quads (parent's were saved)");
 
         childTess.startDrawingQuads();
         childTess.pos(2, 0, 0).tex(0, 0).endVertex();
@@ -190,8 +189,8 @@ public class TessellatorManagerTest {
         assertEquals(1, childQuads.size(), "Child should have captured 1 quad");
         assertEquals(2.0f, childQuads.get(0).getX(0), 0.001f, "Child quad should have correct position");
 
-        // After popping child, parent continues with empty tess.getQuads() (draws in capturedDraws)
-        assertEquals(0, parentTess.getQuads().size(), "tess.getQuads() empty, draws in capturedDraws");
+        // After popping child, parent continues with cleared list (its quads already saved)
+        assertEquals(0, parentTess.getQuads().size(), "tess.getQuads() cleared for parent to continue");
 
         // Parent can continue capturing
         parentTess.startDrawingQuads();
@@ -268,69 +267,6 @@ public class TessellatorManagerTest {
         CapturingTessellator.Flags flags4 = new CapturingTessellator.Flags(flags1);
         assertEquals(flags1, flags4, "Copy constructor should produce equal flags");
         assertEquals(flags1.hashCode(), flags4.hashCode(), "Copied flags should have same hashCode");
-
-        // Verify batching use case: flags from different CapturedDraws can be compared
-        TessellatorManager.startCapturing();
-        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
-
-        // Draw 1
-        tess.startDrawingQuads();
-        tess.pos(0, 0, 0).tex(0, 0).endVertex();
-        tess.pos(1, 0, 0).tex(1, 0).endVertex();
-        tess.pos(1, 1, 0).tex(1, 1).endVertex();
-        tess.pos(0, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        // Draw 2 with same settings
-        tess.startDrawingQuads();
-        tess.pos(2, 0, 0).tex(0, 0).endVertex();
-        tess.pos(3, 0, 0).tex(1, 0).endVertex();
-        tess.pos(3, 1, 0).tex(1, 1).endVertex();
-        tess.pos(2, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        List<CapturedDraw> draws = TessellatorManager.stopCapturingToDraws();
-        assertEquals(2, draws.size());
-
-        // Flags from different draws should be equal if settings were identical
-        assertEquals(
-                draws.get(0).flags(),
-                draws.get(1).flags(),
-                "Flags from draws with identical settings should be equal");
-        assertEquals(
-                draws.get(0).flags().hashCode(),
-                draws.get(1).flags().hashCode(),
-                "Equal flags should have same hashCode for batching");
-    }
-
-    @Test
-    void testPerDrawFlagTracking() {
-        // Test that per-draw flags are tracked correctly
-        TessellatorManager.startCapturing();
-        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
-
-        // First draw with texture
-        tess.startDrawingQuads();
-        tess.pos(0, 0, 0).tex(0, 0).endVertex();
-        tess.pos(1, 0, 0).tex(1, 0).endVertex();
-        tess.pos(1, 1, 0).tex(1, 1).endVertex();
-        tess.pos(0, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        // Second draw with different setup
-        tess.startDrawingQuads();
-        tess.pos(2, 0, 0).tex(0, 0).endVertex();
-        tess.pos(3, 0, 0).tex(1, 0).endVertex();
-        tess.pos(3, 1, 0).tex(1, 1).endVertex();
-        tess.pos(2, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        List<CapturedDraw> draws = TessellatorManager.stopCapturingToDraws();
-        assertEquals(2, draws.size(), "Should have 2 separate draws");
-        assertEquals(1, draws.get(0).quads().size(), "First draw should have 1 quad");
-        assertEquals(1, draws.get(1).quads().size(), "Second draw should have 1 quad");
-        assertEquals(0.0f, draws.get(0).quads().get(0).getX(0), 0.001f, "First draw quad at x=0");
-        assertEquals(2.0f, draws.get(1).quads().get(0).getX(0), 0.001f, "Second draw quad at x=2");
     }
 
     @Test
