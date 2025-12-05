@@ -172,7 +172,7 @@ public final class UniversiumShader extends ShaderProgram {
         glUniform3f(location_bgColor, bgColor, lastBgColor);
         useCustomBGColor = false;
 
-        textureAtlas.uploadUVBuffer(location_cosmicuvs);
+        textureAtlas.uploadVBuffer(location_cosmicuvs);
 
         GL13.glActiveTexture(GL13.GL_TEXTURE2);
         textureAtlas.bindTexture();

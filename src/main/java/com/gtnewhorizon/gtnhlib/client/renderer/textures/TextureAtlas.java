@@ -28,6 +28,7 @@ public final class TextureAtlas {
     private final int texture;
     private final SpriteAnimationMetadata[] animationMetadata;
     private final float heightUnit;
+    private FloatBuffer uvBuffer;
 
     private int lastTextureUpdate;
 
@@ -70,6 +71,7 @@ public final class TextureAtlas {
                 e.printStackTrace();
             }
         }
+        uvBuffer = BufferUtils.createFloatBuffer(amount * 2);
 
         heightUnit = 1f / (maxHeight / 16f);
 
@@ -93,13 +95,25 @@ public final class TextureAtlas {
         return Minecraft.getMinecraft().thePlayer.ticksExisted != lastTextureUpdate;
     }
 
+    public int getAtlasWidth() {
+        return animationMetadata.length;
+    }
+
     /**
-     * Updates the animation and returns a new FloatBuffer with the UV coordinates. This method should only be called if
-     * {@link #needsAnimationUpdate()} returns {@code true}, else there animation will be sped up.
+     * Depending on the prior call, this will either return a UV-buffer or only a V-buffer.
      */
-    public FloatBuffer updateUVBuffer() {
+    public FloatBuffer getBuffer() {
+        return uvBuffer;
+    }
+
+    /**
+     * Updates the animation and returns the FloatBuffer with the V-Texcoords. This method should only be called if
+     * {@link #needsAnimationUpdate()} returns {@code true}, else the animation will be sped up.
+     */
+    public FloatBuffer updateVBuffer() {
         lastTextureUpdate = Minecraft.getMinecraft().thePlayer.ticksExisted;
-        FloatBuffer uvs = BufferUtils.createFloatBuffer(animationMetadata.length * 2);
+        FloatBuffer uvs = uvBuffer;
+        uvs.clear();
 
         for (SpriteAnimationMetadata metadata : animationMetadata) {
             metadata.updateAnimation();
@@ -111,8 +125,47 @@ public final class TextureAtlas {
         return uvs;
     }
 
+
     /**
-     * Uploads the UV coordinates to a given uniform. It will only perform the upload if {@link #needsAnimationUpdate()} returns {@code true}
+     * Updates the animation and returns the FloatBuffer with the UV coordinates. This method should only be called if
+     * {@link #needsAnimationUpdate()} returns {@code true}, else the animation will be sped up.
+     */
+    public FloatBuffer updateUVBuffer() {
+        if (uvBuffer.capacity() < animationMetadata.length * 4) {
+            uvBuffer = BufferUtils.createFloatBuffer(animationMetadata.length * 4);
+        }
+
+        lastTextureUpdate = Minecraft.getMinecraft().thePlayer.ticksExisted;
+
+        FloatBuffer uvs = uvBuffer;
+        uvs.clear();
+
+        final float widthUnit = 1f / getAtlasWidth();
+
+        float u = 0;
+        for (final SpriteAnimationMetadata metadata : animationMetadata) {
+            metadata.updateAnimation();
+            final float v = metadata.index * heightUnit;
+            uvs.put(u);
+            uvs.put(v);
+            uvs.put((u = u + widthUnit));
+            uvs.put(v + heightUnit);
+        }
+        uvs.flip();
+        return uvs;
+    }
+
+    /**
+     * Uploads the tex V coordinates to a given uniform. It will only perform the upload if {@link #needsAnimationUpdate()} returns {@code true}.
+     */
+    public void uploadVBuffer(int location) {
+        if (needsAnimationUpdate()) {
+            GL20.glUniform2(location, updateVBuffer());
+        }
+    }
+
+    /**
+     * Uploads the tex UV coordinates to a given uniform. It will only perform the upload if {@link #needsAnimationUpdate()} returns {@code true}.
      */
     public void uploadUVBuffer(int location) {
         if (needsAnimationUpdate()) {
