@@ -429,9 +429,11 @@ public class TessellatorManager {
     }
 
     /**
-     * Intercepts Tessellator.draw() during display list compilation. Extracts quads from the vanilla Tessellator's
+     * Intercepts Tessellator.draw() during display list compilation. Extracts geometry from the vanilla Tessellator's
      * buffer and invokes the compiling callback. Only called when shouldInterceptDraw returns true. This is main-thread
      * only (display list compilation happens on the main thread).
+     * <p>
+     * GL_QUADS go to collectedQuads; GL_TRIANGLES and other modes go to collectedPrimitives as proper primitives.
      *
      * @param tess The vanilla Tessellator instance
      * @return The result that draw() should return
@@ -449,32 +451,55 @@ public class TessellatorManager {
             throw new IllegalStateException("interceptDraw called but callback is null!");
         }
 
-        // Build quads from vanilla tess's buffer using main thread capturing tessellator's infrastructure
+        // Build geometry from vanilla tess's buffer using main thread capturing tessellator's infrastructure
+        // COMPILING mode: Only GL_QUADS go to quads; triangles and other primitives stay as proper primitives
         final CapturingTessellator helper = capturingTessellator.get();
-        QuadExtractor.buildQuadsFromBuffer(
-                tess.rawBuffer,
-                tess.vertexCount,
-                tess.drawMode,
-                true, // Vanilla always has texture
-                tess.hasBrightness,
-                tess.hasColor,
-                tess.hasNormals,
-                0,
-                0,
-                0, // Vanilla has no offset
-                -1, // No shaderBlockId
-                helper.quadPool,
-                helper.collectedQuads,
-                helper.flags);
+        if (tess.drawMode == GL11.GL_QUADS) {
+            QuadExtractor.buildQuadsFromBuffer(
+                    tess.rawBuffer,
+                    tess.vertexCount,
+                    tess.drawMode,
+                    true, // Vanilla always has texture
+                    tess.hasBrightness,
+                    tess.hasColor,
+                    tess.hasNormals,
+                    0,
+                    0,
+                    0, // Vanilla has no offset
+                    -1, // No shaderBlockId
+                    helper.quadPool,
+                    helper.collectedQuads,
+                    helper.flags);
+        } else {
+            // GL_TRIANGLES, GL_LINES, GL_LINE_STRIP, etc. → primitives (not quadrangulated)
+            PrimitiveExtractor.buildPrimitivesFromBuffer(
+                    tess.rawBuffer,
+                    tess.vertexCount,
+                    tess.drawMode,
+                    true, // Vanilla always has texture
+                    tess.hasBrightness,
+                    tess.hasColor,
+                    tess.hasNormals,
+                    0,
+                    0,
+                    0, // Vanilla has no offset
+                    -1, // No shaderBlockId
+                    helper.quadPool,
+                    helper.triPool,
+                    helper.linePool,
+                    helper.collectedPrimitives,
+                    helper.flags);
+        }
 
-        // Invoke callback with collected quads (protect against recursion)
+        // Invoke callback with collected geometry (protect against recursion)
         isInCompilingCallback = true;
         try {
-            current.callback.onDraw(helper.collectedQuads, helper.flags);
+            current.callback.onDraw(helper.collectedQuads, helper.collectedPrimitives, helper.flags);
         } finally {
             isInCompilingCallback = false;
         }
         helper.clearQuads();
+        helper.clearPrimitives();
 
         int result = tess.rawBufferIndex * 4;
         ((ITessellatorInstance) tess).discard();
@@ -482,59 +507,103 @@ public class TessellatorManager {
     }
 
     /**
-     * Helper for CapturingTessellator to process its draw() call using shared logic. Uses QuadExtractor for quad-only
-     * capture (backward compatible) and PrimitiveExtractor for non-quad primitives.
+     * Helper for CapturingTessellator to process its draw() call using shared logic.
+     * <p>
+     * Mode-specific behavior:
+     * <ul>
+     * <li>COMPILING: Only GL_QUADS → quads; GL_TRIANGLES and other modes → primitives (proper triangles)</li>
+     * <li>CAPTURING: GL_QUADS and GL_TRIANGLES → quads (quadrangulated for backward compat); other modes →
+     * primitives</li>
+     * </ul>
      */
     static int processDrawForCapturingTessellator(CapturingTessellator tess) {
-        CaptureState current = peekState();
+        final CaptureState current = peekState();
+        final boolean isCompiling = current != null && current.mode == CaptureMode.COMPILING;
 
-        // Use QuadExtractor for quads/triangles (backward compatible, proven to work)
-        // Use PrimitiveExtractor for other primitives (lines, strips, fans, etc.)
-        if (tess.drawMode == GL11.GL_QUADS || tess.drawMode == GL11.GL_TRIANGLES) {
-            QuadExtractor.buildQuadsFromBuffer(
-                    tess.rawBuffer,
-                    tess.vertexCount,
-                    tess.drawMode,
-                    tess.hasTexture,
-                    tess.hasBrightness,
-                    tess.hasColor,
-                    tess.hasNormals,
-                    -tess.offset.x,
-                    -tess.offset.y,
-                    -tess.offset.z,
-                    tess.shaderBlockId,
-                    tess.quadPool,
-                    tess.collectedQuads,
-                    tess.flags);
-        } else {
-            // Use PrimitiveExtractor for lines, strips, fans, etc.
-            PrimitiveExtractor.buildPrimitivesFromBuffer(
-                    tess.rawBuffer,
-                    tess.vertexCount,
-                    tess.drawMode,
-                    tess.hasTexture,
-                    tess.hasBrightness,
-                    tess.hasColor,
-                    tess.hasNormals,
-                    -tess.offset.x,
-                    -tess.offset.y,
-                    -tess.offset.z,
-                    tess.shaderBlockId,
-                    tess.quadPool,
-                    tess.triPool,
-                    tess.linePool,
-                    tess.collectedPrimitives,
-                    tess.flags);
-        }
-
-        if (current != null && current.mode == CaptureMode.COMPILING) {
-            current.callback.onDraw(tess.collectedQuads, tess.flags);
+        if (isCompiling) {
+            // COMPILING: Only GL_QUADS to quads; triangles and other primitives stay as proper primitives
+            if (tess.drawMode == GL11.GL_QUADS) {
+                QuadExtractor.buildQuadsFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.collectedQuads,
+                        tess.flags);
+            } else {
+                // GL_TRIANGLES, GL_LINES, GL_LINE_STRIP, etc. → primitives (not quadrangulated)
+                PrimitiveExtractor.buildPrimitivesFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.triPool,
+                        tess.linePool,
+                        tess.collectedPrimitives,
+                        tess.flags);
+            }
+            // Invoke callback and clear
+            current.callback.onDraw(tess.collectedQuads, tess.collectedPrimitives, tess.flags);
             tess.clearQuads();
             tess.clearPrimitives();
+        } else {
+            // CAPTURING: GL_QUADS and GL_TRIANGLES to quads (backward compat quadrangulation)
+            if (tess.drawMode == GL11.GL_QUADS || tess.drawMode == GL11.GL_TRIANGLES) {
+                QuadExtractor.buildQuadsFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.collectedQuads,
+                        tess.flags);
+            } else {
+                // GL_LINES, GL_LINE_STRIP, etc. → primitives
+                PrimitiveExtractor.buildPrimitivesFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.triPool,
+                        tess.linePool,
+                        tess.collectedPrimitives,
+                        tess.flags);
+            }
+            // No callback - geometry stays until stop is called
         }
-        // CAPTURING mode: quads stay in collectedQuads until stop is called
 
-        int result = tess.rawBufferIndex * 4;
+        final int result = tess.rawBufferIndex * 4;
         tess.discard();
         return result;
     }
