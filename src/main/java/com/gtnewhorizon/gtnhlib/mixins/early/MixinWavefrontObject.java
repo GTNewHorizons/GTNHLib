@@ -15,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
+// TODO Sisyphus: get rid of renderAllVBO
 @Mixin(value = WavefrontObject.class, remap = false)
 public abstract class MixinWavefrontObject implements IModelCustomExt {
 
@@ -28,10 +29,14 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     public abstract void tessellateAll(Tessellator tessellator);
 
     @Unique
-    VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
+    private VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
 
     @Override
     public void rebuildVBO() {
+        rebuild(false);
+    }
+
+    private void rebuild(boolean vao) {
         if (currentGroupObject == null) {
             throw new RuntimeException("No group object selected");
         }
@@ -43,14 +48,36 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
         tess.startDrawing(currentGroupObject.glDrawingMode);
         tessellateAll(tess);
 
-        this.vertexBuffer = TessellatorManager.stopCapturingToVBO(format);
+        this.vertexBuffer = vao ? TessellatorManager.stopCapturingToVAO(format)
+                : TessellatorManager.stopCapturingToVBO(format);
     }
 
     @Override
     public void renderAllVBO() {
         if (vertexBuffer == null) {
-            rebuildVBO();
+            rebuild(false);
         }
         vertexBuffer.render();
+    }
+
+    @Override
+    public void renderAllVAO() {
+        if (vertexBuffer == null) {
+            rebuild(true);
+        }
+        vertexBuffer.render();
+    }
+
+    @Override
+    public void setVertexFormat(VertexFormat format) {
+        setVertexFormat(format, false);
+    }
+
+    @Override
+    public void setVertexFormat(VertexFormat format, boolean vao) {
+        this.format = format;
+        if (this.vertexBuffer != null && this.vertexBuffer.getVertexFormat() != format) {
+            rebuild(vao);
+        }
     }
 }

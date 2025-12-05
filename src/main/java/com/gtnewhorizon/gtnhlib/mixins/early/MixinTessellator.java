@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.Tessellator;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -19,6 +20,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 @Mixin(Tessellator.class)
 public abstract class MixinTessellator implements ITessellatorInstance {
+
+    @Unique
+    private boolean gtnhlib$isCompiling = false;
 
     @Shadow
     public boolean isDrawing;
@@ -50,6 +54,16 @@ public abstract class MixinTessellator implements ITessellatorInstance {
     public void discard() {
         isDrawing = false;
         reset();
+    }
+
+    @Override
+    public boolean gtnhlib$isCompiling() {
+        return gtnhlib$isCompiling;
+    }
+
+    @Override
+    public void gtnhlib$setCompiling(boolean compiling) {
+        this.gtnhlib$isCompiling = compiling;
     }
 
 }
