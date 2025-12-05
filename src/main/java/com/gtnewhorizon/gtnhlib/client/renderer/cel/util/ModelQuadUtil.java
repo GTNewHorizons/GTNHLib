@@ -9,8 +9,13 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
 /// Provides some utilities and constants for interacting with vanilla's model quad vertex format.
@@ -133,6 +138,23 @@ public class ModelQuadUtil {
         int bl = Math.max(Math.max(pbl, cbl), vanillaLightEmission);
         int sl = Math.max(Math.max(psl, csl), vanillaLightEmission);
         return (sl << 16) | bl;
+    }
+
+    /**
+     * Deep copies a list of quads. Useful when quads need to persist beyond their pool lifecycle (e.g., from
+     * CapturingTessellator's object pool).
+     *
+     * @param sourceQuads The quads to copy
+     * @return A new list containing deep copies of all quads
+     */
+    public static List<ModelQuadViewMutable> deepCopyQuads(List<ModelQuadViewMutable> sourceQuads) {
+        final int size = sourceQuads.size();
+        final List<ModelQuadViewMutable> quadCopies = new ArrayList<>(size);
+        // noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < size; i++) {
+            quadCopies.add(new ModelQuad(sourceQuads.get(i)));
+        }
+        return quadCopies;
     }
 
 }

@@ -73,5 +73,16 @@ public interface BakedModel {
      */
     Position.ModelDisplay getDisplay(Position pos, int meta, Random random);
 
+    /**
+     * Returns the particle icon used when the block/item is broken or when displaying block particles such as hit
+     * particles, block-break effects.
+     * <p>
+     * This icon is typically taken from the model's "particle" texture. If the model does not define a "particle"
+     * entry, implementations will fall back to one of the other textures declared by the model.
+     * 
+     * @param meta   The metadata of the block or item.
+     * @param random A random generator for choosing particle variants, if desired.
+     * @return The {@link IIcon} to be used as the particle texture.
+     */
     IIcon getParticle(int meta, Random random);
 }

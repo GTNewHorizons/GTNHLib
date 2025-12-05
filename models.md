@@ -71,4 +71,3 @@ public class BlockTestTint extends Block implements IBlockColor {
 - Add face culling to models.
 - Implement UV locking.
 - Integrate with a proper BlockState API.
-- BlockItem display (Use BlockBench display transforms provided in '{}.display').
