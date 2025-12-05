@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
+import com.google.common.annotations.Beta;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 
@@ -11,15 +12,22 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHelper;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
-public class TonemapShader {
+/**
+ * A class that helps with converting HDR colors to non-HDR colors.
+ * This class is mainly used for bloom, and some calculations may be off because of it.
+ */
+@Beta
+public class BloomTonemapShader {
+    // Magical constant, also used in the tonemap shader.
+    private static final float TONEMAP_VALUE = 1.9f;
 
     private static ShaderProgram shader;
     private static int uMultiplier;
     private static float tonemapMultiplier;
 
-    private static TonemapShader instance;
+    private static BloomTonemapShader instance;
 
-    public TonemapShader() {
+    public BloomTonemapShader() {
         shader = new ShaderProgram(
                 GTNHLib.RESOURCE_DOMAIN,
                 "shaders/hdr/tonemap.vert.glsl",
@@ -31,9 +39,9 @@ public class TonemapShader {
         ShaderProgram.clear();
     }
 
-    public static TonemapShader getInstance() {
+    public static BloomTonemapShader getInstance() {
         if (instance == null) {
-            instance = new TonemapShader();
+            instance = new BloomTonemapShader();
         }
         return instance;
     }
@@ -49,39 +57,18 @@ public class TonemapShader {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, overlayTexture);
         GL11.glDisable(GL11.GL_BLEND);
         PostProcessingHelper.drawFullscreenQuad();
-        // this.copyTextureToFile("bloomshader", "framebuffer_final.png");
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
     }
 
-    public static float aces(float x) {
+    /**
+     * Converts a HDR color to a non-HDR color.
+     */
+    public static float tonemap(float x) {
         final float a = 2.51f;
         final float b = 0.03f;
         final float c = 2.43f;
         final float d = 0.59f;
         final float e = 0.14f;
         return MathHelper.clamp_float((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
-    }
-
-    public static float inverseAces(float y) {
-        final float a = 2.51f;
-        final float b = 0.03f;
-        final float c = 2.43f;
-        final float d = 0.59f;
-        final float e = 0.14f;
-
-        float numerator = -(b - y * d);
-        float discriminant = (b - y * d) * (b - y * d) - 4.0f * (a - y * c) * (-y * e);
-        float sqrtDisc = (float) Math.sqrt(Math.max(discriminant, 0));
-        float denom = 2.0f * (a - y * c);
-
-        return (numerator + sqrtDisc) / denom;
-    }
-
-    public static float gammaCorrect(float color) {
-        return (float) Math.pow(color, 1.9f);
-    }
-
-    public static float inverseGammaCorrect(float color) {
-        return (float) Math.pow(color, 1 / 1.9f);
     }
 }

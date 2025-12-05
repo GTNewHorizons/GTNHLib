@@ -16,7 +16,7 @@ import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.TonemapShader;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.BloomTonemapShader;
 
 /**
  * Constructs a new framebuffer with the specified configuration flags.
@@ -437,7 +437,7 @@ public class CustomFramebuffer {
     }
 
     public void applyTonemapping(float multiplier) {
-        TonemapShader.getInstance().applyTonemapping(multiplier, framebufferTexture);
+        BloomTonemapShader.getInstance().applyTonemapping(multiplier, framebufferTexture);
     }
 
     // DEBUG TOOLS
