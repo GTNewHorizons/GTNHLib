@@ -28,7 +28,8 @@ public final class UniversiumShader extends ShaderProgram {
     private boolean lastInventoryRender;
 
     private final int location_lightlevel;
-    public final float[] LIGHT_LEVEL = new float[3];
+    private final Vector3f lightLevel = new Vector3f(1);
+    private final Vector3f lastLightLevel = new Vector3f(-1);
 
     private final int location_time;
 
@@ -43,13 +44,21 @@ public final class UniversiumShader extends ShaderProgram {
     private float lastCosmicOpacity = -1;
 
     private final int location_starColorMultiplier;
-    private boolean useCustomStarColor;
-    private final Vector3f starColorMultiplier = new Vector3f();
+    private final Vector3f starColorMultiplier = new Vector3f(MUL_R, MUL_G, MUL_B);
     private final Vector3f lastStarColorMultiplier = new Vector3f(-1);
 
     private final int location_starColorBase;
-    private final Vector3f starColorBase = new Vector3f();
+    private final Vector3f starColorBase = new Vector3f(BASE_R, BASE_G, BASE_B);
     private final Vector3f lastStarColorBase = new Vector3f(-1);
+
+    private static final float MUL_R = 0.3f;
+    private static final float MUL_G = 0.4f;
+    private static final float MUL_B = 0.3f;
+
+    private static final float BASE_R = 0.4f;
+    private static final float BASE_G = 0.6f;
+    private static final float BASE_B = 0.7f;
+
 
     private final int location_bgColor;
     private final Vector3f bgColor = new Vector3f();
@@ -114,9 +123,9 @@ public final class UniversiumShader extends ShaderProgram {
         GL20.glUniform1f(location_time, time);
 
         final boolean shouldRenderInventory = inventoryRenderPass || renderInInventory;
-
         if (shouldRenderInventory) {
             if (!lastInventoryRender) {
+                // Setup inventory uniforms once
                 GL20.glUniform1f(location_yaw, 0);
                 GL20.glUniform1f(location_pitch, 0);
                 GL20.glUniform1f(location_externalScale, 25);
@@ -124,46 +133,43 @@ public final class UniversiumShader extends ShaderProgram {
             }
             renderInInventory = false;
         } else {
-            Minecraft mc = Minecraft.getMinecraft();
-            float yaw = (float) ((mc.thePlayer.rotationYaw * 2 * Math.PI) / 360.0);
-            float pitch = -(float) ((mc.thePlayer.rotationPitch * 2 * Math.PI) / 360.0);
-            GL20.glUniform1f(location_yaw, yaw);
-
-            GL20.glUniform1f(location_pitch, pitch);
-
             if (lastInventoryRender) {
+                // Setup in-world uniforms once
                 GL20.glUniform1f(location_externalScale, 1);
                 lastInventoryRender = false;
             }
-        }
+            Minecraft mc = Minecraft.getMinecraft();
+            float yaw = (float) ((mc.thePlayer.rotationYaw * 2 * Math.PI) / 360.0);
+            GL20.glUniform1f(location_yaw, yaw);
 
-        GL20.glUniform3f(location_lightlevel, LIGHT_LEVEL[0], LIGHT_LEVEL[1], LIGHT_LEVEL[2]);
+            float pitch = -(float) ((mc.thePlayer.rotationPitch * 2 * Math.PI) / 360.0);
+            GL20.glUniform1f(location_pitch, pitch);
+        }
 
         if (lastCosmicOpacity != cosmicOpacity) {
             GL20.glUniform1f(location_opacity, cosmicOpacity);
 
             lastCosmicOpacity = cosmicOpacity;
         }
-        cosmicOpacity = 1.0f;
+        cosmicOpacity = 1.0f; // Reset back to default
 
-        if (useCustomStarColor) {
-            useCustomStarColor = false;
-        } else {
-            starColorMultiplier.set(0.3f, 0.4f, 0.3f);
-            starColorBase.set(0.4f, 0.6f, 0.7f);
-        }
         glUniform3f(location_starColorMultiplier, starColorMultiplier, lastStarColorMultiplier);
         glUniform3f(location_starColorBase, starColorBase, lastStarColorBase);
+        // Reset back to default
+        starColorMultiplier.set(MUL_R, MUL_G, MUL_B);
+        starColorBase.set(BASE_R, BASE_G, BASE_B);
 
-        if (useCustomBGColor) {
-            useCustomBGColor = false;
-        } else {
+        glUniform3f(location_lightlevel, lastLightLevel, lightLevel);
+        lightLevel.set(1, 1, 1); // Reset back to default
+
+        if (!useCustomBGColor) {
             final float pulse = (sysTime % 20_000) / 20_000f;
             bgColor.set(0.1f,
                 MathHelper.sin((float) (pulse * Math.PI * 2)) * 0.075f + 0.225f,
                 MathHelper.cos((float) (pulse * Math.PI * 2)) * 0.05f + 0.3f);
         }
         glUniform3f(location_bgColor, bgColor, lastBgColor);
+        useCustomBGColor = false;
 
         textureAtlas.uploadUVBuffer(location_cosmicuvs);
 
@@ -179,10 +185,13 @@ public final class UniversiumShader extends ShaderProgram {
      * If this method doesn't get called, the Shader will default to {@code mul = vec3(0.3, 0.4, 0.3)} and {@code base = vec3(0.4, 0.6, 0.7)}
      */
     public UniversiumShader setStarColor(float mulR, float mulG, float mulB, float baseR, float baseG, float baseB) {
-        useCustomStarColor = true;
         starColorMultiplier.set(mulR, mulG, mulB);
         starColorBase.set(baseR, baseG, baseB);
         return this;
+    }
+
+    public UniversiumShader setStarColor(float mul) {
+        return setStarColor(MUL_R * mul, MUL_G * mul, MUL_B * mul, BASE_R * mul, BASE_G * mul, BASE_B * mul);
     }
 
     public UniversiumShader setRenderInInventory() {
@@ -225,9 +234,11 @@ public final class UniversiumShader extends ShaderProgram {
     }
 
     public UniversiumShader setLightLevel(float r, float g, float b) {
-        LIGHT_LEVEL[0] = Math.max(0.0f, Math.min(1.0f, r));
-        LIGHT_LEVEL[1] = Math.max(0.0f, Math.min(1.0f, g));
-        LIGHT_LEVEL[2] = Math.max(0.0f, Math.min(1.0f, b));
+        lightLevel.set(
+            MathHelper.clamp_float(r, 0, 1),
+            MathHelper.clamp_float(g, 0, 1),
+            MathHelper.clamp_float(b, 0, 1)
+        );
         return this;
     }
 }
