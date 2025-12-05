@@ -1,5 +1,6 @@
-package com.gtnewhorizon.gtnhlib.client.renderer.shader;
+package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
