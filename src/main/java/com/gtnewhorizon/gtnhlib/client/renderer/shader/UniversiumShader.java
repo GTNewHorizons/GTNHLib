@@ -6,6 +6,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
@@ -22,7 +23,7 @@ public final class UniversiumShader extends ShaderProgram {
 
     private final TextureAtlas textureAtlas;
 
-    private boolean inventoryRenderPass = false;
+    private boolean inventoryRenderPass;
     private boolean renderInInventory;
     private boolean lastInventoryRender;
 
@@ -38,18 +39,22 @@ public final class UniversiumShader extends ShaderProgram {
     private final int location_externalScale;
 
     private final int location_opacity;
-    private float lastOpacity = -1;
     public static float cosmicOpacity = 1.0f;
+    private float lastCosmicOpacity = -1;
 
     private final int location_starColorMultiplier;
-    private float lastStarColorMultiplier = -1;
-    private float starColorMultiplier = 1;
+    private boolean useCustomStarColor;
+    private final Vector3f starColorMultiplier = new Vector3f();
+    private final Vector3f lastStarColorMultiplier = new Vector3f(-1);
+
+    private final int location_starColorBase;
+    private final Vector3f starColorBase = new Vector3f();
+    private final Vector3f lastStarColorBase = new Vector3f(-1);
 
     private final int location_bgColor;
-    private float bgColorR;
-    private float bgColorG;
-    private float bgColorB;
-    private boolean useCustomColor;
+    private final Vector3f bgColor = new Vector3f();
+    private final Vector3f lastBgColor = new Vector3f(-1);
+    private boolean useCustomBGColor;
 
     private final int location_cosmicuvs;
 
@@ -67,6 +72,7 @@ public final class UniversiumShader extends ShaderProgram {
         location_starColorMultiplier = getUniformLocation("starColorMultiplier");
         location_bgColor = getUniformLocation("bgColor");
         location_cosmicuvs = getUniformLocation("cosmicuvs");
+        location_starColorBase = getUniformLocation("starColorBase");
 
         GL20.glUniform1f(location_lightmix, 0.2f);
 
@@ -99,10 +105,12 @@ public final class UniversiumShader extends ShaderProgram {
     }
 
     @Override
+    // TODO This should probably get replaced by Uniform classes but i'm too lazy to implement those
     public void use() {
         super.use();
 
-        final float time = (System.currentTimeMillis() % 600_000) / 50f;
+        final long sysTime = System.currentTimeMillis();
+        final float time = (sysTime % 600_000) / 50f;
         GL20.glUniform1f(location_time, time);
 
         final boolean shouldRenderInventory = inventoryRenderPass || renderInInventory;
@@ -114,6 +122,7 @@ public final class UniversiumShader extends ShaderProgram {
                 GL20.glUniform1f(location_externalScale, 25);
                 lastInventoryRender = true;
             }
+            renderInInventory = false;
         } else {
             Minecraft mc = Minecraft.getMinecraft();
             float yaw = (float) ((mc.thePlayer.rotationYaw * 2 * Math.PI) / 360.0);
@@ -130,31 +139,31 @@ public final class UniversiumShader extends ShaderProgram {
 
         GL20.glUniform3f(location_lightlevel, LIGHT_LEVEL[0], LIGHT_LEVEL[1], LIGHT_LEVEL[2]);
 
-        if (lastOpacity != cosmicOpacity) {
+        if (lastCosmicOpacity != cosmicOpacity) {
             GL20.glUniform1f(location_opacity, cosmicOpacity);
 
-            lastOpacity = cosmicOpacity;
-            cosmicOpacity = 1.0f;
+            lastCosmicOpacity = cosmicOpacity;
         }
+        cosmicOpacity = 1.0f;
 
-        if (lastStarColorMultiplier != starColorMultiplier) {
-            GL20.glUniform1f(location_starColorMultiplier, starColorMultiplier);
-
-            lastStarColorMultiplier = starColorMultiplier;
-            starColorMultiplier = 1;
-        }
-
-        if (useCustomColor) {
-            GL20.glUniform3f(location_bgColor, bgColorR, bgColorG, bgColorB);
-            useCustomColor = false;
+        if (useCustomStarColor) {
+            useCustomStarColor = false;
         } else {
-            final float pulse = (System.currentTimeMillis() % 20_000) / 20_000f;
-            GL20.glUniform3f(
-                    location_bgColor,
-                    0.1f,
-                    MathHelper.sin((float) (pulse * Math.PI * 2)) * 0.075f + 0.225f,
-                    MathHelper.cos((float) (pulse * Math.PI * 2)) * 0.05f + 0.3f);
+            starColorMultiplier.set(0.3f, 0.4f, 0.3f);
+            starColorBase.set(0.4f, 0.6f, 0.7f);
         }
+        glUniform3f(location_starColorMultiplier, starColorMultiplier, lastStarColorMultiplier);
+        glUniform3f(location_starColorBase, starColorBase, lastStarColorBase);
+
+        if (useCustomBGColor) {
+            useCustomBGColor = false;
+        } else {
+            final float pulse = (sysTime % 20_000) / 20_000f;
+            bgColor.set(0.1f,
+                MathHelper.sin((float) (pulse * Math.PI * 2)) * 0.075f + 0.225f,
+                MathHelper.cos((float) (pulse * Math.PI * 2)) * 0.05f + 0.3f);
+        }
+        glUniform3f(location_bgColor, bgColor, lastBgColor);
 
         textureAtlas.uploadUVBuffer(location_cosmicuvs);
 
@@ -163,8 +172,16 @@ public final class UniversiumShader extends ShaderProgram {
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
     }
 
-    public UniversiumShader setStarColorMultiplier(float multiplier) {
-        starColorMultiplier = multiplier;
+    /**
+     * The formula for the star color is the following: <br>
+     * {@code starColor = random * mul + base}, <br>
+     * where {@code random} is a variable calculated inside of the shader. <br>
+     * If this method doesn't get called, the Shader will default to {@code mul = vec3(0.3, 0.4, 0.3)} and {@code base = vec3(0.4, 0.6, 0.7)}
+     */
+    public UniversiumShader setStarColor(float mulR, float mulG, float mulB, float baseR, float baseG, float baseB) {
+        useCustomStarColor = true;
+        starColorMultiplier.set(mulR, mulG, mulB);
+        starColorBase.set(baseR, baseG, baseB);
         return this;
     }
 
@@ -174,10 +191,8 @@ public final class UniversiumShader extends ShaderProgram {
     }
 
     public UniversiumShader setBackgroundColor(float r, float g, float b) {
-        bgColorR = r;
-        bgColorG = g;
-        bgColorB = b;
-        useCustomColor = true;
+        bgColor.set(r, g, b);
+        useCustomBGColor = true;
         return this;
     }
 

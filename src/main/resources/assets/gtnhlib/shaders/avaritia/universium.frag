@@ -19,7 +19,8 @@ uniform float externalScale;
 uniform float lightmix;
 uniform float opacity;
 
-uniform float starColorMultiplier;
+uniform vec3 starColorMultiplier;
+uniform vec3 starColorBase;
 
 uniform vec3 bgColor;
 
@@ -152,11 +153,13 @@ void main() {
             float a = tcol.r * (0.5 + (1.0/mult)) * (1.0-smoothstep(0.15, 0.48, abs(rawv-0.5)));
 
             // get fancy colours
-            float r = (mod(rand1, 29.0)/29.0) * 0.3 + 0.4;
-            float g = (mod(rand2, 35.0)/35.0) * 0.4 + 0.6;
-            float b = (mod(rand1, 17.0)/17.0) * 0.3 + 0.7;
+            // float r = (mod(rand1, 29.0)/29.0) * 0.3 + 0.4;
+            // float g = (mod(rand2, 35.0)/35.0) * 0.4 + 0.6;
+            // float b = (mod(rand1, 17.0)/17.0) * 0.3 + 0.7;
 
-            col = col + (vec3(r,g,b) * a * starColorMultiplier);
+            vec3 starColor = vec3(mod(rand1, 29.0)/29.0, mod(rand2, 35.0)/35.0, mod(rand1, 17.0)/17.0) * starColorMultiplier + starColorBase;
+
+            col = col + (starColor * a);
         }
     }
 
