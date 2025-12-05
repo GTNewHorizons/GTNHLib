@@ -8,10 +8,15 @@ import net.minecraft.client.renderer.Tessellator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
@@ -30,11 +35,34 @@ public class TessellatorManager {
 
         final CaptureMode mode;
         final DrawCallback callback; // null for CAPTURING mode, non-null for COMPILING
-        final List<CapturedDraw> capturedDraws = new ArrayList<>(); // Stores per-draw quads+flags for nested CAPTURING
+        List<ModelQuadViewMutable> savedQuads; // Quads saved from parent when nesting starts
 
         CaptureState(CaptureMode mode, DrawCallback callback) {
             this.mode = mode;
             this.callback = callback;
+        }
+    }
+
+    /**
+     * Captured geometry as a list of VBOs. Each VBO contains primitives of a single type (lines, triangles, or quads).
+     */
+    @Desugar
+    public record CapturedGeometry(List<VertexBuffer> vbos) {
+
+        public boolean isEmpty() {
+            return vbos.isEmpty();
+        }
+
+        public void delete() {
+            for (int i = 0, size = vbos.size(); i < size; i++) {
+                vbos.get(i).delete();
+            }
+        }
+
+        public void renderAll() {
+            for (int i = 0, size = vbos.size(); i < size; i++) {
+                vbos.get(i).render();
+            }
         }
     }
 
@@ -125,21 +153,18 @@ public class TessellatorManager {
     }
 
     /**
-     * If parent state is CAPTURING and there are uncommitted quads, save them as a draw. This handles nesting: child
-     * captures need to preserve parent's pending work.
+     * If parent state is CAPTURING, save its quads before child starts. The child will use the same collectedQuads
+     * list, so we save parent's quads and clear for child use.
      */
-    private static void saveUncommittedQuadsIfNeeded(ArrayList<CaptureState> stack, CapturingTessellator tess) {
-        if (stack.isEmpty() || tess.getQuads().isEmpty()) {
+    private static void saveParentQuadsIfNeeded(ArrayList<CaptureState> stack, CapturingTessellator tess) {
+        if (stack.isEmpty()) {
             return;
         }
 
         CaptureState parent = stack.get(stack.size() - 1);
         if (parent.mode == CaptureMode.CAPTURING) {
-            // Deep copy quads before clearing (will be reused by child)
-            parent.capturedDraws.add(
-                    new CapturedDraw(
-                            ModelQuadUtil.deepCopyQuads(tess.getQuads()),
-                            new CapturingTessellator.Flags(tess.flags)));
+            // Save parent's quads and clear for child
+            parent.savedQuads = new ArrayList<>(tess.getQuads());
             tess.getQuads().clear();
         }
     }
@@ -152,8 +177,8 @@ public class TessellatorManager {
         ArrayList<CaptureState> stack = captureStack.get();
         final CapturingTessellator tess = capturingTessellator.get();
 
-        // Save any uncommitted quads if parent is CAPTURING
-        saveUncommittedQuadsIfNeeded(stack, tess);
+        // Save parent's quads if parent is CAPTURING
+        saveParentQuadsIfNeeded(stack, tess);
 
         // Validate no orphan quads exist
         if (!tess.getQuads().isEmpty()) {
@@ -166,9 +191,9 @@ public class TessellatorManager {
         return tess;
     }
 
-    /// Stop the CapturingTessellator and return the captured draws with per-draw flags.
-    /// The quads are pooled objects - caller MUST copy them if needed beyond their pool lifecycle.
-    public static List<CapturedDraw> stopCapturingToDraws() {
+    /// Stop the CapturingTessellator and return the pooled quads. The quads are valid until clearQuads() is called on
+    /// the CapturingTesselator, which must be done before starting capturing again.
+    public static List<ModelQuadViewMutable> stopCapturingToPooledQuads() {
         CaptureState currentState = requireMode(CaptureMode.CAPTURING, "Tried to stop capturing when not capturing!");
         ArrayList<CaptureState> stack = captureStack.get();
 
@@ -177,38 +202,29 @@ public class TessellatorManager {
         // Flush any pending draw
         if (tess.isDrawing) tess.draw();
 
-        // Get the captured draws from the current level (already stored by processDrawForCapturingTessellator)
         stack.remove(stack.size() - 1); // Pop
-        final List<CapturedDraw> draws = new ArrayList<>(currentState.capturedDraws);
-
         tess.restoreTranslation();
 
-        // If nested inside another CAPTURING, we're done - parent's draws are already in parent's capturedDraws
-        // Note: tess.getQuads() should be empty since processDrawForCapturingTessellator clears after each draw
-        if (!stack.isEmpty() && stack.get(stack.size() - 1).mode == CaptureMode.CAPTURING) {
-            // Child is done, parent continues (no restoration needed - parent draws already in parent.capturedDraws)
-            tess.getQuads().clear(); // Defensive clear
+        boolean isNested = !stack.isEmpty() && stack.get(stack.size() - 1).mode == CaptureMode.CAPTURING;
+
+        List<ModelQuadViewMutable> quads;
+
+        if (currentState.savedQuads != null) {
+            // Had nested child - combine saved quads with any new quads
+            quads = currentState.savedQuads;
+            quads.addAll(tess.getQuads());
+            tess.getQuads().clear();
+        } else if (isNested) {
+            // We are a child - return copy of accumulated quads (will clear for parent)
+            quads = new ArrayList<>(tess.getQuads());
+            tess.getQuads().clear();
         } else {
-            tess.discard();
+            // Non-nested common case - return accumulated quads directly
+            quads = tess.getQuads();
         }
+        // Note: don't discard here - caller owns the pooled quads until clearQuads()
 
-        return draws;
-    }
-
-    /// Stop the CapturingTessellator and return the pooled quads. The quads are valid until clearQuads() is called on
-    /// the CapturingTesselator, which must be done before starting capturing again.
-    /// Note: This flattens all draws into a single list, losing per-draw flag information.
-    /// Use stopCapturingToDraws() if you need per-draw flags.
-    public static List<ModelQuadViewMutable> stopCapturingToPooledQuads() {
-        final List<CapturedDraw> draws = stopCapturingToDraws();
-
-        // Flatten all draws into a single quad list
-        final List<ModelQuadViewMutable> allQuads = new ArrayList<>();
-        for (int i = 0, size = draws.size(); i < size; i++) {
-            allQuads.addAll(draws.get(i).quads());
-        }
-
-        return allQuads;
+        return quads;
     }
 
     /// Stops the CapturingTessellator, stores the quads in a buffer (based on the VertexFormat provided), and clears
@@ -223,6 +239,151 @@ public class TessellatorManager {
     /// buffer to a new VertexBuffer, and clears the quads.
     public static VertexBuffer stopCapturingToVBO(VertexFormat format) {
         return new VertexBuffer(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
+    }
+
+    /**
+     * Stops the CapturingTessellator and returns separate VBOs for each primitive type captured. This is the preferred
+     * method when capturing mixed geometry (lines, triangles, quads).
+     *
+     * @param format The vertex format for all VBOs
+     * @return CapturedGeometry with separate VBOs (null fields for types not captured)
+     */
+    public static CapturedGeometry stopCapturingToGeometry(VertexFormat format) {
+        CaptureState currentState = requireMode(CaptureMode.CAPTURING, "Tried to stop capturing when not capturing!");
+        ArrayList<CaptureState> stack = captureStack.get();
+        final CapturingTessellator tess = capturingTessellator.get();
+
+        // Flush any pending draw
+        if (tess.isDrawing) tess.draw();
+
+        stack.remove(stack.size() - 1); // Pop
+
+        tess.restoreTranslation();
+
+        // Group primitives by type using reusable lists from the tessellator
+        List<ModelLine> lines = tess.lineListCache;
+        List<ModelTriangle> triangles = tess.triangleListCache;
+        List<ModelQuad> quads = tess.quadListCache;
+        lines.clear();
+        triangles.clear();
+        quads.clear();
+
+        // Use indexed loops to avoid iterator allocation
+        List<ModelPrimitiveView> prims = tess.getPrimitives();
+        for (int i = 0, size = prims.size(); i < size; i++) {
+            ModelPrimitiveView prim = prims.get(i);
+            if (prim instanceof ModelLine ml) {
+                lines.add(ml);
+            } else if (prim instanceof ModelTriangle mt) {
+                triangles.add(mt);
+            }
+            // Note: Quads have been moved to collectedQuads by processDrawForCapturingTessellator
+        }
+
+        // Get quads from collectedQuads (where they were moved for backward compat)
+        List<ModelQuadViewMutable> collectedQuads = tess.getQuads();
+        for (int i = 0, size = collectedQuads.size(); i < size; i++) {
+            ModelQuadViewMutable quad = collectedQuads.get(i);
+            if (quad instanceof ModelQuad mq) {
+                quads.add(mq);
+            }
+        }
+
+        // Create VBOs for each type that has content
+        List<VertexBuffer> vbos = new ArrayList<>();
+        if (!lines.isEmpty()) vbos.add(createLineVBO(lines, format));
+        if (!triangles.isEmpty()) vbos.add(createTriangleVBO(triangles, format));
+        if (!quads.isEmpty()) vbos.add(createQuadVBO(quads, format));
+
+        // Clean up
+        tess.clearPrimitives();
+        tess.clearQuads();
+
+        if (!stack.isEmpty() && stack.get(stack.size() - 1).mode == CaptureMode.CAPTURING) {
+            // Nested - parent continues
+        } else {
+            tess.discard();
+        }
+
+        return new CapturedGeometry(vbos);
+    }
+
+    private static VertexBuffer createLineVBO(List<ModelLine> lines, VertexFormat format) {
+        ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * lines.size() * 2);
+        for (int i = 0, size = lines.size(); i < size; i++) {
+            writePrimitiveToBuffer(lines.get(i), buffer, format);
+        }
+        buffer.rewind();
+        return new VertexBuffer(format, GL11.GL_LINES).upload(buffer);
+    }
+
+    private static VertexBuffer createTriangleVBO(List<ModelTriangle> triangles, VertexFormat format) {
+        ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * triangles.size() * 3);
+        for (int i = 0, size = triangles.size(); i < size; i++) {
+            writePrimitiveToBuffer(triangles.get(i), buffer, format);
+        }
+        buffer.rewind();
+        return new VertexBuffer(format, GL11.GL_TRIANGLES).upload(buffer);
+    }
+
+    private static VertexBuffer createQuadVBO(List<ModelQuad> quads, VertexFormat format) {
+        ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
+        for (int i = 0, size = quads.size(); i < size; i++) {
+            format.writeQuad(quads.get(i), buffer);
+        }
+        buffer.rewind();
+        return new VertexBuffer(format, GL11.GL_QUADS).upload(buffer);
+    }
+
+    /**
+     * Expected vertex size for primitive writing: pos(12) + color(4) + tex(8) + light(4) + normal(4) = 32 bytes
+     */
+    private static final int EXPECTED_PRIMITIVE_VERTEX_SIZE = 32;
+
+    /**
+     * Writes a primitive's vertices to the buffer using the standard vertex layout.
+     * <p>
+     * <b>IMPORTANT:</b> This method assumes the vertex format matches the layout:
+     * <ul>
+     * <li>Position: 3 floats (12 bytes)</li>
+     * <li>Color: 1 int ABGR (4 bytes)</li>
+     * <li>Texture: 2 floats (8 bytes)</li>
+     * <li>Light: 1 int (4 bytes)</li>
+     * <li>Normal: 1 int (4 bytes)</li>
+     * </ul>
+     * Total: 32 bytes per vertex. The format's vertexSize must match.
+     *
+     * @throws IllegalArgumentException if format.getVertexSize() != 32
+     */
+    private static void writePrimitiveToBuffer(ModelPrimitiveView prim, ByteBuffer buffer, VertexFormat format) {
+        if (format.getVertexSize() != EXPECTED_PRIMITIVE_VERTEX_SIZE) {
+            throw new IllegalArgumentException(
+                    "writePrimitiveToBuffer requires vertex size of " + EXPECTED_PRIMITIVE_VERTEX_SIZE
+                            + " bytes, but format has "
+                            + format.getVertexSize()
+                            + ". Use a compatible format or implement a custom primitive writer.");
+        }
+
+        // Write each vertex of the primitive
+        for (int i = 0; i < prim.getVertexCount(); i++) {
+            // Position (always present)
+            buffer.putFloat(prim.getX(i));
+            buffer.putFloat(prim.getY(i));
+            buffer.putFloat(prim.getZ(i));
+
+            // Color (ABGR format for OpenGL)
+            buffer.putInt(prim.getColor(i));
+
+            // Texture coordinates
+            buffer.putFloat(prim.getTexU(i));
+            buffer.putFloat(prim.getTexV(i));
+
+            // Light (packed lightmap)
+            buffer.putInt(prim.getLight(i));
+
+            // Normal (packed)
+            buffer.putInt(prim.getForgeNormal(i));
+        }
     }
 
     /**
@@ -268,9 +429,11 @@ public class TessellatorManager {
     }
 
     /**
-     * Intercepts Tessellator.draw() during display list compilation. Extracts quads from the vanilla Tessellator's
+     * Intercepts Tessellator.draw() during display list compilation. Extracts geometry from the vanilla Tessellator's
      * buffer and invokes the compiling callback. Only called when shouldInterceptDraw returns true. This is main-thread
      * only (display list compilation happens on the main thread).
+     * <p>
+     * GL_QUADS go to collectedQuads; GL_TRIANGLES and other modes go to collectedPrimitives as proper primitives.
      *
      * @param tess The vanilla Tessellator instance
      * @return The result that draw() should return
@@ -288,32 +451,55 @@ public class TessellatorManager {
             throw new IllegalStateException("interceptDraw called but callback is null!");
         }
 
-        // Build quads from vanilla tess's buffer using main thread capturing tessellator's infrastructure
+        // Build geometry from vanilla tess's buffer using main thread capturing tessellator's infrastructure
+        // COMPILING mode: Only GL_QUADS go to quads; triangles and other primitives stay as proper primitives
         final CapturingTessellator helper = capturingTessellator.get();
-        QuadExtractor.buildQuadsFromBuffer(
-                tess.rawBuffer,
-                tess.vertexCount,
-                tess.drawMode,
-                true, // Vanilla always has texture
-                tess.hasBrightness,
-                tess.hasColor,
-                tess.hasNormals,
-                0,
-                0,
-                0, // Vanilla has no offset
-                -1, // No shaderBlockId
-                helper.quadBuf,
-                helper.collectedQuads,
-                helper.flags);
+        if (tess.drawMode == GL11.GL_QUADS) {
+            QuadExtractor.buildQuadsFromBuffer(
+                    tess.rawBuffer,
+                    tess.vertexCount,
+                    tess.drawMode,
+                    true, // Vanilla always has texture
+                    tess.hasBrightness,
+                    tess.hasColor,
+                    tess.hasNormals,
+                    0,
+                    0,
+                    0, // Vanilla has no offset
+                    -1, // No shaderBlockId
+                    helper.quadPool,
+                    helper.collectedQuads,
+                    helper.flags);
+        } else {
+            // GL_TRIANGLES, GL_LINES, GL_LINE_STRIP, etc. → primitives (not quadrangulated)
+            PrimitiveExtractor.buildPrimitivesFromBuffer(
+                    tess.rawBuffer,
+                    tess.vertexCount,
+                    tess.drawMode,
+                    true, // Vanilla always has texture
+                    tess.hasBrightness,
+                    tess.hasColor,
+                    tess.hasNormals,
+                    0,
+                    0,
+                    0, // Vanilla has no offset
+                    -1, // No shaderBlockId
+                    helper.quadPool,
+                    helper.triPool,
+                    helper.linePool,
+                    helper.collectedPrimitives,
+                    helper.flags);
+        }
 
-        // Invoke callback with collected quads (protect against recursion)
+        // Invoke callback with collected geometry (protect against recursion)
         isInCompilingCallback = true;
         try {
-            current.callback.onDraw(helper.collectedQuads, helper.flags);
+            current.callback.onDraw(helper.collectedQuads, helper.collectedPrimitives, helper.flags);
         } finally {
             isInCompilingCallback = false;
         }
         helper.clearQuads();
+        helper.clearPrimitives();
 
         int result = tess.rawBufferIndex * 4;
         ((ITessellatorInstance) tess).discard();
@@ -322,42 +508,102 @@ public class TessellatorManager {
 
     /**
      * Helper for CapturingTessellator to process its draw() call using shared logic.
+     * <p>
+     * Mode-specific behavior:
+     * <ul>
+     * <li>COMPILING: Only GL_QUADS → quads; GL_TRIANGLES and other modes → primitives (proper triangles)</li>
+     * <li>CAPTURING: GL_QUADS and GL_TRIANGLES → quads (quadrangulated for backward compat); other modes →
+     * primitives</li>
+     * </ul>
      */
     static int processDrawForCapturingTessellator(CapturingTessellator tess) {
-        CaptureState current = peekState();
+        final CaptureState current = peekState();
+        final boolean isCompiling = current != null && current.mode == CaptureMode.COMPILING;
 
-        QuadExtractor.buildQuadsFromBuffer(
-                tess.rawBuffer,
-                tess.vertexCount,
-                tess.drawMode,
-                tess.hasTexture,
-                tess.hasBrightness,
-                tess.hasColor,
-                tess.hasNormals,
-                -tess.offset.x,
-                -tess.offset.y,
-                -tess.offset.z,
-                tess.shaderBlockId,
-                tess.quadBuf,
-                tess.collectedQuads,
-                tess.flags);
-
-        if (current != null) {
-            if (current.mode == CaptureMode.COMPILING) {
-                current.callback.onDraw(tess.collectedQuads, tess.flags);
-                tess.clearQuads();
-            } else if (current.mode == CaptureMode.CAPTURING) {
-                // Deep copy quads before pooling (tess.clearQuads releases them for reuse)
-                // Store per-draw quads+flags (deep copy to preserve across pool reuse)
-                current.capturedDraws.add(
-                        new CapturedDraw(
-                                ModelQuadUtil.deepCopyQuads(tess.collectedQuads),
-                                new CapturingTessellator.Flags(tess.flags)));
-                tess.clearQuads();
+        if (isCompiling) {
+            // COMPILING: Only GL_QUADS to quads; triangles and other primitives stay as proper primitives
+            if (tess.drawMode == GL11.GL_QUADS) {
+                QuadExtractor.buildQuadsFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.collectedQuads,
+                        tess.flags);
+            } else {
+                // GL_TRIANGLES, GL_LINES, GL_LINE_STRIP, etc. → primitives (not quadrangulated)
+                PrimitiveExtractor.buildPrimitivesFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.triPool,
+                        tess.linePool,
+                        tess.collectedPrimitives,
+                        tess.flags);
             }
+            // Invoke callback and clear
+            current.callback.onDraw(tess.collectedQuads, tess.collectedPrimitives, tess.flags);
+            tess.clearQuads();
+            tess.clearPrimitives();
+        } else {
+            // CAPTURING: GL_QUADS and GL_TRIANGLES to quads (backward compat quadrangulation)
+            if (tess.drawMode == GL11.GL_QUADS || tess.drawMode == GL11.GL_TRIANGLES) {
+                QuadExtractor.buildQuadsFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.collectedQuads,
+                        tess.flags);
+            } else {
+                // GL_LINES, GL_LINE_STRIP, etc. → primitives
+                PrimitiveExtractor.buildPrimitivesFromBuffer(
+                        tess.rawBuffer,
+                        tess.vertexCount,
+                        tess.drawMode,
+                        tess.hasTexture,
+                        tess.hasBrightness,
+                        tess.hasColor,
+                        tess.hasNormals,
+                        -tess.offset.x,
+                        -tess.offset.y,
+                        -tess.offset.z,
+                        tess.shaderBlockId,
+                        tess.quadPool,
+                        tess.triPool,
+                        tess.linePool,
+                        tess.collectedPrimitives,
+                        tess.flags);
+            }
+            // No callback - geometry stays until stop is called
         }
 
-        int result = tess.rawBufferIndex * 4;
+        final int result = tess.rawBufferIndex * 4;
         tess.discard();
         return result;
     }
@@ -381,6 +627,7 @@ public class TessellatorManager {
         stack.clear();
         tessellator.discard();
         tessellator.clearQuads();
+        tessellator.clearPrimitives();
         isInCompilingCallback = false;
     }
 
