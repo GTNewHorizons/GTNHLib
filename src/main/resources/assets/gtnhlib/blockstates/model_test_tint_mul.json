@@ -1,0 +1,20 @@
+{
+  "multipart": [
+    {
+      "when": { "meta": 0 },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 270 }
+    },
+    {
+      "when": { "meta": 1 },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 90 }
+    },
+    {
+      "when": { "meta": 2 },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 0 }
+    },
+    {
+      "when": { "meta": 3 },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 180 }
+    }
+  ]
+}
