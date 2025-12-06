@@ -55,7 +55,7 @@ public class TextureLoader {
 
             for (int y = 0; y < height; y++) {
                 final int src = y * width;
-                final int dest = src * amount + i * width;
+                final int dest = (y * totalWidth) + (i * width);
 
                 System.arraycopy(rgb, src, atlasRGB, dest, width);
             }

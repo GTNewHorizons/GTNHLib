@@ -41,7 +41,7 @@ public final class UniversiumShader extends ShaderProgram {
     private final int location_externalScale;
 
     private final int location_opacity;
-    public static float cosmicOpacity = 1.0f;
+    private float cosmicOpacity = 1.0f;
     private float lastCosmicOpacity = -1;
 
     private final int location_starColorMultiplier;
@@ -157,7 +157,7 @@ public final class UniversiumShader extends ShaderProgram {
         starColorMultiplier.set(MUL_R, MUL_G, MUL_B);
         starColorBase.set(BASE_R, BASE_G, BASE_B);
 
-        glUniform3f(location_lightlevel, lastLightLevel, lightLevel);
+        glUniform3f(location_lightlevel, lightLevel, lastLightLevel);
         lightLevel.set(1, 1, 1); // Reset back to default
 
         if (!useCustomBGColor) {
@@ -175,6 +175,11 @@ public final class UniversiumShader extends ShaderProgram {
         GL13.glActiveTexture(GL13.GL_TEXTURE2);
         textureAtlas.bindTexture();
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
+    }
+
+    public UniversiumShader setCosmicOpacity(float opacity) {
+        this.cosmicOpacity = opacity;
+        return this;
     }
 
     /**
