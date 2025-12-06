@@ -95,7 +95,10 @@ public final class TextureAtlas {
 
     /**
      * Updates the animation and returns the FloatBuffer with the V-Texcoords. This method should only be called if
-     * {@link #needsAnimationUpdate()} returns {@code true}, else the animation will be sped up.
+     * {@link #needsAnimationUpdate()} returns {@code true}, else the animation will be sped up. <br>
+     * The main benefit of having a buffer with only the V-texture coordinates is that it takes up half the memory and
+     * results in fewer memory read operations inside of shaders. If you know the width of the Texture Atlas inside the
+     * shader, you can easily calculate them.
      */
     public FloatBuffer updateVBuffer() {
         lastTextureUpdate = Minecraft.getMinecraft().thePlayer.ticksExisted;

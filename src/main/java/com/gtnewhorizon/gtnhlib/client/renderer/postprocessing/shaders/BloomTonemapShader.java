@@ -62,7 +62,8 @@ public class BloomTonemapShader {
     }
 
     /**
-     * Converts a HDR color to a non-HDR color.
+     * Converts a HDR color to a non-HDR color. <br>
+     * This method uses ACES tonemapping.
      */
     public static float tonemap(float x) {
         final float a = 2.51f;
