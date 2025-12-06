@@ -1,13 +1,13 @@
 {
   "parent": "block/cube",
   "textures": {
-    "particle": "minecraft:stone",
-    "north": "minecraft:stone",
-    "south": "minecraft:stone",
-    "east":  "minecraft:stone",
-    "west":  "minecraft:stone",
-    "up":    "minecraft:stone",
-    "down":  "minecraft:stone"
+    "particle": "gtnhlib:block/test",
+    "north": "gtnhlib:block/test",
+    "south": "gtnhlib:block/test",
+    "east":  "gtnhlib:block/test",
+    "west":  "gtnhlib:block/test",
+    "up":    "gtnhlib:block/test",
+    "down":  "gtnhlib:block/test"
   },
   "elements": [
     {
@@ -22,5 +22,24 @@
         "down":  { "texture": "#down",  "tintindex": 5 }
       }
     }
-  ]
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [75, 45, 0],
+      "translation": [0, 2.5, 0],
+      "scale": [0.375, 0.375, 0.375]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 45, 0],
+      "scale": [0.4, 0.4, 0.4]
+    },
+    "ground": {
+      "translation": [0, 3, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "gui": {
+      "rotation": [30, -135, 0],
+      "scale": [0.625, 0.625, 0.625]
+    }
+  }
 }

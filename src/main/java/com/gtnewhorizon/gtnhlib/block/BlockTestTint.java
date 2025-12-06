@@ -17,6 +17,7 @@ public class BlockTestTint extends Block implements IBlockColor {
 
     public BlockTestTint() {
         super(Material.wood);
+        setHardness(2f);
     }
 
     @Override

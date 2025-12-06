@@ -9,10 +9,13 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
@@ -44,6 +47,26 @@ public final class MultipartModel implements BakedModel {
                 quads.addAll(e.getValue().getQuads(world, x, y, z, block, meta, dir, random, color, quadPool));
         });
         return quads;
+    }
+
+    @Override
+    public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
+        for (Map.Entry<Condition, BakedModel> entry : piles.entrySet()) {
+            if (entry.getKey().matches(stateMap(meta))) {
+                return entry.getValue().getDisplay(pos, meta, random);
+            }
+        }
+        return Position.ModelDisplay.DEFAULT;
+    }
+
+    @Override
+    public IIcon getParticle(int meta, Random random) {
+        for (Map.Entry<Condition, BakedModel> entry : piles.entrySet()) {
+            if (entry.getKey().matches(stateMap(meta))) {
+                return entry.getValue().getParticle(meta, random);
+            }
+        }
+        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");
     }
 
     private static Map<String, String> stateMap(int meta) {

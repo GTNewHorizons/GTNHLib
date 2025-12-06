@@ -5,6 +5,10 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 import static java.lang.Math.max;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
 
@@ -18,10 +22,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -34,6 +40,8 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 
 @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
+
+    public static final ModelISBRH INSTANCE = new ModelISBRH();
 
     /**
      * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
@@ -98,7 +106,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         return rendered;
     }
 
-    protected void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
+    public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
         for (int i = 0; i < 4; ++i) {
             tessellator.addVertexWithUV(
@@ -110,7 +118,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
     }
 
-    private int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
+    public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
             int z, RenderBlocks rb) {
         // If the face is aligned or external, pick light outside
         final float avgPos = getAveragePos(quad, dir);
@@ -228,31 +236,154 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-                renderQuad(quad, -0.5f, -0.5f, -0.5f, tesselator, null);
+                renderQuad(quad, 0f, 0f, 0f, tesselator, null);
             }
         }
 
-        // Rotated to exact side
-        GL11.glRotated(-90f, 0f, 1f, 0f);
-
-        // TODO: Use BlockBench display transforms provided in '{}.display'
-        // Translated to vanilla position
-        if (type == ItemRenderType.EQUIPPED) {
-            GL11.glTranslated(0.5f, 0.5f, -0.5f);
-        }
-        if (type == ItemRenderType.EQUIPPED_FIRST_PERSON) {
-            GL11.glTranslated(0.5f, 0.5f, -0.5f);
-        }
-        if (type == ItemRenderType.ENTITY) {
-            // No op
-        }
-        if (type == ItemRenderType.INVENTORY) {
-            // No op
-        }
+        // Apply ItemBlock BlockBench Display
+        applyItemDisplay(model, meta, type);
 
         tesselator.draw();
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopMatrix();
+    }
+
+    private static final Vector3f rotated = new Vector3f(0f, 0f, 0f);
+    private static final Vector3f translated = new Vector3f(0f, 0f, 0f);
+    private static final Vector3f scaled = new Vector3f(1f, 1f, 1f);
+
+    private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
+
+        Position pos = switch (type) {
+            case EQUIPPED -> Position.THIRDPERSON_RIGHTHAND;
+            case ENTITY -> Position.GROUND;
+            case INVENTORY -> Position.GUI;
+            case EQUIPPED_FIRST_PERSON -> Position.FIRSTPERSON_RIGHTHAND;
+            default -> Position.GROUND;
+        };
+
+        float px = 0.5f;
+        float py = 0.5f;
+        float pz = 0.5f;
+
+        Position.ModelDisplay display = model.getDisplay(pos, meta, RAND);
+
+        Vector3f r = display.rotation();
+        Vector3f t = display.translation();
+        Vector3f s = display.scale();
+
+        // BlockBench to Position
+        if (type == EQUIPPED) {
+            if (t.equals(translated)) {
+                GL11.glTranslatef(0f / 16f, 2.5f / 16f, 0f / 16f);
+            } else {
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            if (r.equals(rotated)) {
+                GL11.glRotatef(75f, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(45f, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(0f, 1.0f, 0.0f, 0.0f);
+            } else {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.375f, 0.375f, 0.375f);
+            } else {
+                GL11.glScaled(s.z, s.y, s.x);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
+        }
+
+        if (type == EQUIPPED_FIRST_PERSON) {
+            if (!t.equals(translated)) {
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            if (r.equals(rotated)) {
+                GL11.glRotatef(0f, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(45f, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(0f, 1.0f, 0.0f, 0.0f);
+            } else {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.4f, 0.4f, 0.4f);
+            } else {
+                GL11.glScaled(s.z, s.y, s.x);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
+        }
+
+        if (type == ENTITY) {
+            if (t.equals(translated)) {
+                GL11.glTranslatef(0f / 16f, 3f / 16f, 0f / 16f);
+            } else {
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            if (!r.equals(rotated)) {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.25f, 0.25f, 0.25f);
+            } else {
+                GL11.glScaled(s.z, s.y, s.x);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
+        }
+
+        if (type == INVENTORY) {
+            if (!t.equals(translated)) {
+                GL11.glTranslatef(-t.z / 16f, t.y / 16f, t.x / 16f);
+            }
+
+            GL11.glTranslatef(px, py, pz);
+            if (r.equals(rotated)) {
+                GL11.glRotatef(30f, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(-135f, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(0f, 1.0f, 0.0f, 0.0f);
+            } else {
+                GL11.glRotatef(r.x, 0.0f, 0.0f, 1.0f);
+                GL11.glRotatef(r.y, 0.0f, 1.0f, 0.0f);
+                GL11.glRotatef(-r.z, 1.0f, 0.0f, 0.0f);
+            }
+
+            if (s.equals(scaled)) {
+                GL11.glScaled(0.625f, 0.625f, 0.625f);
+            } else {
+                GL11.glScaled(s.z, s.y, s.x);
+            }
+            GL11.glTranslatef(-px, -py, -pz);
+        }
+    }
+
+    public IIcon getParticleIcon(Block block, IBlockAccess world, int x, int y, int z, int meta) {
+        final var model = getModel(world, block, meta, x, y, z);
+        return model.getParticle(meta, RAND);
+    }
+
+    public boolean isMissingIcon(IIcon icon) {
+        if (icon == null) return false;
+
+        String name = icon.getIconName();
+        if (name == null) return false;
+
+        if (name.equals("missingno")) return false;
+
+        return !name.startsWith("MISSING_ICON_BLOCK_");
     }
 }

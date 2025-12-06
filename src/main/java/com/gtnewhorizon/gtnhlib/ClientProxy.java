@@ -45,7 +45,7 @@ public class ClientProxy extends CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
 
-        RenderingRegistry.registerBlockHandler(new ModelISBRH());
+        RenderingRegistry.registerBlockHandler(ModelISBRH.INSTANCE);
 
         // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
         // you too can automatically load textures for your models!
@@ -85,7 +85,7 @@ public class ClientProxy extends CommonProxy {
             if (block.getRenderType() == ModelISBRH.JSON_ISBRH_ID) {
                 Item item = Item.getItemFromBlock(block);
                 if (item != null) {
-                    MinecraftForgeClient.registerItemRenderer(item, new ModelISBRH());
+                    MinecraftForgeClient.registerItemRenderer(item, ModelISBRH.INSTANCE);
                 }
             }
         }
