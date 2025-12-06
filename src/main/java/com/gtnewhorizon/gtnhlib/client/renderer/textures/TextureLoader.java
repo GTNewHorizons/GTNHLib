@@ -1,8 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.textures;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -14,13 +12,11 @@ import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.IResource;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.core.GTNHLibCore;
-import com.gtnewhorizons.angelica.glsm.GLStateManager;
 
 /**
  * A utility class that helps with loading textures. <br>
@@ -38,20 +34,30 @@ public class TextureLoader {
         return image;
     }
 
-    public static int[] mergeImages(BufferedImage[] images, int maxHeight) {
+    public static int[] mergeImages(BufferedImage[] images, int totalWidth, int maxHeight) {
         final int amount = images.length;
-        int[] atlasRGB = new int[amount * 16 * maxHeight];
-        int[] rgb = new int[16 * maxHeight];
+        int[] atlasRGB = new int[totalWidth * maxHeight];
+
+        // Calculate max width to reduce allocations
+        int maxWidth = 0;
+        for (BufferedImage image : images) {
+            if (image.getWidth() > maxWidth) maxWidth = image.getWidth();
+        }
+
+        int[] rgb = new int[maxWidth * maxHeight];
 
         for (int i = 0; i < amount; i++) {
             BufferedImage texture = images[i];
+            final int width = texture.getWidth();
+            final int height = texture.getHeight();
 
-            texture.getRGB(0, 0, 16, texture.getHeight(), rgb, 0, 16);
+            texture.getRGB(0, 0, width, height, rgb, 0, width);
 
-            for (int y = 0; y < texture.getHeight(); y++) {
-                int dest = y * amount * 16 + i * 16;
-                int src = y * 16;
-                System.arraycopy(rgb, src, atlasRGB, dest, 16);
+            for (int y = 0; y < height; y++) {
+                final int src = y * width;
+                final int dest = src * amount + i * width;
+
+                System.arraycopy(rgb, src, atlasRGB, dest, width);
             }
         }
         return atlasRGB;
@@ -81,10 +87,19 @@ public class TextureLoader {
 
     public static int createBindTextureAtlas(int format, int pixelFormat, int atlasWidth, int atlasHeight,
             BufferedImage[] images) {
-        return createBindTexture(format, pixelFormat, atlasWidth, atlasHeight, mergeImages(images, atlasHeight));
+        return createBindTexture(
+                format,
+                pixelFormat,
+                atlasWidth,
+                atlasHeight,
+                mergeImages(images, atlasWidth, atlasHeight));
     }
 
     public static int createBindTexture(int format, int pixelFormat, int width, int height, int[] pixels) {
+        return createBindTexture(format, pixelFormat, width, height, pixels, GL11.GL_NEAREST);
+    }
+
+    public static int createBindTexture(int format, int pixelFormat, int width, int height, int[] pixels, int filter) {
         dataBuffer.clear();
         dataBuffer.put(pixels).flip();
         int texture = GL11.glGenTextures();
@@ -99,45 +114,9 @@ public class TextureLoader {
                 pixelFormat,
                 GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
                 dataBuffer);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter);
         return texture;
-    }
-
-    public static void copyTextureToFile(int textureID, File output) {
-        GLStateManager.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
-
-        int width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
-        int height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
-
-        BufferedImage bufferedimage = new BufferedImage(width, height, 1);
-        final int[] pixelValues = ((DataBufferInt) bufferedimage.getRaster().getDataBuffer()).getData();
-        IntBuffer pixelBuffer = BufferUtils.createIntBuffer(pixelValues.length);
-        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
-        pixelBuffer.get(pixelValues);
-
-        // Flip texture
-        final int halfHeight = height / 2;
-        final int[] rowBuffer = new int[width];
-        for (int y = 0; y < halfHeight; y++) {
-            final int top = y * width;
-            final int bottom = (height - 1 - y) * width;
-
-            System.arraycopy(pixelValues, top, rowBuffer, 0, width);
-            System.arraycopy(pixelValues, bottom, pixelValues, top, width);
-            System.arraycopy(rowBuffer, 0, pixelValues, bottom, width);
-        }
-
-        File dir = output.getParentFile();
-        dir.mkdirs();
-        copyBufferedImageToFile(bufferedimage, output);
-        bufferedimage.flush();
-    }
-
-    private static void copyBufferedImageToFile(BufferedImage image, File file) {
-        try {
-            ImageIO.write(image, "png", file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     static {

@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -12,6 +11,7 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 import com.gtnewhorizon.gtnhlib.client.renderer.textures.TextureAtlas;
 import com.gtnewhorizon.gtnhlib.mixins.early.EntityRendererAccessor;
 
@@ -47,19 +47,16 @@ public final class UniversiumShader extends ShaderProgram {
     private final int location_starColorMultiplier;
     private final Vector3f starColorMultiplier = new Vector3f(MUL_R, MUL_G, MUL_B);
     private final Vector3f lastStarColorMultiplier = new Vector3f(-1);
-
-    private final int location_starColorBase;
-    private final Vector3f starColorBase = new Vector3f(BASE_R, BASE_G, BASE_B);
-    private final Vector3f lastStarColorBase = new Vector3f(-1);
-
     private static final float MUL_R = 0.3f;
     private static final float MUL_G = 0.4f;
     private static final float MUL_B = 0.3f;
 
+    private final int location_starColorBase;
+    private final Vector3f starColorBase = new Vector3f(BASE_R, BASE_G, BASE_B);
+    private final Vector3f lastStarColorBase = new Vector3f(-1);
     private static final float BASE_R = 0.4f;
     private static final float BASE_G = 0.6f;
     private static final float BASE_B = 0.7f;
-
 
     private final int location_bgColor;
     private final Vector3f bgColor = new Vector3f();
@@ -165,9 +162,10 @@ public final class UniversiumShader extends ShaderProgram {
 
         if (!useCustomBGColor) {
             final float pulse = (sysTime % 20_000) / 20_000f;
-            bgColor.set(0.1f,
-                MathHelper.sin((float) (pulse * Math.PI * 2)) * 0.075f + 0.225f,
-                MathHelper.cos((float) (pulse * Math.PI * 2)) * 0.05f + 0.3f);
+            bgColor.set(
+                    0.1f,
+                    MathHelper.sin((float) (pulse * Math.PI * 2)) * 0.075f + 0.225f,
+                    MathHelper.cos((float) (pulse * Math.PI * 2)) * 0.05f + 0.3f);
         }
         glUniform3f(location_bgColor, bgColor, lastBgColor);
         useCustomBGColor = false;
@@ -183,7 +181,8 @@ public final class UniversiumShader extends ShaderProgram {
      * The formula for the star color is the following: <br>
      * {@code starColor = random * mul + base}, <br>
      * where {@code random} is a variable calculated inside of the shader. <br>
-     * If this method doesn't get called, the Shader will default to {@code mul = vec3(0.3, 0.4, 0.3)} and {@code base = vec3(0.4, 0.6, 0.7)}
+     * If this method doesn't get called, the Shader will default to {@code mul = vec3(0.3, 0.4, 0.3)} and
+     * {@code base = vec3(0.4, 0.6, 0.7)}
      */
     public UniversiumShader setStarColor(float mulR, float mulG, float mulB, float baseR, float baseG, float baseB) {
         starColorMultiplier.set(mulR, mulG, mulB);
@@ -235,11 +234,8 @@ public final class UniversiumShader extends ShaderProgram {
     }
 
     public UniversiumShader setLightLevel(float r, float g, float b) {
-        lightLevel.set(
-            MathHelper.clamp_float(r, 0, 1),
-            MathHelper.clamp_float(g, 0, 1),
-            MathHelper.clamp_float(b, 0, 1)
-        );
+        lightLevel
+                .set(MathHelper.clamp_float(r, 0, 1), MathHelper.clamp_float(g, 0, 1), MathHelper.clamp_float(b, 0, 1));
         return this;
     }
 }

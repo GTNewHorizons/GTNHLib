@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders;
 
-import com.google.common.annotations.Beta;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 
@@ -8,16 +7,18 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
+import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.PostProcessingHelper;
 import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
 
 /**
- * A class that helps with converting HDR colors to non-HDR colors.
- * This class is mainly used for bloom, and some calculations may be off because of it.
+ * A class that helps with converting HDR colors to non-HDR colors. This class is mainly used for bloom, and some
+ * calculations may be off because of it.
  */
 @Beta
 public class BloomTonemapShader {
+
     // Magical constant, also used in the tonemap shader.
     private static final float TONEMAP_VALUE = 1.9f;
 
