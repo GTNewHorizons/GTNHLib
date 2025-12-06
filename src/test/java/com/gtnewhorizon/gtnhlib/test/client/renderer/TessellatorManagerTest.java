@@ -2,14 +2,16 @@ package com.gtnewhorizon.gtnhlib.test.client.renderer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.CapturedDraw;
 import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 
 /**
@@ -34,9 +36,9 @@ public class TessellatorManagerTest {
     @Test
     void testNestedCompiling() {
         // Nested COMPILING is now ALLOWED for nested display list compilation
-        TessellatorManager.setCompiling((quads, flags) -> {});
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {});
         assertDoesNotThrow(
-                () -> TessellatorManager.setCompiling((quads, flags) -> {}),
+                () -> TessellatorManager.setCompiling((quads, primitives, flags) -> {}),
                 "Nested setCompiling() should be allowed");
         TessellatorManager.stopCompiling(); // Stop inner
         TessellatorManager.stopCompiling(); // Stop outer
@@ -48,7 +50,7 @@ public class TessellatorManagerTest {
         final java.util.List<String> callOrder = new java.util.ArrayList<>();
 
         // Outer compilation
-        TessellatorManager.setCompiling((quads, flags) -> { callOrder.add("outer"); });
+        TessellatorManager.setCompiling((quads, primitives, flags) -> { callOrder.add("outer"); });
 
         CapturingTessellator outerTess = (CapturingTessellator) TessellatorManager.get();
         outerTess.startDrawingQuads();
@@ -62,7 +64,7 @@ public class TessellatorManagerTest {
         assertEquals("outer", callOrder.get(0));
 
         // Nested inner compilation
-        TessellatorManager.setCompiling((quads, flags) -> { callOrder.add("inner"); });
+        TessellatorManager.setCompiling((quads, primitives, flags) -> { callOrder.add("inner"); });
 
         CapturingTessellator innerTess = (CapturingTessellator) TessellatorManager.get();
         assertSame(outerTess, innerTess, "Should reuse same tessellator instance");
@@ -119,7 +121,7 @@ public class TessellatorManagerTest {
 
     @Test
     void testNestingCapturingInsideCompiling() {
-        TessellatorManager.setCompiling((quads, flags) -> {});
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {});
         assertDoesNotThrow(
                 TessellatorManager::startCapturing,
                 "startCapturing() when compiling should be allowed for nesting");
@@ -130,18 +132,18 @@ public class TessellatorManagerTest {
     @Test
     void testSetCompilingAndStop() {
         // Basic lifecycle test - should not throw
-        TessellatorManager.setCompiling((quads, flags) -> {});
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {});
         TessellatorManager.stopCompiling();
     }
 
     @Test
     void testCleanupClearsCompilingState() {
-        TessellatorManager.setCompiling((quads, flags) -> {});
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {});
         TessellatorManager.cleanup();
 
         // After cleanup, compiling should be cleared
         // This means we should be able to set compiling again without error
-        assertDoesNotThrow(() -> TessellatorManager.setCompiling((quads, flags) -> {}));
+        assertDoesNotThrow(() -> TessellatorManager.setCompiling((quads, primitives, flags) -> {}));
         TessellatorManager.stopCompiling();
     }
 
@@ -171,13 +173,13 @@ public class TessellatorManagerTest {
         parentTess.pos(0, 1, 0).tex(0, 1).endVertex();
         parentTess.draw();
 
-        // After draw(), quads are moved to capturedDraws, so tess.getQuads() is empty
-        assertEquals(0, parentTess.getQuads().size(), "After draw(), quads moved to capturedDraws");
+        // In index-based mode, quads accumulate in collectedQuads until nesting or stop
+        assertEquals(1, parentTess.getQuads().size(), "After draw(), quads accumulate in collectedQuads");
 
-        // Start nested child capture
+        // Start nested child capture - parent's quads are preserved, list cleared for child
         CapturingTessellator childTess = TessellatorManager.startCapturingAndGet();
         assertSame(parentTess, childTess, "Should reuse same tessellator instance");
-        assertEquals(0, childTess.getQuads().size(), "Child should start with 0 quads");
+        assertEquals(0, childTess.getQuads().size(), "Child should start with 0 quads (parent's were saved)");
 
         childTess.startDrawingQuads();
         childTess.pos(2, 0, 0).tex(0, 0).endVertex();
@@ -190,8 +192,8 @@ public class TessellatorManagerTest {
         assertEquals(1, childQuads.size(), "Child should have captured 1 quad");
         assertEquals(2.0f, childQuads.get(0).getX(0), 0.001f, "Child quad should have correct position");
 
-        // After popping child, parent continues with empty tess.getQuads() (draws in capturedDraws)
-        assertEquals(0, parentTess.getQuads().size(), "tess.getQuads() empty, draws in capturedDraws");
+        // After popping child, parent continues with cleared list (its quads already saved)
+        assertEquals(0, parentTess.getQuads().size(), "tess.getQuads() cleared for parent to continue");
 
         // Parent can continue capturing
         parentTess.startDrawingQuads();
@@ -268,75 +270,12 @@ public class TessellatorManagerTest {
         CapturingTessellator.Flags flags4 = new CapturingTessellator.Flags(flags1);
         assertEquals(flags1, flags4, "Copy constructor should produce equal flags");
         assertEquals(flags1.hashCode(), flags4.hashCode(), "Copied flags should have same hashCode");
-
-        // Verify batching use case: flags from different CapturedDraws can be compared
-        TessellatorManager.startCapturing();
-        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
-
-        // Draw 1
-        tess.startDrawingQuads();
-        tess.pos(0, 0, 0).tex(0, 0).endVertex();
-        tess.pos(1, 0, 0).tex(1, 0).endVertex();
-        tess.pos(1, 1, 0).tex(1, 1).endVertex();
-        tess.pos(0, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        // Draw 2 with same settings
-        tess.startDrawingQuads();
-        tess.pos(2, 0, 0).tex(0, 0).endVertex();
-        tess.pos(3, 0, 0).tex(1, 0).endVertex();
-        tess.pos(3, 1, 0).tex(1, 1).endVertex();
-        tess.pos(2, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        List<CapturedDraw> draws = TessellatorManager.stopCapturingToDraws();
-        assertEquals(2, draws.size());
-
-        // Flags from different draws should be equal if settings were identical
-        assertEquals(
-                draws.get(0).flags(),
-                draws.get(1).flags(),
-                "Flags from draws with identical settings should be equal");
-        assertEquals(
-                draws.get(0).flags().hashCode(),
-                draws.get(1).flags().hashCode(),
-                "Equal flags should have same hashCode for batching");
-    }
-
-    @Test
-    void testPerDrawFlagTracking() {
-        // Test that per-draw flags are tracked correctly
-        TessellatorManager.startCapturing();
-        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
-
-        // First draw with texture
-        tess.startDrawingQuads();
-        tess.pos(0, 0, 0).tex(0, 0).endVertex();
-        tess.pos(1, 0, 0).tex(1, 0).endVertex();
-        tess.pos(1, 1, 0).tex(1, 1).endVertex();
-        tess.pos(0, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        // Second draw with different setup
-        tess.startDrawingQuads();
-        tess.pos(2, 0, 0).tex(0, 0).endVertex();
-        tess.pos(3, 0, 0).tex(1, 0).endVertex();
-        tess.pos(3, 1, 0).tex(1, 1).endVertex();
-        tess.pos(2, 1, 0).tex(0, 1).endVertex();
-        tess.draw();
-
-        List<CapturedDraw> draws = TessellatorManager.stopCapturingToDraws();
-        assertEquals(2, draws.size(), "Should have 2 separate draws");
-        assertEquals(1, draws.get(0).quads().size(), "First draw should have 1 quad");
-        assertEquals(1, draws.get(1).quads().size(), "Second draw should have 1 quad");
-        assertEquals(0.0f, draws.get(0).quads().get(0).getX(0), 0.001f, "First draw quad at x=0");
-        assertEquals(2.0f, draws.get(1).quads().get(0).getX(0), 0.001f, "Second draw quad at x=2");
     }
 
     @Test
     void testNestedCapturingWithCompilingParent() {
         // Test COMPILING → CAPTURING → CAPTURING (Angelica use case)
-        TessellatorManager.setCompiling((quads, flags) -> {
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {
             // Compiling callback - start capturing inside
             CapturingTessellator parentTess = TessellatorManager.startCapturingAndGet();
             parentTess.startDrawingQuads();
@@ -361,6 +300,130 @@ public class TessellatorManagerTest {
             List<ModelQuadViewMutable> parentQuads = TessellatorManager.stopCapturingToPooledQuads();
             assertEquals(1, parentQuads.size());
         });
+
+        TessellatorManager.stopCompiling();
+    }
+
+    @Test
+    void testCompilingModeQuadsGoToQuadsList() {
+        // In COMPILING mode, GL_QUADS should go to quads list, primitives should be empty
+        final List<ModelQuadViewMutable> receivedQuads = new ArrayList<>();
+        final List<ModelPrimitiveView> receivedPrimitives = new ArrayList<>();
+
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {
+            receivedQuads.addAll(quads);
+            receivedPrimitives.addAll(primitives);
+        });
+
+        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
+        tess.startDrawingQuads();
+        tess.pos(0, 0, 0).tex(0, 0).endVertex();
+        tess.pos(1, 0, 0).tex(1, 0).endVertex();
+        tess.pos(1, 1, 0).tex(1, 1).endVertex();
+        tess.pos(0, 1, 0).tex(0, 1).endVertex();
+        tess.draw();
+
+        TessellatorManager.stopCompiling();
+
+        assertEquals(1, receivedQuads.size(), "COMPILING mode: GL_QUADS should produce 1 quad");
+        assertTrue(receivedPrimitives.isEmpty(), "COMPILING mode: GL_QUADS should not produce primitives");
+    }
+
+    @Test
+    void testCompilingModeTrianglesGoToPrimitivesList() {
+        // In COMPILING mode, GL_TRIANGLES should go to primitives list (NOT quadrangulated)
+        final List<ModelQuadViewMutable> receivedQuads = new ArrayList<>();
+        final List<ModelPrimitiveView> receivedPrimitives = new ArrayList<>();
+
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {
+            receivedQuads.addAll(quads);
+            receivedPrimitives.addAll(primitives);
+        });
+
+        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
+        tess.startDrawing(GL11.GL_TRIANGLES);
+        // Triangle 1
+        tess.pos(0, 0, 0).tex(0, 0).endVertex();
+        tess.pos(1, 0, 0).tex(1, 0).endVertex();
+        tess.pos(0.5, 1, 0).tex(0.5, 1).endVertex();
+        tess.draw();
+
+        TessellatorManager.stopCompiling();
+
+        assertTrue(receivedQuads.isEmpty(), "COMPILING mode: GL_TRIANGLES should not produce quads");
+        assertEquals(1, receivedPrimitives.size(), "COMPILING mode: GL_TRIANGLES should produce 1 triangle primitive");
+        assertEquals(3, receivedPrimitives.get(0).getVertexCount(), "Triangle should have 3 vertices");
+    }
+
+    @Test
+    void testCompilingModeLinesGoToPrimitivesList() {
+        // In COMPILING mode, GL_LINES should go to primitives list
+        final List<ModelQuadViewMutable> receivedQuads = new ArrayList<>();
+        final List<ModelPrimitiveView> receivedPrimitives = new ArrayList<>();
+
+        TessellatorManager.setCompiling((quads, primitives, flags) -> {
+            receivedQuads.addAll(quads);
+            receivedPrimitives.addAll(primitives);
+        });
+
+        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
+        tess.startDrawing(GL11.GL_LINES);
+        tess.pos(0, 0, 0).tex(0, 0).endVertex();
+        tess.pos(1, 1, 1).tex(1, 1).endVertex();
+        tess.draw();
+
+        TessellatorManager.stopCompiling();
+
+        assertTrue(receivedQuads.isEmpty(), "COMPILING mode: GL_LINES should not produce quads");
+        assertEquals(1, receivedPrimitives.size(), "COMPILING mode: GL_LINES should produce 1 line primitive");
+        assertEquals(2, receivedPrimitives.get(0).getVertexCount(), "Line should have 2 vertices");
+    }
+
+    @Test
+    void testCapturingModeTrianglesAreQuadrangulated() {
+        // In CAPTURING mode, GL_TRIANGLES should be quadrangulated into quads list for backward compat
+        CapturingTessellator tess = TessellatorManager.startCapturingAndGet();
+        tess.startDrawing(GL11.GL_TRIANGLES);
+        tess.pos(0, 0, 0).tex(0, 0).endVertex();
+        tess.pos(1, 0, 0).tex(1, 0).endVertex();
+        tess.pos(0.5, 1, 0).tex(0.5, 1).endVertex();
+        tess.draw();
+
+        List<ModelQuadViewMutable> quads = TessellatorManager.stopCapturingToPooledQuads();
+
+        assertEquals(1, quads.size(), "CAPTURING mode: GL_TRIANGLES should be quadrangulated into 1 quad");
+        // Quadrangulated triangle has v2 duplicated to v3
+        assertEquals(quads.get(0).getX(2), quads.get(0).getX(3), 0.001f, "Quadrangulated: v2.x should equal v3.x");
+        assertEquals(quads.get(0).getY(2), quads.get(0).getY(3), 0.001f, "Quadrangulated: v2.y should equal v3.y");
+    }
+
+    @Test
+    void testCompilingModeDrawModeInFlags() {
+        // Verify that the draw mode is correctly passed in flags
+        final int[] capturedDrawMode = new int[1];
+
+        TessellatorManager.setCompiling((quads, primitives, flags) -> { capturedDrawMode[0] = flags.drawMode; });
+
+        CapturingTessellator tess = (CapturingTessellator) TessellatorManager.get();
+
+        // Test with GL_TRIANGLES
+        tess.startDrawing(GL11.GL_TRIANGLES);
+        tess.pos(0, 0, 0).tex(0, 0).endVertex();
+        tess.pos(1, 0, 0).tex(1, 0).endVertex();
+        tess.pos(0.5, 1, 0).tex(0.5, 1).endVertex();
+        tess.draw();
+
+        assertEquals(GL11.GL_TRIANGLES, capturedDrawMode[0], "Flags should contain GL_TRIANGLES draw mode");
+
+        // Test with GL_QUADS
+        tess.startDrawingQuads();
+        tess.pos(0, 0, 0).tex(0, 0).endVertex();
+        tess.pos(1, 0, 0).tex(1, 0).endVertex();
+        tess.pos(1, 1, 0).tex(1, 1).endVertex();
+        tess.pos(0, 1, 0).tex(0, 1).endVertex();
+        tess.draw();
+
+        assertEquals(GL11.GL_QUADS, capturedDrawMode[0], "Flags should contain GL_QUADS draw mode");
 
         TessellatorManager.stopCompiling();
     }

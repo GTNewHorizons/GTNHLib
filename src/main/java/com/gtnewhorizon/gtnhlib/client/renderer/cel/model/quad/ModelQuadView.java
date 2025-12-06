@@ -1,16 +1,24 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFlags;
 
 /**
  * Provides a read-only view of a model quad. For mutable access to a model quad, see {@link ModelQuadViewMutable}.
+ * Extends {@link ModelPrimitiveView} for compatibility with the primitive rendering pipeline.
  */
-public interface ModelQuadView {
+public interface ModelQuadView extends ModelPrimitiveView {
+
+    @Override
+    default int getVertexCount() {
+        return 4;
+    }
 
     /**
      * @return The x-position of the vertex at index {@param idx}
      */
+    @Override
     float getX(int idx);
 
     /**
