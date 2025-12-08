@@ -6,11 +6,7 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraftforge.client.MinecraftForgeClient;
 
-import org.lwjgl.opengl.EXTFramebufferObject;
-import org.lwjgl.opengl.EXTPackedDepthStencil;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
-import org.lwjgl.opengl.GL30;
 
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 
