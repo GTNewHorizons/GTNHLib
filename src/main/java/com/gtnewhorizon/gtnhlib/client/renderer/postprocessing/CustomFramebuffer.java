@@ -180,16 +180,16 @@ public class CustomFramebuffer {
             // Allocate renderbuffer
             if (stencil) {
                 OpenGlHelper.func_153186_a(
-                    GL30.GL_RENDERBUFFER,
-                    EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT,
-                    framebufferWidth,
-                    framebufferHeight);
+                        GL30.GL_RENDERBUFFER,
+                        EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT,
+                        framebufferWidth,
+                        framebufferHeight);
             } else {
                 OpenGlHelper.func_153186_a(
-                    GL30.GL_FRAMEBUFFER,
-                    GL14.GL_DEPTH_COMPONENT24,
-                    framebufferWidth,
-                    framebufferHeight);
+                        GL30.GL_FRAMEBUFFER,
+                        GL14.GL_DEPTH_COMPONENT24,
+                        framebufferWidth,
+                        framebufferHeight);
             }
             // Link renderbuffer to framebuffer
             linkDepthRenderbuffer(stencil);
@@ -198,39 +198,39 @@ public class CustomFramebuffer {
 
     protected final void linkDepthTexture(boolean stencil) {
         OpenGlHelper.func_153188_a(
-            GL30.GL_FRAMEBUFFER,
-            GL30.GL_DEPTH_ATTACHMENT,
-            GL11.GL_TEXTURE_2D,
-            this.depthAttachment,
-            0);
-        if (stencil) {
-            OpenGlHelper.func_153188_a(
                 GL30.GL_FRAMEBUFFER,
-                GL30.GL_STENCIL_ATTACHMENT,
+                GL30.GL_DEPTH_ATTACHMENT,
                 GL11.GL_TEXTURE_2D,
                 this.depthAttachment,
                 0);
+        if (stencil) {
+            OpenGlHelper.func_153188_a(
+                    GL30.GL_FRAMEBUFFER,
+                    GL30.GL_STENCIL_ATTACHMENT,
+                    GL11.GL_TEXTURE_2D,
+                    this.depthAttachment,
+                    0);
         }
     }
 
     protected final void linkDepthRenderbuffer(boolean stencil) {
         if (stencil) {
             OpenGlHelper.func_153190_b(
-                GL30.GL_FRAMEBUFFER,
-                EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
-                GL30.GL_RENDERBUFFER,
-                this.depthAttachment);
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
             OpenGlHelper.func_153190_b(
-                GL30.GL_FRAMEBUFFER,
-                EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
-                GL30.GL_RENDERBUFFER,
-                this.depthAttachment);
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
         } else {
             OpenGlHelper.func_153190_b(
-                GL30.GL_FRAMEBUFFER,
-                GL30.GL_DEPTH_ATTACHMENT,
-                GL30.GL_RENDERBUFFER,
-                this.depthAttachment);
+                    GL30.GL_FRAMEBUFFER,
+                    GL30.GL_DEPTH_ATTACHMENT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
         }
     }
 
