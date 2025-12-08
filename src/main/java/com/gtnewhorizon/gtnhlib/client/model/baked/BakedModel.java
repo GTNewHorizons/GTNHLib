@@ -5,10 +5,12 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -59,4 +61,28 @@ public interface BakedModel {
     /// @return A list of quads from the model. These are *not* adjusted for the given xyz - that is up to the renderer.
     List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
             ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool);
+
+    /**
+     * Returns the display transformation for a specific position and metadata. Used to position/rotate/scale the model
+     * when rendering in different contexts (e.g., first person, third person, GUI).
+     *
+     * @param pos    The display position (e.g., GUI, first person right hand).
+     * @param meta   The metadata of the block.
+     * @param random Random generator to use for variations.
+     * @return The {@link Position.ModelDisplay} containing rotation, translation, and scale.
+     */
+    Position.ModelDisplay getDisplay(Position pos, int meta, Random random);
+
+    /**
+     * Returns the particle icon used when the block/item is broken or when displaying block particles such as hit
+     * particles, block-break effects.
+     * <p>
+     * This icon is typically taken from the model's "particle" texture. If the model does not define a "particle"
+     * entry, implementations will fall back to one of the other textures declared by the model.
+     * 
+     * @param meta   The metadata of the block or item.
+     * @param random A random generator for choosing particle variants, if desired.
+     * @return The {@link IIcon} to be used as the particle texture.
+     */
+    IIcon getParticle(int meta, Random random);
 }

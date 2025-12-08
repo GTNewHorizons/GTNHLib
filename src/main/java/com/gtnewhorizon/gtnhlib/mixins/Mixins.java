@@ -26,6 +26,19 @@ public enum Mixins implements IMixins {
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load model textures")
             .addClientMixins("models.MixinFileResourcePack", "models.MixinFolderResourcePack").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    MODEL_TEXTURE_LOADING(
+            new MixinBuilder("Automatically load model textures")
+                    .addClientMixins(
+                            "models.FRMAccessor",
+                            "models.MixinFileResourcePack",
+                            "models.MixinFolderResourcePack",
+                            "models.SRRMAccessor")
+                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    BLOCK_PARTICLE(
+            new MixinBuilder("Automatically override model block particle").addClientMixins("models.MixinBlockParticle")
+                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
+            .setPhase(Phase.EARLY)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
             .addCommonMixins(
                     "block_sounds.MixinEntity",
@@ -38,6 +51,9 @@ public enum Mixins implements IMixins {
             .setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
     ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
             .addCommonMixins("EntityRendererAccessor")),
+    ITEM_TRANSLUCENCY(new MixinBuilder("ItemRenderer & RenderItem ITranslucentItem support")
+            .addClientMixins("MixinItemRenderer_Translucency", "MixinRenderItem_Translucency").setPhase(Phase.EARLY)
+            .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
     //
     ;
 

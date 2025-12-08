@@ -16,8 +16,9 @@ don't have models. This may change in the future.
 
 ## Examples
 ### BlockColor
+Use to color to TintIndex
 <p>
-Example using BlockColor register:
+Example: using BlockColor register
 
 <pre>
 BlockColor.registerBlockColors(new IBlockColor() {
@@ -70,4 +71,3 @@ public class BlockTestTint extends Block implements IBlockColor {
 - Add face culling to models.
 - Implement UV locking.
 - Integrate with a proper BlockState API.
-- BlockItem display (Use BlockBench display transforms provided in '{}.display').
