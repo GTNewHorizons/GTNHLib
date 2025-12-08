@@ -8,9 +8,9 @@ import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.block.BlockTestTint;
+import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
-import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
