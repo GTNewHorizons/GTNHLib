@@ -92,4 +92,38 @@ public class ItemRenderUtil {
         }
         tess.draw();
     }
+
+    public static void applyStandardItemTransform(IItemRenderer.ItemRenderType type) {
+        if (type == IItemRenderer.ItemRenderType.ENTITY) {
+            if (RenderItem.renderInFrame) {
+                // Magic numbers calculated from vanilla code
+                GL11.glScalef(1.025641F, 1.025641F, 1.025641F);
+                GL11.glTranslatef(0.0F, -0.05F, 0.0F);
+            }
+
+            if (Minecraft.getMinecraft().gameSettings.fancyGraphics) {
+                if (RenderItem.renderInFrame) {
+                    GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
+                }
+                // Magic numbers calculated from vanilla code
+                GL11.glTranslatef(-0.5F, -0.25F, 0.0421875F);
+            }
+        }
+    }
+
+    public static void undoStandardItemTransform(IItemRenderer.ItemRenderType type) {
+        if (type == IItemRenderer.ItemRenderType.ENTITY) {
+            if (Minecraft.getMinecraft().gameSettings.fancyGraphics) {
+                GL11.glTranslatef(0.5F, 0.25F, -0.0421875F); // negative of pre-transform
+                // if RenderItem.renderInFrame: rotate -180 (undo the frame rotation)
+                if (RenderItem.renderInFrame) {
+                    GL11.glRotatef(-180.0F, 0.0F, 1.0F, 0.0F);
+                }
+            }
+            if (RenderItem.renderInFrame) {
+                GL11.glTranslatef(0.0F, 0.05F, 0.0F);
+                GL11.glScalef(1F / 1.025641F, 1F / 1.025641F, 1F / 1.025641F);
+            }
+        }
+    }
 }
