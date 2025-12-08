@@ -16,8 +16,7 @@ import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.BloomTonemapShader;
 
 /**
  * Constructs a new framebuffer with the specified configuration flags.
@@ -69,7 +68,6 @@ public class CustomFramebuffer {
     public CustomFramebuffer(int width, int height, int settings) {
         this(settings);
         createFramebuffer(width, height);
-        unbindFramebuffer();
     }
 
     protected int createBufferBits() {
@@ -438,37 +436,8 @@ public class CustomFramebuffer {
         pixelBuffer.get(pixels);
     }
 
-    // TONEMAP SHADER
-
-    private static ShaderProgram tonemapShader;
-    private static int uMultiplier;
-    private static float tonemapMultiplier;
-
     public void applyTonemapping(float multiplier) {
-        if (tonemapShader == null) {
-            tonemapShader = new ShaderProgram(
-                    GTNHLib.RESOURCE_DOMAIN,
-                    "shaders/hdr/tonemap.vert.glsl",
-                    "shaders/hdr/tonemap.frag.glsl");
-            tonemapShader.use();
-            uMultiplier = tonemapShader.getUniformLocation("multiplier");
-            tonemapShader.bindTextureSlot("uScene", 0);
-            tonemapShader.bindTextureSlot("uOverlay", 1);
-            ShaderProgram.clear();
-        }
-
-        tonemapShader.use();
-        if (tonemapMultiplier != multiplier) {
-            GL20.glUniform1f(uMultiplier, multiplier);
-            tonemapMultiplier = multiplier;
-        }
-        Minecraft.getMinecraft().getFramebuffer().bindFramebufferTexture();
-        GL13.glActiveTexture(GL13.GL_TEXTURE1);
-        bindFramebufferTexture();
-        GL11.glDisable(GL11.GL_BLEND);
-        PostProcessingHelper.drawFullscreenQuad();
-        // this.copyTextureToFile("bloomshader", "framebuffer_final.png");
-        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        BloomTonemapShader.getInstance().applyTonemapping(multiplier, framebufferTexture);
     }
 
     // DEBUG TOOLS
