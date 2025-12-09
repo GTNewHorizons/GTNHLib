@@ -1,12 +1,14 @@
 package com.gtnewhorizon.gtnhlib.client;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.common.registry.VillagerRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.util.ResourceLocation;
 
 // Moved from wawla's net.darkhax.wawla.util.Utilities
 public class VillagerNames {
+
     /**
      * Lists of names for the vanilla villagers.
      */
@@ -25,13 +27,13 @@ public class VillagerNames {
 
         ResourceLocation skin = VillagerRegistry.getVillagerSkin(id, null);
         return (id >= 0
-            && id <= 4)
-            ? vanillaVillagers[id]
-            : (skin != null)
-            ? skin.getResourceDomain() + "."
-            + skin.getResourcePath().substring(
-            skin.getResourcePath().lastIndexOf("/") + 1,
-            skin.getResourcePath().length() - 4)
-            : "misingno";
+                && id <= 4)
+                        ? vanillaVillagers[id]
+                        : (skin != null)
+                                ? skin.getResourceDomain() + "."
+                                        + skin.getResourcePath().substring(
+                                                skin.getResourcePath().lastIndexOf("/") + 1,
+                                                skin.getResourcePath().length() - 4)
+                                : "misingno";
     }
 }
