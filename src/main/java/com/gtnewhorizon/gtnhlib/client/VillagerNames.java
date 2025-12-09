@@ -26,14 +26,18 @@ public class VillagerNames {
     public static String getVillagerName(int id) {
 
         ResourceLocation skin = VillagerRegistry.getVillagerSkin(id, null);
-        return (id >= 0
-                && id <= 4)
-                        ? vanillaVillagers[id]
-                        : (skin != null)
-                                ? skin.getResourceDomain() + "."
-                                        + skin.getResourcePath().substring(
-                                                skin.getResourcePath().lastIndexOf("/") + 1,
-                                                skin.getResourcePath().length() - 4)
-                                : "misingno";
+
+        if (id >= 0 && id <= 4) {
+            return vanillaVillagers[id];
+        }
+
+        if (skin != null) {
+            return skin.getResourceDomain() + "."
+                    + skin.getResourcePath().substring(
+                            skin.getResourcePath().lastIndexOf("/") + 1,
+                            skin.getResourcePath().length() - 4);
+        }
+
+        return "misingno";
     }
 }
