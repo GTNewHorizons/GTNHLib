@@ -1,20 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
-import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
-import net.minecraftforge.client.model.ModelFormatException;
-import net.minecraftforge.client.model.obj.Vertex;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
+import static org.joml.Math.fma;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,13 +9,28 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.joml.Math.fma;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.ModelFormatException;
+import net.minecraftforge.client.model.obj.Vertex;
+
+import org.joml.Vector2f;
+import org.lwjgl.opengl.GL11;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
+import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement;
 
 /**
- *  Wavefront Object importer
- *  Based heavily off of the specifications found at http://en.wikipedia.org/wiki/Wavefront_.obj_file
+ * Wavefront Object importer Based heavily off of the specifications found at
+ * http://en.wikipedia.org/wiki/Wavefront_.obj_file
  */
 public final class WavefrontVBOBuilder {
+
     public List<Vertex> vertices = new ArrayList<>();
     public List<Vector2f> textureCoordinates = new ArrayList<>();
     private final String fileName;
@@ -53,7 +54,6 @@ public final class WavefrontVBOBuilder {
     public static VertexBuffer compileToVBO(ResourceLocation resource) {
         return compileToVBO(resource, DefaultVertexFormat.POSITION_TEXTURE_NORMAL);
     }
-
 
     public static VertexBuffer compileToVBO(ResourceLocation resource, VertexFormat format) {
         return new WavefrontVBOBuilder(resource, format).vao;
@@ -138,7 +138,10 @@ public final class WavefrontVBOBuilder {
 
         try {
             if (length == 3) {
-                return new Vertex(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]));
+                return new Vertex(
+                        Float.parseFloat(tokens[0]),
+                        Float.parseFloat(tokens[1]),
+                        Float.parseFloat(tokens[2]));
             } else {
                 return new Vertex(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]));
 
@@ -148,7 +151,8 @@ public final class WavefrontVBOBuilder {
         }
     }
 
-    private static Vector2f parseTextureCoordinate(String line, int lineCount, String[] tokens) throws ModelFormatException {
+    private static Vector2f parseTextureCoordinate(String line, int lineCount, String[] tokens)
+            throws ModelFormatException {
         fastSplit(line, ' ', 3, tokens);
 
         try {
@@ -158,7 +162,8 @@ public final class WavefrontVBOBuilder {
         }
     }
 
-    private void tessellateFace(CapturingTessellator tessellator, String line, int lineCount) throws ModelFormatException {
+    private void tessellateFace(CapturingTessellator tessellator, String line, int lineCount)
+            throws ModelFormatException {
         final String[] tokens = tokenBuffer;
         final int length = fastSplit(line, ' ', 2, tokens);
 
@@ -169,7 +174,14 @@ public final class WavefrontVBOBuilder {
             } else if (length == 4) {
                 tessellator.startDrawing(GL11.GL_QUADS);
             } else {
-                throw new ModelFormatException("Error parsing entry ('" + line + "'" + ", line " + lineCount + ") in file '" + fileName + "' - Incorrect format");
+                throw new ModelFormatException(
+                        "Error parsing entry ('" + line
+                                + "'"
+                                + ", line "
+                                + lineCount
+                                + ") in file '"
+                                + fileName
+                                + "' - Incorrect format");
             }
             this.vertexArr = new Vertex[length];
             this.texArr = new Vector2f[length];
@@ -193,7 +205,6 @@ public final class WavefrontVBOBuilder {
                 }
             }
         }
-
 
         final Vertex[] vertices = this.vertexArr;
         final Vector2f[] textureCoordinates = this.texArr;
@@ -276,7 +287,8 @@ public final class WavefrontVBOBuilder {
                 final float offsetU = textureOffset * Math.copySign(1f, averageU - tex.x);
                 final float offsetV = textureOffset * Math.copySign(1f, averageV - tex.y);
 
-                tessellator.addVertexWithUV(vertices[i].x, vertices[i].y, vertices[i].z, tex.x + offsetU, tex.y + offsetV);
+                tessellator
+                        .addVertexWithUV(vertices[i].x, vertices[i].y, vertices[i].z, tex.x + offsetU, tex.y + offsetV);
             }
         } else {
             for (Vertex vertex : vertices) {
