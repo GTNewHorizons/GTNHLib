@@ -19,7 +19,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
-    compileOnly("com.github.GTNewHorizons:lwjgl3ify:3.0.0-beta.8") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:lwjgl3ify:3.0.0-beta.11") { transitive = false }
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.10") { transitive = false }
 
     // Annotation things
