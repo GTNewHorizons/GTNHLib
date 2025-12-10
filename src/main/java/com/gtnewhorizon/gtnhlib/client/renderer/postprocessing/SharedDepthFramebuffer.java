@@ -7,7 +7,6 @@ import net.minecraft.client.shader.Framebuffer;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 
@@ -69,21 +68,8 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
         return GL11.GL_COLOR_BUFFER_BIT;
     }
 
-    private void linkDepthAttachment() {
-        OpenGlHelper.func_153188_a(
-                GL30.GL_FRAMEBUFFER,
-                GL30.GL_DEPTH_ATTACHMENT,
-                GL11.GL_TEXTURE_2D,
-                this.depthAttachment,
-                0);
-        if (isEnabled(STENCIL_BUFFER) && isMinecraftStencilEnabled()) {
-            OpenGlHelper.func_153188_a(
-                    GL30.GL_FRAMEBUFFER,
-                    GL30.GL_STENCIL_ATTACHMENT,
-                    GL11.GL_TEXTURE_2D,
-                    this.depthAttachment,
-                    0);
-        }
+    private boolean isStencilEnabled() {
+        return isEnabled(STENCIL_BUFFER) && isMinecraftStencilEnabled();
     }
 
     // Don't delete the depth texture, it's still being used by the linked framebuffer.
@@ -107,12 +93,18 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
     public void bindFramebuffer() {
         super.bindFramebuffer();
         if (linkedBuffer != null) {
-            final int attachment = Mods.ANGELICA && linkedBuffer instanceof IRenderTargetExt
-                    ? ((IRenderTargetExt) linkedBuffer).iris$getDepthTextureId()
-                    : linkedBuffer.depthBuffer;
-            if (attachment != depthAttachment) {
-                depthAttachment = attachment;
-                linkDepthAttachment();
+            if (Mods.ANGELICA && linkedBuffer instanceof IRenderTargetExt) {
+                final int attachment = ((IRenderTargetExt) linkedBuffer).iris$getDepthTextureId();
+                if (attachment != depthAttachment) {
+                    depthAttachment = attachment;
+                    linkDepthTexture(isStencilEnabled());
+                }
+            } else {
+                final int attachment = linkedBuffer.depthBuffer;
+                if (attachment != depthAttachment) {
+                    depthAttachment = attachment;
+                    linkDepthRenderbuffer(isStencilEnabled());
+                }
             }
         }
     }
