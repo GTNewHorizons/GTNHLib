@@ -122,9 +122,10 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
         if (!ItemUtil.isStackEmpty(inSlot)) {
             int toInsert = forced ? stack.getStackSize() : Math.min(maxStack - inSlot.stackSize, stack.getStackSize());
 
-            inSlot.stackSize += toInsert;
+            ItemStack toInsertStack = inSlot.copy();
+            toInsertStack.stackSize += toInsert;
 
-            setInventorySlotContents(slotIndex, inSlot);
+            setInventorySlotContents(slotIndex, toInsertStack);
 
             markDirty();
 
