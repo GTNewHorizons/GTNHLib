@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static java.lang.Math.max;
@@ -20,7 +21,9 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix2f;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -181,12 +184,30 @@ public class JSONModel implements UnbakedModel {
                 quad.setLightFace(normFace != UNASSIGNED ? normFace : POS_Y);
 
                 // Set UV
-                // TODO: UV locking
-                final Vector4f uv = Objects.firstNonNull(f.uv(), DEFAULT_UV);
-                setUV(quad, 0, uv.x, uv.y);
-                setUV(quad, 1, uv.x, uv.w);
-                setUV(quad, 2, uv.z, uv.w);
-                setUV(quad, 3, uv.z, uv.y);
+                Vector4f uv = Objects.firstNonNull(f.uv(), DEFAULT_UV);
+                Vector2f[] uvs = new Vector2f[] { new Vector2f(uv.x, uv.y), new Vector2f(uv.x, uv.w),
+                        new Vector2f(uv.z, uv.w), new Vector2f(uv.z, uv.y) };
+
+                if (data.uvLock()) {
+                    int angle = 0;
+                    if (normFace == POS_Y) {
+                        angle = 360 - data.y();
+                    }
+                    if (normFace == NEG_Y) {
+                        angle = data.y();
+                    }
+                    Matrix2f matrixRot = new Matrix2f();
+                    matrixRot.rotate((float) Math.toRadians(angle));
+                    for (int i = 0; i < 4; i++) {
+                        uvs[i].sub(8, 8);
+                        uvs[i].mul(matrixRot);
+                        uvs[i].add(8, 8);
+                    }
+                }
+
+                for (int i = 0; i < 4; i++) {
+                    setUV(quad, i, uvs[i].x, uvs[i].y);
+                }
 
                 // Set the sprite
                 var texKey = f.texture();
