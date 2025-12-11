@@ -103,4 +103,46 @@ public class InventoryItemSink implements ItemSink {
             return Math.min(invStackLimit, existingMaxStack);
         }
     }
+
+    @Override
+    public @Nullable InventoryIterator simulatedSinkIterator() {
+        return new StandardInventoryIterator(inv, side, getSlots(), allowedSlots) {
+
+            @Override
+            protected boolean canAccess(ItemStack stack, int slot) {
+                return canInsert(stack, slot);
+            }
+
+            @Override
+            protected int getSlotStackLimit(int slot, ItemStack stack) {
+                return InventoryItemSink.this.getSlotStackLimit(slot, stack);
+            }
+
+            @Override
+            protected void setInventorySlotContents(int slot, ItemStack stack) {}
+
+            @Override
+            protected void markDirty() {}
+
+            @Override
+            protected boolean canExtract(ItemStack stack, int slot) {
+                return false;
+            }
+
+            @Override
+            public ItemStack extract(int amount, boolean forced) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public ImmutableItemStack previous() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public boolean rewind() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
 }

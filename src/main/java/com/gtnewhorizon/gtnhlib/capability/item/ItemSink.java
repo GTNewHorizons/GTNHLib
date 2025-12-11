@@ -51,6 +51,15 @@ public interface ItemSink {
     }
 
     /**
+     * Creates a simulated iterator for this sink. May return null if iterators are not supported. Modifying any backing
+     * inventories while this iterator exists (without going through the iterator) is undefined behaviour.
+     */
+    @Nullable
+    default InventoryIterator simulatedSinkIterator() {
+        return null;
+    }
+
+    /**
      * Sets the slots that this sink can insert into. If any given slot (or all of them) are invalid, they may be
      * ignored. The sink must never crash, delete items, etc if a slot is invalid - it must be silently ignored.
      * <p />
