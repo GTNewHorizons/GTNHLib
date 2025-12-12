@@ -241,7 +241,7 @@ public final class UniversiumShader extends ShaderProgram {
         return inventoryRenderPass;
     }
 
-    private static final class EventHandler {
+    public static final class EventHandler {
 
         @SubscribeEvent
         public void makeCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Pre event) {
