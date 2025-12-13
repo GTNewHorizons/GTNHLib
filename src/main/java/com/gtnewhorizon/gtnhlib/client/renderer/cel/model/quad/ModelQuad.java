@@ -204,6 +204,8 @@ public class ModelQuad implements ModelQuadViewMutable {
             int offsetZ) {
         System.arraycopy(rawBuffer, srcOffset, data, 0, data.length);
 
+        this.normal = 0;
+
         if (!flags.hasColor) clearColors();
         if (!flags.hasNormals) this.clearNormals();
         if (!flags.hasBrightness) this.clearLightmap();
