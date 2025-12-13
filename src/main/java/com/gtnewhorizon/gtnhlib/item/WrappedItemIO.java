@@ -48,6 +48,11 @@ public class WrappedItemIO implements ItemIO {
     }
 
     @Override
+    public @Nullable InventoryIterator simulatedSinkIterator() {
+        return sink == null ? InventoryIterator.EMPTY : sink.simulatedSinkIterator();
+    }
+
+    @Override
     public WrappedItemIO then(ItemSink next) {
         return new WrappedItemIO(source, ItemSink.chain(sink, next));
     }
