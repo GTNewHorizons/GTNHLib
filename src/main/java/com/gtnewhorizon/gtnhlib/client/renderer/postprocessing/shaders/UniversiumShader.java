@@ -24,7 +24,7 @@ public final class UniversiumShader extends ShaderProgram {
 
     private final TextureAtlas textureAtlas;
 
-    private boolean inventoryRenderPass;
+    private static boolean inventoryRenderPass;
     private boolean renderInInventory;
     private boolean lastInventoryRender;
 
@@ -82,15 +82,19 @@ public final class UniversiumShader extends ShaderProgram {
         location_starColorBase = getUniformLocation("starColorBase");
 
         GL20.glUniform1f(location_lightmix, 0.2f);
+        GL20.glUniform1f(location_externalScale, 1);
 
         bindTextureSlot("texture0", 0);
         bindTextureSlot("cosmicTexture", 2);
 
         unbind();
 
-        MinecraftForge.EVENT_BUS.register(this);
-
         this.textureAtlas = TextureAtlas.createTextureAtlas(GTNHLib.RESOURCE_DOMAIN, "textures/avaritia/cosmic", 10);
+    }
+
+    public static void init() {
+        // Only register the events since there are some weird issues when trying to load the uniforms during init.
+        MinecraftForge.EVENT_BUS.register(new EventHandler());
     }
 
     public static UniversiumShader getInstance() {
@@ -98,16 +102,6 @@ public final class UniversiumShader extends ShaderProgram {
             instance = new UniversiumShader();
         }
         return instance;
-    }
-
-    @SubscribeEvent
-    public void makeCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Pre event) {
-        inventoryRenderPass = true;
-    }
-
-    @SubscribeEvent
-    public void finishMakingCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Post event) {
-        inventoryRenderPass = false;
     }
 
     @Override
@@ -241,5 +235,22 @@ public final class UniversiumShader extends ShaderProgram {
         lightLevel
                 .set(MathHelper.clamp_float(r, 0, 1), MathHelper.clamp_float(g, 0, 1), MathHelper.clamp_float(b, 0, 1));
         return this;
+    }
+
+    public static boolean isRenderingInInventory() {
+        return inventoryRenderPass;
+    }
+
+    public static final class EventHandler {
+
+        @SubscribeEvent
+        public void makeCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Pre event) {
+            inventoryRenderPass = true;
+        }
+
+        @SubscribeEvent
+        public void finishMakingCosmicStuffLessDumbInGUIs(GuiScreenEvent.DrawScreenEvent.Post event) {
+            inventoryRenderPass = false;
+        }
     }
 }
