@@ -94,11 +94,10 @@ public final class UniversiumShader extends ShaderProgram {
     }
 
     public static UniversiumShader getInstance() {
+        if (instance == null) {
+            instance = new UniversiumShader();
+        }
         return instance;
-    }
-
-    public static void init() {
-        instance = new UniversiumShader();
     }
 
     @SubscribeEvent

@@ -15,7 +15,6 @@ import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
-import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.UniversiumShader;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
@@ -57,7 +56,6 @@ public class ClientProxy extends CommonProxy {
     public void init(FMLInitializationEvent event) {
         super.init(event);
         ClientCommandHandler.instance.registerCommand(new ItemInHandCommand());
-        UniversiumShader.init();
     }
 
     @Override
