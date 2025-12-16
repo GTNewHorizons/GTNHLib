@@ -8,6 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
 
 import it.unimi.dsi.fastutil.ints.IntIterators;
@@ -136,12 +137,13 @@ public class InventoryItemSink implements ItemSink {
 
             @Override
             public ImmutableItemStack previous() {
-                throw new UnsupportedOperationException();
+                GTNHLib.LOG.warn("This simulated sink iterator doesn't support backward traversal");
+                return null;
             }
 
             @Override
             public boolean rewind() {
-                throw new UnsupportedOperationException();
+                return false;
             }
         };
     }
