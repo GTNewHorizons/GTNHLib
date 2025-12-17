@@ -1,9 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackX;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.*;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.*;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
@@ -54,7 +52,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     /// Override this if you want programmatic model selection
     @SuppressWarnings("unused")
-    public BakedModel getModel(IBlockAccess world, Block block, int meta, int x, int y, int z) {
+    public BakedModel getModel(@Nullable IBlockAccess world, Block block, int meta, int x, int y, int z) {
         return ModelRegistry.getBakedModel(new BlockState(block, meta));
     }
 
@@ -74,11 +72,18 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         int color = model.getColor(world, x, y, z, block, meta, random);
 
         var rendered = false;
-        for (var dir : DIRECTIONS) {
-            // TODO: face culling
-
+        for (var dir : VALUES) {
             final var quads = model.getQuads(world, x, y, z, block, meta, dir, random, color, null);
             if (quads.isEmpty()) continue;
+            if (dir.isDirection() && !renderer.renderAllFaces) {
+                int stepX = x + dir.getStepX();
+                int stepY = y + dir.getStepY();
+                int stepZ = z + dir.getStepZ();
+                Block cullCheckBlock = world.getBlock(stepX, stepY, stepZ);
+                if (cullCheckBlock.isNormalCube(world, stepX, stepY, stepZ) && cullCheckBlock.isOpaqueCube()) {
+                    continue;
+                }
+            }
 
             // iterates over the quads and dumps em into the tesselator, nothing special
             rendered = true;
@@ -94,12 +99,12 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 final float g = (quadColor >> 8 & 255) / 255f;
                 final float b = (quadColor >> 16 & 255) / 255f;
 
-                final int lm = getLightMap(block, quad, dir, world, x, y, z, renderer);
+                final int lm = getLightMap(block, quad, quad.getLightFace(), world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
 
-                final float shade = diffuseLight(quad.getComputedFaceNormal());
+                final float shade = quad.hasDirectionalShading() ? diffuseLight(quad.getComputedFaceNormal()) : 1;
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
-                renderQuad(quad, x, y, z, tesselator, null);
+                renderQuad(quad, x, y, z, tesselator, renderer.overrideBlockTexture);
             }
         }
 
@@ -108,6 +113,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
+        // TODO: Respect overrideIcon
         for (int i = 0; i < 4; ++i) {
             tessellator.addVertexWithUV(
                     quad.getX(i) + x,
@@ -128,7 +134,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                     final int lx = x + dir.getStepX();
                     final int ly = y + dir.getStepY();
                     final int lz = z + dir.getStepZ();
-                    return block.getMixedBrightnessForBlock(world, lx, ly, lz);
+                    return getBrightness(block, quad, world, lx, ly, lz);
                 }
             }
             case NEG_X, NEG_Y, NEG_Z -> {
@@ -136,27 +142,37 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                     final int lx = x + dir.getStepX();
                     final int ly = y + dir.getStepY();
                     final int lz = z + dir.getStepZ();
-                    return block.getMixedBrightnessForBlock(world, lx, ly, lz);
+                    return getBrightness(block, quad, world, lx, ly, lz);
                 }
             }
         }
 
         // The face is inset to some degree, pick self light (if transparent)
         if (block.getLightOpacity(world, x, y, z) != 0) {
-            return block.getMixedBrightnessForBlock(world, x, y, z);
+            return getBrightness(block, quad, world, x, y, z);
         }
 
         // ...or greatest among neighbors otherwise
-        int lm = block.getMixedBrightnessForBlock(world, x, y, z);;
+        int lm = getBrightness(block, quad, world, x, y, z);
         for (int i = 0; i < 6; i++) {
             final var neighbor = DIRECTIONS[i];
             final int lx = x + neighbor.getStepX();
             final int ly = y + neighbor.getStepY();
             final int lz = z + neighbor.getStepZ();
-            lm = max(lm, block.getMixedBrightnessForBlock(world, lx, ly, lz));
+            lm = max(lm, getBrightness(block, quad, world, lx, ly, lz));
         }
 
         return lm;
+    }
+
+    private int getBrightness(Block block, ModelQuadView quad, IBlockAccess world, int x, int y, int z) {
+        int brightness = block.getMixedBrightnessForBlock(world, x, y, z);
+        if (quad.getEmissiveness() > 0) {
+            int blockLight = Math.max(quad.getEmissiveness(), (brightness & 0xF0) >> 4);
+            int skyLight = Math.max(quad.getEmissiveness(), (brightness & 0xF00000) >> 20);
+            return skyLight << 20 | blockLight << 4;
+        }
+        return brightness;
     }
 
     private float getAveragePos(ModelQuadView quad, ModelQuadFacing dir) {
@@ -215,7 +231,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
 
-        for (ModelQuadFacing dir : DIRECTIONS) {
+        for (ModelQuadFacing dir : VALUES) {
 
             final var quads = model.getQuads(null, 0, 0, 0, block, meta, dir, RAND, color, null);
             if (quads.isEmpty()) {
@@ -371,19 +387,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
     }
 
-    public IIcon getParticleIcon(Block block, IBlockAccess world, int x, int y, int z, int meta) {
+    public IIcon getParticleIcon(Block block, @Nullable IBlockAccess world, int x, int y, int z, int meta) {
         final var model = getModel(world, block, meta, x, y, z);
         return model.getParticle(meta, RAND);
-    }
-
-    public boolean isMissingIcon(IIcon icon) {
-        if (icon == null) return false;
-
-        String name = icon.getIconName();
-        if (name == null) return false;
-
-        if (name.equals("missingno")) return false;
-
-        return !name.startsWith("MISSING_ICON_BLOCK_");
     }
 }

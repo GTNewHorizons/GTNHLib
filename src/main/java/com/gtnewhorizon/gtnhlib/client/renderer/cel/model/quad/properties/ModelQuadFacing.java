@@ -2,6 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties;
 
 import java.util.Arrays;
 
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 
 import lombok.Getter;
@@ -74,5 +77,28 @@ public enum ModelQuadFacing {
                 case Z -> positive ? POS_Z : NEG_Z;
             };
         }
+    }
+
+    public static ModelQuadFacing fromForgeDir(ForgeDirection dir) {
+        return switch (dir) {
+            case UP -> POS_Y;
+            case DOWN -> NEG_Y;
+            case EAST -> POS_X;
+            case WEST -> NEG_X;
+            case SOUTH -> POS_Z;
+            case NORTH -> NEG_Z;
+            case UNKNOWN -> UNASSIGNED;
+        };
+    }
+
+    public static ModelQuadFacing fromEnumFacing(EnumFacing dir) {
+        return switch (dir) {
+            case UP -> POS_Y;
+            case DOWN -> NEG_Y;
+            case WEST -> POS_X;
+            case EAST -> NEG_X;
+            case NORTH -> NEG_Z;
+            case SOUTH -> POS_Z;
+        };
     }
 }

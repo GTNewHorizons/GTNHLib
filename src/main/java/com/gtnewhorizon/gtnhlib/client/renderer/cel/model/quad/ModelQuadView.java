@@ -62,6 +62,10 @@ public interface ModelQuadView extends ModelPrimitiveView {
      */
     int getColorIndex();
 
+    boolean hasDirectionalShading();
+
+    int getEmissiveness();
+
     /**
      * @return The sprite texture used by this quad, or null if none is attached
      */
@@ -95,10 +99,6 @@ public interface ModelQuadView extends ModelPrimitiveView {
 
     default boolean hasAmbientOcclusion() {
         return true;
-    }
-
-    default int getVanillaLightEmission() {
-        return 0;
     }
 
     int getShaderBlockId();

@@ -2,8 +2,6 @@ package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
@@ -54,7 +52,7 @@ public class JSONModel implements UnbakedModel {
     private final Object2ObjectMap<String, String> textures;
     private List<ModelDeserializer.ModelElement> elements;
 
-    private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
+    protected static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
     public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
             @NotNull Object2ObjectMap<String, String> textures, List<ModelDeserializer.ModelElement> elements) {
@@ -78,7 +76,7 @@ public class JSONModel implements UnbakedModel {
         this.elements = og.elements;
     }
 
-    private static void setUV(ModelQuadViewMutable q, int i, float u, float v) {
+    protected static void setUV(ModelQuadViewMutable q, int i, float u, float v) {
         q.setTexU(i, u);
         q.setTexV(i, v);
     }
@@ -88,7 +86,7 @@ public class JSONModel implements UnbakedModel {
      * Note: still doesn't fix AO. Whoops.
      */
     @NotNull
-    private static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side) {
+    protected static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side) {
         return switch (side) {
             case DOWN -> switch (index) {
                     case 0 -> new Vector3f(from.x, from.y, to.z);
@@ -162,7 +160,6 @@ public class JSONModel implements UnbakedModel {
                 // Assign vertexes
                 final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
-
                     final Vector3f vert = mapSideToVertex(from, to, i, f.name()).mulPosition(rot).mulPosition(vRot);
                     quad.setX(i, vert.x);
                     quad.setY(i, vert.y);
@@ -177,8 +174,9 @@ public class JSONModel implements UnbakedModel {
                 }
 
                 // Set culling and nominal faces
-                final var normFace = quad.getNormalFace();
-                quad.setLightFace(normFace != UNASSIGNED ? normFace : POS_Y);
+                quad.setLightFace(ModelQuadFacing.fromForgeDir(f.name()));
+                quad.setEmissiveness(e.lightEmission());
+                quad.setDirectionalShading(e.shade());
 
                 // Set UV
                 // TODO: UV locking
@@ -205,7 +203,8 @@ public class JSONModel implements UnbakedModel {
                 quad.setHasAmbientOcclusion(this.useAO);
 
                 // Bake and add it
-                sidedQuadStore.computeIfAbsent(quad.getNormalFace(), d -> new ArrayList<>()).add(quad);
+                sidedQuadStore.computeIfAbsent(ModelQuadFacing.fromForgeDir(f.cullFace()), d -> new ArrayList<>())
+                        .add(quad);
             }
         }
 
@@ -214,13 +213,15 @@ public class JSONModel implements UnbakedModel {
     }
 
     // TODO fix
-    private void bakeSprite(ModelQuadViewMutable quad, String name) {
+    // ... Fix what?
+    protected void bakeSprite(ModelQuadViewMutable quad, String name) {
         name = name.replaceFirst("^minecraft:", "");
         final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
         final float minU = icon.getMinU();
         final float minV = icon.getMinV();
         final float dU = icon.getMaxU() - minU;
         final float dV = icon.getMaxV() - minV;
+        quad.setSprite(icon);
 
         for (int i = 0; i < 4; ++i) {
             quad.setTexU(i, fma(dU, quad.getTexU(i) / 16, minU));

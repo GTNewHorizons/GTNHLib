@@ -58,6 +58,10 @@ public interface ModelQuadViewMutable extends ModelQuadView {
      */
     void setColorIndex(int index);
 
+    boolean setDirectionalShading(boolean dirShading);
+
+    int setEmissiveness(int emissiveness);
+
     /**
      * Sets the face used by this quad for lighting effects
      */
