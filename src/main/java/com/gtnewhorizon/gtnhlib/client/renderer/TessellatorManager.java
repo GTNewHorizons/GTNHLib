@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import net.minecraft.client.renderer.Tessellator;
 
@@ -14,7 +15,6 @@ import org.lwjgl.opengl.GL11;
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
@@ -75,16 +75,20 @@ public class TessellatorManager {
     // Recursion protection (compiling is main-thread only)
     private static boolean isInCompilingCallback = false;
 
+    private static final Stack<DirectTessellator> directTessellators = new Stack<>();
+
     public static Tessellator get() {
         final ArrayList<CaptureState> stack = captureStack.get();
         if (!stack.isEmpty()) {
             return capturingTessellator.get();
         } else if (isOnMainThread()) {
+            if (!directTessellators.isEmpty()) return directTessellators.peek();
             return Tessellator.instance;
         } else {
             throw new IllegalStateException("Tried to get the Tessellator off the main thread when not capturing!");
         }
     }
+
 
     public static boolean isCurrentlyCapturing() {
         CaptureState current = peekState();
@@ -238,7 +242,45 @@ public class TessellatorManager {
     /// Stops the CapturingTessellator, stores the quads in a buffer (based on the VertexFormat provided), uploads the
     /// buffer to a new VertexBuffer, and clears the quads.
     public static VertexBuffer stopCapturingToVBO(VertexFormat format) {
-        return new VertexBuffer(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
+        return new VertexBuffer(format).upload(stopCapturingToBuffer(format));
+    }
+
+    public static DirectTessellator startCapturingDirect() {
+        DirectTessellator tessellator = directTessellators.isEmpty() ? DirectTessellator.reuseMainInstance()
+                : new DirectTessellator(null);
+        startCapturingDirect(tessellator);
+        return tessellator;
+    }
+
+     public static DirectTessellator startCapturingDirect(DirectDrawCallback callback) {
+        DirectTessellator tessellator = new DirectTessellator(callback);
+        startCapturingDirect(tessellator);
+        return tessellator;
+     }
+
+    public static void startCapturingDirect(DirectTessellator tessellator) {
+        if (!isOnMainThread()) {
+            throw new IllegalStateException("Display list compilation can only happen on main thread!");
+        }
+        directTessellators.push(tessellator);
+    }
+
+    public static DirectTessellator stopCapturingDirect() {
+        if (directTessellators.isEmpty())
+            throw new IllegalStateException("Tried to stop capturing when not capturing!");
+        return directTessellators.pop();
+    }
+
+    public static VertexBuffer stopCapturingDirectToVAO() {
+        final DirectTessellator tessellator = stopCapturingDirect();
+        // final VertexFormat format = tessellator.getOptimalVertexFormat();
+        VertexFormat format = tessellator.getOptimalVertexFormat();
+        return VAOManager.createVAO(format, tessellator.drawMode).upload(tessellator.compileToByteBuffer(format));
+    }
+
+    public static VertexBuffer stopCapturingDirectToVAO(VertexFormat format) {
+        final DirectTessellator tessellator = stopCapturingDirect();
+        return VAOManager.createVAO(format, tessellator.drawMode).upload(tessellator.compileToByteBuffer(format));
     }
 
     /**
@@ -248,6 +290,7 @@ public class TessellatorManager {
      * @param format The vertex format for all VBOs
      * @return CapturedGeometry with separate VBOs (null fields for types not captured)
      */
+    @Deprecated // Replaced in favor of DirectTessellator (see TessellatorManager for more info)
     public static CapturedGeometry stopCapturingToGeometry(VertexFormat format) {
         CaptureState currentState = requireMode(CaptureMode.CAPTURING, "Tried to stop capturing when not capturing!");
         ArrayList<CaptureState> stack = captureStack.get();
@@ -263,7 +306,7 @@ public class TessellatorManager {
         // Group primitives by type using reusable lists from the tessellator
         List<ModelLine> lines = tess.lineListCache;
         List<ModelTriangle> triangles = tess.triangleListCache;
-        List<ModelQuad> quads = tess.quadListCache;
+        List<ModelQuadViewMutable> quads = tess.quadListCache;
         lines.clear();
         triangles.clear();
         quads.clear();
@@ -284,9 +327,7 @@ public class TessellatorManager {
         List<ModelQuadViewMutable> collectedQuads = tess.getQuads();
         for (int i = 0, size = collectedQuads.size(); i < size; i++) {
             ModelQuadViewMutable quad = collectedQuads.get(i);
-            if (quad instanceof ModelQuad mq) {
-                quads.add(mq);
-            }
+            quads.add(quad);
         }
 
         // Create VBOs for each type that has content
@@ -326,13 +367,11 @@ public class TessellatorManager {
         return new VertexBuffer(format, GL11.GL_TRIANGLES).upload(buffer);
     }
 
-    private static VertexBuffer createQuadVBO(List<ModelQuad> quads, VertexFormat format) {
+    private static VertexBuffer createQuadVBO(List<ModelQuadViewMutable> quads, VertexFormat format) {
         ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
-        for (int i = 0, size = quads.size(); i < size; i++) {
-            format.writeQuad(quads.get(i), buffer);
-        }
+        format.writeQuads(quads, buffer);
         buffer.rewind();
-        return new VertexBuffer(format, GL11.GL_QUADS).upload(buffer);
+        return new VertexBuffer(format).upload(buffer);
     }
 
     /**
@@ -392,7 +431,7 @@ public class TessellatorManager {
      */
     public static VertexBuffer stopCapturingToVBO(VertexBuffer vbo, VertexFormat format) {
         if (vbo == null) {
-            vbo = new VertexBuffer(format, GL11.GL_QUADS);
+            vbo = new VertexBuffer(format);
         }
         return vbo.upload(stopCapturingToBuffer(format));
     }
@@ -425,7 +464,7 @@ public class TessellatorManager {
      * @return true if draw() should be intercepted, false otherwise
      */
     public static boolean shouldInterceptDraw(Tessellator tess) {
-        return ((ITessellatorInstance) tess).gtnhlib$isCompiling();
+        return ((ITessellatorInstance) tess).gtnhlib$isCompiling() || !directTessellators.isEmpty();
     }
 
     /**
@@ -443,6 +482,16 @@ public class TessellatorManager {
         if (isInCompilingCallback) {
             throw new IllegalStateException(
                     "Tessellator.draw() called from within a compiling callback - this is not allowed!");
+        }
+
+        if (!directTessellators.isEmpty()) {
+            int result = tess.rawBufferIndex * 4;
+            final DirectTessellator tessellator = directTessellators.peek();
+            tessellator.set(tess);
+            tessellator.draw();
+
+            ((ITessellatorInstance) tess).discard();
+            return result;
         }
 
         // Get callback from stack
@@ -642,6 +691,7 @@ public class TessellatorManager {
      * @param callback Called for each draw() with the newly captured quads
      * @throws IllegalArgumentException if callback is null
      */
+    @Deprecated // Replaced in favor of DirectTessellator (see TessellatorManager for more info)
     public static void setCompiling(DrawCallback callback) {
         if (callback == null) throw new IllegalArgumentException("Callback cannot be null");
         if (!isOnMainThread()) {
@@ -675,6 +725,7 @@ public class TessellatorManager {
      *
      * @throws IllegalStateException if not currently compiling
      */
+    @Deprecated // Replaced in favor of DirectTessellator (see TessellatorManager for more info)
     public static void stopCompiling() {
         if (!isOnMainThread()) {
             throw new IllegalStateException("stopCompiling() can only be called from main thread!");

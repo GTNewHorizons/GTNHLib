@@ -102,4 +102,6 @@ public interface ModelQuadView extends ModelPrimitiveView {
     }
 
     int getShaderBlockId();
+
+    int[] getDataArray();
 }

@@ -16,13 +16,17 @@ public class VertexFormatElement {
     protected final int index;
     protected final int count;
     protected final int byteSize;
+    protected final IVertexAttributeWriter writer;
+    protected final int vertexBit;
 
-    public VertexFormatElement(int index, Type type, Usage usage, int count) {
+    public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit, IVertexAttributeWriter writer) {
         this.index = index;
         this.type = type;
         this.usage = usage;
         this.count = count;
         this.byteSize = type.getSize() * count;
+        this.vertexBit = vertexBit;
+        this.writer = writer;
     }
 
     public void setupBufferState(long offset, int stride) {

@@ -64,7 +64,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     // Reusable lists for stopCapturingToGeometry to avoid allocations
     final List<ModelLine> lineListCache = new ArrayList<>();
     final List<ModelTriangle> triangleListCache = new ArrayList<>();
-    final List<ModelQuad> quadListCache = new ArrayList<>();
+    final List<ModelQuadViewMutable> quadListCache = new ArrayList<>();
 
     int shaderBlockId = -1;
 
@@ -140,14 +140,8 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     }
 
     public static ByteBuffer quadsToBuffer(List<ModelQuadViewMutable> quads, VertexFormat format) {
-        if (!format.canWriteQuads()) {
-            throw new IllegalStateException("Vertex format has no quad writer: " + format);
-        }
         final ByteBuffer byteBuffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
-        // noinspection ForLoopReplaceableByForEach
-        for (int i = 0, quadsSize = quads.size(); i < quadsSize; i++) {
-            format.writeQuad(quads.get(i), byteBuffer);
-        }
+        format.writeQuads(quads, byteBuffer);
         byteBuffer.rewind();
         return byteBuffer;
     }

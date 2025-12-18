@@ -22,6 +22,10 @@ public class VertexBuffer implements AutoCloseable {
         this.drawMode = drawMode;
     }
 
+    public VertexBuffer(VertexFormat format) {
+        this(format, GL11.GL_QUADS);
+    }
+
     public void bind() {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.id);
     }
@@ -39,10 +43,6 @@ public class VertexBuffer implements AutoCloseable {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
 
-    public void upload(ByteBuffer buffer, int vertexCount) {
-        upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
-    }
-
     public void upload(ByteBuffer buffer, int vertexCount, int type) {
         if (this.id == -1) return;
         this.vertexCount = vertexCount;
@@ -51,9 +51,14 @@ public class VertexBuffer implements AutoCloseable {
         this.unbindVBO();
     }
 
+    // WARNING: THIS DOES NOT WORK WITH flip(). USE rewind() INSTEAD
     public VertexBuffer upload(ByteBuffer buffer) {
-        upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_STATIC_DRAW);
+        upload(buffer, format.getVertexCount(buffer), GL15.GL_STATIC_DRAW);
         return this;
+    }
+
+    public void upload(ByteBuffer buffer, int vertexCount) {
+        upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
     }
 
     /**
@@ -64,7 +69,7 @@ public class VertexBuffer implements AutoCloseable {
     }
 
     public void uploadDynamic(ByteBuffer buffer) {
-        upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_DYNAMIC_DRAW);
+        upload(buffer, format.getVertexCount(buffer), GL15.GL_DYNAMIC_DRAW);
     }
 
     /**
@@ -76,7 +81,7 @@ public class VertexBuffer implements AutoCloseable {
     }
 
     public void uploadStream(ByteBuffer buffer) {
-        upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_STREAM_DRAW);
+        upload(buffer, format.getVertexCount(buffer), GL15.GL_STREAM_DRAW);
     }
 
     public void close() {
@@ -98,20 +103,6 @@ public class VertexBuffer implements AutoCloseable {
         GL11.glPopMatrix();
     }
 
-    public final void draw() {
-        GL11.glDrawArrays(drawMode, 0, this.vertexCount);
-    }
-
-    /**
-     * Draw a range of vertices from this buffer.
-     * 
-     * @param first First vertex index to draw
-     * @param count Number of vertices to draw
-     */
-    public void draw(int first, int count) {
-        GL11.glDrawArrays(drawMode, first, count);
-    }
-
     public void setupState() {
         bindVBO();
         format.setupBufferState(0L);
@@ -126,6 +117,58 @@ public class VertexBuffer implements AutoCloseable {
         setupState();
         draw();
         cleanupState();
+    }
+
+    public void render(int drawMode) {
+        setupState();
+        draw(drawMode);
+        cleanupState();
+    }
+
+    public void render(int drawMode, int first, int count) {
+        setupState();
+        draw(drawMode, first, count);
+        cleanupState();
+    }
+
+    public void render(int first, int count) {
+        setupState();
+        draw(first, count);
+        cleanupState();
+    }
+
+    public void render(FloatBuffer floatBuffer) {
+        setupState();
+        draw(floatBuffer);
+        cleanupState();
+    }
+
+    public final void draw() {
+        GL11.glDrawArrays(this.drawMode, 0, this.vertexCount);
+    }
+
+    public final void draw(int drawMode) {
+        GL11.glDrawArrays(drawMode, 0, this.vertexCount);
+    }
+
+    /**
+     * Draw a range of vertices from this buffer.
+     *
+     * @param first First vertex index to draw
+     * @param count Number of vertices to draw
+     */
+    public final void draw(int drawMode, int first, int count) {
+        GL11.glDrawArrays(drawMode, first, count);
+    }
+
+    /**
+     * Draw a range of vertices from this buffer.
+     *
+     * @param first First vertex index to draw
+     * @param count Number of vertices to draw
+     */
+    public final void draw(int first, int count) {
+        GL11.glDrawArrays(this.drawMode, first, count);
     }
 
     public VertexFormat getVertexFormat() {

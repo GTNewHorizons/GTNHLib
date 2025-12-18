@@ -1,16 +1,20 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vertex;
 
+import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.IWriteQuads;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Getter;
+
+import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.*;
 
 public class VertexFormat {
 
@@ -18,11 +22,12 @@ public class VertexFormat {
     protected final ImmutableList<VertexFormatElement> elements;
     @Getter
     protected final int vertexSize;
-    protected final IntList offsets = new IntArrayList();
-    protected IWriteQuads quadWriter;
+    protected final int[] offsets;
 
     protected static final List<SetupBufferState> setupBufferStateOverrride = new ArrayList<>();
     protected static final List<ClearBufferState> clearBufferStateOverrride = new ArrayList<>();
+
+    protected final int vertexFlags;
 
     public static void registerSetupBufferStateOverride(SetupBufferState override) {
         setupBufferStateOverrride.add(override);
@@ -32,19 +37,27 @@ public class VertexFormat {
         clearBufferStateOverrride.add(override);
     }
 
-    public VertexFormat(ImmutableList<VertexFormatElement> elements) {
-        this(elements, null);
-    }
+    public VertexFormat(VertexFormatElement... elements) {
+        final int length = elements.length;
+        this.offsets = new int[length];
 
-    public VertexFormat(ImmutableList<VertexFormatElement> elements, IWriteQuads quadWriter) {
-        this.elements = elements;
-        int i = 0;
-        for (VertexFormatElement element : elements) {
-            offsets.add(i);
-            i += element.getByteSize();
+        final ImmutableList.Builder<VertexFormatElement> builder = new ImmutableList.Builder<>();
+        int offset = 0;
+        int flags = 0;
+        for (int i = 0; i < length; i++) {
+            final VertexFormatElement element = elements[i];
+            offsets[i] = offset;
+            offset += element.getByteSize();
+            // Skip padding elements from being added to the list. They are no longer needed after the offsets
+            if (element == DefaultVertexFormat.PADDING_ELEMENT) continue;
+            builder.add(element);
+            flags |= element.vertexBit;
         }
-        vertexSize = i;
-        this.quadWriter = quadWriter;
+        this.vertexFlags = flags;
+
+        this.elements = builder.build();
+        this.vertexSize = offset;
+
     }
 
     public void setupBufferState(long l) {
@@ -63,7 +76,7 @@ public class VertexFormat {
         final int listSize = list.size();
 
         for (int j = 0; j < listSize; ++j) {
-            list.get(j).setupBufferState(l + this.offsets.getInt(j), i);
+            list.get(j).setupBufferState(l + this.offsets[j], i);
         }
     }
 
@@ -86,15 +99,98 @@ public class VertexFormat {
         }
     }
 
+    // Deprecated, will always return true
+    @Deprecated
     public boolean canWriteQuads() {
-        return quadWriter != null;
+        return true;
     }
 
-    public void writeQuad(ModelQuadView quad, ByteBuffer byteBuffer) {
-        if (quadWriter == null) {
-            throw new IllegalStateException("No quad writer set");
+    public void writeQuads(List<ModelQuadViewMutable> quads, ByteBuffer out) {
+        final int size = quads.size();
+        if (out.remaining() < this.getVertexSize() * size) throw new IllegalArgumentException(
+                "Buffer only has " + out.remaining() + " out of " + this.getVertexSize() * size + " bytes remaining.");
+
+        final List<VertexFormatElement> list = this.getElements();
+        final int listSize = list.size();
+
+        final long address = memAddress0(out);
+        long writePointer = address + out.position();
+
+        for (int i = 0; i < size; i++) {
+            final ModelQuadView quad = quads.get(i);
+            final int[] data = quad.getDataArray();
+
+            for (int index = 0; index < 32; index += 8) {
+                for (int j = 0; j < listSize; j++) {
+                    writePointer += list.get(j).writer.writeAttribute(writePointer, data, index);
+                }
+            }
         }
-        quadWriter.writeQuad(quad, byteBuffer);
+
+        out.position((int) (writePointer - address));
+    }
+
+    public void writeQuad(ModelQuadView quad, ByteBuffer out) {
+        if (out.remaining() < this.getVertexSize()) throw new IllegalArgumentException(
+                "Buffer only has " + out.remaining() + " out of " + this.getVertexSize() + " bytes remaining.");
+
+        final int[] data = quad.getDataArray();
+        final List<VertexFormatElement> list = this.getElements();
+        final int listSize = list.size();
+
+        final long address = memAddress0(out);
+        long writePointer = address + out.position();
+
+        for (int index = 0; index < 32; index += 8) {
+            for (int i = 0; i < listSize; i++) {
+                writePointer += list.get(i).writer.writeAttribute(writePointer, data, index);
+            }
+        }
+        out.position((int) (writePointer - address));
+    }
+
+    public void writeToBuffer(ByteBuffer out, int[] data, int rawVertexCount) {
+        if (out.remaining() < this.getVertexSize() * (rawVertexCount / 8)) throw new IllegalArgumentException(
+                "Buffer only has " + out.remaining()
+                        + " out of "
+                        + this.getVertexSize() * (rawVertexCount / 8)
+                        + " bytes remaining.");
+        final List<VertexFormatElement> list = this.getElements();
+        final int listSize = list.size();
+
+        final long address = memAddress0(out);
+        long writePointer = address + out.position();
+
+        for (int index = 0; index < rawVertexCount; index += 8) {
+            for (int i = 0; i < listSize; i++) {
+                writePointer += list.get(i).writer.writeAttribute(writePointer, data, index);
+            }
+        }
+        out.position((int) (writePointer - address));
+    }
+
+    public int getVertexCount(ByteBuffer buffer) {
+        return getVertexCount(buffer.remaining());
+    }
+
+    public int getVertexCount(int bufferSize) {
+        return bufferSize / vertexSize;
+    }
+
+    public final boolean hasTexture() {
+        return (vertexFlags & TEXTURE_BIT) != 0;
+    }
+
+    public final boolean hasColor() {
+        return (vertexFlags & COLOR_BIT) != 0;
+    }
+
+    public final boolean hasNormals() {
+        return (vertexFlags & NORMAL_BIT) != 0;
+    }
+
+    public final boolean hasBrightness() {
+        return (vertexFlags & BRIGHTNESS_BIT) != 0;
     }
 
     @FunctionalInterface

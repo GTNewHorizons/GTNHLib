@@ -17,6 +17,10 @@ public class VertexArrayBuffer extends VertexBuffer {
         super(format, drawMode);
     }
 
+    protected VertexArrayBuffer(VertexFormat format) {
+        super(format);
+    }
+
     @Override
     public void close() {
         super.close();
