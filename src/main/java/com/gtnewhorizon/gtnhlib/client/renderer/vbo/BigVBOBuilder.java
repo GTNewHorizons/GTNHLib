@@ -68,8 +68,9 @@ public final class BigVBOBuilder {
                 }
                 final ByteBuffer out = BufferUtils.createByteBuffer(needed);
                 for (ByteBuffer buffer : buffers) {
-                    buffer.put(out);
+                    out.put(buffer);
                 }
+                out.flip();
                 vao.upload(out);
             }
             return vao;
