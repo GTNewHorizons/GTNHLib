@@ -34,13 +34,13 @@ public class ChatComponentNumber extends ChatComponentStyle implements IChatComp
     @Override
     public String getUnformattedTextForChat() {
         if (number instanceof Long) {
-            return NumberFormatUtil.formatNumbers((long) number);
+            return NumberFormatUtil.formatNumber((long) number);
         }
         if (number instanceof Double) {
-            return NumberFormatUtil.formatNumbers((double) number);
+            return NumberFormatUtil.formatNumber((double) number);
         }
         if (number instanceof BigInteger) {
-            return NumberFormatUtil.formatNumbers((BigInteger) number);
+            return NumberFormatUtil.formatNumber((BigInteger) number);
         }
 
         // Error indicator.

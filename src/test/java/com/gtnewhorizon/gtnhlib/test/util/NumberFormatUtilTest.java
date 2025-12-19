@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.test.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Locale;
 
@@ -24,10 +23,11 @@ public class NumberFormatUtilTest {
 
             for (int i = 0; i < inputs.length; i++) {
                 double value = inputs[i];
-                String formatted = NumberFormatUtil.formatNumbers(value);
+                String formatted = NumberFormatUtil.formatNumber(value);
 
-                assertTrue(
-                        expected[i].equals(formatted),
+                assertEquals(
+                        expected[i],
+                        formatted,
                         locale + " failed for " + value + ": " + formatted + " (expected " + expected[i] + ")");
             }
 
