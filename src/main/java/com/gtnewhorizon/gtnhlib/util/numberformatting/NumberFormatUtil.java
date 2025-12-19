@@ -12,6 +12,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import net.minecraftforge.fluids.FluidStack;
+
 import org.jetbrains.annotations.VisibleForTesting;
 
 @SuppressWarnings("unused")
@@ -82,26 +84,26 @@ public final class NumberFormatUtil {
     // ChatComponentNumber and ChatComponentFluid.
 
     // Defaults
-    public static String formatNumbers(long number) {
-        return formatNumbers(number, true);
+    public static String formatNumber(long number) {
+        return formatNumber(number, true);
     }
 
-    public static String formatNumbers(double number) {
-        return formatNumbers(number, true);
+    public static String formatNumber(double number) {
+        return formatNumber(number, true);
     }
 
-    public static String formatNumbers(BigInteger number) {
-        return formatNumbers(number, true);
+    public static String formatNumber(BigInteger number) {
+        return formatNumber(number, true);
     }
 
     // Actual logic.
-    public static String formatNumbers(long number, boolean allowScientificNotation) {
+    public static String formatNumber(long number, boolean allowScientificNotation) {
         if (disableFormattedNotation) return String.valueOf(number);
         if (allowScientificNotation && Math.abs(number) >= scientificThreshold) return formatScientific(number);
         return centralFormatter(FORMAT.get().format(number));
     }
 
-    public static String formatNumbers(double number, boolean allowScientificNotation) {
+    public static String formatNumber(double number, boolean allowScientificNotation) {
         if (disableFormattedNotation) return String.valueOf(number);
         if (Double.isNaN(number)) return "NaN";
         if (Double.isInfinite(number)) {
@@ -111,7 +113,7 @@ public final class NumberFormatUtil {
         return centralFormatter(FORMAT.get().format(number));
     }
 
-    public static String formatNumbers(BigInteger number, boolean allowScientificNotation) {
+    public static String formatNumber(BigInteger number, boolean allowScientificNotation) {
         if (disableFormattedNotation) return String.valueOf(number);
         if (allowScientificNotation && number.abs().compareTo(scientificThresholdBigInt) >= 0)
             return formatScientific(number);
@@ -138,20 +140,25 @@ public final class NumberFormatUtil {
      * ========================= Fluid formatting =========================
      */
 
-    private static String getFluidUnit() {
+    // Avoid and prefer formatFluid where possible.
+    public static String getFluidUnit() {
         return NumberFormatConfig.useForgeFluidMillibuckets ? "mB" : "L";
     }
 
+    public static String formatFluid(FluidStack fluid) {
+        return formatNumber(fluid.amount) + " " + getFluidUnit();
+    }
+
     public static String formatFluid(BigInteger number) {
-        return formatNumbers(number) + " " + getFluidUnit();
+        return formatNumber(number) + " " + getFluidUnit();
     }
 
     public static String formatFluid(long number) {
-        return formatNumbers(number) + " " + getFluidUnit();
+        return formatNumber(number) + " " + getFluidUnit();
     }
 
     public static String formatFluid(double number) {
-        return formatNumbers(number) + " " + getFluidUnit();
+        return formatNumber(number) + " " + getFluidUnit();
     }
 
     /*
