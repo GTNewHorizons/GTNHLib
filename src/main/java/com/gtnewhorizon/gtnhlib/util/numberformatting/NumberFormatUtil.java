@@ -13,6 +13,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import net.minecraftforge.fluids.FluidStack;
+
 import org.jetbrains.annotations.VisibleForTesting;
 
 @SuppressWarnings("unused")
