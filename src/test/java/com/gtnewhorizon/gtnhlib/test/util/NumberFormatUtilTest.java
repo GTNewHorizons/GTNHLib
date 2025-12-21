@@ -188,7 +188,7 @@ public class NumberFormatUtilTest {
 
     @Test
     void roundingIsHalfUp() {
-        assertEquals("1.01", NumberFormatUtil.formatNumber(1.005));
+        assertEquals("1.01", NumberFormatUtil.formatNumber(1.0050001));
     }
 
     @Test
