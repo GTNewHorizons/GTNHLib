@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.test.util;
 
+import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.postConfiguration;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
@@ -215,5 +216,43 @@ public class NumberFormatUtilTest {
         double t = NumberFormatConfig.scientificThreshold;
         assertFalse(NumberFormatUtil.formatNumber(t - 1).contains("e"));
         assertTrue(NumberFormatUtil.formatNumber(t).contains("e"));
+        assertTrue(NumberFormatUtil.formatNumber(t + 1).contains("e"));
     }
+
+    @Test
+    void disableFormattedNotationBypassesFormatting() {
+        boolean old = NumberFormatConfig.disableFormattedNotation;
+        try {
+            NumberFormatConfig.disableFormattedNotation = true;
+            NumberFormatUtil.resetForTests();
+
+            assertEquals("1000000", NumberFormatUtil.formatNumber(1_000_000));
+            assertEquals("1.005", NumberFormatUtil.formatNumber(1.005));
+            assertEquals("1000000", NumberFormatUtil.formatFluid(1_000_000).split(" ")[0]);
+        } finally {
+            NumberFormatConfig.disableFormattedNotation = old;
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void negativeScientificThresholdUsesScientific() {
+        double t = NumberFormatConfig.scientificThreshold;
+        assertTrue(NumberFormatUtil.formatNumber(-t).contains("e"));
+    }
+
+    @Test
+    void chatComponentNormalisesIntegerTypes() {
+        assertEquals(new ChatComponentNumber(123L), new ChatComponentNumber(Integer.valueOf(123)));
+    }
+
+    @Test
+    void zeroNeverUsesScientificNotation() {
+        postConfiguration(); // Calculates big int scientific threshold.
+
+        assertEquals("0", NumberFormatUtil.formatNumber(0));
+        assertEquals("0", NumberFormatUtil.formatNumber(0.0));
+        assertEquals("0", NumberFormatUtil.formatNumber(BigInteger.ZERO));
+    }
+
 }
