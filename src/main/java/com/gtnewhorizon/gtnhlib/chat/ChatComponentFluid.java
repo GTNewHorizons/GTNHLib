@@ -2,13 +2,13 @@ package com.gtnewhorizon.gtnhlib.chat;
 
 import java.math.BigInteger;
 
-import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import net.minecraft.util.ChatComponentStyle;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.fluids.FluidStack;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraftforge.fluids.FluidStack;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 @SuppressWarnings("unused")
 public final class ChatComponentFluid extends ChatComponentStyle implements IChatComponentCustomSerializer {

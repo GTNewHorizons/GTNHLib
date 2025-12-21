@@ -1,14 +1,15 @@
 package com.gtnewhorizon.gtnhlib.chat;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import java.math.BigInteger;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigInteger;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 public class ChatUtility {
 
-    public static void serializeNumber(@NotNull JsonObject obj, @NotNull     Number num) {
+    public static void serializeNumber(@NotNull JsonObject obj, @NotNull Number num) {
         if (num instanceof Long l) {
             obj.addProperty("kind", "long");
             obj.addProperty("value", l);
@@ -31,9 +32,7 @@ public class ChatUtility {
             case "long" -> obj.getAsJsonPrimitive("value").getAsLong();
             case "double" -> obj.getAsJsonPrimitive("value").getAsDouble();
             case "bigint" -> obj.getAsJsonPrimitive("value").getAsBigInteger();
-            default -> throw new JsonParseException(
-                "Unknown ChatComponentNumber kind: " + kind
-            );
+            default -> throw new JsonParseException("Unknown ChatComponentNumber kind: " + kind);
         };
     }
 }

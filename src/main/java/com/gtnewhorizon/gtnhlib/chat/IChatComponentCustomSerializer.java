@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.chat;
 
-import net.minecraft.util.IChatComponent;
-
 import com.google.gson.JsonElement;
 
 public interface IChatComponentCustomSerializer {

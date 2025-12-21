@@ -2,13 +2,12 @@ package com.gtnewhorizon.gtnhlib.chat;
 
 import java.math.BigInteger;
 
-import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import net.minecraft.util.ChatComponentStyle;
 import net.minecraft.util.IChatComponent;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 @SuppressWarnings("unused")
 public final class ChatComponentNumber extends ChatComponentStyle implements IChatComponentCustomSerializer {
