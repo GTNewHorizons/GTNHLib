@@ -12,6 +12,7 @@ import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
@@ -20,6 +21,8 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
+import com.gtnewhorizon.gtnhlib.chat.ChatComponentFluid;
+import com.gtnewhorizon.gtnhlib.chat.ChatComponentNumber;
 
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -52,6 +55,9 @@ public class CommonProxy {
         }
 
         BlockPropertyInit.init();
+
+        ChatComponentCustomRegistry.register(ChatComponentNumber.class);
+        ChatComponentCustomRegistry.register(ChatComponentFluid.class);
     }
 
     public void init(FMLInitializationEvent event) {
