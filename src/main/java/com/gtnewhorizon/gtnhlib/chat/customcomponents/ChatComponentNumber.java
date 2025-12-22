@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.chat.customcomponents;
 
-import java.math.BigInteger;
-
 import com.gtnewhorizon.gtnhlib.chat.AbstractChatComponentCustom;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
@@ -17,17 +15,7 @@ public class ChatComponentNumber extends AbstractChatComponentNumber {
     }
 
     @Override
-    protected String formatLong(long value) {
-        return NumberFormatUtil.formatNumber(value);
-    }
-
-    @Override
-    protected String formatDouble(double value) {
-        return NumberFormatUtil.formatNumber(value);
-    }
-
-    @Override
-    protected String formatBigInteger(BigInteger value) {
+    protected String formatNumber(Number value) {
         return NumberFormatUtil.formatNumber(value);
     }
 

@@ -11,6 +11,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import net.minecraftforge.fluids.FluidStack;
+
 import org.jetbrains.annotations.VisibleForTesting;
 
 @SuppressWarnings("unused")
@@ -18,15 +19,10 @@ public final class NumberFormatUtil {
 
     /* ========================= Constants ========================= */
 
-    private static final BigInteger THOUSAND = BigInteger.valueOf(1_000);
-    private static final BigInteger MILLION  = BigInteger.valueOf(1_000_000);
-    private static final BigInteger BILLION  = BigInteger.valueOf(1_000_000_000);
-    private static final BigInteger TRILLION = BigInteger.valueOf(1_000_000_000_000L);
-
-    private static final BigDecimal BD_THOUSAND = new BigDecimal(THOUSAND);
-    private static final BigDecimal BD_MILLION  = new BigDecimal(MILLION);
-    private static final BigDecimal BD_BILLION  = new BigDecimal(BILLION);
-    private static final BigDecimal BD_TRILLION = new BigDecimal(TRILLION);
+    private static final BigDecimal BD_THOUSAND = BigDecimal.valueOf(1_000);
+    private static final BigDecimal BD_MILLION = BigDecimal.valueOf(1_000_000);
+    private static final BigDecimal BD_BILLION = BigDecimal.valueOf(1_000_000_000);
+    private static final BigDecimal BD_TRILLION = BigDecimal.valueOf(1_000_000_000_000L);
 
     private static final long DEFAULT_ABBREVIATION_THRESHOLD = 1_000_000_000_000L; // 1T
     private static final int SIGNIFICANT_DIGITS = 3;
@@ -71,8 +67,8 @@ public final class NumberFormatUtil {
     }
 
     public static String formatNumber(Number value, Number abbreviationThreshold) {
+        if (value == null) return "NULL";
         if (disableFormattedNotation) return String.valueOf(value);
-        if (value == null) return "0";
 
         // Floating-point edge cases
         if (value instanceof Double || value instanceof Float) {
@@ -85,9 +81,7 @@ public final class NumberFormatUtil {
         BigDecimal abs = val.abs();
         BigDecimal threshold = toBigDecimal(abbreviationThreshold);
 
-        if (abs.signum() == 0) {
-            return "0";
-        }
+        if (abs.signum() == 0) return "0";
 
         // Plain formatting below threshold
         if (abs.compareTo(threshold) < 0) {
@@ -124,15 +118,24 @@ public final class NumberFormatUtil {
             suffix = "K";
         }
 
-        MathContext mc = new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP);
-        BigDecimal rounded = scaled.round(mc);
-
-        if (rounded.scale() <= 0 && scaled.stripTrailingZeros().scale() > 0) {
-            int minDecimals = Math.max(2, SIGNIFICANT_DIGITS - 1);
-            rounded = scaled.setScale(minDecimals, RoundingMode.HALF_UP);
-        }
+        BigDecimal rounded = scaled.round(new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP));
+        rounded = ensureFractionalPrecision(scaled, rounded);
 
         return stripTrailingZeros(rounded) + suffix;
+    }
+
+    /**
+     * Significant-digit rounding can collapse fractional digits (e.g. 123.456 -> 123 with 3 sig figs), which is too
+     * lossy for abbreviated display. If rounding removed all fractional digits but the original scaled value had them,
+     * reintroduce a small amount of fractional precision derived from {@link #SIGNIFICANT_DIGITS} so values like
+     * 123.456M become 123.46M.
+     */
+    private static BigDecimal ensureFractionalPrecision(BigDecimal originalScaled, BigDecimal rounded) {
+        if (rounded.scale() > 0) return rounded;
+        if (originalScaled.stripTrailingZeros().scale() <= 0) return rounded;
+
+        int minDecimals = Math.max(2, SIGNIFICANT_DIGITS - 1);
+        return originalScaled.setScale(minDecimals, RoundingMode.HALF_UP);
     }
 
     private static String stripTrailingZeros(BigDecimal bd) {
@@ -142,8 +145,7 @@ public final class NumberFormatUtil {
     /* ========================= Scientific ========================= */
 
     private static String formatScientific(BigDecimal value) {
-        MathContext mc = new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP);
-        return SCIENTIFIC_FORMAT.get().format(value.round(mc));
+        return SCIENTIFIC_FORMAT.get().format(value.round(new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP)));
     }
 
     /* ========================= Fluids ========================= */
@@ -191,9 +193,7 @@ public final class NumberFormatUtil {
     }
 
     private static String centralFormatter(String s) {
-        return s.replace("\u202F", " ")
-                .replace("\u00A0", " ")
-                .replace("\u2019", "'");
+        return s.replace("\u202F", " ").replace("\u00A0", " ").replace("\u2019", "'");
     }
 
     public static void postConfiguration() {

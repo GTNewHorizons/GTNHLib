@@ -64,25 +64,11 @@ public abstract class AbstractChatComponentNumber extends AbstractChatComponentC
         throw new IllegalArgumentException("Unsupported number type: " + number.getClass().getName());
     }
 
-    protected abstract String formatLong(long value);
-
-    protected abstract String formatDouble(double value);
-
-    protected abstract String formatBigInteger(BigInteger value);
+    protected abstract String formatNumber(Number value);
 
     @Override
     public final String getUnformattedTextForChat() {
-        if (number instanceof Long l) {
-            return formatLong(l);
-        }
-        if (number instanceof Double d) {
-            return formatDouble(d);
-        }
-        if (number instanceof BigInteger bi) {
-            return formatBigInteger(bi);
-        }
-
-        return "[INVALID NUMBER: " + number + "]";
+        return formatNumber(number);
     }
 
     @Override

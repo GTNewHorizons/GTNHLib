@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.test.util;
 
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.postConfiguration;
-import static java.lang.Math.pow;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
@@ -263,9 +262,9 @@ public class NumberFormatUtilTest {
             long value = 123_456_789L;
 
             // At and around threshold checks, don't forget we round up, so that is why .46, not .45.
-            assertEquals("123.46M", NumberFormatUtil.formatNumber(value, value-1));
+            assertEquals("123.46M", NumberFormatUtil.formatNumber(value, value - 1));
             assertEquals("123.46M", NumberFormatUtil.formatNumber(value, value));
-            assertEquals("123,456,789", NumberFormatUtil.formatNumber(value, value+1));
+            assertEquals("123,456,789", NumberFormatUtil.formatNumber(value, value + 1));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -283,7 +282,7 @@ public class NumberFormatUtilTest {
 
             assertTrue(NumberFormatUtil.formatNumber(huge).contains("e"));
             assertTrue(NumberFormatUtil.formatNumber(huge, 10_000).contains("e"));
-            assertFalse(NumberFormatUtil.formatNumber(huge, (long) huge+1).contains("e"));
+            assertFalse(NumberFormatUtil.formatNumber(huge, (long) huge + 1).contains("e"));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -297,15 +296,9 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals(
-                    "1,234,567 mB",
-                    NumberFormatUtil.formatFluid(1_234_567)
-            );
+            assertEquals("1,234,567 mB", NumberFormatUtil.formatFluid(1_234_567));
 
-            assertEquals(
-                    "1.23M mB",
-                    NumberFormatUtil.formatFluid(1_234_567, 6)
-            );
+            assertEquals("1.23M mB", NumberFormatUtil.formatFluid(1_234_567, 6));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -319,15 +312,9 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals(
-                    "9,876,543 EU",
-                    NumberFormatUtil.formatEnergy(9_876_543)
-            );
+            assertEquals("9,876,543 EU", NumberFormatUtil.formatEnergy(9_876_543));
 
-            assertEquals(
-                    "9.88M EU",
-                    NumberFormatUtil.formatEnergy(9_876_543, 6)
-            );
+            assertEquals("9.88M EU", NumberFormatUtil.formatEnergy(9_876_543, 6));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -341,15 +328,11 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals(
-                    "-1.23M",
-                    NumberFormatUtil.formatNumber(-1_234_567, 6)
-            );
+            assertEquals("-1.23M", NumberFormatUtil.formatNumber(-1_234_567, 6));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
         }
     }
-
 
 }
