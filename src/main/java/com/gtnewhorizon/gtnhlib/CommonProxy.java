@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.commands.TestCommand;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
@@ -81,6 +82,7 @@ public class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new BlockStateCommand());
+        event.registerServerCommand(new TestCommand());
     }
 
     public void serverStarted(FMLServerStartedEvent event) {}
