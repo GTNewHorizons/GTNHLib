@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.test.util;
 
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.postConfiguration;
+import static java.lang.Math.pow;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
@@ -192,13 +193,6 @@ public class NumberFormatUtilTest {
     }
 
     @Test
-    void bigIntegerThresholdUsesScientific() {
-        BigInteger big = BigInteger.valueOf(10).pow(15);
-        String s = NumberFormatUtil.formatNumber(big);
-        assertTrue(s.contains("e"));
-    }
-
-    @Test
     void createCopyIsDeepEnough() {
         ChatComponentNumber original = new ChatComponentNumber(123);
         original.getChatStyle().setBold(true);
@@ -209,14 +203,6 @@ public class NumberFormatUtilTest {
         assertEquals(original, copy);
         assertNotSame(original, copy);
         assertNotSame(original.getSiblings().get(0), copy.getSiblings().get(0));
-    }
-
-    @Test
-    void scientificThresholdBoundary() {
-        double t = NumberFormatConfig.scientificThreshold;
-        assertFalse(NumberFormatUtil.formatNumber(t - 1).contains("e"));
-        assertTrue(NumberFormatUtil.formatNumber(t).contains("e"));
-        assertTrue(NumberFormatUtil.formatNumber(t + 1).contains("e"));
     }
 
     @Test
@@ -236,12 +222,6 @@ public class NumberFormatUtilTest {
     }
 
     @Test
-    void negativeScientificThresholdUsesScientific() {
-        double t = NumberFormatConfig.scientificThreshold;
-        assertTrue(NumberFormatUtil.formatNumber(-t).contains("e"));
-    }
-
-    @Test
     void chatComponentNormalisesIntegerTypes() {
         assertEquals(new ChatComponentNumber(123L), new ChatComponentNumber(Integer.valueOf(123)));
     }
@@ -254,5 +234,122 @@ public class NumberFormatUtilTest {
         assertEquals("0", NumberFormatUtil.formatNumber(0.0));
         assertEquals("0", NumberFormatUtil.formatNumber(BigInteger.ZERO));
     }
+
+    @Test
+    void abbreviationThresholdControlsWhenAbbreviationStarts() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            // Default threshold (12 digits): no abbreviation
+            assertEquals("1,234,567,890", NumberFormatUtil.formatNumber(1_234_567_890L));
+
+            // Force early abbreviation
+            assertEquals("1.23B", NumberFormatUtil.formatNumber(1_234_567_890L, 9));
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void abbreviationThresholdBoundaryIsInclusive() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            long value = 123_456_789L;
+
+            // At and around threshold checks, don't forget we round up, so that is why .46, not .45.
+            assertEquals("123.46M", NumberFormatUtil.formatNumber(value, value-1));
+            assertEquals("123.46M", NumberFormatUtil.formatNumber(value, value));
+            assertEquals("123,456,789", NumberFormatUtil.formatNumber(value, value+1));
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void thresholdDoesNotAffectScientificCutover() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            double huge = 5_000_000_000_000.0;
+
+            assertTrue(NumberFormatUtil.formatNumber(huge).contains("e"));
+            assertTrue(NumberFormatUtil.formatNumber(huge, 10_000).contains("e"));
+            assertFalse(NumberFormatUtil.formatNumber(huge, (long) huge+1).contains("e"));
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void formatFluidHonoursCustomAbbreviationThreshold() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                    "1,234,567 mB",
+                    NumberFormatUtil.formatFluid(1_234_567)
+            );
+
+            assertEquals(
+                    "1.23M mB",
+                    NumberFormatUtil.formatFluid(1_234_567, 6)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void formatEnergyHonoursCustomAbbreviationThreshold() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                    "9,876,543 EU",
+                    NumberFormatUtil.formatEnergy(9_876_543)
+            );
+
+            assertEquals(
+                    "9.88M EU",
+                    NumberFormatUtil.formatEnergy(9_876_543, 6)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void negativeValuesRespectCustomAbbreviationThreshold() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                    "-1.23M",
+                    NumberFormatUtil.formatNumber(-1_234_567, 6)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
 
 }

@@ -16,12 +16,22 @@ import org.jetbrains.annotations.VisibleForTesting;
 @SuppressWarnings("unused")
 public final class NumberFormatUtil {
 
+    /* ========================= Constants ========================= */
+
     private static final BigInteger THOUSAND = BigInteger.valueOf(1_000);
     private static final BigInteger MILLION  = BigInteger.valueOf(1_000_000);
     private static final BigInteger BILLION  = BigInteger.valueOf(1_000_000_000);
     private static final BigInteger TRILLION = BigInteger.valueOf(1_000_000_000_000L);
 
-    private static BigInteger scientificThresholdBigInt = BigInteger.ZERO;
+    private static final BigDecimal BD_THOUSAND = new BigDecimal(THOUSAND);
+    private static final BigDecimal BD_MILLION  = new BigDecimal(MILLION);
+    private static final BigDecimal BD_BILLION  = new BigDecimal(BILLION);
+    private static final BigDecimal BD_TRILLION = new BigDecimal(TRILLION);
+
+    private static final long DEFAULT_ABBREVIATION_THRESHOLD = 1_000_000_000_000L; // 1T
+    private static final int SIGNIFICANT_DIGITS = 3;
+
+    /* ========================= Formatters ========================= */
 
     private static final ThreadLocal<DecimalFormat> FORMAT = ThreadLocal.withInitial(() -> {
         Locale locale = Locale.getDefault(Locale.Category.FORMAT);
@@ -54,176 +64,131 @@ public final class NumberFormatUtil {
 
     private NumberFormatUtil() {}
 
-    /*
-     * ========================= Public API =========================
-     */
+    /* ========================= Numbers ========================= */
 
-    private final static int abbreviationThreshold = 12;
-    private final static int preferredSignificantDigits = 3;
-
-    public static String formatNumber(long value) {
-        return formatNumber(BigInteger.valueOf(value), abbreviationThreshold, preferredSignificantDigits);
+    public static String formatNumber(Number value) {
+        return formatNumber(value, DEFAULT_ABBREVIATION_THRESHOLD);
     }
 
-    public static String formatNumber(long value, int abbreviationThreshold) {
-        return formatNumber(BigInteger.valueOf(value), abbreviationThreshold, preferredSignificantDigits);
-    }
-
-    public static String formatNumber(long value, int abbreviationThreshold, int preferredSignificantDigits) {
-        return formatNumber(BigInteger.valueOf(value), abbreviationThreshold, preferredSignificantDigits);
-    }
-
-    public static String formatNumber(BigInteger value) {
-        return formatNumber(value, abbreviationThreshold, preferredSignificantDigits);
-    }
-
-    public static String formatNumber(BigInteger value, int abbreviationThreshold) {
-        return formatNumber(value, abbreviationThreshold, preferredSignificantDigits);
-    }
-
-    public static String formatNumber(BigInteger value, int abbreviationThreshold, int preferredSignificantDigits) {
-        if (disableFormattedNotation) return value.toString();
-        if (value.signum() == 0) return "0";
-
-        BigInteger abs = value.abs();
-        int digits = abs.toString().length();
-
-        if (digits <= abbreviationThreshold) {
-            return centralFormatter(FORMAT.get().format(value));
-        }
-
-        if (abs.compareTo(TRILLION) < 0) {
-            return abbreviate(new BigDecimal(value), preferredSignificantDigits);
-        }
-
-        return formatScientific(value, preferredSignificantDigits);
-    }
-
-    public static String formatNumber(double value) {
-        return formatNumber(value, abbreviationThreshold, preferredSignificantDigits);
-    }
-
-    public static String formatNumber(double value, int abbreviationThreshold) {
-        return formatNumber(value, abbreviationThreshold, preferredSignificantDigits);
-    }
-
-    public static String formatNumber(double value, int abbreviationThreshold, int preferredSignificantDigits) {
+    public static String formatNumber(Number value, Number abbreviationThreshold) {
         if (disableFormattedNotation) return String.valueOf(value);
-        if (Double.isNaN(value)) return "NaN";
-        if (Double.isInfinite(value)) return value > 0 ? "Infinity" : "-Infinity";
+        if (value == null) return "0";
 
-        double abs = Math.abs(value);
-        int digits = BigDecimal.valueOf((long) abs).toString().length();
-
-        if (digits <= abbreviationThreshold) {
-            return centralFormatter(FORMAT.get().format(value));
+        // Floating-point edge cases
+        if (value instanceof Double || value instanceof Float) {
+            double d = value.doubleValue();
+            if (Double.isNaN(d)) return "NaN";
+            if (Double.isInfinite(d)) return d > 0 ? "Infinity" : "-Infinity";
         }
 
-        if (abs < 1_000_000_000_000L) {
-            return abbreviate(BigDecimal.valueOf(value), preferredSignificantDigits);
+        BigDecimal val = toBigDecimal(value);
+        BigDecimal abs = val.abs();
+        BigDecimal threshold = toBigDecimal(abbreviationThreshold);
+
+        if (abs.signum() == 0) {
+            return "0";
         }
 
-        return formatScientific(value, preferredSignificantDigits);
+        // Plain formatting below threshold
+        if (abs.compareTo(threshold) < 0) {
+            return centralFormatter(FORMAT.get().format(val));
+        }
+
+        // Abbreviation for < 1T
+        if (abs.compareTo(BD_TRILLION) < 0) {
+            return abbreviate(val);
+        }
+
+        // Scientific for >= 1T
+        return formatScientific(val);
     }
 
-    /*
-     * ========================= Abbreviation =========================
-     */
+    /* ========================= Abbreviation ========================= */
 
-    private static String abbreviate(BigDecimal value, int sigDigits) {
+    private static String abbreviate(BigDecimal value) {
         BigDecimal abs = value.abs();
         BigDecimal scaled;
         String suffix;
 
-        if (abs.compareTo(new BigDecimal(TRILLION)) >= 0) {
-            scaled = value.divide(new BigDecimal(TRILLION));
+        if (abs.compareTo(BD_TRILLION) >= 0) {
+            scaled = value.divide(BD_TRILLION, MathContext.UNLIMITED);
             suffix = "T";
-        } else if (abs.compareTo(new BigDecimal(BILLION)) >= 0) {
-            scaled = value.divide(new BigDecimal(BILLION));
+        } else if (abs.compareTo(BD_BILLION) >= 0) {
+            scaled = value.divide(BD_BILLION, MathContext.UNLIMITED);
             suffix = "B";
-        } else if (abs.compareTo(new BigDecimal(MILLION)) >= 0) {
-            scaled = value.divide(new BigDecimal(MILLION));
+        } else if (abs.compareTo(BD_MILLION) >= 0) {
+            scaled = value.divide(BD_MILLION, MathContext.UNLIMITED);
             suffix = "M";
         } else {
-            scaled = value.divide(new BigDecimal(THOUSAND));
+            scaled = value.divide(BD_THOUSAND, MathContext.UNLIMITED);
             suffix = "K";
         }
 
-        MathContext mc = new MathContext(Math.max(1, sigDigits), RoundingMode.HALF_UP);
-        scaled = scaled.round(mc);
+        MathContext mc = new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP);
+        BigDecimal rounded = scaled.round(mc);
 
-        return stripTrailingZeros(scaled) + suffix;
+        if (rounded.scale() <= 0 && scaled.stripTrailingZeros().scale() > 0) {
+            int minDecimals = Math.max(2, SIGNIFICANT_DIGITS - 1);
+            rounded = scaled.setScale(minDecimals, RoundingMode.HALF_UP);
+        }
+
+        return stripTrailingZeros(rounded) + suffix;
     }
 
     private static String stripTrailingZeros(BigDecimal bd) {
         return bd.stripTrailingZeros().toPlainString();
     }
 
-    /*
-     * ========================= Scientific =========================
-     */
+    /* ========================= Scientific ========================= */
 
-    private static String formatScientific(BigInteger value, int sigDigits) {
-        return formatScientific(new BigDecimal(value), sigDigits);
+    private static String formatScientific(BigDecimal value) {
+        MathContext mc = new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP);
+        return SCIENTIFIC_FORMAT.get().format(value.round(mc));
     }
 
-    private static String formatScientific(double value, int sigDigits) {
-        return formatScientific(BigDecimal.valueOf(value), sigDigits);
-    }
-
-    private static String formatScientific(BigDecimal value, int sigDigits) {
-        MathContext mc = new MathContext(Math.max(1, sigDigits), RoundingMode.HALF_UP);
-        BigDecimal rounded = value.round(mc);
-        return SCIENTIFIC_FORMAT.get().format(rounded);
-    }
-
-    /*
-     * ========================= Fluids =========================
-     */
+    /* ========================= Fluids ========================= */
 
     public static String getFluidUnit() {
         return useForgeFluidMillibuckets ? "mB" : "L";
     }
 
-    public static String formatFluid(long value) {
-        return formatNumber(value) + " " + getFluidUnit();
+    public static String formatFluid(Number value) {
+        return formatFluid(value, DEFAULT_ABBREVIATION_THRESHOLD);
     }
 
-    public static String formatFluid(BigInteger value) {
-        return formatNumber(value) + " " + getFluidUnit();
-    }
-
-    public static String formatFluid(double value) {
-        return formatNumber(value) + " " + getFluidUnit();
+    public static String formatFluid(Number value, Number abbreviationThreshold) {
+        return formatNumber(value, abbreviationThreshold) + " " + getFluidUnit();
     }
 
     public static String formatFluid(FluidStack stack) {
         return formatFluid(stack.amount);
     }
 
-    /*
-     * ========================= Energy =========================
-     */
+    /* ========================= Energy ========================= */
 
     public static String getEnergyUnit() {
         return "EU";
     }
 
-    public static String formatEnergy(long value) {
-        return formatNumber(value) + " " + getEnergyUnit();
+    public static String formatEnergy(Number value) {
+        return formatEnergy(value, DEFAULT_ABBREVIATION_THRESHOLD);
     }
 
-    public static String formatEnergy(BigInteger value) {
-        return formatNumber(value) + " " + getEnergyUnit();
+    public static String formatEnergy(Number value, Number abbreviationThreshold) {
+        return formatNumber(value, abbreviationThreshold) + " " + getEnergyUnit();
     }
 
-    public static String formatEnergy(double value) {
-        return formatNumber(value) + " " + getEnergyUnit();
-    }
+    /* ========================= Internals ========================= */
 
-    /*
-     * ========================= Internals =========================
-     */
+    private static BigDecimal toBigDecimal(Number n) {
+        if (n == null) return BigDecimal.ZERO;
+        if (n instanceof BigDecimal bd) return bd;
+        if (n instanceof BigInteger bi) return new BigDecimal(bi);
+        if (n instanceof Byte || n instanceof Short || n instanceof Integer || n instanceof Long) {
+            return BigDecimal.valueOf(n.longValue());
+        }
+        return BigDecimal.valueOf(n.doubleValue());
+    }
 
     private static String centralFormatter(String s) {
         return s.replace("\u202F", " ")
@@ -232,9 +197,6 @@ public final class NumberFormatUtil {
     }
 
     public static void postConfiguration() {
-        scientificThresholdBigInt = BigDecimal.valueOf(scientificThreshold)
-                .setScale(0, RoundingMode.HALF_UP)
-                .toBigIntegerExact();
         resetForTests();
     }
 
