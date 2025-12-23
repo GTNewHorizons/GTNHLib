@@ -20,12 +20,14 @@ public final class NumberFormatUtil {
     /* ========================= Constants ========================= */
 
     private static final BigDecimal BD_THOUSAND = BigDecimal.valueOf(1_000);
-    private static final BigDecimal BD_MILLION = BigDecimal.valueOf(1_000_000);
-    private static final BigDecimal BD_BILLION = BigDecimal.valueOf(1_000_000_000);
+    private static final BigDecimal BD_MILLION  = BigDecimal.valueOf(1_000_000);
+    private static final BigDecimal BD_BILLION  = BigDecimal.valueOf(1_000_000_000);
     private static final BigDecimal BD_TRILLION = BigDecimal.valueOf(1_000_000_000_000L);
 
-    private static final long DEFAULT_ABBREVIATION_THRESHOLD = 1_000_000_000_000L; // 1T
-    private static final int SIGNIFICANT_DIGITS = 3;
+    private static final BigInteger DEFAULT_ABBREVIATION_THRESHOLD =
+        BigInteger.valueOf(1_000_000_000_000L); // 1T
+
+    private static final int DEFAULT_SIGNIFICANT_DIGITS = 3;
 
     /* ========================= Formatters ========================= */
 
@@ -58,15 +60,27 @@ public final class NumberFormatUtil {
         return df;
     });
 
+    private static final ThreadLocal<DecimalFormat> ABBREVIATED_FORMAT =
+        ThreadLocal.withInitial(() -> {
+            Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+
+            DecimalFormat df = new DecimalFormat();
+            df.setDecimalFormatSymbols(symbols);
+            df.setGroupingUsed(false);
+            df.setRoundingMode(RoundingMode.HALF_UP);
+            return df;
+        });
+
     private NumberFormatUtil() {}
 
     /* ========================= Numbers ========================= */
 
     public static String formatNumber(Number value) {
-        return formatNumber(value, DEFAULT_ABBREVIATION_THRESHOLD);
+        return formatNumber(value, NumberFormatOptions.DEFAULT);
     }
 
-    public static String formatNumber(Number value, Number abbreviationThreshold) {
+    public static String formatNumber(Number value, NumberFormatOptions options) {
         if (value == null) return "NULL";
         if (disableFormattedNotation) return String.valueOf(value);
 
@@ -77,9 +91,15 @@ public final class NumberFormatUtil {
             if (Double.isInfinite(d)) return d > 0 ? "Infinity" : "-Infinity";
         }
 
+        int significantDigits =
+            options.significantDigitsOr(DEFAULT_SIGNIFICANT_DIGITS);
+
+        BigInteger abbrevThreshold =
+            options.abbreviationThresholdOr(DEFAULT_ABBREVIATION_THRESHOLD);
+
         BigDecimal val = toBigDecimal(value);
         BigDecimal abs = val.abs();
-        BigDecimal threshold = toBigDecimal(abbreviationThreshold);
+        BigDecimal threshold = new BigDecimal(abbrevThreshold);
 
         if (abs.signum() == 0) return "0";
 
@@ -90,16 +110,16 @@ public final class NumberFormatUtil {
 
         // Abbreviation for < 1T
         if (abs.compareTo(BD_TRILLION) < 0) {
-            return abbreviate(val);
+            return abbreviate(val, significantDigits);
         }
 
         // Scientific for >= 1T
-        return formatScientific(val);
+        return formatScientific(val, significantDigits);
     }
 
     /* ========================= Abbreviation ========================= */
 
-    private static String abbreviate(BigDecimal value) {
+    private static String abbreviate(BigDecimal value, int significantDigits) {
         BigDecimal abs = value.abs();
         BigDecimal scaled;
         String suffix;
@@ -118,23 +138,35 @@ public final class NumberFormatUtil {
             suffix = "K";
         }
 
-        BigDecimal rounded = scaled.round(new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP));
-        rounded = ensureFractionalPrecision(scaled, rounded);
+        BigDecimal rounded =
+            scaled.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
 
-        return stripTrailingZeros(rounded) + suffix;
+        rounded = ensureFractionalPrecision(scaled, rounded, significantDigits);
+
+        DecimalFormat df = ABBREVIATED_FORMAT.get();
+        df.setMaximumFractionDigits(rounded.scale());
+        df.setMinimumFractionDigits(
+            Math.max(0, rounded.scale() - rounded.stripTrailingZeros().scale())
+        );
+
+        return df.format(rounded) + suffix;
+
     }
 
     /**
-     * Significant-digit rounding can collapse fractional digits (e.g. 123.456 -> 123 with 3 sig figs), which is too
-     * lossy for abbreviated display. If rounding removed all fractional digits but the original scaled value had them,
-     * reintroduce a small amount of fractional precision derived from {@link #SIGNIFICANT_DIGITS} so values like
-     * 123.456M become 123.46M.
+     * Significant-digit rounding can collapse fractional digits (e.g. 123.456 -> 123 with 3 sig figs),
+     * which is too lossy for abbreviated display. If rounding removed all fractional digits but the
+     * original scaled value had them, reintroduce fractional precision derived from significantDigits.
      */
-    private static BigDecimal ensureFractionalPrecision(BigDecimal originalScaled, BigDecimal rounded) {
+    private static BigDecimal ensureFractionalPrecision(
+        BigDecimal originalScaled,
+        BigDecimal rounded,
+        int significantDigits
+    ) {
         if (rounded.scale() > 0) return rounded;
         if (originalScaled.stripTrailingZeros().scale() <= 0) return rounded;
 
-        int minDecimals = Math.max(2, SIGNIFICANT_DIGITS - 1);
+        int minDecimals = Math.max(2, significantDigits - 1);
         return originalScaled.setScale(minDecimals, RoundingMode.HALF_UP);
     }
 
@@ -144,8 +176,10 @@ public final class NumberFormatUtil {
 
     /* ========================= Scientific ========================= */
 
-    private static String formatScientific(BigDecimal value) {
-        return SCIENTIFIC_FORMAT.get().format(value.round(new MathContext(SIGNIFICANT_DIGITS, RoundingMode.HALF_UP)));
+    private static String formatScientific(BigDecimal value, int significantDigits) {
+        return SCIENTIFIC_FORMAT.get().format(
+            value.round(new MathContext(significantDigits, RoundingMode.HALF_UP))
+        );
     }
 
     /* ========================= Fluids ========================= */
@@ -155,11 +189,11 @@ public final class NumberFormatUtil {
     }
 
     public static String formatFluid(Number value) {
-        return formatFluid(value, DEFAULT_ABBREVIATION_THRESHOLD);
+        return formatFluid(value, NumberFormatOptions.DEFAULT);
     }
 
-    public static String formatFluid(Number value, Number abbreviationThreshold) {
-        return formatNumber(value, abbreviationThreshold) + " " + getFluidUnit();
+    public static String formatFluid(Number value, NumberFormatOptions options) {
+        return formatNumber(value, options) + " " + getFluidUnit();
     }
 
     public static String formatFluid(FluidStack stack) {
@@ -173,11 +207,11 @@ public final class NumberFormatUtil {
     }
 
     public static String formatEnergy(Number value) {
-        return formatEnergy(value, DEFAULT_ABBREVIATION_THRESHOLD);
+        return formatEnergy(value, NumberFormatOptions.DEFAULT);
     }
 
-    public static String formatEnergy(Number value, Number abbreviationThreshold) {
-        return formatNumber(value, abbreviationThreshold) + " " + getEnergyUnit();
+    public static String formatEnergy(Number value, NumberFormatOptions options) {
+        return formatNumber(value, options) + " " + getEnergyUnit();
     }
 
     /* ========================= Internals ========================= */
@@ -193,7 +227,9 @@ public final class NumberFormatUtil {
     }
 
     private static String centralFormatter(String s) {
-        return s.replace("\u202F", " ").replace("\u00A0", " ").replace("\u2019", "'");
+        return s.replace("\u202F", " ")
+            .replace("\u00A0", " ")
+            .replace("\u2019", "'");
     }
 
     public static void postConfiguration() {
@@ -204,5 +240,6 @@ public final class NumberFormatUtil {
     public static void resetForTests() {
         FORMAT.remove();
         SCIENTIFIC_FORMAT.remove();
+        ABBREVIATED_FORMAT.remove();
     }
 }

@@ -12,11 +12,16 @@ import org.junit.jupiter.api.Test;
 
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 public class NumberFormatUtilTest {
 
-    private static void assertLocaleFormats(Locale locale, double[] inputs, String[] expected) {
+    private static void assertLocaleFormats(
+        Locale locale,
+        double[] inputs,
+        String[] expected
+    ) {
         if (inputs.length != expected.length) {
             throw new IllegalArgumentException("inputs and expected must have same length");
         }
@@ -32,18 +37,17 @@ public class NumberFormatUtilTest {
                 String formatted = NumberFormatUtil.formatNumber(value);
 
                 assertEquals(
-                        expected[i],
-                        formatted,
-                        locale + " failed for " + value + ": " + formatted + " (expected " + expected[i] + ")");
+                    expected[i],
+                    formatted,
+                    locale + " failed for " + value + ": " + formatted
+                        + " (expected " + expected[i] + ")"
+                );
             }
-
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
         }
     }
-
-    // Actual tests (locale + variants)
 
     // spotless:off
     @Test
@@ -164,7 +168,8 @@ public class NumberFormatUtilTest {
 
     @Test
     void testScientificFormatting() {
-        assertLocaleFormats(Locale.US,
+        assertLocaleFormats(
+            Locale.US,
             new double[] {
                 Double.MAX_VALUE,
                 -Double.MAX_VALUE,
@@ -178,12 +183,12 @@ public class NumberFormatUtilTest {
                 "2.33e12"
             }
         );
-        // spotless:on
     }
+    // spotless:on
 
     @Test
     void testFluidFormatting() {
-        assertEquals("1,000,000 mB", NumberFormatUtil.formatFluid(1000000));
+        assertEquals("1,000,000 mB", NumberFormatUtil.formatFluid(1_000_000));
     }
 
     @Test
@@ -213,7 +218,9 @@ public class NumberFormatUtilTest {
 
             assertEquals("1000000", NumberFormatUtil.formatNumber(1_000_000));
             assertEquals("1.005", NumberFormatUtil.formatNumber(1.005));
-            assertEquals("1000000", NumberFormatUtil.formatFluid(1_000_000).split(" ")[0]);
+            assertEquals("1000000",
+                NumberFormatUtil.formatFluid(1_000_000).split(" ")[0]
+            );
         } finally {
             NumberFormatConfig.disableFormattedNotation = old;
             NumberFormatUtil.resetForTests();
@@ -222,12 +229,15 @@ public class NumberFormatUtilTest {
 
     @Test
     void chatComponentNormalisesIntegerTypes() {
-        assertEquals(new ChatComponentNumber(123L), new ChatComponentNumber(Integer.valueOf(123)));
+        assertEquals(
+            new ChatComponentNumber(123L),
+            new ChatComponentNumber(Integer.valueOf(123))
+        );
     }
 
     @Test
     void zeroNeverUsesScientificNotation() {
-        postConfiguration(); // Calculates big int scientific threshold.
+        postConfiguration();
 
         assertEquals("0", NumberFormatUtil.formatNumber(0));
         assertEquals("0", NumberFormatUtil.formatNumber(0.0));
@@ -241,11 +251,18 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            // Default threshold (12 digits): no abbreviation
-            assertEquals("1,234,567,890", NumberFormatUtil.formatNumber(1_234_567_890L));
+            assertEquals(
+                "1,234,567,890",
+                NumberFormatUtil.formatNumber(1_234_567_890L)
+            );
 
-            // Force early abbreviation
-            assertEquals("1.23B", NumberFormatUtil.formatNumber(1_234_567_890L, 9));
+            assertEquals(
+                "1.23B",
+                NumberFormatUtil.formatNumber(
+                    1_234_567_890L,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(1_000_000_000L))
+                )
+            );
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -261,10 +278,29 @@ public class NumberFormatUtilTest {
 
             long value = 123_456_789L;
 
-            // At and around threshold checks, don't forget we round up, so that is why .46, not .45.
-            assertEquals("123.46M", NumberFormatUtil.formatNumber(value, value - 1));
-            assertEquals("123.46M", NumberFormatUtil.formatNumber(value, value));
-            assertEquals("123,456,789", NumberFormatUtil.formatNumber(value, value + 1));
+            assertEquals(
+                "123.46M",
+                NumberFormatUtil.formatNumber(
+                    value,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(value - 1))
+                )
+            );
+
+            assertEquals(
+                "123.46M",
+                NumberFormatUtil.formatNumber(
+                    value,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(value))
+                )
+            );
+
+            assertEquals(
+                "123,456,789",
+                NumberFormatUtil.formatNumber(
+                    value,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(value + 1))
+                )
+            );
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -281,8 +317,20 @@ public class NumberFormatUtilTest {
             double huge = 5_000_000_000_000.0;
 
             assertTrue(NumberFormatUtil.formatNumber(huge).contains("e"));
-            assertTrue(NumberFormatUtil.formatNumber(huge, 10_000).contains("e"));
-            assertFalse(NumberFormatUtil.formatNumber(huge, (long) huge + 1).contains("e"));
+
+            assertTrue(
+                NumberFormatUtil.formatNumber(
+                    huge,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(10_000))
+                ).contains("e")
+            );
+
+            assertFalse(
+                NumberFormatUtil.formatNumber(
+                    huge,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf((long) huge + 1))
+                ).contains("e")
+            );
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -296,9 +344,18 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals("1,234,567 mB", NumberFormatUtil.formatFluid(1_234_567));
+            assertEquals(
+                "1,234,567 mB",
+                NumberFormatUtil.formatFluid(1_234_567)
+            );
 
-            assertEquals("1.23M mB", NumberFormatUtil.formatFluid(1_234_567, 6));
+            assertEquals(
+                "1.23M mB",
+                NumberFormatUtil.formatFluid(
+                    1_234_567,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(1_000_000))
+                )
+            );
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -312,9 +369,18 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals("9,876,543 EU", NumberFormatUtil.formatEnergy(9_876_543));
+            assertEquals(
+                "9,876,543 EU",
+                NumberFormatUtil.formatEnergy(9_876_543)
+            );
 
-            assertEquals("9.88M EU", NumberFormatUtil.formatEnergy(9_876_543, 6));
+            assertEquals(
+                "9.88M EU",
+                NumberFormatUtil.formatEnergy(
+                    9_876_543,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(1_000_000))
+                )
+            );
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -328,11 +394,93 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals("-1.23M", NumberFormatUtil.formatNumber(-1_234_567, 6));
+            assertEquals(
+                "-1.23M",
+                NumberFormatUtil.formatNumber(
+                    -1_234_567,
+                    NumberFormatOptions.abbrev(BigInteger.valueOf(1_000_000))
+                )
+            );
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
         }
     }
 
+    @Test
+    void significantDigitsOverrideIsHonoured() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts =
+                NumberFormatOptions.builder()
+                    .significantDigits(5)
+                    .abbreviationThreshold(BigInteger.valueOf(1_000))
+                    .build();
+
+            // Abbreviated path: sig-digits fully visible
+            assertEquals(
+                "1.2346M",
+                NumberFormatUtil.formatNumber(1_234_567, opts)
+            );
+
+            // Scientific path: sig-digits rounded, but display capped by scientificDecimalPlaces
+            assertEquals(
+                "1.23e12",
+                NumberFormatUtil.formatNumber(1_234_567_890_123L, opts)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void abbreviatedNegativeValuesRespectLocale() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.FRANCE);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts =
+                NumberFormatOptions.abbrev(BigInteger.valueOf(1_000_000));
+
+            assertEquals(
+                "-1,23M",
+                NumberFormatUtil.formatNumber(-1_234_567, opts)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void scientificPrecisionIsControlledBySignificantDigitsOnly() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions sig2 = NumberFormatOptions.sig(2);
+            NumberFormatOptions sig6 = NumberFormatOptions.sig(6);
+
+            double huge = Double.MAX_VALUE; // guaranteed scientific
+
+            assertEquals(
+                "1.8e308",
+                NumberFormatUtil.formatNumber(huge, sig2)
+            );
+
+            assertEquals(
+                "1.79769e308",
+                NumberFormatUtil.formatNumber(huge, sig6)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
 }
