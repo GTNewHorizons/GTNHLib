@@ -1,11 +1,11 @@
 package com.gtnewhorizon.gtnhlib.item.impl.mfr;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.item.InventoryIterator;
 import com.gtnewhorizon.gtnhlib.item.SimpleItemIO;
 
-import org.jetbrains.annotations.Nullable;
 import powercrystals.minefactoryreloaded.api.IDeepStorageUnit;
 
 public class DSUItemIO extends SimpleItemIO {

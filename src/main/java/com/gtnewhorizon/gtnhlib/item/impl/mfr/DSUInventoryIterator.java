@@ -36,7 +36,7 @@ public class DSUInventoryIterator extends AbstractInventoryIterator {
 
         int toExtract = Math.min(amount, stored.stackSize);
 
-        if(!simulated) {
+        if (!simulated) {
             dsu.setStoredItemCount(stored.stackSize - toExtract);
         }
 
@@ -52,7 +52,7 @@ public class DSUInventoryIterator extends AbstractInventoryIterator {
         int storedAmount = stored == null ? 0 : stored.stackSize;
         int toInsert = Math.min(stack.getStackSize(), dsu.getMaxStoredCount() - storedAmount);
 
-        if(!simulated) {
+        if (!simulated) {
             if (stored == null) {
                 dsu.setStoredItemType(stack.toStack(1), 1);
             }

@@ -1,11 +1,11 @@
 package com.gtnewhorizon.gtnhlib.item.impl.mfr;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.item.InventoryIterator;
 import com.gtnewhorizon.gtnhlib.item.SimpleItemSink;
 
-import org.jetbrains.annotations.Nullable;
 import powercrystals.minefactoryreloaded.api.IDeepStorageUnit;
 
 public class DSUItemSink extends SimpleItemSink {
