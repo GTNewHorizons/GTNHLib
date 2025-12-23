@@ -36,8 +36,9 @@ public class DSUInventoryIterator extends AbstractInventoryIterator {
 
         int toExtract = Math.min(amount, stored.stackSize);
 
-        if(!simulated)
+        if(!simulated) {
             dsu.setStoredItemCount(stored.stackSize - toExtract);
+        }
 
         return ItemUtil.copyAmount(toExtract, stored);
     }
