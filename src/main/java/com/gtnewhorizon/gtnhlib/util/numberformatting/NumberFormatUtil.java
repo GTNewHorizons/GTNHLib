@@ -24,11 +24,6 @@ public final class NumberFormatUtil {
     private static final BigDecimal BD_BILLION  = BigDecimal.valueOf(1_000_000_000);
     private static final BigDecimal BD_TRILLION = BigDecimal.valueOf(1_000_000_000_000L);
 
-    private static final BigInteger DEFAULT_ABBREVIATION_THRESHOLD =
-        BigInteger.valueOf(1_000_000_000_000L); // 1T
-
-    private static final int DEFAULT_SIGNIFICANT_DIGITS = 3;
-
     /* ========================= Formatters ========================= */
 
     private static final ThreadLocal<DecimalFormat> FORMAT = ThreadLocal.withInitial(() -> {
@@ -38,24 +33,7 @@ public final class NumberFormatUtil {
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
         df.setDecimalFormatSymbols(symbols);
         df.setGroupingUsed(true);
-        df.setMaximumFractionDigits(decimalPlaces);
-        df.setRoundingMode(RoundingMode.HALF_UP);
-        return df;
-    });
-
-    private static final ThreadLocal<DecimalFormat> SCIENTIFIC_FORMAT = ThreadLocal.withInitial(() -> {
-        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
-        symbols.setExponentSeparator("e");
-
-        StringBuilder pattern = new StringBuilder("0.");
-        for (int i = 0; i < scientificDecimalPlaces; i++) {
-            pattern.append('#');
-        }
-        pattern.append("E0");
-
-        DecimalFormat df = new DecimalFormat(pattern.toString(), symbols);
-        df.setGroupingUsed(false);
+        df.setMaximumFractionDigits(NumberFormatConfig.defaultSignificantFigures);
         df.setRoundingMode(RoundingMode.HALF_UP);
         return df;
     });
@@ -91,11 +69,9 @@ public final class NumberFormatUtil {
             if (Double.isInfinite(d)) return d > 0 ? "Infinity" : "-Infinity";
         }
 
-        int significantDigits =
-            options.significantDigitsOr(DEFAULT_SIGNIFICANT_DIGITS);
+        int significantDigits = options.getSignificantDigits();
 
-        BigInteger abbrevThreshold =
-            options.abbreviationThresholdOr(DEFAULT_ABBREVIATION_THRESHOLD);
+        BigInteger abbrevThreshold = options.getAbbreviationThreshold();
 
         BigDecimal val = toBigDecimal(value);
         BigDecimal abs = val.abs();
@@ -177,10 +153,32 @@ public final class NumberFormatUtil {
     /* ========================= Scientific ========================= */
 
     private static String formatScientific(BigDecimal value, int significantDigits) {
-        return SCIENTIFIC_FORMAT.get().format(
-            value.round(new MathContext(significantDigits, RoundingMode.HALF_UP))
-        );
+        // Round first by significant digits
+        BigDecimal rounded =
+            value.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
+
+        // Determine how many fractional digits to SHOW
+        // scientificDecimalPlaces is the default (e.g. 2)
+        // significantDigits-1 is the mantissa precision requested
+        int fractionalDigits = Math.max(NumberFormatConfig.defaultSignificantFigures, significantDigits - 1);
+
+        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
+        symbols.setExponentSeparator("e");
+
+        StringBuilder pattern = new StringBuilder("0.");
+        for (int i = 0; i < fractionalDigits; i++) {
+            pattern.append('#');
+        }
+        pattern.append("E0");
+
+        DecimalFormat df = new DecimalFormat(pattern.toString(), symbols);
+        df.setGroupingUsed(false);
+        df.setRoundingMode(RoundingMode.HALF_UP);
+
+        return df.format(rounded);
     }
+
 
     /* ========================= Fluids ========================= */
 
@@ -239,7 +237,6 @@ public final class NumberFormatUtil {
     @VisibleForTesting
     public static void resetForTests() {
         FORMAT.remove();
-        SCIENTIFIC_FORMAT.remove();
         ABBREVIATED_FORMAT.remove();
     }
 }

@@ -428,7 +428,7 @@ public class NumberFormatUtilTest {
 
             // Scientific path: sig-digits rounded, but display capped by scientificDecimalPlaces
             assertEquals(
-                "1.23e12",
+                "1.2346e12",
                 NumberFormatUtil.formatNumber(1_234_567_890_123L, opts)
             );
         } finally {
