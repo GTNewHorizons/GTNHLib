@@ -45,4 +45,7 @@ public abstract class SimpleItemSink implements ItemSink {
 
     @NotNull
     protected abstract InventoryIterator iterator(int[] allowedSlots);
+
+    @Override
+    public abstract @Nullable InventoryIterator simulatedSinkIterator();
 }
