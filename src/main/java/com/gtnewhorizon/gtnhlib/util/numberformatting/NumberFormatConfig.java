@@ -14,16 +14,6 @@ public final class NumberFormatConfig {
     @Config.DefaultDouble(1_000_000_000_000.0) // 1 Trillion
     public static double scientificThreshold = 1_000_000_000_000.0;
 
-    @Config.Comment({ "Number of decimal places used for normal number formatting." })
-    @Config.RangeInt(min = 0)
-    @Config.DefaultInt(2)
-    public static int decimalPlaces = 2;
-
-    @Config.Comment({ "Number of decimal places used for scientific notation." })
-    @Config.RangeInt(min = 1)
-    @Config.DefaultInt(2)
-    public static int scientificDecimalPlaces = 2;
-
     @Config.Comment({ "True indicates to use mB, false uses L." })
     @Config.DefaultBoolean(true)
     public static boolean useForgeFluidMillibuckets = true;

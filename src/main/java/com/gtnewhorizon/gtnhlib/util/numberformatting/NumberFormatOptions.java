@@ -2,75 +2,80 @@ package com.gtnewhorizon.gtnhlib.util.numberformatting;
 
 import java.math.BigInteger;
 
+/**
+ * Optional tuning parameters for number formatting.
+ *
+ * <p>
+ * These options adjust precision for lossy representations
+ * (abbreviated and scientific notation).
+ * Plain locale formatting is never rounded.
+ */
 public final class NumberFormatOptions {
 
-    private final Integer significantDigits;
-    private final BigInteger abbreviationThreshold;
+    /**
+     * Number of significant digits to use for abbreviated and scientific
+     * representations.
+     *
+     * <p>
+     * If {@code null}, a formatter-defined default is used.
+     */
+    private Integer significantDigits;
 
-    private NumberFormatOptions(
-        Integer significantDigits,
+    /**
+     * Minimum absolute value at which abbreviated formatting begins.
+     *
+     * <p>
+     * Only consulted by compact / abbreviated formatting paths.
+     * If {@code null}, a formatter-defined default is used.
+     */
+    private BigInteger abbreviationThreshold;
+
+    public NumberFormatOptions() {}
+
+    /* ========================= Precision ========================= */
+
+    public NumberFormatOptions significantDigits(int significantDigits) {
+        if (significantDigits <= 0) {
+            throw new IllegalArgumentException(
+                "significantDigits must be > 0");
+        }
+        this.significantDigits = significantDigits;
+        return this;
+    }
+
+    /* ========================= Abbreviation ========================= */
+
+    public NumberFormatOptions abbreviationThreshold(
         BigInteger abbreviationThreshold
     ) {
-        this.significantDigits = significantDigits;
+        if (abbreviationThreshold == null
+            || abbreviationThreshold.signum() <= 0) {
+            throw new IllegalArgumentException(
+                "abbreviationThreshold must be > 0");
+        }
         this.abbreviationThreshold = abbreviationThreshold;
+        return this;
     }
 
-    /* ========================= Defaults ========================= */
-
-    public static final NumberFormatOptions DEFAULT =
-        new NumberFormatOptions(null, null);
-
-    /* ========================= Resolution ========================= */
-
-    public int significantDigitsOr(int fallback) {
-        return significantDigits != null ? significantDigits : fallback;
+    public NumberFormatOptions abbreviationThreshold(long threshold) {
+        return abbreviationThreshold(BigInteger.valueOf(threshold));
     }
 
-    public BigInteger abbreviationThresholdOr(BigInteger fallback) {
-        return abbreviationThreshold != null ? abbreviationThreshold : fallback;
+    /* ========================= Accessors ========================= */
+
+    /**
+     * Returns the requested significant digit count, or {@code null}
+     * if the default should be used.
+     */
+    public Integer getSignificantDigits() {
+        return significantDigits;
     }
 
-    /* ========================= Builder ========================= */
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static NumberFormatOptions sig(int digits) {
-        return builder().significantDigits(digits).build();
-    }
-
-    public static NumberFormatOptions abbrev(BigInteger threshold) {
-        return builder().abbreviationThreshold(threshold).build();
-    }
-
-    public static NumberFormatOptions abbrev(long threshold) {
-        return abbrev(BigInteger.valueOf(threshold));
-    }
-
-    public static final class Builder {
-        private Integer significantDigits;
-        private BigInteger abbreviationThreshold;
-
-        public Builder significantDigits(int digits) {
-            this.significantDigits = digits;
-            return this;
-        }
-
-        public Builder abbreviationThreshold(BigInteger threshold) {
-            this.abbreviationThreshold = threshold;
-            return this;
-        }
-
-        public Builder abbreviationThreshold(long threshold) {
-            return abbreviationThreshold(BigInteger.valueOf(threshold));
-        }
-
-        public NumberFormatOptions build() {
-            if (significantDigits == null && abbreviationThreshold == null) {
-                return DEFAULT;
-            }
-            return new NumberFormatOptions(significantDigits, abbreviationThreshold);
-        }
+    /**
+     * Returns the abbreviation threshold, or {@code null}
+     * if the default should be used.
+     */
+    public BigInteger getAbbreviationThreshold() {
+        return abbreviationThreshold;
     }
 }

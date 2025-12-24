@@ -11,7 +11,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import net.minecraftforge.fluids.FluidStack;
-
 import org.jetbrains.annotations.VisibleForTesting;
 
 @SuppressWarnings("unused")
@@ -24,6 +23,10 @@ public final class NumberFormatUtil {
     private static final BigDecimal BD_BILLION  = BigDecimal.valueOf(1_000_000_000);
     private static final BigDecimal BD_TRILLION = BigDecimal.valueOf(1_000_000_000_000L);
 
+    private static final int DEFAULT_SIG_DIGITS = 3;
+    private static final BigInteger DEFAULT_ABBREV_THRESHOLD =
+        BigInteger.valueOf(1_000);
+
     /* ========================= Formatters ========================= */
 
     private static final ThreadLocal<DecimalFormat> FORMAT = ThreadLocal.withInitial(() -> {
@@ -33,10 +36,14 @@ public final class NumberFormatUtil {
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
         df.setDecimalFormatSymbols(symbols);
         df.setGroupingUsed(true);
-        df.setMaximumFractionDigits(NumberFormatConfig.defaultSignificantFigures);
+
+        // Plain formatting contract
+        df.setMaximumFractionDigits(2);
         df.setRoundingMode(RoundingMode.HALF_UP);
+
         return df;
     });
+
 
     private static final ThreadLocal<DecimalFormat> ABBREVIATED_FORMAT =
         ThreadLocal.withInitial(() -> {
@@ -55,9 +62,16 @@ public final class NumberFormatUtil {
     /* ========================= Numbers ========================= */
 
     public static String formatNumber(Number value) {
-        return formatNumber(value, NumberFormatOptions.DEFAULT);
+        return formatNumber(value, new NumberFormatOptions());
     }
 
+    /**
+     * Canonical formatting.
+     * <p>
+     * Locale grouping is always exact.
+     * Scientific notation is used at ≥ 1T.
+     * Significant digits apply only to scientific output.
+     */
     public static String formatNumber(Number value, NumberFormatOptions options) {
         if (value == null) return "NULL";
         if (disableFormattedNotation) return String.valueOf(value);
@@ -69,28 +83,71 @@ public final class NumberFormatUtil {
             if (Double.isInfinite(d)) return d > 0 ? "Infinity" : "-Infinity";
         }
 
-        int significantDigits = options.getSignificantDigits();
-
-        BigInteger abbrevThreshold = options.getAbbreviationThreshold();
-
         BigDecimal val = toBigDecimal(value);
         BigDecimal abs = val.abs();
-        BigDecimal threshold = new BigDecimal(abbrevThreshold);
 
         if (abs.signum() == 0) return "0";
 
-        // Plain formatting below threshold
-        if (abs.compareTo(threshold) < 0) {
+        int sigDigits =
+            options.getSignificantDigits() != null
+                ? options.getSignificantDigits()
+                : DEFAULT_SIG_DIGITS;
+
+        // Scientific for ≥ 1T
+        if (abs.compareTo(BD_TRILLION) >= 0) {
+            return formatScientific(val, sigDigits);
+        }
+
+        // Plain locale formatting (never rounded)
+        return centralFormatter(FORMAT.get().format(val));
+    }
+
+    /* ========================= Compact Numbers ========================= */
+
+    public static String formatNumberCompact(Number value) {
+        return formatNumberCompact(value, new NumberFormatOptions());
+    }
+
+    /**
+     * Compact / abbreviated formatting.
+     * <p>
+     * Below the abbreviation threshold → plain formatting.
+     * Between threshold and 1T → abbreviated (K/M/B).
+     * ≥ 1T → scientific.
+     */
+    public static String formatNumberCompact(Number value, NumberFormatOptions options) {
+        if (value == null) return "NULL";
+        if (disableFormattedNotation) return String.valueOf(value);
+
+        BigDecimal val = toBigDecimal(value);
+        BigDecimal abs = val.abs();
+
+        if (abs.signum() == 0) return "0";
+
+        int sigDigits =
+            options.getSignificantDigits() != null
+                ? options.getSignificantDigits()
+                : DEFAULT_SIG_DIGITS;
+
+        BigInteger threshold =
+            options.getAbbreviationThreshold() != null
+                ? options.getAbbreviationThreshold()
+                : DEFAULT_ABBREV_THRESHOLD;
+
+        BigDecimal bdThreshold = new BigDecimal(threshold);
+
+        // Below threshold → exact formatting
+        if (abs.compareTo(bdThreshold) < 0) {
             return centralFormatter(FORMAT.get().format(val));
         }
 
-        // Abbreviation for < 1T
-        if (abs.compareTo(BD_TRILLION) < 0) {
-            return abbreviate(val, significantDigits);
+        // ≥ 1T → scientific
+        if (abs.compareTo(BD_TRILLION) >= 0) {
+            return formatScientific(val, sigDigits);
         }
 
-        // Scientific for >= 1T
-        return formatScientific(val, significantDigits);
+        // Abbreviated
+        return abbreviate(val, sigDigits);
     }
 
     /* ========================= Abbreviation ========================= */
@@ -100,10 +157,7 @@ public final class NumberFormatUtil {
         BigDecimal scaled;
         String suffix;
 
-        if (abs.compareTo(BD_TRILLION) >= 0) {
-            scaled = value.divide(BD_TRILLION, MathContext.UNLIMITED);
-            suffix = "T";
-        } else if (abs.compareTo(BD_BILLION) >= 0) {
+        if (abs.compareTo(BD_BILLION) >= 0) {
             scaled = value.divide(BD_BILLION, MathContext.UNLIMITED);
             suffix = "B";
         } else if (abs.compareTo(BD_MILLION) >= 0) {
@@ -126,14 +180,8 @@ public final class NumberFormatUtil {
         );
 
         return df.format(rounded) + suffix;
-
     }
 
-    /**
-     * Significant-digit rounding can collapse fractional digits (e.g. 123.456 -> 123 with 3 sig figs),
-     * which is too lossy for abbreviated display. If rounding removed all fractional digits but the
-     * original scaled value had them, reintroduce fractional precision derived from significantDigits.
-     */
     private static BigDecimal ensureFractionalPrecision(
         BigDecimal originalScaled,
         BigDecimal rounded,
@@ -146,21 +194,13 @@ public final class NumberFormatUtil {
         return originalScaled.setScale(minDecimals, RoundingMode.HALF_UP);
     }
 
-    private static String stripTrailingZeros(BigDecimal bd) {
-        return bd.stripTrailingZeros().toPlainString();
-    }
-
     /* ========================= Scientific ========================= */
 
     private static String formatScientific(BigDecimal value, int significantDigits) {
-        // Round first by significant digits
         BigDecimal rounded =
             value.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
 
-        // Determine how many fractional digits to SHOW
-        // scientificDecimalPlaces is the default (e.g. 2)
-        // significantDigits-1 is the mantissa precision requested
-        int fractionalDigits = Math.max(NumberFormatConfig.defaultSignificantFigures, significantDigits - 1);
+        int fractionalDigits = Math.max(1, significantDigits - 1);
 
         Locale locale = Locale.getDefault(Locale.Category.FORMAT);
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
@@ -179,7 +219,6 @@ public final class NumberFormatUtil {
         return df.format(rounded);
     }
 
-
     /* ========================= Fluids ========================= */
 
     public static String getFluidUnit() {
@@ -187,11 +226,15 @@ public final class NumberFormatUtil {
     }
 
     public static String formatFluid(Number value) {
-        return formatFluid(value, NumberFormatOptions.DEFAULT);
+        return formatFluid(value, new NumberFormatOptions());
     }
 
     public static String formatFluid(Number value, NumberFormatOptions options) {
         return formatNumber(value, options) + " " + getFluidUnit();
+    }
+
+    public static String formatFluidCompact(Number value, NumberFormatOptions options) {
+        return formatNumberCompact(value, options) + " " + getFluidUnit();
     }
 
     public static String formatFluid(FluidStack stack) {
@@ -205,11 +248,15 @@ public final class NumberFormatUtil {
     }
 
     public static String formatEnergy(Number value) {
-        return formatEnergy(value, NumberFormatOptions.DEFAULT);
+        return formatEnergy(value, new NumberFormatOptions());
     }
 
     public static String formatEnergy(Number value, NumberFormatOptions options) {
         return formatNumber(value, options) + " " + getEnergyUnit();
+    }
+
+    public static String formatEnergyCompact(Number value, NumberFormatOptions options) {
+        return formatNumberCompact(value, options) + " " + getEnergyUnit();
     }
 
     /* ========================= Internals ========================= */
