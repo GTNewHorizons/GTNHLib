@@ -11,6 +11,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import net.minecraftforge.fluids.FluidStack;
+
 import org.jetbrains.annotations.VisibleForTesting;
 
 @SuppressWarnings("unused")
@@ -19,13 +20,12 @@ public final class NumberFormatUtil {
     /* ========================= Constants ========================= */
 
     private static final BigDecimal BD_THOUSAND = BigDecimal.valueOf(1_000);
-    private static final BigDecimal BD_MILLION  = BigDecimal.valueOf(1_000_000);
-    private static final BigDecimal BD_BILLION  = BigDecimal.valueOf(1_000_000_000);
+    private static final BigDecimal BD_MILLION = BigDecimal.valueOf(1_000_000);
+    private static final BigDecimal BD_BILLION = BigDecimal.valueOf(1_000_000_000);
     private static final BigDecimal BD_TRILLION = BigDecimal.valueOf(1_000_000_000_000L);
 
     private static final int DEFAULT_SIG_DIGITS = 3;
-    private static final BigInteger DEFAULT_ABBREV_THRESHOLD =
-        BigInteger.valueOf(1_000);
+    private static final BigInteger DEFAULT_ABBREV_THRESHOLD = BigInteger.valueOf(1_000);
 
     /* ========================= Formatters ========================= */
 
@@ -44,18 +44,16 @@ public final class NumberFormatUtil {
         return df;
     });
 
+    private static final ThreadLocal<DecimalFormat> ABBREVIATED_FORMAT = ThreadLocal.withInitial(() -> {
+        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
 
-    private static final ThreadLocal<DecimalFormat> ABBREVIATED_FORMAT =
-        ThreadLocal.withInitial(() -> {
-            Locale locale = Locale.getDefault(Locale.Category.FORMAT);
-            DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-
-            DecimalFormat df = new DecimalFormat();
-            df.setDecimalFormatSymbols(symbols);
-            df.setGroupingUsed(false);
-            df.setRoundingMode(RoundingMode.HALF_UP);
-            return df;
-        });
+        DecimalFormat df = new DecimalFormat();
+        df.setDecimalFormatSymbols(symbols);
+        df.setGroupingUsed(false);
+        df.setRoundingMode(RoundingMode.HALF_UP);
+        return df;
+    });
 
     private NumberFormatUtil() {}
 
@@ -68,9 +66,8 @@ public final class NumberFormatUtil {
     /**
      * Canonical formatting.
      * <p>
-     * Locale grouping is always exact.
-     * Scientific notation is used at ≥ 1T.
-     * Significant digits apply only to scientific output.
+     * Locale grouping is always exact. Scientific notation is used at ≥ 1T. Significant digits apply only to scientific
+     * output.
      */
     public static String formatNumber(Number value, NumberFormatOptions options) {
         if (value == null) return "NULL";
@@ -88,10 +85,7 @@ public final class NumberFormatUtil {
 
         if (abs.signum() == 0) return "0";
 
-        int sigDigits =
-            options.getSignificantDigits() != null
-                ? options.getSignificantDigits()
-                : DEFAULT_SIG_DIGITS;
+        int sigDigits = options.getSignificantDigits() != null ? options.getSignificantDigits() : DEFAULT_SIG_DIGITS;
 
         // Scientific for ≥ 1T
         if (abs.compareTo(BD_TRILLION) >= 0) {
@@ -111,9 +105,8 @@ public final class NumberFormatUtil {
     /**
      * Compact / abbreviated formatting.
      * <p>
-     * Below the abbreviation threshold → plain formatting.
-     * Between threshold and 1T → abbreviated (K/M/B).
-     * ≥ 1T → scientific.
+     * Below the abbreviation threshold → plain formatting. Between threshold and 1T → abbreviated (K/M/B). ≥ 1T →
+     * scientific.
      */
     public static String formatNumberCompact(Number value, NumberFormatOptions options) {
         if (value == null) return "NULL";
@@ -124,14 +117,9 @@ public final class NumberFormatUtil {
 
         if (abs.signum() == 0) return "0";
 
-        int sigDigits =
-            options.getSignificantDigits() != null
-                ? options.getSignificantDigits()
-                : DEFAULT_SIG_DIGITS;
+        int sigDigits = options.getSignificantDigits() != null ? options.getSignificantDigits() : DEFAULT_SIG_DIGITS;
 
-        BigInteger threshold =
-            options.getAbbreviationThreshold() != null
-                ? options.getAbbreviationThreshold()
+        BigInteger threshold = options.getAbbreviationThreshold() != null ? options.getAbbreviationThreshold()
                 : DEFAULT_ABBREV_THRESHOLD;
 
         BigDecimal bdThreshold = new BigDecimal(threshold);
@@ -168,25 +156,19 @@ public final class NumberFormatUtil {
             suffix = "K";
         }
 
-        BigDecimal rounded =
-            scaled.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
+        BigDecimal rounded = scaled.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
 
         rounded = ensureFractionalPrecision(scaled, rounded, significantDigits);
 
         DecimalFormat df = ABBREVIATED_FORMAT.get();
         df.setMaximumFractionDigits(rounded.scale());
-        df.setMinimumFractionDigits(
-            Math.max(0, rounded.scale() - rounded.stripTrailingZeros().scale())
-        );
+        df.setMinimumFractionDigits(Math.max(0, rounded.scale() - rounded.stripTrailingZeros().scale()));
 
         return df.format(rounded) + suffix;
     }
 
-    private static BigDecimal ensureFractionalPrecision(
-        BigDecimal originalScaled,
-        BigDecimal rounded,
-        int significantDigits
-    ) {
+    private static BigDecimal ensureFractionalPrecision(BigDecimal originalScaled, BigDecimal rounded,
+            int significantDigits) {
         if (rounded.scale() > 0) return rounded;
         if (originalScaled.stripTrailingZeros().scale() <= 0) return rounded;
 
@@ -197,8 +179,7 @@ public final class NumberFormatUtil {
     /* ========================= Scientific ========================= */
 
     private static String formatScientific(BigDecimal value, int significantDigits) {
-        BigDecimal rounded =
-            value.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
+        BigDecimal rounded = value.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
 
         int fractionalDigits = Math.max(1, significantDigits - 1);
 
@@ -272,9 +253,7 @@ public final class NumberFormatUtil {
     }
 
     private static String centralFormatter(String s) {
-        return s.replace("\u202F", " ")
-            .replace("\u00A0", " ")
-            .replace("\u2019", "'");
+        return s.replace("\u202F", " ").replace("\u00A0", " ").replace("\u2019", "'");
     }
 
     public static void postConfiguration() {

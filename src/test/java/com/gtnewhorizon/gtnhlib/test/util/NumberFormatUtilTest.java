@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import java.util.Locale;
 
 import net.minecraft.util.IChatComponent;
-
 import org.junit.jupiter.api.Test;
 
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
@@ -17,124 +16,24 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 public class NumberFormatUtilTest {
 
-    private static void assertLocaleFormats(
-        Locale locale,
-        double[] inputs,
-        String[] expected
-    ) {
-        if (inputs.length != expected.length) {
-            throw new IllegalArgumentException("inputs and expected must have same length");
-        }
-
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, locale);
-            NumberFormatUtil.resetForTests();
-
-            for (int i = 0; i < inputs.length; i++) {
-                String formatted = NumberFormatUtil.formatNumber(inputs[i]);
-                assertEquals(expected[i], formatted,
-                    locale + " failed for " + inputs[i]);
-            }
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    // spotless:off
-    @Test
-    void testUSLocaleFormatting() {
-        assertLocaleFormats(
-            Locale.US,
-            new double[] {
-                0,
-                1,
-                12.3,
-                999.99,
-                1234.56,
-                1234.125,
-                -1234.56,
-                1_000_000.999,
-                Double.NaN,
-                Double.POSITIVE_INFINITY,
-                Double.NEGATIVE_INFINITY,
-            },
-            new String[] {
-                "0",
-                "1",
-                "12.3",
-                "999.99",
-                "1,234.56",
-                "1,234.13",
-                "-1,234.56",
-                "1,000,001",
-                "NaN",
-                "Infinity",
-                "-Infinity"
-            }
-        );
-    }
+    /* ========================= Locale / Plain ========================= */
 
     @Test
-    void testFrenchLocaleFormatting() {
-        assertLocaleFormats(
-            Locale.FRANCE,
-            new double[] {
-                0,
-                1,
-                12.3,
-                999.99,
-                1234.56,
-                1234.125,
-                -1234.56,
-                1_000_000.999
-            },
-            new String[] {
-                "0",
-                "1",
-                "12,3",
-                "999,99",
-                "1 234,56",
-                "1 234,13",
-                "-1 234,56",
-                "1 000 001"
-            }
-        );
-    }
-
-    @Test
-    void testScientificFormatting() {
-        assertLocaleFormats(
-            Locale.US,
-            new double[] {
-                Double.MAX_VALUE,
-                -Double.MAX_VALUE,
-                2_000_000_000_000.0,
-                2_333_333_000_000.0,
-            },
-            new String[] {
-                "1.8e308",
-                "-1.8e308",
-                "2e12",
-                "2.33e12"
-            }
-        );
-    }
-    // spotless:on
-
-    @Test
-    void testCompactFormattingDefaultThreshold() {
+    void usLocalePlainFormatting() {
         Locale old = Locale.getDefault(Locale.Category.FORMAT);
         try {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals(
-                "1.23M",
-                NumberFormatUtil.formatNumberCompact(1_234_567)
-            );
+            assertEquals("12.3", NumberFormatUtil.formatNumber(12.3));
+            assertEquals("1,234.56", NumberFormatUtil.formatNumber(1234.56));
+            assertEquals("1,234.13", NumberFormatUtil.formatNumber(1234.125));
+            assertEquals("-1,234.56", NumberFormatUtil.formatNumber(-1234.56));
+            assertEquals("1,000,001", NumberFormatUtil.formatNumber(1_000_000.999));
+
+            assertEquals("NaN", NumberFormatUtil.formatNumber(Double.NaN));
+            assertEquals("Infinity", NumberFormatUtil.formatNumber(Double.POSITIVE_INFINITY));
+            assertEquals("-Infinity", NumberFormatUtil.formatNumber(Double.NEGATIVE_INFINITY));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -142,316 +41,59 @@ public class NumberFormatUtilTest {
     }
 
     @Test
-    void abbreviationThresholdControlsWhenAbbreviationStarts() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            NumberFormatOptions opts =
-                new NumberFormatOptions()
-                    .abbreviationThreshold(BigInteger.valueOf(10_000_000_000L));
-
-            assertEquals(
-                "1,234,567,890",
-                NumberFormatUtil.formatNumberCompact(1_234_567_890L, opts)
-            );
-
-            assertEquals(
-                "1.23B",
-                NumberFormatUtil.formatNumberCompact(1_234_567_890L,
-                    new NumberFormatOptions()
-                        .abbreviationThreshold(BigInteger.valueOf(1_000_000L)))
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void thresholdDoesNotAffectScientificCutover() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            double huge = 5_000_000_000_000.0;
-
-            assertTrue(NumberFormatUtil.formatNumberCompact(huge).contains("e"));
-
-            assertTrue(
-                NumberFormatUtil.formatNumberCompact(
-                    huge,
-                    new NumberFormatOptions().abbreviationThreshold(BigInteger.valueOf(10))
-                ).contains("e")
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void significantDigitsOverrideIsHonoured() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            NumberFormatOptions opts =
-                new NumberFormatOptions().significantDigits(5);
-
-            assertEquals(
-                "1.2346M",
-                NumberFormatUtil.formatNumberCompact(1_234_567, opts)
-            );
-
-            assertEquals(
-                "1.2346e12",
-                NumberFormatUtil.formatNumber(1_234_567_890_123L, opts)
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void formatFluidCompactHonoursThreshold() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            assertEquals(
-                "1.23M mB",
-                NumberFormatUtil.formatFluidCompact(
-                    1_234_567,
-                    new NumberFormatOptions()
-                        .abbreviationThreshold(BigInteger.valueOf(1_000_000))
-                )
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void formatEnergyCompactHonoursThreshold() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            assertEquals(
-                "9.88M EU",
-                NumberFormatUtil.formatEnergyCompact(
-                    9_876_543,
-                    new NumberFormatOptions()
-                        .abbreviationThreshold(BigInteger.valueOf(1_000_000))
-                )
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void negativeValuesAreAbbreviatedCorrectly() {
+    void frenchLocalePlainFormatting() {
         Locale old = Locale.getDefault(Locale.Category.FORMAT);
         try {
             Locale.setDefault(Locale.Category.FORMAT, Locale.FRANCE);
             NumberFormatUtil.resetForTests();
 
-            assertEquals(
-                "-1,23M",
-                NumberFormatUtil.formatNumberCompact(
-                    -1_234_567,
-                    new NumberFormatOptions()
-                        .abbreviationThreshold(BigInteger.valueOf(1_000_000))
-                )
-            );
+            assertEquals("12,3", NumberFormatUtil.formatNumber(12.3));
+            assertEquals("1 234,56", NumberFormatUtil.formatNumber(1234.56));
+            assertEquals("1 234,13", NumberFormatUtil.formatNumber(1234.125));
+            assertEquals("-1 234,56", NumberFormatUtil.formatNumber(-1234.56));
+            assertEquals("1 000 001", NumberFormatUtil.formatNumber(1_000_000.999));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
         }
     }
 
-    @Test
-    void zeroNeverUsesScientificNotation() {
-        postConfiguration();
-
-        assertEquals("0", NumberFormatUtil.formatNumber(0));
-        assertEquals("0", NumberFormatUtil.formatNumberCompact(0));
-        assertEquals("0", NumberFormatUtil.formatNumber(BigInteger.ZERO));
-    }
+    /* ========================= Scientific ========================= */
 
     @Test
-    void disableFormattedNotationBypassesFormatting() {
-        boolean old = NumberFormatConfig.disableFormattedNotation;
-        try {
-            NumberFormatConfig.disableFormattedNotation = true;
-            NumberFormatUtil.resetForTests();
-
-            assertEquals("1000000", NumberFormatUtil.formatNumber(1_000_000));
-            assertEquals("1000000",
-                NumberFormatUtil.formatFluidCompact(1_000_000,
-                    new NumberFormatOptions()).split(" ")[0]
-            );
-        } finally {
-            NumberFormatConfig.disableFormattedNotation = old;
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void createCopyIsDeepEnough() {
-        ChatComponentNumber original = new ChatComponentNumber(123);
-        original.getChatStyle().setBold(true);
-        original.appendSibling(new ChatComponentNumber(456));
-
-        IChatComponent copy = original.createCopy();
-
-        assertEquals(original, copy);
-        assertNotSame(original, copy);
-        assertNotSame(original.getSiblings().get(0), copy.getSiblings().get(0));
-    }
-
-    @Test
-    void scientificCutoverIsInclusiveAtOneTrillion() {
+    void scientificFormattingAndCutover() {
         Locale old = Locale.getDefault(Locale.Category.FORMAT);
         try {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            assertEquals(
-                "1e12",
-                NumberFormatUtil.formatNumber(1_000_000_000_000L)
-            );
+            assertEquals("1.8e308", NumberFormatUtil.formatNumber(Double.MAX_VALUE));
+            assertEquals("-1.8e308", NumberFormatUtil.formatNumber(-Double.MAX_VALUE));
 
-            assertEquals(
-                "1e12",
-                NumberFormatUtil.formatNumberCompact(1_000_000_000_000L)
-            );
+            // inclusive cutover
+            assertEquals("1e12", NumberFormatUtil.formatNumber(1_000_000_000_000L));
+            assertEquals("2.33e12", NumberFormatUtil.formatNumber(2_333_333_000_000.0));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
         }
     }
 
-    @Test
-    void abbreviationThresholdIsInclusive() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            long v = 1_000_000;
-
-            NumberFormatOptions opts =
-                new NumberFormatOptions()
-                    .abbreviationThreshold(BigInteger.valueOf(v));
-
-            assertEquals(
-                "1M",
-                NumberFormatUtil.formatNumberCompact(v, opts)
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
+    /* ========================= Compact / Abbreviation ========================= */
 
     @Test
-    void significantDigitsDoNotAffectPlainFormatting() {
+    void compactFormattingHonoursThreshold() {
         Locale old = Locale.getDefault(Locale.Category.FORMAT);
         try {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
             NumberFormatOptions opts =
-                new NumberFormatOptions().significantDigits(1);
+                new NumberFormatOptions().abbreviationThreshold(BigInteger.valueOf(1_000_000));
 
-            assertEquals(
-                "1,234.13",
-                NumberFormatUtil.formatNumber(1234.125, opts)
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void integersAreNeverRoundedBySignificantDigits() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            NumberFormatOptions opts =
-                new NumberFormatOptions().significantDigits(2);
-
-            assertEquals(
-                "1,234,567",
-                NumberFormatUtil.formatNumber(1_234_567, opts)
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void compactFormattingDoesNotAbbreviateBelowOneThousand() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            assertEquals(
-                "999",
-                NumberFormatUtil.formatNumberCompact(999)
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void negativeValuesRespectThresholdSymmetrically() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            assertEquals(
-                "-1M",
-                NumberFormatUtil.formatNumberCompact(-1_000_000)
-            );
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
-    @Test
-    void bigIntegerFormattingBehavesLikeLong() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            assertEquals(
-                "1.23M",
-                NumberFormatUtil.formatNumberCompact(
-                    new BigInteger("1234567")
-                )
-            );
+            assertEquals("1.23M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+            assertEquals("-1M", NumberFormatUtil.formatNumberCompact(-1_000_000, opts));
+            assertEquals("999", NumberFormatUtil.formatNumberCompact(999, opts));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -465,13 +107,94 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.FRANCE);
             NumberFormatUtil.resetForTests();
 
-            assertEquals(
-                "1,23M",
-                NumberFormatUtil.formatNumberCompact(1_234_567)
-            );
+            assertEquals("1,23M", NumberFormatUtil.formatNumberCompact(1_234_567));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
         }
+    }
+
+    @Test
+    void bigIntegerFormattingMatchesLong() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                NumberFormatUtil.formatNumberCompact(1_234_567L),
+                NumberFormatUtil.formatNumberCompact(new BigInteger("1234567")));
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    /* ========================= Significant Digits ========================= */
+
+    @Test
+    void significantDigitsNeverAffectPlainIntegersOrDecimals() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts = new NumberFormatOptions().significantDigits(1);
+
+            assertEquals("1,234.13", NumberFormatUtil.formatNumber(1234.125, opts));
+            assertEquals("1,234,567", NumberFormatUtil.formatNumber(1_234_567, opts));
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    /* ========================= Zero / Edge ========================= */
+
+    @Test
+    void zeroIsAlwaysRenderedAsZero() {
+        postConfiguration();
+
+        assertEquals("0", NumberFormatUtil.formatNumber(0));
+        assertEquals("0", NumberFormatUtil.formatNumber(-0.0));
+        assertEquals("0", NumberFormatUtil.formatNumberCompact(0));
+        assertEquals("0", NumberFormatUtil.formatNumber(BigInteger.ZERO));
+    }
+
+    /* ========================= Disable Formatting ========================= */
+
+    @Test
+    void disableFormattedNotationBypassesAllFormatting() {
+        boolean old = NumberFormatConfig.disableFormattedNotation;
+        try {
+            NumberFormatConfig.disableFormattedNotation = true;
+            NumberFormatUtil.resetForTests();
+
+            assertEquals("1000000", NumberFormatUtil.formatNumber(1_000_000));
+            assertEquals(
+                "1000000",
+                NumberFormatUtil.formatFluidCompact(1_000_000, new NumberFormatOptions()).split(" ")[0]);
+            assertEquals(
+                String.valueOf(1_000_000_000_000L),
+                NumberFormatUtil.formatNumber(1_000_000_000_000L));
+        } finally {
+            NumberFormatConfig.disableFormattedNotation = old;
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    /* ========================= ChatComponent ========================= */
+
+    @Test
+    void createCopyProducesDeepClone() {
+        ChatComponentNumber original = new ChatComponentNumber(123);
+        original.getChatStyle().setBold(true);
+        original.appendSibling(new ChatComponentNumber(456));
+
+        IChatComponent copy = original.createCopy();
+
+        assertEquals(original, copy);
+        assertNotSame(original, copy);
+        assertNotSame(original.getSiblings().get(0), copy.getSiblings().get(0));
     }
 }

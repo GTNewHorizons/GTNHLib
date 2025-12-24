@@ -1,12 +1,13 @@
 package com.gtnewhorizon.gtnhlib.commands;
 
-import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
-import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
-import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
+import java.math.BigInteger;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 
-import java.math.BigInteger;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
 
 public class TestCommand extends CommandBase {
 
