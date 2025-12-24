@@ -319,4 +319,159 @@ public class NumberFormatUtilTest {
         assertNotSame(original, copy);
         assertNotSame(original.getSiblings().get(0), copy.getSiblings().get(0));
     }
+
+    @Test
+    void scientificCutoverIsInclusiveAtOneTrillion() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                "1e12",
+                NumberFormatUtil.formatNumber(1_000_000_000_000L)
+            );
+
+            assertEquals(
+                "1e12",
+                NumberFormatUtil.formatNumberCompact(1_000_000_000_000L)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void abbreviationThresholdIsInclusive() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            long v = 1_000_000;
+
+            NumberFormatOptions opts =
+                new NumberFormatOptions()
+                    .abbreviationThreshold(BigInteger.valueOf(v));
+
+            assertEquals(
+                "1M",
+                NumberFormatUtil.formatNumberCompact(v, opts)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void significantDigitsDoNotAffectPlainFormatting() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts =
+                new NumberFormatOptions().significantDigits(1);
+
+            assertEquals(
+                "1,234.13",
+                NumberFormatUtil.formatNumber(1234.125, opts)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void integersAreNeverRoundedBySignificantDigits() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts =
+                new NumberFormatOptions().significantDigits(2);
+
+            assertEquals(
+                "1,234,567",
+                NumberFormatUtil.formatNumber(1_234_567, opts)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void compactFormattingDoesNotAbbreviateBelowOneThousand() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                "999",
+                NumberFormatUtil.formatNumberCompact(999)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void negativeValuesRespectThresholdSymmetrically() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                "-1M",
+                NumberFormatUtil.formatNumberCompact(-1_000_000)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void bigIntegerFormattingBehavesLikeLong() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                "1.23M",
+                NumberFormatUtil.formatNumberCompact(
+                    new BigInteger("1234567")
+                )
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void abbreviationRespectsLocaleDecimalSeparator() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.FRANCE);
+            NumberFormatUtil.resetForTests();
+
+            assertEquals(
+                "1,23M",
+                NumberFormatUtil.formatNumberCompact(1_234_567)
+            );
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
 }
