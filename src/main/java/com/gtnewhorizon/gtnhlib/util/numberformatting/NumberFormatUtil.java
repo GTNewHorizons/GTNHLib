@@ -8,6 +8,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Arrays;
 import java.util.Locale;
 
 import net.minecraftforge.fluids.FluidStack;
@@ -179,25 +180,7 @@ public final class NumberFormatUtil {
     /* ========================= Scientific ========================= */
 
     private static String formatScientific(BigDecimal value, int significantDigits) {
-        BigDecimal rounded = value.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
-
-        int fractionalDigits = Math.max(1, significantDigits - 1);
-
-        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
-        symbols.setExponentSeparator("e");
-
-        StringBuilder pattern = new StringBuilder("0.");
-        for (int i = 0; i < fractionalDigits; i++) {
-            pattern.append('#');
-        }
-        pattern.append("E0");
-
-        DecimalFormat df = new DecimalFormat(pattern.toString(), symbols);
-        df.setGroupingUsed(false);
-        df.setRoundingMode(RoundingMode.HALF_UP);
-
-        return df.format(rounded);
+        return SCIENTIFIC_FORMAT.format(value, significantDigits);
     }
 
     /* ========================= Fluids ========================= */
@@ -253,11 +236,15 @@ public final class NumberFormatUtil {
     }
 
     private static String centralFormatter(String s) {
-        return s.replace("\u202F", " ").replace("\u00A0", " ").replace("\u2019", "'");
+        s = s.replace("\u202F", " ");
+        s = s.replace("\u00A0", " ");
+        s = s.replace("\u00A1", " ");
+        return s;
     }
 
     public static void postConfiguration() {
-        resetForTests();
+        SCIENTIFIC_FORMAT = ScientificFormat.parse(formatPattern);
+        NumberFormatUtil.resetForTests();
     }
 
     @VisibleForTesting
@@ -265,4 +252,5 @@ public final class NumberFormatUtil {
         FORMAT.remove();
         ABBREVIATED_FORMAT.remove();
     }
+
 }
