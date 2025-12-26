@@ -35,6 +35,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.MathUtil;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -204,13 +205,34 @@ public class JSONModel implements UnbakedModel {
 
                 // Bake and add it
 
-                // TODO: Needs to be in its list by the cullface, can be obtained via
-                // ModelQuadFacing.fromForgeDir(f.cullFace())
-                // However it also needs to be rotated based in its affine matrix (the x y z rotation set in the
-                // blockstate file) so the cullface rotates along with it
-                // I lacked the know-how to do it myself and after failing numerous times to do it, I've given up
-                // trying. Basically, if the cullFace is not UNASSIGNED, then shift the cullface by the affine matrix.
-                sidedQuadStore.computeIfAbsent(ModelQuadFacing.UNASSIGNED, d -> new ArrayList<>()).add(quad);
+                ModelQuadFacing cullFace = ModelQuadFacing.fromForgeDir(f.cullFace());
+                if (cullFace.isDirection()) {
+                    // If cullface is not unassigned, we rotate it by the affine matrix, so that way the direction we
+                    // check for culling also is rotated.
+                    Vector3f facing = new Vector3f(cullFace.getStepX(), cullFace.getStepY(), cullFace.getStepZ())
+                            .mulDirection(vRot);
+                    // Only one of these three vector coordinates should be a value other than 0. Error handling should
+                    // be done where the vRot's data is serialized.
+                    if (MathUtil.roughlyEqual(facing.x, 1)) {
+                        cullFace = ModelQuadFacing.POS_X;
+                    }
+                    if (MathUtil.roughlyEqual(facing.x, -1)) {
+                        cullFace = ModelQuadFacing.NEG_X;
+                    }
+                    if (MathUtil.roughlyEqual(facing.y, 1)) {
+                        cullFace = ModelQuadFacing.POS_Y;
+                    }
+                    if (MathUtil.roughlyEqual(facing.y, -1)) {
+                        cullFace = ModelQuadFacing.NEG_Y;
+                    }
+                    if (MathUtil.roughlyEqual(facing.z, 1)) {
+                        cullFace = ModelQuadFacing.POS_Z;
+                    }
+                    if (MathUtil.roughlyEqual(facing.z, -1)) {
+                        cullFace = ModelQuadFacing.NEG_Z;
+                    }
+                }
+                sidedQuadStore.computeIfAbsent(cullFace, d -> new ArrayList<>()).add(quad);
             }
         }
 
