@@ -204,11 +204,13 @@ public class JSONModel implements UnbakedModel {
 
                 // Bake and add it
 
-                // TODO: Needs to be in its list by the cullface, can be obtained via ModelQuadFacing.fromForgeDir(f.cullFace())
-                // However it also needs to be rotated based in its affine matrix (the x y z rotation set in the blockstate file) so the cullface rotates along with it
-                // I lacked the know-how to do it myself and after failing numerous times to do it, I've given up trying.
-                sidedQuadStore.computeIfAbsent(ModelQuadFacing.UNASSIGNED, d -> new ArrayList<>())
-                        .add(quad);
+                // TODO: Needs to be in its list by the cullface, can be obtained via
+                // ModelQuadFacing.fromForgeDir(f.cullFace())
+                // However it also needs to be rotated based in its affine matrix (the x y z rotation set in the
+                // blockstate file) so the cullface rotates along with it
+                // I lacked the know-how to do it myself and after failing numerous times to do it, I've given up
+                // trying.
+                sidedQuadStore.computeIfAbsent(ModelQuadFacing.UNASSIGNED, d -> new ArrayList<>()).add(quad);
             }
         }
 
