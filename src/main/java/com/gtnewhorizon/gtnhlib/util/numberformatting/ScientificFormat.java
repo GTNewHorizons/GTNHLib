@@ -19,7 +19,7 @@ public enum ScientificFormat {
     ENGINEERING {
         @Override
         String format(BigDecimal v, int sig) {
-            return formatScientificEngineering(v);
+            return formatScientificEngineering(v, sig);
         }
     },
     POWER_OF_TEN {
@@ -65,19 +65,32 @@ public enum ScientificFormat {
         return df.format(rounded);
     }
 
-    private static String formatScientificEngineering(BigDecimal value) {
+    private static String formatScientificEngineering(BigDecimal value, int ignoredSignificantDigits) {
         if (value.signum() == 0) return "0";
 
-        // Normalize value to remove binary floating-point noise
-        value = value.stripTrailingZeros();
+        // Work with absolute value, reapply sign at the end
+        BigDecimal abs = value.abs();
 
-        int exponent = value.precision() - 1 - value.scale();
-        int engineeringExponent = exponent - (exponent % 3);
+        // Compute base-10 exponent from ORIGINAL value
+        int exponent = abs.precision() - 1 - abs.scale();
 
-        BigDecimal mantissa = value.movePointLeft(engineeringExponent);
+        // Snap exponent to multiple of 3
+        int engineeringExponent = exponent - Math.floorMod(exponent, 3);
 
-        // Round mathematically, not binary-artifact-wise
-        mantissa = mantissa.setScale(2, RoundingMode.HALF_UP);
+        // Scale to engineering mantissa
+        BigDecimal mantissa = abs.movePointLeft(engineeringExponent)
+            .setScale(2, RoundingMode.HALF_UP);
+
+        // Handle rollover: 999.995 → 1000.00 → 1.00e(next)
+        if (mantissa.compareTo(BigDecimal.valueOf(1000)) >= 0) {
+            mantissa = mantissa.movePointLeft(3)
+                .setScale(2, RoundingMode.HALF_UP);
+            engineeringExponent += 3;
+        }
+
+        if (value.signum() < 0) {
+            mantissa = mantissa.negate();
+        }
 
         return mantissa.toPlainString() + "e" + engineeringExponent;
     }

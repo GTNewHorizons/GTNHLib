@@ -71,4 +71,61 @@ public class ScientificFormatTest {
         assertEquals("-1.23*10^13", NumberFormatUtil.formatNumber(-VALUE * 10));
         assertEquals("-1.23*10^14", NumberFormatUtil.formatNumber(-VALUE * 100));
     }
+
+    @Test
+    void scientificFormat_roundingBehavior() {
+        formatPattern = "SCIENTIFIC";
+        NumberFormatUtil.postConfiguration();
+
+        assertEquals("1.23e12", NumberFormatUtil.formatNumber(1.234e12));
+        assertEquals("1.24e12", NumberFormatUtil.formatNumber(1.235e12));
+        assertEquals("1.24e12", NumberFormatUtil.formatNumber(1.239e12));
+
+        assertEquals("-1.23e12", NumberFormatUtil.formatNumber(-1.234e12));
+        assertEquals("-1.24e12", NumberFormatUtil.formatNumber(-1.235e12));
+    }
+
+    @Test
+    void engineeringFormat_roundingBehavior() {
+        formatPattern = "ENGINEERING";
+        NumberFormatUtil.postConfiguration();
+
+        // Mantissa in [1, 10)
+        assertEquals("1.23e12", NumberFormatUtil.formatNumber(1.234e12));
+        assertEquals("1.24e12", NumberFormatUtil.formatNumber(1.235e12));
+
+        // Mantissa in [10, 100)
+        assertEquals("12.34e12", NumberFormatUtil.formatNumber(1.234e13));
+        assertEquals("12.35e12", NumberFormatUtil.formatNumber(1.235e13));
+
+        // Mantissa in [100, 1000)
+        assertEquals("123.45e12", NumberFormatUtil.formatNumber(1.2345e14));
+        assertEquals("123.56e12", NumberFormatUtil.formatNumber(1.23555e14));
+    }
+
+    @Test
+    void powerOfTenFormat_roundingBehavior() {
+        formatPattern = "POWER_OF_TEN";
+        NumberFormatUtil.postConfiguration();
+
+        assertEquals("1.23*10^12", NumberFormatUtil.formatNumber(1.234e12));
+        assertEquals("1.24*10^12", NumberFormatUtil.formatNumber(1.235e12));
+
+        assertEquals("1.23*10^13", NumberFormatUtil.formatNumber(1.234e13));
+        assertEquals("1.24*10^13", NumberFormatUtil.formatNumber(1.235e13));
+
+        assertEquals("-1.23*10^12", NumberFormatUtil.formatNumber(-1.234e12));
+        assertEquals("-1.24*10^12", NumberFormatUtil.formatNumber(-1.235e12));
+    }
+
+    @Test
+    void engineeringFormat_rolloverOnRounding() {
+        formatPattern = "ENGINEERING";
+        NumberFormatUtil.postConfiguration();
+
+        // 999.995 -> 1000.00 -> 1.00e15
+        assertEquals("1.00e15", NumberFormatUtil.formatNumber(9.99995e14));
+    }
+
+
 }
