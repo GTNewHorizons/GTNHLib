@@ -63,6 +63,18 @@ public interface ModelQuadView extends ModelPrimitiveView {
     int getColorIndex();
 
     /**
+     * Not to be confused with ambient occlusion AKA smooth lighting When true, allows this quad to multiply its
+     * brightness based on the direction it's facing. When this is false, each face derives its brightness directly from
+     * the light value it's facing without multiplying it.
+     */
+    boolean hasDirectionalShading();
+
+    /**
+     * The emissiveness of this face, effectively the minimum brightness value it will be rendered with.
+     */
+    int getEmissiveness();
+
+    /**
      * @return The sprite texture used by this quad, or null if none is attached
      */
     Object celeritas$getSprite();
@@ -95,10 +107,6 @@ public interface ModelQuadView extends ModelPrimitiveView {
 
     default boolean hasAmbientOcclusion() {
         return true;
-    }
-
-    default int getVanillaLightEmission() {
-        return 0;
     }
 
     int getShaderBlockId();
