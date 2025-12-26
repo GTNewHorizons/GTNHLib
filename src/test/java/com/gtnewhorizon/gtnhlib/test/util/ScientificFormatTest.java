@@ -127,4 +127,15 @@ public class ScientificFormatTest {
         assertEquals("1.00e15", NumberFormatUtil.formatNumber(9.99995e14));
     }
 
+    @Test
+    void scientificFormat_cutOff() {
+        formatPattern = "SCIENTIFIC";
+        NumberFormatUtil.postConfiguration();
+
+        long threshold = 1_000_000_000_000L;
+
+        assertEquals("999,999,999,999", NumberFormatUtil.formatNumber(threshold - 1));
+        assertEquals("1e12", NumberFormatUtil.formatNumber(threshold));
+        assertEquals("1e12", NumberFormatUtil.formatNumber(threshold + 1));
+    }
 }

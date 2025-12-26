@@ -59,27 +59,6 @@ public class NumberFormatUtilTest {
         }
     }
 
-    /* ========================= Scientific ========================= */
-
-    @Test
-    void scientificFormattingAndCutover() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-            NumberFormatUtil.resetForTests();
-
-            assertEquals("1.8e308", NumberFormatUtil.formatNumber(Double.MAX_VALUE));
-            assertEquals("-1.8e308", NumberFormatUtil.formatNumber(-Double.MAX_VALUE));
-
-            // inclusive cutover
-            assertEquals("1e12", NumberFormatUtil.formatNumber(1_000_000_000_000L));
-            assertEquals("2.33e12", NumberFormatUtil.formatNumber(2_333_333_000_000.0));
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-            NumberFormatUtil.resetForTests();
-        }
-    }
-
     /* ========================= Compact / Abbreviation ========================= */
 
     @Test
