@@ -16,12 +16,19 @@ public enum ScientificFormat {
             return formatScientificStandard(v, sig);
         }
     },
+
+    // NOTE: Engineering format intentionally ignores significantDigits.
+    // Engineering notation prioritizes scale (exponent in multiples of 3)
+    // with a fixed decimal precision for readability, rather than a fixed
+    // number of significant figures. This avoids mantissa instability and
+    // rounding artifacts when values grow in magnitude.
     ENGINEERING {
         @Override
-        String format(BigDecimal v, int sig) {
-            return formatScientificEngineering(v, sig);
+        String format(BigDecimal v, int ignored) {
+            return formatScientificEngineering(v);
         }
     },
+
     POWER_OF_TEN {
         @Override
         String format(BigDecimal v, int sig) {
@@ -65,7 +72,7 @@ public enum ScientificFormat {
         return df.format(rounded);
     }
 
-    private static String formatScientificEngineering(BigDecimal value, int ignoredSignificantDigits) {
+    private static String formatScientificEngineering(BigDecimal value) {
         if (value.signum() == 0) return "0";
 
         // Work with absolute value, reapply sign at the end
