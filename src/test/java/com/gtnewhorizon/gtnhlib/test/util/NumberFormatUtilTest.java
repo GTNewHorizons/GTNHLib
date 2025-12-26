@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.Locale;
 
 import net.minecraft.util.IChatComponent;
+
 import org.junit.jupiter.api.Test;
 
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
@@ -88,8 +89,7 @@ public class NumberFormatUtilTest {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
             NumberFormatUtil.resetForTests();
 
-            NumberFormatOptions opts =
-                new NumberFormatOptions().abbreviationThreshold(BigInteger.valueOf(1_000_000));
+            NumberFormatOptions opts = new NumberFormatOptions().abbreviationThreshold(BigInteger.valueOf(1_000_000));
 
             assertEquals("1.23M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
             assertEquals("-1M", NumberFormatUtil.formatNumberCompact(-1_000_000, opts));
@@ -122,8 +122,8 @@ public class NumberFormatUtilTest {
             NumberFormatUtil.resetForTests();
 
             assertEquals(
-                NumberFormatUtil.formatNumberCompact(1_234_567L),
-                NumberFormatUtil.formatNumberCompact(new BigInteger("1234567")));
+                    NumberFormatUtil.formatNumberCompact(1_234_567L),
+                    NumberFormatUtil.formatNumberCompact(new BigInteger("1234567")));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -172,11 +172,9 @@ public class NumberFormatUtilTest {
 
             assertEquals("1000000", NumberFormatUtil.formatNumber(1_000_000));
             assertEquals(
-                "1000000",
-                NumberFormatUtil.formatFluidCompact(1_000_000, new NumberFormatOptions()).split(" ")[0]);
-            assertEquals(
-                String.valueOf(1_000_000_000_000L),
-                NumberFormatUtil.formatNumber(1_000_000_000_000L));
+                    "1000000",
+                    NumberFormatUtil.formatFluidCompact(1_000_000, new NumberFormatOptions()).split(" ")[0]);
+            assertEquals(String.valueOf(1_000_000_000_000L), NumberFormatUtil.formatNumber(1_000_000_000_000L));
         } finally {
             NumberFormatConfig.disableFormattedNotation = old;
             NumberFormatUtil.resetForTests();

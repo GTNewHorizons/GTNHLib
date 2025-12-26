@@ -127,5 +127,4 @@ public class ScientificFormatTest {
         assertEquals("1.00e15", NumberFormatUtil.formatNumber(9.99995e14));
     }
 
-
 }

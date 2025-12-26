@@ -11,6 +11,7 @@ import java.util.Locale;
 public enum ScientificFormat {
 
     SCIENTIFIC {
+
         @Override
         String format(BigDecimal v, int sig) {
             return formatScientificStandard(v, sig);
@@ -23,6 +24,7 @@ public enum ScientificFormat {
     // number of significant figures. This avoids mantissa instability and
     // rounding artifacts when values grow in magnitude.
     ENGINEERING {
+
         @Override
         String format(BigDecimal v, int ignored) {
             return formatScientificEngineering(v);
@@ -30,6 +32,7 @@ public enum ScientificFormat {
     },
 
     POWER_OF_TEN {
+
         @Override
         String format(BigDecimal v, int sig) {
             return formatScientificPowerOfTen(v, sig);
@@ -43,12 +46,9 @@ public enum ScientificFormat {
             return ScientificFormat.valueOf(raw.trim().toUpperCase(Locale.ROOT));
         } catch (Exception e) {
             throw new IllegalStateException(
-                "Invalid scientific format '" + raw +
-                    "'. Valid values: " + Arrays.toString(values())
-            );
+                    "Invalid scientific format '" + raw + "'. Valid values: " + Arrays.toString(values()));
         }
     }
-
 
     private static String formatScientificStandard(BigDecimal value, int significantDigits) {
         BigDecimal rounded = value.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
@@ -85,13 +85,11 @@ public enum ScientificFormat {
         int engineeringExponent = exponent - Math.floorMod(exponent, 3);
 
         // Scale to engineering mantissa
-        BigDecimal mantissa = abs.movePointLeft(engineeringExponent)
-            .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal mantissa = abs.movePointLeft(engineeringExponent).setScale(2, RoundingMode.HALF_UP);
 
         // Handle rollover: 999.995 → 1000.00 → 1.00e(next)
         if (mantissa.compareTo(BigDecimal.valueOf(1000)) >= 0) {
-            mantissa = mantissa.movePointLeft(3)
-                .setScale(2, RoundingMode.HALF_UP);
+            mantissa = mantissa.movePointLeft(3).setScale(2, RoundingMode.HALF_UP);
             engineeringExponent += 3;
         }
 
