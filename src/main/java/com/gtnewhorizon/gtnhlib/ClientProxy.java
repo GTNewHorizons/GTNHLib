@@ -21,8 +21,12 @@ import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
+import com.gtnewhorizon.gtnhlib.config.ConfigException;
+import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -51,6 +55,14 @@ public class ClientProxy extends CommonProxy {
         // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
         // you too can automatically load textures for your models!
         ModelRegistry.registerModid(MODID);
+
+        // Number formatting config registration. Client side only.
+        try {
+            ConfigurationManager.registerConfig(NumberFormatConfig.class);
+        } catch (ConfigException e) {
+            throw new RuntimeException(e);
+        }
+        NumberFormatUtil.postConfiguration();
     }
 
     @Override
