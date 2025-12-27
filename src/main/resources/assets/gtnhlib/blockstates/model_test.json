@@ -1,8 +1,8 @@
 {
   "variants": {
     "meta=0": { "model": "gtnhlib:blocks/old_stairs", "y": 270 },
-    "meta=1": { "model": "gtnhlib:blocks/old_stairs", "y": 90 },
-    "meta=2": { "model": "gtnhlib:blocks/old_stairs", "y": 0 },
-    "meta=3": { "model": "gtnhlib:blocks/old_stairs", "y": 180 }
+    "meta=1": { "model": "gtnhlib:blocks/old_stairs", "y": 180 },
+    "meta=2": { "model": "gtnhlib:blocks/old_stairs", "y": 90 },
+    "meta=3": { "model": "gtnhlib:blocks/old_stairs", "y": 0 }
   }
 }

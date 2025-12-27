@@ -4,10 +4,10 @@ import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import org.jetbrains.annotations.NotNull;
 
 public class BlockTest extends Block {
 
@@ -21,15 +21,9 @@ public class BlockTest extends Block {
     }
 
     @Override
-    public int onBlockPlaced(@NotNull World worldIn, int x, int y, int z, int side, float subX, float subY, float subZ,
-            int meta) {
-
-        // Face NORTH if placed up or down
-        final var s = ForgeDirection.getOrientation(side);
-        if (s == ForgeDirection.UP || s == ForgeDirection.DOWN) return 2;
-
-        // Face the placed side
-        return side - 2;
+    public void onBlockPlacedBy(World worldIn, int x, int y, int z, EntityLivingBase placer, ItemStack itemIn) {
+        int meta = MathHelper.floor_double((double) (placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+        worldIn.setBlockMetadataWithNotify(x, y, z, meta, 2);
     }
 
     @Override
