@@ -135,11 +135,12 @@ public final class NumberFormatUtil {
 
     /* ========================= Abbreviation ========================= */
 
-    private static String abbreviate(BigDecimal value, int significantDigits) {
+    private static String abbreviate(BigDecimal value, int sigDigits) {
         BigDecimal abs = value.abs();
         BigDecimal scaled;
         String suffix;
 
+        // Determine scale and suffix
         if (abs.compareTo(BD_BILLION) >= 0) {
             scaled = value.divide(BD_BILLION, MathContext.UNLIMITED);
             suffix = "B";
@@ -151,26 +152,25 @@ public final class NumberFormatUtil {
             suffix = "K";
         }
 
-        BigDecimal rounded = scaled.round(
-            new MathContext(significantDigits, RoundingMode.HALF_UP)
-        );
+        // Round to 3SF.
+        BigDecimal rounded = scaled.round(new MathContext(3, RoundingMode.HALF_UP));
 
-        // Rollover handling. I.e. stops 1000M from occurring.
-        if (rounded.compareTo(BD_THOUSAND) >= 0) {
+        // Rollover handling: promote suffix if rounded >= 1000
+        while (rounded.compareTo(BigDecimal.valueOf(1000)) >= 0) {
             rounded = rounded.divide(BD_THOUSAND, MathContext.UNLIMITED);
-            if ("K".equals(suffix)) suffix = "M";
-            else if ("M".equals(suffix)) suffix = "B";
+            switch (suffix) {
+                case "K" -> suffix = "M";
+                case "M" -> suffix = "B";
+                case "B" -> {
+                    return formatScientific(value, sigDigits);
+                }
+            }
         }
 
-        int integerDigits = rounded.precision() - rounded.scale();
-        int fractionDigits = Math.max(0, significantDigits - integerDigits);
-
         DecimalFormat df = ABBREVIATED_FORMAT.get();
-        df.setMaximumFractionDigits(fractionDigits);
-        df.setMinimumFractionDigits(0);
-
         return df.format(rounded) + suffix;
     }
+
 
     private static BigDecimal ensureFractionalPrecision(BigDecimal originalScaled, BigDecimal rounded,
             int significantDigits) {

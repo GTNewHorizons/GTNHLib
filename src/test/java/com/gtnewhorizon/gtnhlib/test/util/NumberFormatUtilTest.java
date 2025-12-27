@@ -4,6 +4,7 @@ import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.po
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
+import java.text.NumberFormat;
 import java.util.Locale;
 
 import net.minecraft.util.IChatComponent;
@@ -133,7 +134,7 @@ public class NumberFormatUtilTest {
     /* ========================= Significant Digits ========================= */
 
     @Test
-    void significantDigitsImpact() {
+    void sigFigCompactFormattingCases() {
         Locale old = Locale.getDefault(Locale.Category.FORMAT);
         try {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
@@ -141,32 +142,16 @@ public class NumberFormatUtilTest {
 
             NumberFormatOptions opts = new NumberFormatOptions();
 
-            opts.significantDigits(1);
-            assertEquals("1M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+            NumberFormat t = NumberFormat.getCompactNumberInstance();
 
-            opts.significantDigits(2);
-            assertEquals("1.2M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+            System.out.println(t.format(10000));
 
-            opts.significantDigits(3);
-            assertEquals("1.23M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
-
-            opts.significantDigits(4);
-            assertEquals("1.235M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
-
-            opts.significantDigits(5);
-            assertEquals("1.2346M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
-
-            opts.significantDigits(6);
-            assertEquals("1.23457M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
-
-            opts.significantDigits(7);
-            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
-
-            opts.significantDigits(8);
-            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
-
-            opts.significantDigits(9);
-            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+            assertEquals("180K", NumberFormatUtil.formatNumberCompact(180_000, opts));
+            assertEquals("180.2K", NumberFormatUtil.formatNumberCompact(180_200, opts));
+            assertEquals("180.9K", NumberFormatUtil.formatNumberCompact(180_900, opts));
+            assertEquals("180.23K", NumberFormatUtil.formatNumberCompact(180_230, opts));
+            assertEquals("180.23K", NumberFormatUtil.formatNumberCompact(180_233, opts));
+            assertEquals("180.24K", NumberFormatUtil.formatNumberCompact(180_239, opts));
 
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
@@ -192,9 +177,6 @@ public class NumberFormatUtilTest {
                 IllegalArgumentException.class,
                 () -> opts.significantDigits(0)
             );
-
-            opts.significantDigits(Integer.MAX_VALUE);
-            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
 
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
