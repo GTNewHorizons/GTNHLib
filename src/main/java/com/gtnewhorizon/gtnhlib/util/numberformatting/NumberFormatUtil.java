@@ -155,6 +155,13 @@ public final class NumberFormatUtil {
             new MathContext(significantDigits, RoundingMode.HALF_UP)
         );
 
+        // Rollover handling. I.e. stops 1000M from occurring.
+        if (rounded.compareTo(BD_THOUSAND) >= 0) {
+            rounded = rounded.divide(BD_THOUSAND, MathContext.UNLIMITED);
+            if ("K".equals(suffix)) suffix = "M";
+            else if ("M".equals(suffix)) suffix = "B";
+        }
+
         int integerDigits = rounded.precision() - rounded.scale();
         int fractionDigits = Math.max(0, significantDigits - integerDigits);
 
