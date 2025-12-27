@@ -2,16 +2,20 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.GTNHLib.MODID;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
+import net.minecraft.item.Item;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.UniversiumShader;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
@@ -42,7 +46,7 @@ public class ClientProxy extends CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
 
-        RenderingRegistry.registerBlockHandler(new ModelISBRH());
+        RenderingRegistry.registerBlockHandler(ModelISBRH.INSTANCE);
 
         // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
         // you too can automatically load textures for your models!
@@ -53,6 +57,7 @@ public class ClientProxy extends CommonProxy {
     public void init(FMLInitializationEvent event) {
         super.init(event);
         ClientCommandHandler.instance.registerCommand(new ItemInHandCommand());
+        UniversiumShader.init();
     }
 
     @Override
@@ -75,6 +80,17 @@ public class ClientProxy extends CommonProxy {
         final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
+
+        // Applied Item Render for Block Use ModelISBRH
+        for (Object obj : Block.blockRegistry) {
+            Block block = (Block) obj;
+            if (block.getRenderType() == ModelISBRH.JSON_ISBRH_ID) {
+                Item item = Item.getItemFromBlock(block);
+                if (item != null) {
+                    MinecraftForgeClient.registerItemRenderer(item, ModelISBRH.INSTANCE);
+                }
+            }
+        }
     }
 
     @Override

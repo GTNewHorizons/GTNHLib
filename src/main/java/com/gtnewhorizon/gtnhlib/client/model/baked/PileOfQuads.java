@@ -16,10 +16,12 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -28,21 +30,36 @@ import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
 public final class PileOfQuads implements BakedModel {
 
-    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>());
+    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>(), new HashMap<>(), null);
     private final SidedQuadStore sidedQuadStore;
+    private final Map<Position, Position.ModelDisplay> display;
+    private final IIcon particle;
 
-    public PileOfQuads(SidedQuadStore sidedQuadStore) {
+    public PileOfQuads(SidedQuadStore sidedQuadStore, Map<Position, Position.ModelDisplay> display, IIcon particle) {
         this.sidedQuadStore = sidedQuadStore;
+        this.display = display;
+        this.particle = particle;
     }
 
-    public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore) {
-        this(new SidedQuadStore(sidedQuadStore));
+    public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore,
+            Map<Position, Position.ModelDisplay> display, IIcon particle) {
+        this(new SidedQuadStore(sidedQuadStore), display, particle);
     }
 
     @Override
     public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
             ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
         return sidedQuadStore.getQuads(dir);
+    }
+
+    @Override
+    public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
+        return display.getOrDefault(pos, Position.ModelDisplay.DEFAULT);
+    }
+
+    @Override
+    public IIcon getParticle(int meta, Random random) {
+        return particle;
     }
 
     public static class SidedQuadStore {

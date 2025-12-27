@@ -102,6 +102,16 @@ public class VertexBuffer implements AutoCloseable {
         GL11.glDrawArrays(drawMode, 0, this.vertexCount);
     }
 
+    /**
+     * Draw a range of vertices from this buffer.
+     * 
+     * @param first First vertex index to draw
+     * @param count Number of vertices to draw
+     */
+    public void draw(int first, int count) {
+        GL11.glDrawArrays(drawMode, first, count);
+    }
+
     public void setupState() {
         bindVBO();
         format.setupBufferState(0L);
@@ -128,5 +138,9 @@ public class VertexBuffer implements AutoCloseable {
 
     public int getVertexCount() {
         return vertexCount;
+    }
+
+    public int getId() {
+        return id;
     }
 }

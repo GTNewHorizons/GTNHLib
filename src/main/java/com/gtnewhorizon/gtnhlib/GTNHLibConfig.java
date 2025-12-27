@@ -24,6 +24,15 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static boolean autoTextureLoading;
 
+    @Config.Comment("Enables various mixins that allow blocks to dynamically change their sound.")
+    @Config.DefaultBoolean(true)
+    @Config.RequiresMcRestart
+    public static boolean blockSoundMixins;
+
+    @Config.Comment("Enable item rendering modifications to allow rendering some items as translucent")
+    @Config.DefaultBoolean(true)
+    public static boolean enableTranslucentItemRenders;
+
     @Config.Comment("If you're not a dev, you don't need this")
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart

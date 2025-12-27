@@ -19,7 +19,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
-    compileOnly("com.github.GTNewHorizons:lwjgl3ify:2.1.17") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:lwjgl3ify:3.0.0-beta.8") { transitive = false }
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.10") { transitive = false }
 
     // Annotation things
@@ -31,5 +31,6 @@ dependencies {
     // For CapturingTesselator compat
     compileOnly("com.falsepattern:falsetweaks-mc1.7.10:3.8.4:api")
 
-    compileOnly('curse.maven:minefactory-reloaded-66672:2366150') { transitive = false }
+    compileOnly(rfg.deobf('curse.maven:minefactory-reloaded-66672:2366150')) { transitive = false }
+    compileOnly(rfg.deobf("curse.maven:cofh-core-69162:2388751")) { transitive = false }
 }

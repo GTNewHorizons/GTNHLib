@@ -11,6 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.util.ResourceLocation;
 
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
@@ -206,8 +208,12 @@ public class ShaderProgram implements AutoCloseable {
         GL20.glUseProgram(this.program);
     }
 
-    public static void clear() {
+    public static void unbind() {
         GL20.glUseProgram(0);
+    }
+
+    public static void clear() {
+        unbind();
     }
 
     public int getUniformLocation(String name) {
@@ -236,5 +242,33 @@ public class ShaderProgram implements AutoCloseable {
 
     public void close() {
         GL20.glDeleteProgram(program);
+    }
+
+    public final void glUniform2f(int location, Vector2f vec2) {
+        GL20.glUniform2f(location, vec2.x, vec2.y);
+    }
+
+    /**
+     * Only uploads the uniform variable if {@code last != vec2} and automatically updates the value of {@code last}.
+     */
+    public final void glUniform2f(int location, Vector2f vec2, Vector2f last) {
+        if (last.x != vec2.x || last.y != vec2.y) {
+            glUniform2f(location, vec2);
+            last.set(vec2);
+        }
+    }
+
+    public final void glUniform3f(int location, Vector3f vec3) {
+        GL20.glUniform3f(location, vec3.x, vec3.y, vec3.z);
+    }
+
+    /**
+     * Only uploads the uniform variable if {@code last != vec3} and automatically updates the value of {@code last}.
+     */
+    public final void glUniform3f(int location, Vector3f vec3, Vector3f last) {
+        if (last.x != vec3.x || last.y != vec3.y || last.z != vec3.z) {
+            glUniform3f(location, vec3);
+            last.set(vec3);
+        }
     }
 }

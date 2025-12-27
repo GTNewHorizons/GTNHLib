@@ -8,7 +8,7 @@ import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.FallbackResourceManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.IResourcePack;
@@ -146,14 +146,24 @@ public class ModelRegistry {
             STATE_MODEL_MAP_CACHE.clear();
             JSON_MODEL_CACHE.clear();
 
-            if (autoTextureLoading) detectAndLoadTextures();
+            if (!(irm instanceof GlobalResourceManager manager)) {
+                return;
+            }
+
+            if (autoTextureLoading) detectAndLoadTextures(manager);
         }
 
-        private void detectAndLoadTextures() {
-            // Scan resourcepacks for model files
+        private void detectAndLoadTextures(GlobalResourceManager manager) {
+            // Scan resource packs for model files
+            final var domains = manager.nhlib$getDomainResourceManagers();
             final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
-            Minecraft.getMinecraft().getResourcePackRepository().getRepositoryEntries()
-                    .forEach(e -> resourcePacks.add(e.getResourcePack()));
+
+            for (var entry : domains.entrySet()) {
+                var files = entry.getValue();
+                if (files instanceof FallbackResourceManager) {
+                    resourcePacks.addAll(((BackingResourceManager) files).nhlib$getResourcePacks());
+                }
+            }
 
             final var texturesToLoad = new ObjectArrayList<String>();
             for (var pack : resourcePacks) {
@@ -164,8 +174,8 @@ public class ModelRegistry {
                         && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
                     continue;
 
-                final var texs = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
-                texturesToLoad.addAll(texs);
+                final var texture = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
+                texturesToLoad.addAll(texture);
             }
 
             EventHandler.texturesToLoad = texturesToLoad;
@@ -179,7 +189,9 @@ public class ModelRegistry {
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
         public void onTextureStitch(TextureStitchEvent.Pre event) {
-            for (var tex : texturesToLoad) event.map.registerIcon(tex.replaceFirst("^minecraft:", ""));
+            for (var texture : texturesToLoad) {
+                event.map.registerIcon(texture.replaceFirst("^minecraft:", ""));
+            }
         }
     }
 }

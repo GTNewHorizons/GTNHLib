@@ -16,8 +16,7 @@ import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.BloomTonemapShader;
 
 /**
  * Constructs a new framebuffer with the specified configuration flags.
@@ -69,7 +68,6 @@ public class CustomFramebuffer {
     public CustomFramebuffer(int width, int height, int settings) {
         this(settings);
         createFramebuffer(width, height);
-        unbindFramebuffer();
     }
 
     protected int createBufferBits() {
@@ -148,6 +146,7 @@ public class CustomFramebuffer {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_COMPARE_MODE, 0);
+            // Allocate texture
             if (stencil) {
                 GL11.glTexImage2D(
                         GL11.GL_TEXTURE_2D,
@@ -171,51 +170,65 @@ public class CustomFramebuffer {
                         GL11.GL_FLOAT,
                         (IntBuffer) null);
             }
-            OpenGlHelper.func_153188_a(
-                    GL30.GL_FRAMEBUFFER,
-                    GL30.GL_DEPTH_ATTACHMENT,
-                    GL11.GL_TEXTURE_2D,
-                    this.depthAttachment,
-                    0);
-            if (stencil) {
-                OpenGlHelper.func_153188_a(
-                        GL30.GL_FRAMEBUFFER,
-                        GL30.GL_STENCIL_ATTACHMENT,
-                        GL11.GL_TEXTURE_2D,
-                        this.depthAttachment,
-                        0);
-            }
+            // Link texture to framebuffer
+            linkDepthTexture(stencil);
         } else {
             depthAttachment = OpenGlHelper.func_153185_f();
             OpenGlHelper.func_153176_h(GL30.GL_RENDERBUFFER, this.depthAttachment);
+            // Allocate renderbuffer
             if (stencil) {
                 OpenGlHelper.func_153186_a(
                         GL30.GL_RENDERBUFFER,
                         EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT,
                         framebufferWidth,
                         framebufferHeight);
-                OpenGlHelper.func_153190_b(
-                        GL30.GL_FRAMEBUFFER,
-                        EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
-                        GL30.GL_RENDERBUFFER,
-                        this.depthAttachment);
-                OpenGlHelper.func_153190_b(
-                        GL30.GL_FRAMEBUFFER,
-                        EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
-                        GL30.GL_RENDERBUFFER,
-                        this.depthAttachment);
             } else {
                 OpenGlHelper.func_153186_a(
                         GL30.GL_FRAMEBUFFER,
                         GL14.GL_DEPTH_COMPONENT24,
                         framebufferWidth,
                         framebufferHeight);
-                OpenGlHelper.func_153190_b(
-                        GL30.GL_FRAMEBUFFER,
-                        GL30.GL_DEPTH_ATTACHMENT,
-                        GL30.GL_RENDERBUFFER,
-                        this.depthAttachment);
             }
+            // Link renderbuffer to framebuffer
+            linkDepthRenderbuffer(stencil);
+        }
+    }
+
+    protected final void linkDepthTexture(boolean stencil) {
+        OpenGlHelper.func_153188_a(
+                GL30.GL_FRAMEBUFFER,
+                GL30.GL_DEPTH_ATTACHMENT,
+                GL11.GL_TEXTURE_2D,
+                this.depthAttachment,
+                0);
+        if (stencil) {
+            OpenGlHelper.func_153188_a(
+                    GL30.GL_FRAMEBUFFER,
+                    GL30.GL_STENCIL_ATTACHMENT,
+                    GL11.GL_TEXTURE_2D,
+                    this.depthAttachment,
+                    0);
+        }
+    }
+
+    protected final void linkDepthRenderbuffer(boolean stencil) {
+        if (stencil) {
+            OpenGlHelper.func_153190_b(
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
+            OpenGlHelper.func_153190_b(
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
+        } else {
+            OpenGlHelper.func_153190_b(
+                    GL30.GL_FRAMEBUFFER,
+                    GL30.GL_DEPTH_ATTACHMENT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
         }
     }
 
@@ -438,37 +451,8 @@ public class CustomFramebuffer {
         pixelBuffer.get(pixels);
     }
 
-    // TONEMAP SHADER
-
-    private static ShaderProgram tonemapShader;
-    private static int uMultiplier;
-    private static float tonemapMultiplier;
-
     public void applyTonemapping(float multiplier) {
-        if (tonemapShader == null) {
-            tonemapShader = new ShaderProgram(
-                    GTNHLib.RESOURCE_DOMAIN,
-                    "shaders/hdr/tonemap.vert.glsl",
-                    "shaders/hdr/tonemap.frag.glsl");
-            tonemapShader.use();
-            uMultiplier = tonemapShader.getUniformLocation("multiplier");
-            tonemapShader.bindTextureSlot("uScene", 0);
-            tonemapShader.bindTextureSlot("uOverlay", 1);
-            ShaderProgram.clear();
-        }
-
-        tonemapShader.use();
-        if (tonemapMultiplier != multiplier) {
-            GL20.glUniform1f(uMultiplier, multiplier);
-            tonemapMultiplier = multiplier;
-        }
-        Minecraft.getMinecraft().getFramebuffer().bindFramebufferTexture();
-        GL13.glActiveTexture(GL13.GL_TEXTURE1);
-        bindFramebufferTexture();
-        GL11.glDisable(GL11.GL_BLEND);
-        PostProcessingHelper.drawFullscreenQuad();
-        // this.copyTextureToFile("bloomshader", "framebuffer_final.png");
-        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        BloomTonemapShader.getInstance().applyTonemapping(multiplier, framebufferTexture);
     }
 
     // DEBUG TOOLS
