@@ -284,6 +284,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         public boolean hasBrightness;
         public boolean hasColor;
         public boolean hasNormals;
+        @Deprecated
         public int drawMode = GL11.GL_QUADS;
 
         public Flags(boolean hasTexture, boolean hasBrightness, boolean hasColor, boolean hasNormals) {

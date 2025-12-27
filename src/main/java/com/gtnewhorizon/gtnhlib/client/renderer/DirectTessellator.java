@@ -2,111 +2,89 @@ package com.gtnewhorizon.gtnhlib.client.renderer;
 
 import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.*;
-import static net.minecraft.util.MathHelper.clamp_int;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
+import java.util.List;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.shader.TesselatorVertexState;
 
-import org.joml.Matrix3f;
-import org.joml.Vector3f;
-import org.lwjgl.BufferUtils;
-
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement;
 
-public final class DirectTessellator extends Tessellator {
+public final class DirectTessellator extends Tessellator implements AutoCloseable {
 
-    private static final DirectTessellator mainInstance = new DirectTessellator(null, 0x20000);
+    private DirectDrawCallback drawCallback;
+    private VertexFormat format;
 
-    private static final int VERTEX_SIZE_INT = 8;
+    private int textureOffset;
+    private int normalOffset;
+    private int brightnessOffset;
+    private int colorOffset;
 
-    public static DirectTessellator reuseMainInstance() {
-        return reuseMainInstance(null);
-    }
+    private long pointer;
+    private final long address;
+    private final ByteBuffer buffer;
 
-    public static DirectTessellator reuseMainInstance(DirectDrawCallback callback) {
-        return mainInstance.reuse(callback);
-    }
-
-    public DirectTessellator reuse(DirectDrawCallback callback) {
-        this.drawCallback = callback;
-        reset();
-        return this;
-    }
-
-    public DirectDrawCallback drawCallback;
+    // The copy of the main buffer (populated when calling getBufferCopy) or when the original buffer doesn't have enough space
+    // Needs to be cleared after reset();
+    private ByteBuffer copyBuffer;
 
     public DirectTessellator(DirectDrawCallback callback) {
-        this(callback, 512 * VERTEX_SIZE_INT);
+        this(callback, Tessellator.byteBuffer);
     }
 
-    public DirectTessellator(DirectDrawCallback callback, int capacity) {
+    public DirectTessellator(DirectDrawCallback callback, ByteBuffer buffer) {
         this.drawCallback = callback;
-        this.rawBufferSize = capacity;
-        this.rawBuffer = new int[capacity];
-    }
-
-    public void expandBuffer() {
-        System.out.println("Increasing buffer from " + rawBufferSize + " to " + (rawBufferSize << 1));
-        rawBufferSize = (rawBufferSize << 1);
-        rawBuffer = Arrays.copyOf(rawBuffer, rawBufferSize);
+        this.buffer = buffer;
+        this.address = memAddress0(buffer);
+        this.pointer = address;
     }
 
     /**
      * Draws the data set up in this tessellator and resets the state to prepare for new drawing.
      */
     public int draw() {
-        if (!this.isDrawing) throw new IllegalStateException("Not tesselating!");
         isDrawing = false;
-        final int i = this.rawBufferIndex * 4;
         if (drawCallback != null) {
-            drawCallback.onDraw(this);
+            if (drawCallback.onDraw(this)) {
+                this.reset();
+            }
         }
-        return i;
+        return this.vertexCount * 32;
     }
 
-    @Deprecated
-    public void discard() {
-        reset();
-    }
-
-    public void set(Tessellator tessellator) {
-        this.isDrawing = true;
-
-        this.rawBufferSize = tessellator.rawBufferSize;
-
-        this.rawBuffer = Arrays.copyOf(tessellator.rawBuffer, tessellator.rawBuffer.length);
+    public int interceptDraw(Tessellator tessellator) {
         this.vertexCount = tessellator.vertexCount;
-        this.textureU = tessellator.textureU;
-        this.textureV = tessellator.textureV;
-        this.brightness = tessellator.brightness;
-        this.color = tessellator.color;
+        this.addedVertices = tessellator.addedVertices;
         this.hasColor = tessellator.hasColor;
         this.hasTexture = tessellator.hasTexture;
         this.hasBrightness = tessellator.hasBrightness;
         this.hasNormals = tessellator.hasNormals;
-        this.rawBufferIndex = tessellator.rawBufferIndex;
-        this.addedVertices = tessellator.addedVertices;
         this.isColorDisabled = tessellator.isColorDisabled;
         this.drawMode = tessellator.drawMode;
-        this.xOffset = tessellator.xOffset;
-        this.yOffset = tessellator.yOffset;
-        this.zOffset = tessellator.zOffset;
-        this.normal = tessellator.normal;
+        this.format = getOptimalVertexFormat();
+
+
+        pointer = format.writeToBuffer0(pointer, tessellator.rawBuffer, tessellator.rawBufferIndex);
+
+        isDrawing = false;
+        if (drawCallback != null) {
+            if (drawCallback.onDraw(this)) {
+                this.reset();
+            }
+        }
+        return this.vertexCount * 32;
     }
 
-    @Override
-    public TesselatorVertexState getVertexState(float p_147564_1_, float p_147564_2_, float p_147564_3_) {
-        throw new UnsupportedOperationException("getVertexState not supported for DirectTessellator!");
-    }
-
-    @Override
-    public void setVertexState(TesselatorVertexState p_147565_1_) {
-        throw new UnsupportedOperationException("setVertexState not supported for DirectTessellator!");
+    private void clearBuffer() {
+        this.buffer.clear();
+        this.pointer = address;
     }
 
     /**
@@ -115,9 +93,36 @@ public final class DirectTessellator extends Tessellator {
     @Override
     public void reset() {
         this.vertexCount = 0;
-        this.rawBufferIndex = 0;
         this.addedVertices = 0;
         this.isDrawing = false;
+        this.hasNormals = false;
+        this.hasColor = false;
+        this.hasTexture = false;
+        this.hasBrightness = false;
+        this.isColorDisabled = false;
+
+        this.format = null;
+        if (copyBuffer != null) {
+            memFree(copyBuffer);
+            copyBuffer = null;
+        }
+        buffer.clear();
+        resetPosition();
+    }
+
+    private void resetPosition() {
+        this.pointer = address;
+    }
+
+    private ByteBuffer getReadBuffer() {
+        this.buffer.position((int) (this.pointer - this.address));
+        this.buffer.flip();
+        return this.buffer;
+    }
+
+    private ByteBuffer getWriteBuffer() {
+        this.buffer.position((int) (this.pointer - this.address));
+        return this.buffer;
     }
 
     /**
@@ -130,205 +135,257 @@ public final class DirectTessellator extends Tessellator {
         }
         this.isDrawing = true;
         this.drawMode = p_78371_1_;
-        this.hasNormals = false;
-        this.hasColor = false;
-        this.hasTexture = false;
-        this.hasBrightness = false;
-        this.isColorDisabled = false;
     }
 
-    /**
-     * Adds a vertex with the specified x,y,z to the current draw call. It will trigger a draw() if the buffer gets
-     * full.
-     */
     @Override
-    public void addVertex(double p_78377_1_, double p_78377_3_, double p_78377_5_) {
-        ensureBuffer();
+    public void addVertex(double x, double y, double z) {
+        if (format == null) {
+            setupVertexFormats(getOptimalVertexFormat());
+        }
+        // ensureBuffer(); TODO
+
+        final long pointer = this.pointer;
+        memPutFloat(pointer, (float) (x + this.xOffset));
+        memPutFloat(pointer + 4, (float) (y + this.yOffset));
+        memPutFloat(pointer + 8, (float) (z + this.zOffset));
 
         if (this.hasTexture) {
-            this.rawBuffer[this.rawBufferIndex | TEX_X_INDEX] = Float.floatToRawIntBits((float) this.textureU);
-            this.rawBuffer[this.rawBufferIndex | TEX_Y_INDEX] = Float.floatToRawIntBits((float) this.textureV);
+            memPutFloat(pointer + textureOffset, (float) this.textureU);
+            memPutFloat(pointer + textureOffset + 4, (float) this.textureV);
         }
 
         if (this.hasBrightness) {
-            this.rawBuffer[this.rawBufferIndex | LIGHT_INDEX] = this.brightness;
+            memPutInt(pointer + brightnessOffset, this.brightness);
         }
 
         if (this.hasColor) {
-            this.rawBuffer[this.rawBufferIndex | COLOR_INDEX] = this.color;
+            memPutInt(pointer + colorOffset, this.color);
         }
 
         if (this.hasNormals) {
-            this.rawBuffer[this.rawBufferIndex | NORMAL_INDEX] = this.normal;
+            memPutInt(pointer + normalOffset, this.normal);
         }
 
-        this.rawBuffer[this.rawBufferIndex | X_INDEX] = Float.floatToRawIntBits((float) (p_78377_1_ + this.xOffset));
-        this.rawBuffer[this.rawBufferIndex | Y_INDEX] = Float.floatToRawIntBits((float) (p_78377_3_ + this.yOffset));
-        this.rawBuffer[this.rawBufferIndex | Z_INDEX] = Float.floatToRawIntBits((float) (p_78377_5_ + this.zOffset));
-        this.rawBufferIndex += 8;
+        this.pointer = pointer + format.getVertexSize();
+
+        this.addedVertices++;
+        this.vertexCount++;
     }
 
-    public VertexFormat getOptimalVertexFormat() {
-        final boolean hasColor = this.hasColor;
-        final boolean hasTexture = this.hasTexture;
-        final boolean hasBrightness = this.hasBrightness;
-        final boolean hasNormals = this.hasNormals;
+//    private void ensureCapacity() {
+//        if (this.buffer.capacity() < (addedVertices + 1) * ) {
+//
+//        }
+//    }
 
-        final VertexFormat format;
+    private void setupVertexFormats(VertexFormat format) {
+        this.format = format;
+        final List<VertexFormatElement> elements = format.getElements();
+        final int size = elements.size();
+        int offset = 12; // 12 for the position
+        for (int i = 1; i < size; i++) {
+            final VertexFormatElement element = elements.get(i);
+            switch (element.getVertexBit()) {
+                case VertexFlags.TEXTURE_BIT -> {
+                    textureOffset = offset;
+                    offset += 8;
+                }
+                case VertexFlags.COLOR_BIT -> {
+                    colorOffset = offset;
+                    offset += 4;
+                }
+                case VertexFlags.NORMAL_BIT -> {
+                    normalOffset = offset;
+                    offset += 4;
+                }
+                case VertexFlags.BRIGHTNESS_BIT -> {
+                    brightnessOffset = offset;
+                    offset += 4;
+                }
+            }
+        }
+    }
 
-        // Map flags to GTNHLib formats, ordered by guess at frequency/likelihood
-        if (!hasColor && hasTexture && !hasBrightness && !hasNormals) {
-            format = DefaultVertexFormat.POSITION_TEXTURE; // Entity models, common
-        } else if (!hasColor && !hasTexture && !hasBrightness && !hasNormals) {
-            format = DefaultVertexFormat.POSITION; // Sky rendering, simple geometry
-        } else if (hasColor && hasTexture && !hasBrightness && !hasNormals) {
-            format = DefaultVertexFormat.POSITION_TEXTURE_COLOR; // Colored blocks/UI
-        } else if (!hasColor && hasTexture && hasBrightness && hasNormals) {
-            format = DefaultVertexFormat.POSITION_TEXTURE_LIGHT_NORMAL; // BuildCraft fluids
-        } else if (!hasColor && hasTexture && !hasBrightness && hasNormals) {
-            format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL; // Lit geometry with normals
-        } else if (hasColor && hasTexture && hasBrightness && !hasNormals) {
-            format = DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP; // Colored lit blocks
-        } else if (hasColor && !hasTexture && !hasBrightness && !hasNormals) {
-            format = DefaultVertexFormat.POSITION_COLOR; // Colored lines/particles
-        } else {
-            format = DefaultVertexFormat.POSITION_COLOR_TEXTURE_LIGHT_NORMAL; // Full format fallback
+    // If some mod does something illegal (like calling setColor after a vertex has been emitted), this will result in
+    // Unintended behaviour, but I still have to take that into account here.
+    private void fixBufferFormat(boolean hasTexture, boolean hasColor, boolean hasNormals, boolean hasBrightness) {
+        final boolean oldHasTexture = this.hasTexture;
+        final boolean oldHasColor = this.hasColor;
+        final boolean oldHasNormals = this.hasNormals;
+        final boolean oldHasBrightness = this.hasBrightness;
+
+        final int oldTextureOffset = this.textureOffset;
+        final int oldColorOffset = this.colorOffset;
+        final int oldNormalOffset = this.normalOffset;
+        final int oldBrightnessOffset = this.brightnessOffset;
+
+        this.hasTexture = hasTexture;
+        this.hasColor = hasColor;
+        this.hasNormals = hasNormals;
+        this.hasBrightness = hasBrightness;
+
+        throw new UnsupportedOperationException();
+
+        // this.format = getOptimalVertexFormat();
+        // setupVertexFormats(format);
+        //
+        // ByteBuffer old = this.getBufferCopy();
+        // long oldPtr = memAddress0(old);
+
+        // if (this.hasTexture) {
+        // if (oldHasTexture) {
+        // memPutFloat(pointer + textureOffset, memGetFloat(oldPtr + ));
+        // memPutFloat(pointer + textureOffset + 4, (float) this.textureV);
+        // }
+        //
+        // }
+        //
+        // if (this.hasBrightness) {
+        // memPutInt(pointer + brightnessOffset, this.brightness);
+        // }
+        //
+        // if (this.hasColor) {
+        // memPutInt(pointer + colorOffset, this.color);
+        // }
+        //
+        // if (this.hasNormals) {
+        // memPutInt(pointer + normalOffset, this.normal);
+        // }
+    }
+
+    @Override
+    public void setTextureUV(double p_78385_1_, double p_78385_3_) {
+        if (format == null) {
+            this.hasTexture = true;
+        } else if (!this.hasTexture) {
+            fixBufferFormat(true, this.hasColor, this.hasNormals, this.hasBrightness);
         }
 
+        this.textureU = p_78385_1_;
+        this.textureV = p_78385_3_;
+    }
+
+    @Override
+    public void setNormal(float p_78375_1_, float p_78375_2_, float p_78375_3_) {
+        if (format == null) {
+            this.hasNormals = true;
+        } else if (!this.hasNormals) {
+            fixBufferFormat(this.hasTexture, this.hasColor, true, this.hasBrightness);
+        }
+        byte b0 = (byte) ((int) (p_78375_1_ * 127.0F));
+        byte b1 = (byte) ((int) (p_78375_2_ * 127.0F));
+        byte b2 = (byte) ((int) (p_78375_3_ * 127.0F));
+        this.normal = b0 & 255 | (b1 & 255) << 8 | (b2 & 255) << 16;
+    }
+
+    @Override
+    public void setColorRGBA(int red, int green, int blue, int alpha) {
+        if (this.isColorDisabled) return;
+        if (red > 255) {
+            red = 255;
+        }
+
+        if (green > 255) {
+            green = 255;
+        }
+
+        if (blue > 255) {
+            blue = 255;
+        }
+
+        if (alpha > 255) {
+            alpha = 255;
+        }
+
+        if (red < 0) {
+            red = 0;
+        }
+
+        if (green < 0) {
+            green = 0;
+        }
+
+        if (blue < 0) {
+            blue = 0;
+        }
+
+        if (alpha < 0) {
+            alpha = 0;
+        }
+
+        if (format == null) {
+            this.hasColor = true;
+        } else if (!this.hasColor) {
+            fixBufferFormat(this.hasTexture, true, this.hasNormals, this.hasBrightness);
+        }
+
+        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+            this.color = alpha << 24 | blue << 16 | green << 8 | red;
+        } else {
+            this.color = red << 24 | green << 16 | blue << 8 | alpha;
+        }
+    }
+
+    @Override
+    public void setBrightness(int p_78380_1_) {
+        if (format == null) {
+            this.hasBrightness = true;
+        } else if (!this.hasBrightness) {
+            fixBufferFormat(this.hasTexture, this.hasColor, this.hasNormals, true);
+        }
+        this.brightness = p_78380_1_;
+    }
+
+    public int getVertexCount() {
+        return this.vertexCount;
+    }
+
+    VertexBuffer uploadToVBO() {
+        VertexBuffer vbo = VAOManager.createVAO(this.format, this.drawMode);
+        ByteBuffer buffer = this.getReadBuffer();
+        vbo.upload(buffer, this.vertexCount);
+        this.reset();
+        return vbo;
+    }
+
+    public ByteBuffer getBufferCopy() {
+        ByteBuffer buffer = this.getReadBuffer();
+        final int remaining = buffer.limit();
+        ByteBuffer copy = memAlloc(remaining);
+        memCopy(buffer, copy);
+        copy.position(remaining);
+        copy.flip();
+        return copy;
+    }
+
+//    private VertexFormat getOptimalVertexFormat() {
+//        return VertexFlags.getFormat(this);
+//    }
+
+    public boolean isEmpty() {
+        return format == null;
+    }
+
+    public VertexFormat getVertexFormat() {
         return format;
     }
 
-    public ByteBuffer compileToByteBuffer(VertexFormat format) {
-        ByteBuffer buffer = byteBuffer;
-        buffer.clear();
-
-        format.writeToBuffer(buffer, rawBuffer, rawBufferIndex);
-        buffer.flip();
-
-        // System.out.println(
-        // "Number vertices: " + (rawBufferIndex / 8)
-        // + ", calculated vertices: "
-        // + (buffer.remaining() / format.getVertexSize())
-        // + ", new calculated vertices: " + (buffer.limit() / format.getVertexSize()));
-        return buffer;
+    @Override
+    public TesselatorVertexState getVertexState(float p_147564_1_, float p_147564_2_, float p_147564_3_) {
+        throw new UnsupportedOperationException("getVertexState not supported for DirectTessellator!");
     }
 
-    public ByteBuffer compileToByteBufferCopy(VertexFormat format) {
-        ByteBuffer buffer = BufferUtils.createByteBuffer((rawBufferIndex / 8) * format.getVertexSize());
-        buffer.clear();
-
-        format.writeToBuffer(buffer, rawBuffer, rawBufferIndex);
-        buffer.flip();
-        return buffer;
+    @Override
+    public void setVertexState(TesselatorVertexState p_147565_1_) {
+        throw new UnsupportedOperationException("setVertexState not supported for DirectTessellator!");
     }
 
-    public int[] getVertexData() {
-        return Arrays.copyOf(rawBuffer, rawBufferIndex);
+    public VertexFormat getOptimalVertexFormat() {
+        return VertexFlags.getFormat(this);
     }
 
-    public void ensureBuffer() {
-        if (rawBufferIndex >= rawBufferSize - 32) {
-            expandBuffer();
-        }
-    }
-
-    // CAPTURING TESSELLATOR METHODS
-
-    public DirectTessellator pos(double x, double y, double z) {
-        ensureBuffer();
-
-        this.rawBuffer[this.rawBufferIndex | X_INDEX] = Float.floatToRawIntBits((float) (x + this.xOffset));
-        this.rawBuffer[this.rawBufferIndex | Y_INDEX] = Float.floatToRawIntBits((float) (y + this.yOffset));
-        this.rawBuffer[this.rawBufferIndex | Z_INDEX] = Float.floatToRawIntBits((float) (z + this.zOffset));
-
-        return this;
-    }
-
-    public DirectTessellator tex(double u, double v) {
-        this.rawBuffer[this.rawBufferIndex | TEX_X_INDEX] = Float.floatToRawIntBits((float) u);
-        this.rawBuffer[this.rawBufferIndex | TEX_Y_INDEX] = Float.floatToRawIntBits((float) v);
-        this.hasTexture = true;
-
-        return this;
-    }
-
-    public DirectTessellator color(float red, float green, float blue, float alpha) {
-        return this.color((int) (red * 255.0F), (int) (green * 255.0F), (int) (blue * 255.0F), (int) (alpha * 255.0F));
-    }
-
-    public DirectTessellator color(int red, int green, int blue, int alpha) {
-        if (this.isColorDisabled) return this;
-        red = clamp_int(red, 0, 255);
-        green = clamp_int(green, 0, 255);
-        blue = clamp_int(blue, 0, 255);
-        alpha = clamp_int(alpha, 0, 255);
-
-        final int color;
-        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-            color = alpha << 24 | blue << 16 | green << 8 | red;
-        } else {
-            color = red << 24 | green << 16 | blue << 8 | alpha;
-        }
-        this.rawBuffer[this.rawBufferIndex | COLOR_INDEX] = color;
-        this.hasColor = true;
-
-        return this;
-    }
-
-    public DirectTessellator normal(float x, float y, float z) {
-        final byte b0 = (byte) ((int) (x * 127.0F));
-        final byte b1 = (byte) ((int) (y * 127.0F));
-        final byte b2 = (byte) ((int) (z * 127.0F));
-
-        this.rawBuffer[this.rawBufferIndex | NORMAL_INDEX] = b0 & 255 | (b1 & 255) << 8 | (b2 & 255) << 16;
-        this.hasNormals = true;
-        return this;
-    }
-
-    public DirectTessellator setNormal(int normal) {
-        this.hasNormals = true;
-        this.normal = normal;
-        return this;
-    }
-
-    /**
-     * Sets the normal based on a given normal matrix
-     *
-     * @param normal       The normal vector
-     * @param dest         The vector that gets transformed
-     * @param normalMatrix The normal matrix (typically the transpose of the inverse transformation matrix)
-     */
-    public DirectTessellator setNormalTransformed(Vector3f normal, Vector3f dest, Matrix3f normalMatrix) {
-        normalMatrix.transform(normal, dest).normalize();
-        this.setNormal(dest.x, dest.y, dest.z);
-        return this;
-    }
-
-    /**
-     * Same as the method above, but this one will mutate the passed Vector3f
-     */
-    public DirectTessellator setNormalTransformed(Vector3f normal, Matrix3f normalMatrix) {
-        return setNormalTransformed(normal, normal, normalMatrix);
-    }
-
-    public DirectTessellator lightmap(int skyLight, int blockLight) {
-        return brightness(CapturingTessellator.createBrightness(skyLight, blockLight));
-    }
-
-    public DirectTessellator brightness(int brightness) {
-        this.rawBuffer[this.rawBufferIndex | LIGHT_INDEX] = brightness;
-        this.hasBrightness = true;
-
-        return this;
-    }
-
-    public DirectTessellator endVertex() {
-        this.rawBufferIndex += 8;
-
-        return this;
-    }
-
-    public boolean isEmpty() {
-        return rawBufferSize == 0;
+    @Override
+    public void close() {
+        reset();
     }
 }

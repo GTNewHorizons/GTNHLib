@@ -1,25 +1,22 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vertex;
 
 import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
+import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import lombok.Getter;
-
-import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.*;
 
 public class VertexFormat {
 
     @Getter
-    protected final ImmutableList<VertexFormatElement> elements;
+    protected final List<VertexFormatElement> elements;
     @Getter
     protected final int vertexSize;
     protected final int[] offsets;
@@ -41,23 +38,21 @@ public class VertexFormat {
         final int length = elements.length;
         this.offsets = new int[length];
 
-        final ImmutableList.Builder<VertexFormatElement> builder = new ImmutableList.Builder<>();
         int offset = 0;
         int flags = 0;
         for (int i = 0; i < length; i++) {
             final VertexFormatElement element = elements[i];
+
             offsets[i] = offset;
             offset += element.getByteSize();
-            // Skip padding elements from being added to the list. They are no longer needed after the offsets
-            if (element == DefaultVertexFormat.PADDING_ELEMENT) continue;
-            builder.add(element);
             flags |= element.vertexBit;
         }
         this.vertexFlags = flags;
 
-        this.elements = builder.build();
+        this.elements = new ObjectImmutableList<>(elements);
         this.vertexSize = offset;
 
+        DefaultVertexFormat.ALL_FORMATS[this.vertexFlags] = this;
     }
 
     public void setupBufferState(long l) {
@@ -150,11 +145,11 @@ public class VertexFormat {
     }
 
     public void writeToBuffer(ByteBuffer out, int[] data, int rawVertexCount) {
-        if (out.remaining() < this.getVertexSize() * (rawVertexCount / 8)) throw new IllegalArgumentException(
-                "Buffer only has " + out.remaining()
-                        + " out of "
-                        + this.getVertexSize() * (rawVertexCount / 8)
-                        + " bytes remaining.");
+        // if (out.remaining() < this.getVertexSize() * (rawVertexCount / 8)) throw new IllegalArgumentException(
+        // "Buffer only has " + out.remaining()
+        // + " out of "
+        // + this.getVertexSize() * (rawVertexCount / 8)
+        // + " bytes remaining.");
         final List<VertexFormatElement> list = this.getElements();
         final int listSize = list.size();
 
@@ -169,12 +164,28 @@ public class VertexFormat {
         out.position((int) (writePointer - address));
     }
 
+    public long writeToBuffer0(long pointer, int[] data, int rawVertexCount) {
+        final List<VertexFormatElement> list = this.getElements();
+        final int listSize = list.size();
+
+        for (int index = 0; index < rawVertexCount; index += 8) {
+            for (int i = 0; i < listSize; i++) {
+                pointer += list.get(i).writer.writeAttribute(pointer, data, index);
+            }
+        }
+        return pointer;
+    }
+
     public int getVertexCount(ByteBuffer buffer) {
         return getVertexCount(buffer.remaining());
     }
 
     public int getVertexCount(int bufferSize) {
         return bufferSize / vertexSize;
+    }
+
+    public final int getVertexFlags() {
+        return this.vertexFlags;
     }
 
     public final boolean hasTexture() {

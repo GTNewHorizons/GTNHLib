@@ -1,12 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vbo;
 
+import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import io.netty.buffer.ByteBuf;
-import org.lwjgl.BufferUtils;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
@@ -66,10 +65,18 @@ public final class BigVBOBuilder {
                 for (ByteBuffer buffer : buffers) {
                     needed += buffer.remaining();
                 }
-                final ByteBuffer out = BufferUtils.createByteBuffer(needed);
+
+                ByteBuffer out = memAlloc(needed);
+                long dst = memAddress0(out);
+
                 for (ByteBuffer buffer : buffers) {
-                    out.put(buffer);
+                    int len = buffer.remaining();
+                    long src = memAddress0(buffer) + buffer.position();
+                    memCopy(src, dst, len);
+                    dst += len;
                 }
+
+                out.position(needed);
                 out.flip();
                 vao.upload(out);
             }

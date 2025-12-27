@@ -89,7 +89,6 @@ public class TessellatorManager {
         }
     }
 
-
     public static boolean isCurrentlyCapturing() {
         CaptureState current = peekState();
         return current != null && current.mode == CaptureMode.CAPTURING;
@@ -245,19 +244,24 @@ public class TessellatorManager {
         return new VertexBuffer(format).upload(stopCapturingToBuffer(format));
     }
 
+    // --------------- DIRECT TESSELLATOR ---------------
+
+    // Instance to use for capturing to vbo's (package-private)
+    static final DirectTessellator mainInstance = new DirectTessellator(null);
+
     public static DirectTessellator startCapturingDirect() {
-        DirectTessellator tessellator = directTessellators.isEmpty() ? DirectTessellator.reuseMainInstance()
-                : new DirectTessellator(null);
+        DirectTessellator tessellator = directTessellators.isEmpty() ? mainInstance : new DirectTessellator(null);
         startCapturingDirect(tessellator);
         return tessellator;
     }
 
-     public static DirectTessellator startCapturingDirect(DirectDrawCallback callback) {
+    public static DirectTessellator startCapturingDirect(DirectDrawCallback callback) {
         DirectTessellator tessellator = new DirectTessellator(callback);
         startCapturingDirect(tessellator);
         return tessellator;
-     }
+    }
 
+    // Every call needs to be pushed onto the stack to make sure it gets properly cleaned up afterwards
     public static void startCapturingDirect(DirectTessellator tessellator) {
         if (!isOnMainThread()) {
             throw new IllegalStateException("Display list compilation can only happen on main thread!");
@@ -265,22 +269,23 @@ public class TessellatorManager {
         directTessellators.push(tessellator);
     }
 
-    public static DirectTessellator stopCapturingDirect() {
+    public static void stopCapturingDirect() {
         if (directTessellators.isEmpty())
             throw new IllegalStateException("Tried to stop capturing when not capturing!");
-        return directTessellators.pop();
+        directTessellators.pop().close();
+    }
+
+    private static DirectTessellator getDirectTessellator() {
+        if (directTessellators.isEmpty())
+            throw new IllegalStateException("Tried to stop capturing when not capturing!");
+        return directTessellators.peek();
     }
 
     public static VertexBuffer stopCapturingDirectToVAO() {
-        final DirectTessellator tessellator = stopCapturingDirect();
-        // final VertexFormat format = tessellator.getOptimalVertexFormat();
-        VertexFormat format = tessellator.getOptimalVertexFormat();
-        return VAOManager.createVAO(format, tessellator.drawMode).upload(tessellator.compileToByteBuffer(format));
-    }
-
-    public static VertexBuffer stopCapturingDirectToVAO(VertexFormat format) {
-        final DirectTessellator tessellator = stopCapturingDirect();
-        return VAOManager.createVAO(format, tessellator.drawMode).upload(tessellator.compileToByteBuffer(format));
+        final DirectTessellator tessellator = getDirectTessellator();
+        final VertexBuffer vbo = tessellator.uploadToVBO();
+        stopCapturingDirect();
+        return vbo;
     }
 
     /**
@@ -464,7 +469,8 @@ public class TessellatorManager {
      * @return true if draw() should be intercepted, false otherwise
      */
     public static boolean shouldInterceptDraw(Tessellator tess) {
-        return ((ITessellatorInstance) tess).gtnhlib$isCompiling() || !directTessellators.isEmpty();
+        return ((ITessellatorInstance) tess).gtnhlib$isCompiling()
+                || (!directTessellators.isEmpty() && !isCurrentlyCapturing());
     }
 
     /**
@@ -485,10 +491,8 @@ public class TessellatorManager {
         }
 
         if (!directTessellators.isEmpty()) {
-            int result = tess.rawBufferIndex * 4;
             final DirectTessellator tessellator = directTessellators.peek();
-            tessellator.set(tess);
-            tessellator.draw();
+            int result = tessellator.interceptDraw(tess);
 
             ((ITessellatorInstance) tess).discard();
             return result;

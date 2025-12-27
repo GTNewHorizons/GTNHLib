@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vertex;
 
 import java.util.function.IntConsumer;
 
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
@@ -16,15 +17,27 @@ public class VertexFormatElement {
     protected final int index;
     protected final int count;
     protected final int byteSize;
-    protected final IVertexAttributeWriter writer;
+    protected final @NotNull IVertexAttributeWriter writer;
     protected final int vertexBit;
 
-    public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit, IVertexAttributeWriter writer) {
+    public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit,
+            IVertexAttributeWriter writer) {
         this.index = index;
         this.type = type;
         this.usage = usage;
         this.count = count;
         this.byteSize = type.getSize() * count;
+        this.vertexBit = vertexBit;
+        this.writer = writer;
+    }
+
+    public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit,
+            IVertexAttributeWriter writer, int padding) {
+        this.index = index;
+        this.type = type;
+        this.usage = usage;
+        this.count = count;
+        this.byteSize = type.getSize() * count + padding;
         this.vertexBit = vertexBit;
         this.writer = writer;
     }

@@ -1,15 +1,17 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vertex;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.*;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement.Type;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement.Usage;
-
-import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.*;
 
 public final class DefaultVertexFormat {
 
     private DefaultVertexFormat() {
         // non-instantiable class
     }
+
+    public static final VertexFormat[] ALL_FORMATS = new VertexFormat[16]; // 2^4
 
     // --------------- ELEMENTS ---------------
 
@@ -47,69 +49,77 @@ public final class DefaultVertexFormat {
             Usage.NORMAL,
             3,
             NORMAL_BIT,
-            new NormalVertexAttributeWriter());
-    public static final VertexFormatElement PADDING_ELEMENT = new VertexFormatElement(
-            0,
-            Type.BYTE,
-            Usage.PADDING,
-            1,
-            0x0,
-            null);
+            new NormalVertexAttributeWriter(),
+            1);
 
     // --------------- FORMATS ---------------
 
+    public static final VertexFormat POSITION = new VertexFormat(POSITION_ELEMENT);
+
+    // 2
+    public static final VertexFormat POSITION_TEXTURE = new VertexFormat(POSITION_ELEMENT, TEXTURE_ELEMENT);
+    public static final VertexFormat POSITION_COLOR = new VertexFormat(POSITION_ELEMENT, COLOR_ELEMENT);
+    public static final VertexFormat POSITION_NORMAL = new VertexFormat(POSITION_ELEMENT, NORMAL_ELEMENT);
+    public static final VertexFormat POSITION_LIGHT = new VertexFormat(POSITION_ELEMENT, LIGHT_ELEMENT);
+
+    // 3
     public static final VertexFormat POSITION_TEXTURE_NORMAL = new VertexFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
+            NORMAL_ELEMENT);
+    public static final VertexFormat POSITION_TEXTURE_COLOR = new VertexFormat(
+            POSITION_ELEMENT,
+            TEXTURE_ELEMENT,
+            COLOR_ELEMENT);
+    public static final VertexFormat POSITION_TEXTURE_LIGHT = new VertexFormat(
+            POSITION_ELEMENT,
+            TEXTURE_ELEMENT,
+            LIGHT_ELEMENT);
+    public static final VertexFormat POSITION_COLOR_LIGHT = new VertexFormat(
+            POSITION_ELEMENT,
+            COLOR_ELEMENT,
+            LIGHT_ELEMENT);
+    public static final VertexFormat POSITION_NORMAL_COLOR = new VertexFormat(
+            POSITION_ELEMENT,
             NORMAL_ELEMENT,
-            PADDING_ELEMENT);
+            COLOR_ELEMENT);
+    public static final VertexFormat POSITION_NORMAL_LIGHT = new VertexFormat(
+            POSITION_ELEMENT,
+            NORMAL_ELEMENT,
+            LIGHT_ELEMENT);
+
+    // 4
     public static final VertexFormat POSITION_TEXTURE_LIGHT_NORMAL = new VertexFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             LIGHT_ELEMENT,
-            NORMAL_ELEMENT,
-            PADDING_ELEMENT);
-    public static final VertexFormat POSITION_COLOR_TEXTURE_LIGHT_NORMAL = new VertexFormat(
-            POSITION_ELEMENT,
-            COLOR_ELEMENT,
-            TEXTURE_ELEMENT,
-            LIGHT_ELEMENT,
-            NORMAL_ELEMENT,
-            PADDING_ELEMENT);
+            NORMAL_ELEMENT);
     public static final VertexFormat POSITION_TEXTURE_COLOR_LIGHT = new VertexFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             COLOR_ELEMENT,
             LIGHT_ELEMENT);
-    public static final VertexFormat POSITION = new VertexFormat(POSITION_ELEMENT);
-    public static final VertexFormat POSITION_COLOR = new VertexFormat(POSITION_ELEMENT, COLOR_ELEMENT);
-    public static final VertexFormat POSITION_COLOR_LIGHT = new VertexFormat(
-            POSITION_ELEMENT,
-            COLOR_ELEMENT,
-            LIGHT_ELEMENT);
-    public static final VertexFormat POSITION_TEXTURE = new VertexFormat(POSITION_ELEMENT, TEXTURE_ELEMENT);
-    public static final VertexFormat POSITION_TEXTURE_COLOR = new VertexFormat(
-            POSITION_ELEMENT,
-            TEXTURE_ELEMENT,
-            COLOR_ELEMENT);
-    // Duplicate of POSITION_TEXTURE_COLOR
-    @Deprecated
-    public static final VertexFormat POSITION_COLOR_TEXTURE = POSITION_TEXTURE_COLOR;
-    public static final VertexFormat POSITION_COLOR_TEX_LIGHTMAP = new VertexFormat(
-            POSITION_ELEMENT,
-            COLOR_ELEMENT,
-            TEXTURE_ELEMENT,
-            LIGHT_ELEMENT);
-    public static final VertexFormat POSITION_TEXTURE_LIGHT_COLOR = new VertexFormat(
-            POSITION_ELEMENT,
-            TEXTURE_ELEMENT,
-            LIGHT_ELEMENT,
-            COLOR_ELEMENT);
     public static final VertexFormat POSITION_TEXTURE_COLOR_NORMAL = new VertexFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             COLOR_ELEMENT,
-            NORMAL_ELEMENT,
-            PADDING_ELEMENT);
+            NORMAL_ELEMENT);
+    public static final VertexFormat POSITION_COLOR_LIGHT_NORMAL = new VertexFormat(
+            POSITION_ELEMENT,
+            COLOR_ELEMENT,
+            LIGHT_ELEMENT,
+            NORMAL_ELEMENT);
+
+    // All
+    public static final VertexFormat POSITION_COLOR_TEXTURE_LIGHT_NORMAL = new VertexFormat(
+            POSITION_ELEMENT,
+            COLOR_ELEMENT,
+            TEXTURE_ELEMENT,
+            LIGHT_ELEMENT,
+            NORMAL_ELEMENT);
+
+    // Duplicate of POSITION_TEXTURE_COLOR
+    @Deprecated
+    public static final VertexFormat POSITION_COLOR_TEXTURE = POSITION_TEXTURE_COLOR;
 
 }
