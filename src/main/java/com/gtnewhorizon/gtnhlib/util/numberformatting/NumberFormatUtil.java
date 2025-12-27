@@ -57,7 +57,7 @@ public final class NumberFormatUtil {
 
     private NumberFormatUtil() {}
 
-    /* ========================= Numbers ========================= */
+    /* ========================= Main Formatter ========================= */
 
     public static String formatNumber(Number value) {
         return formatNumber(value, new NumberFormatOptions());
@@ -225,7 +225,6 @@ public final class NumberFormatUtil {
     /* ========================= Internals ========================= */
 
     private static BigDecimal toBigDecimal(Number n) {
-        if (n == null) return BigDecimal.ZERO;
         if (n instanceof BigDecimal bd) return bd;
         if (n instanceof BigInteger bi) return new BigDecimal(bi);
         if (n instanceof Byte || n instanceof Short || n instanceof Integer || n instanceof Long) {
