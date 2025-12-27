@@ -4,28 +4,24 @@ import java.math.BigInteger;
 
 /**
  * Optional tuning parameters for number formatting.
- *
  * <p>
- * These options adjust precision for lossy representations (abbreviated and scientific notation). Plain locale
- * formatting is never rounded.
+ * These options adjust precision for lossy representations (scientific/compact notation).
  */
+@SuppressWarnings("unused")
 public final class NumberFormatOptions {
 
     /**
-     * Number of significant digits to use for abbreviated and scientific representations.
-     *
-     * <p>
-     * If {@code null}, a formatter-defined default is used.
+     * Number of significant digits to use for representations.
      */
     private Integer significantDigits;
+    private static final int DEFAULT_SIG_DIGITS = 3;
 
     /**
-     * Minimum absolute value at which abbreviated formatting begins.
-     *
-     * <p>
-     * Only consulted by compact / abbreviated formatting paths. If {@code null}, a formatter-defined default is used.
+     * Minimum absolute value at which compact formatting begins. I.e. 1000 means anything above 1000 and below -1000
+     * will be compacted.
      */
     private BigInteger abbreviationThreshold;
+    private static final BigInteger DEFAULT_ABBREV_THRESHOLD = BigInteger.valueOf(1_000);
 
     public NumberFormatOptions() {}
 
@@ -56,16 +52,16 @@ public final class NumberFormatOptions {
     /* ========================= Accessors ========================= */
 
     /**
-     * Returns the requested significant digit count, or {@code null} if the default should be used.
+     * Returns the requested significant digit count.
      */
     public Integer getSignificantDigits() {
-        return significantDigits;
+        return (significantDigits == null) ? DEFAULT_SIG_DIGITS : significantDigits;
     }
 
     /**
-     * Returns the abbreviation threshold, or {@code null} if the default should be used.
+     * Returns the abbreviation threshold. Only impacts compact formatting.
      */
     public BigInteger getAbbreviationThreshold() {
-        return abbreviationThreshold;
+        return (abbreviationThreshold == null) ? DEFAULT_ABBREV_THRESHOLD : abbreviationThreshold;
     }
 }

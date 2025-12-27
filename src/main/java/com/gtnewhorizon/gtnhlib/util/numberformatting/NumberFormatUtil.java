@@ -24,9 +24,6 @@ public final class NumberFormatUtil {
     private static final BigDecimal BD_BILLION = BigDecimal.valueOf(1_000_000_000);
     private static final BigDecimal BD_TRILLION = BigDecimal.valueOf(1_000_000_000_000L);
 
-    private static final int DEFAULT_SIG_DIGITS = 3;
-    private static final BigInteger DEFAULT_ABBREV_THRESHOLD = BigInteger.valueOf(1_000);
-
     /* ========================= Formatters ========================= */
 
     private static final ThreadLocal<DecimalFormat> FORMAT = ThreadLocal.withInitial(() -> {
@@ -85,7 +82,7 @@ public final class NumberFormatUtil {
 
         if (abs.signum() == 0) return "0";
 
-        int sigDigits = options.getSignificantDigits() != null ? options.getSignificantDigits() : DEFAULT_SIG_DIGITS;
+        int sigDigits = options.getSignificantDigits();
 
         // Scientific for ≥ 1T
         if (abs.compareTo(BD_TRILLION) >= 0) {
@@ -105,8 +102,8 @@ public final class NumberFormatUtil {
     /**
      * Compact / abbreviated formatting.
      * <p>
-     * Below the abbreviation threshold → plain formatting. Between threshold and 1T → abbreviated (K/M/B). ≥ 1T →
-     * scientific.
+     * Below the abbreviation threshold becomes standard formatting. Between threshold and 1T becomes abbreviated
+     * (K/M/B), greater than 1T becomes scientific.
      */
     public static String formatNumberCompact(Number value, NumberFormatOptions options) {
         if (value == null) return "NULL";
@@ -117,10 +114,8 @@ public final class NumberFormatUtil {
 
         if (abs.signum() == 0) return "0";
 
-        int sigDigits = options.getSignificantDigits() != null ? options.getSignificantDigits() : DEFAULT_SIG_DIGITS;
-
-        BigInteger threshold = options.getAbbreviationThreshold() != null ? options.getAbbreviationThreshold()
-                : DEFAULT_ABBREV_THRESHOLD;
+        int sigDigits = options.getSignificantDigits();
+        BigInteger threshold = options.getAbbreviationThreshold();
 
         BigDecimal bdThreshold = new BigDecimal(threshold);
 
@@ -156,13 +151,16 @@ public final class NumberFormatUtil {
             suffix = "K";
         }
 
-        BigDecimal rounded = scaled.round(new MathContext(significantDigits, RoundingMode.HALF_UP));
+        BigDecimal rounded = scaled.round(
+            new MathContext(significantDigits, RoundingMode.HALF_UP)
+        );
 
-        rounded = ensureFractionalPrecision(scaled, rounded, significantDigits);
+        int integerDigits = rounded.precision() - rounded.scale();
+        int fractionDigits = Math.max(0, significantDigits - integerDigits);
 
         DecimalFormat df = ABBREVIATED_FORMAT.get();
-        df.setMaximumFractionDigits(rounded.scale());
-        df.setMinimumFractionDigits(Math.max(0, rounded.scale() - rounded.stripTrailingZeros().scale()));
+        df.setMaximumFractionDigits(fractionDigits);
+        df.setMinimumFractionDigits(0);
 
         return df.format(rounded) + suffix;
     }

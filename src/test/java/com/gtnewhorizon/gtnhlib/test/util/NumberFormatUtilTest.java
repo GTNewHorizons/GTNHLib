@@ -17,6 +17,25 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 public class NumberFormatUtilTest {
 
+    /* ========================= Rollover =============================== */
+
+    @Test
+    void abbreviationRolloverPromotesSuffix() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts = new NumberFormatOptions().significantDigits(2);
+
+            assertEquals("1M", NumberFormatUtil.formatNumberCompact(999_500, opts));
+            assertEquals("1B", NumberFormatUtil.formatNumberCompact(999_500_000, opts));
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
     /* ========================= Locale / Plain ========================= */
 
     @Test
@@ -72,7 +91,9 @@ public class NumberFormatUtilTest {
 
             assertEquals("1.23M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
             assertEquals("-1M", NumberFormatUtil.formatNumberCompact(-1_000_000, opts));
+            assertEquals("999,999", NumberFormatUtil.formatNumberCompact(999_999, opts));
             assertEquals("999", NumberFormatUtil.formatNumberCompact(999, opts));
+            assertEquals("0", NumberFormatUtil.formatNumberCompact(0, opts));
         } finally {
             Locale.setDefault(Locale.Category.FORMAT, old);
             NumberFormatUtil.resetForTests();
@@ -94,7 +115,7 @@ public class NumberFormatUtilTest {
     }
 
     @Test
-    void bigIntegerFormattingMatchesLong() {
+    void bigIntegerCompactFormattingMatchesLong() {
         Locale old = Locale.getDefault(Locale.Category.FORMAT);
         try {
             Locale.setDefault(Locale.Category.FORMAT, Locale.US);
@@ -110,6 +131,76 @@ public class NumberFormatUtilTest {
     }
 
     /* ========================= Significant Digits ========================= */
+
+    @Test
+    void significantDigitsImpact() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts = new NumberFormatOptions();
+
+            opts.significantDigits(1);
+            assertEquals("1M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(2);
+            assertEquals("1.2M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(3);
+            assertEquals("1.23M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(4);
+            assertEquals("1.235M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(5);
+            assertEquals("1.2346M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(6);
+            assertEquals("1.23457M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(7);
+            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(8);
+            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+            opts.significantDigits(9);
+            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
+
+    @Test
+    void significantDigitsSillyValues() {
+        Locale old = Locale.getDefault(Locale.Category.FORMAT);
+        try {
+            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+            NumberFormatUtil.resetForTests();
+
+            NumberFormatOptions opts = new NumberFormatOptions();
+
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> opts.significantDigits(-1)
+            );
+
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> opts.significantDigits(0)
+            );
+
+            opts.significantDigits(Integer.MAX_VALUE);
+            assertEquals("1.234567M", NumberFormatUtil.formatNumberCompact(1_234_567, opts));
+
+        } finally {
+            Locale.setDefault(Locale.Category.FORMAT, old);
+            NumberFormatUtil.resetForTests();
+        }
+    }
 
     @Test
     void significantDigitsNeverAffectPlainIntegersOrDecimals() {
