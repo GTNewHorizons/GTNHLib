@@ -20,7 +20,7 @@ public enum ModelQuadFacing {
     UNASSIGNED(0, 0, 0, null);
 
     public static final ModelQuadFacing[] VALUES = ModelQuadFacing.values();
-    public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(facing -> facing != UNASSIGNED)
+    public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(ModelQuadFacing::isDirection)
             .toArray(ModelQuadFacing[]::new);
     public static final ModelQuadFacing[] HORIZONTAL_DIRECTIONS = Arrays.stream(DIRECTIONS)
             .filter(facing -> facing.axis != Axis.Y).toArray(ModelQuadFacing[]::new);
