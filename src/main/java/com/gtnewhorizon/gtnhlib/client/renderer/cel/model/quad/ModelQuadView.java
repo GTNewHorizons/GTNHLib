@@ -1,16 +1,24 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFlags;
 
 /**
  * Provides a read-only view of a model quad. For mutable access to a model quad, see {@link ModelQuadViewMutable}.
+ * Extends {@link ModelPrimitiveView} for compatibility with the primitive rendering pipeline.
  */
-public interface ModelQuadView {
+public interface ModelQuadView extends ModelPrimitiveView {
+
+    @Override
+    default int getVertexCount() {
+        return 4;
+    }
 
     /**
      * @return The x-position of the vertex at index {@param idx}
      */
+    @Override
     float getX(int idx);
 
     /**
@@ -55,6 +63,18 @@ public interface ModelQuadView {
     int getColorIndex();
 
     /**
+     * Not to be confused with ambient occlusion AKA smooth lighting When true, allows this quad to multiply its
+     * brightness based on the direction it's facing. When this is false, each face derives its brightness directly from
+     * the light value it's facing without multiplying it.
+     */
+    boolean hasDirectionalShading();
+
+    /**
+     * The emissiveness of this face, effectively the minimum brightness value it will be rendered with.
+     */
+    int getEmissiveness();
+
+    /**
      * @return The sprite texture used by this quad, or null if none is attached
      */
     Object celeritas$getSprite();
@@ -87,10 +107,6 @@ public interface ModelQuadView {
 
     default boolean hasAmbientOcclusion() {
         return true;
-    }
-
-    default int getVanillaLightEmission() {
-        return 0;
     }
 
     int getShaderBlockId();

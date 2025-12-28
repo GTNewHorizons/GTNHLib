@@ -23,7 +23,21 @@ public interface BakeData {
     /**
      * @return True if textures shouldn't be rotated with the rest of the model; false otherwise.
      */
-    default boolean lockUV() {
+    default boolean uvLock() {
         return false;
+    }
+
+    /**
+     * @return Rotation in degrees around the x-axis
+     */
+    default int x() {
+        return 0;
+    }
+
+    /**
+     * @return Rotation in degrees around the y-axis
+     */
+    default int y() {
+        return 0;
     }
 }

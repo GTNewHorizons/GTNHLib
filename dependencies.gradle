@@ -19,8 +19,11 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
-    compileOnly("com.github.GTNewHorizons:lwjgl3ify:2.1.17") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:lwjgl3ify:3.0.0-beta.8") { transitive = false }
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.10") { transitive = false }
+
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.43-GTNH:dev") { transitive = false }
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev") { transitive = false }
 
     // Annotation things
     compileOnly("com.github.GTNewHorizons:Angelica:1.0.0-beta68:dev") { transitive = false }

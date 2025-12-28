@@ -2,9 +2,13 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vertex;
 
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.ItemVBOQuadWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionColorQuadWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionColorTextureLightNormalWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionColorTextureLightmapWriter;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionColorTextureQuadWriter;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionQuadWriter;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionTextureColorQuadWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionTextureLightNormalWriter;
 import com.gtnewhorizon.gtnhlib.client.renderer.quad.writers.PositionTextureQuadWriter;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement.Type;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement.Usage;
@@ -33,9 +37,14 @@ public class DefaultVertexFormat {
             new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(TEXTURE_ELEMENT)
                     .add(NORMAL_ELEMENT).add(PADDING_ELEMENT).build(),
             new ItemVBOQuadWriter());
+    public static final VertexFormat POSITION_TEXTURE_LIGHT_NORMAL = new VertexFormat(
+            new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(TEXTURE_ELEMENT)
+                    .add(LIGHT_ELEMENT).add(NORMAL_ELEMENT).add(PADDING_ELEMENT).build(),
+            new PositionTextureLightNormalWriter());
     public static final VertexFormat POSITION_COLOR_TEXTURE_LIGHT_NORMAL = new VertexFormat(
             new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(COLOR_ELEMENT)
-                    .add(TEXTURE_ELEMENT).add(LIGHT_ELEMENT).add(NORMAL_ELEMENT).add(PADDING_ELEMENT).build());
+                    .add(TEXTURE_ELEMENT).add(LIGHT_ELEMENT).add(NORMAL_ELEMENT).add(PADDING_ELEMENT).build(),
+            new PositionColorTextureLightNormalWriter());
     public static final VertexFormat POSITION_TEXTURE_COLOR_LIGHT = new VertexFormat(
             new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(TEXTURE_ELEMENT)
                     .add(COLOR_ELEMENT).add(LIGHT_ELEMENT).build());
@@ -43,7 +52,8 @@ public class DefaultVertexFormat {
             new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).build(),
             new PositionQuadWriter());
     public static final VertexFormat POSITION_COLOR = new VertexFormat(
-            new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(COLOR_ELEMENT).build());
+            new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(COLOR_ELEMENT).build(),
+            new PositionColorQuadWriter());
     public static final VertexFormat POSITION_COLOR_LIGHT = new VertexFormat(
             new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(COLOR_ELEMENT).add(LIGHT_ELEMENT)
                     .build());
@@ -60,7 +70,8 @@ public class DefaultVertexFormat {
             new PositionTextureColorQuadWriter());
     public static final VertexFormat POSITION_COLOR_TEX_LIGHTMAP = new VertexFormat(
             new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(COLOR_ELEMENT)
-                    .add(TEXTURE_ELEMENT).add(LIGHT_ELEMENT).build());
+                    .add(TEXTURE_ELEMENT).add(LIGHT_ELEMENT).build(),
+            new PositionColorTextureLightmapWriter());
     public static final VertexFormat POSITION_TEXTURE_LIGHT_COLOR = new VertexFormat(
             new ImmutableList.Builder<VertexFormatElement>().add(POSITION_ELEMENT).add(TEXTURE_ELEMENT)
                     .add(LIGHT_ELEMENT).add(COLOR_ELEMENT).build());
