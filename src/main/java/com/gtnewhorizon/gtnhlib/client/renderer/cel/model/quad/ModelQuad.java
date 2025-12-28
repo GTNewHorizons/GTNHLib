@@ -239,6 +239,8 @@ public class ModelQuad implements ModelQuadViewMutable {
         offsetPos(2, offsetZ);
 
         if (drawMode == GL_TRIANGLES) quadrangulate();
+
+        setLightFace(ModelQuadUtil.findLightFace(getComputedFaceNormal()));
     }
 
     /// Copies the third vertex to the fourth, turning this into a degenerate quad. Useful for faking triangle support.

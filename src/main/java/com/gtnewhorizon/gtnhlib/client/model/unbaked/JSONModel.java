@@ -178,13 +178,11 @@ public class JSONModel implements UnbakedModel {
                     Z = max(Z, vert.z);
                 }
 
-                // Set culling and nominal faces
-                quad.setLightFace(ModelQuadFacing.fromForgeDir(f.name()));
-
                 // Set shading and lighting
                 quad.setEmissiveness(e.lightEmission());
                 quad.setDirectionalShading(e.shade());
                 quad.setHasAmbientOcclusion(this.useAO);
+                quad.setLightFace(ModelQuadFacing.fromForgeDir(f.name()));
 
                 // Set UV
                 Vector4f uv = Objects.firstNonNull(f.uv(), DEFAULT_UV);

@@ -101,4 +101,29 @@ public enum ModelQuadFacing {
             case SOUTH -> POS_Z;
         };
     }
+
+    public ForgeDirection toForgeDir() {
+        return switch (this) {
+            case POS_Y -> ForgeDirection.UP;
+            case NEG_Y -> ForgeDirection.DOWN;
+            case POS_X -> ForgeDirection.EAST;
+            case NEG_X -> ForgeDirection.WEST;
+            case POS_Z -> ForgeDirection.SOUTH;
+            case NEG_Z -> ForgeDirection.NORTH;
+            case UNASSIGNED -> ForgeDirection.UNKNOWN;
+        };
+    }
+
+    public EnumFacing toEnumFacing() {
+        return switch (this) {
+            case POS_Y -> EnumFacing.UP;
+            case NEG_Y -> EnumFacing.DOWN;
+            case POS_X -> EnumFacing.WEST;
+            case NEG_X -> EnumFacing.EAST;
+            case POS_Z -> EnumFacing.SOUTH;
+            case NEG_Z -> EnumFacing.NORTH;
+            case UNASSIGNED -> throw new IllegalArgumentException(
+                    "Cannot convert UNASSIGNED ModelQuadFacing to EnumFacing!");
+        };
+    }
 }

@@ -75,14 +75,18 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         for (var dir : VALUES) {
             final var quads = model.getQuads(world, x, y, z, block, meta, dir, random, color, null);
             if (quads.isEmpty()) continue;
-            if (dir.isDirection() && !renderer.renderAllFaces) {
-                int stepX = x + dir.getStepX();
-                int stepY = y + dir.getStepY();
-                int stepZ = z + dir.getStepZ();
-                Block cullCheckBlock = world.getBlock(stepX, stepY, stepZ);
-                if (cullCheckBlock.isNormalCube(world, stepX, stepY, stepZ) && cullCheckBlock.isOpaqueCube()) {
-                    continue;
-                }
+            // Faces in the list that are not unassigned (isDirection() == true) check block.shouldSideBeRendered for
+            // that direction and cull that list if it's false. Uses a mixin to remove the bounds checks because those
+            // bounds have no effect on JSON geometry.
+            if (dir.isDirection() && !renderer.renderAllFaces
+                    && shouldSideBeRendered(
+                            world,
+                            x + dir.getStepX(),
+                            y + dir.getStepY(),
+                            z + dir.getStepZ(),
+                            dir.toForgeDir().ordinal(),
+                            block)) {
+                continue;
             }
 
             // iterates over the quads and dumps em into the tesselator, nothing special
@@ -263,6 +267,15 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopMatrix();
+    }
+
+    /**
+     * TODO: We need to find a good way to make it so the bound fields are not accounted for but I still want to use
+     * {@link Block#shouldSideBeRendered}. This is so blocks can define custom culling behavior when needed, but the
+     * bound fields are not relevant here because JSON models don't listen to them.
+     */
+    protected boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side, Block block) {
+        return block.shouldSideBeRendered(world, x, y, z, side);
     }
 
     private static final Vector3f rotated = new Vector3f(0f, 0f, 0f);

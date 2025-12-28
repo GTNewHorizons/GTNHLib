@@ -26,7 +26,7 @@ public class GTNHLibConfig {
 
     @Config.Comment("Ensures that blocks always return a valid icon for JSON model blocks, by overriding the block icon functions and passing the particle icon.")
     @Config.DefaultBoolean(true)
-    public static boolean modelIconWrapper;
+    public static boolean modelIconWrapperMixin;
 
     @Config.Comment("Enables various mixins that allow blocks to dynamically change their sound.")
     @Config.DefaultBoolean(true)
