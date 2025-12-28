@@ -75,9 +75,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         for (var dir : VALUES) {
             final var quads = model.getQuads(world, x, y, z, block, meta, dir, random, color, null);
             if (quads.isEmpty()) continue;
-            // Faces in the list that are not unassigned (isDirection() == true) check block.shouldSideBeRendered for
-            // that direction and cull that list if it's false. Uses a mixin to remove the bounds checks because those
-            // bounds have no effect on JSON geometry.
             if (dir.isDirection() && !renderer.renderAllFaces
                     && !shouldSideBeRendered(
                             world,
