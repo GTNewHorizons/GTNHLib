@@ -31,9 +31,10 @@ public enum Mixins implements IMixins {
                             "models.MixinFolderResourcePack",
                             "models.SRRMAccessor")
                     .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
-    BLOCK_PARTICLE(
-            new MixinBuilder("Automatically override model block particle").addClientMixins("models.MixinBlockParticle")
-                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    MODEL_ICON_WRAPPER(new MixinBuilder(
+            "Ensures that blocks always return a valid icon for JSON model blocks, by using the particle icon.")
+                    .addClientMixins("models.MixinBlock_IconWrapper").setPhase(Phase.EARLY)
+                    .setApplyIf(() -> GTNHLibConfig.modelIconWrapperMixin)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")

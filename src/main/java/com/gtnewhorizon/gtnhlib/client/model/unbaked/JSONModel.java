@@ -4,7 +4,6 @@ import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Mo
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
@@ -40,6 +39,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.MathUtil;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -57,7 +57,7 @@ public class JSONModel implements UnbakedModel {
     private final Object2ObjectMap<String, String> textures;
     private List<ModelDeserializer.ModelElement> elements;
 
-    private static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
+    protected static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
     public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
             @NotNull Object2ObjectMap<String, String> textures, List<ModelDeserializer.ModelElement> elements) {
@@ -81,7 +81,7 @@ public class JSONModel implements UnbakedModel {
         this.elements = og.elements;
     }
 
-    private static void setUV(ModelQuadViewMutable q, int i, float u, float v) {
+    protected static void setUV(ModelQuadViewMutable q, int i, float u, float v) {
         q.setTexU(i, u);
         q.setTexV(i, v);
     }
@@ -91,7 +91,7 @@ public class JSONModel implements UnbakedModel {
      * Note: still doesn't fix AO. Whoops.
      */
     @NotNull
-    private static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side) {
+    protected static Vector3f mapSideToVertex(Vector3f from, Vector3f to, int index, ForgeDirection side) {
         return switch (side) {
             case DOWN -> switch (index) {
                     case 0 -> new Vector3f(from.x, from.y, to.z);
@@ -165,7 +165,6 @@ public class JSONModel implements UnbakedModel {
                 // Assign vertexes
                 final var quad = new ModelQuad();
                 for (int i = 0; i < 4; ++i) {
-
                     final Vector3f vert = mapSideToVertex(from, to, i, f.name()).mulPosition(rot).mulPosition(vRot);
                     quad.setX(i, vert.x);
                     quad.setY(i, vert.y);
@@ -179,9 +178,11 @@ public class JSONModel implements UnbakedModel {
                     Z = max(Z, vert.z);
                 }
 
-                // Set culling and nominal faces
-                final var normFace = quad.getNormalFace();
-                quad.setLightFace(normFace != UNASSIGNED ? normFace : POS_Y);
+                // Set shading and lighting
+                quad.setEmissiveness(e.lightEmission());
+                quad.setDirectionalShading(e.shade());
+                quad.setHasAmbientOcclusion(this.useAO);
+                quad.setLightFace(ModelQuadFacing.fromForgeDir(f.name()));
 
                 // Set UV
                 Vector4f uv = Objects.firstNonNull(f.uv(), DEFAULT_UV);
@@ -189,6 +190,7 @@ public class JSONModel implements UnbakedModel {
                         new Vector2f(uv.z, uv.w), new Vector2f(uv.z, uv.y) };
 
                 if (data.uvLock()) {
+                    final var normFace = quad.getNormalFace();
                     int angle = 0;
                     if (normFace == POS_Y) {
                         angle = 360 - data.y();
@@ -222,11 +224,36 @@ public class JSONModel implements UnbakedModel {
                 // Set the tint index
                 quad.setColorIndex(f.tintIndex());
 
-                // Set AO
-                quad.setHasAmbientOcclusion(this.useAO);
-
                 // Bake and add it
-                sidedQuadStore.computeIfAbsent(quad.getNormalFace(), d -> new ArrayList<>()).add(quad);
+
+                ModelQuadFacing cullFace = ModelQuadFacing.fromForgeDir(f.cullFace());
+                if (cullFace.isDirection()) {
+                    // If cullface is not unassigned, we rotate it by the affine matrix, so that way the direction we
+                    // check for culling also is rotated.
+                    Vector3f facing = new Vector3f(cullFace.getStepX(), cullFace.getStepY(), cullFace.getStepZ())
+                            .mulDirection(vRot);
+                    // Only one of these three vector coordinates should be a value other than 0. Error handling should
+                    // be done where the vRot's data is serialized.
+                    if (MathUtil.roughlyEqual(facing.x, 1)) {
+                        cullFace = ModelQuadFacing.POS_X;
+                    }
+                    if (MathUtil.roughlyEqual(facing.x, -1)) {
+                        cullFace = ModelQuadFacing.NEG_X;
+                    }
+                    if (MathUtil.roughlyEqual(facing.y, 1)) {
+                        cullFace = ModelQuadFacing.POS_Y;
+                    }
+                    if (MathUtil.roughlyEqual(facing.y, -1)) {
+                        cullFace = ModelQuadFacing.NEG_Y;
+                    }
+                    if (MathUtil.roughlyEqual(facing.z, 1)) {
+                        cullFace = ModelQuadFacing.POS_Z;
+                    }
+                    if (MathUtil.roughlyEqual(facing.z, -1)) {
+                        cullFace = ModelQuadFacing.NEG_Z;
+                    }
+                }
+                sidedQuadStore.computeIfAbsent(cullFace, d -> new ArrayList<>()).add(quad);
             }
         }
 
@@ -234,14 +261,15 @@ public class JSONModel implements UnbakedModel {
         return new PileOfQuads(sidedQuadStore, this.display, this.getParticle());
     }
 
-    // TODO fix
-    private void bakeSprite(ModelQuadViewMutable quad, String name) {
+    // TODO Doesn't account for UV rotation settings atm
+    protected void bakeSprite(ModelQuadViewMutable quad, String name) {
         name = name.replaceFirst("^minecraft:", "");
         final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
         final float minU = icon.getMinU();
         final float minV = icon.getMinV();
         final float dU = icon.getMaxU() - minU;
         final float dV = icon.getMaxV() - minV;
+        quad.setSprite(icon);
 
         for (int i = 0; i < 4; ++i) {
             quad.setTexU(i, fma(dU, quad.getTexU(i) / 16, minU));
