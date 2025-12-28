@@ -225,6 +225,7 @@ public final class ItemStackMap<T> extends AbstractMap<ItemStack, T> {
         public void remove() {
             if (removed) throw new IllegalStateException("remove() called twice");
             state.remove(this);
+            backing.updateSize();
             removed = true;
         }
 
