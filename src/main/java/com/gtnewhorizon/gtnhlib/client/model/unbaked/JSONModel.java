@@ -4,7 +4,6 @@ import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Mo
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
@@ -181,8 +180,11 @@ public class JSONModel implements UnbakedModel {
 
                 // Set culling and nominal faces
                 quad.setLightFace(ModelQuadFacing.fromForgeDir(f.name()));
+
+                // Set shading and lighting
                 quad.setEmissiveness(e.lightEmission());
                 quad.setDirectionalShading(e.shade());
+                quad.setHasAmbientOcclusion(this.useAO);
 
                 // Set UV
                 Vector4f uv = Objects.firstNonNull(f.uv(), DEFAULT_UV);
@@ -190,6 +192,7 @@ public class JSONModel implements UnbakedModel {
                         new Vector2f(uv.z, uv.w), new Vector2f(uv.z, uv.y) };
 
                 if (data.uvLock()) {
+                    final var normFace = quad.getNormalFace();
                     int angle = 0;
                     if (normFace == POS_Y) {
                         angle = 360 - data.y();
@@ -222,9 +225,6 @@ public class JSONModel implements UnbakedModel {
 
                 // Set the tint index
                 quad.setColorIndex(f.tintIndex());
-
-                // Set AO
-                quad.setHasAmbientOcclusion(this.useAO);
 
                 // Bake and add it
 
@@ -263,8 +263,7 @@ public class JSONModel implements UnbakedModel {
         return new PileOfQuads(sidedQuadStore, this.display, this.getParticle());
     }
 
-    // TODO fix
-    // ... Fix what?
+    // TODO Doesn't account for UV rotation settings atm
     protected void bakeSprite(ModelQuadViewMutable quad, String name) {
         name = name.replaceFirst("^minecraft:", "");
         final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);

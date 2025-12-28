@@ -36,6 +36,13 @@ public class MissingModel extends JSONModel {
         return super.bake();
     }
 
+    /**
+     * Overrides the default baking logic to bake a hardcoded cube. Used when a state not specified in the blockstate
+     * file is chosen to render. Also appears when the model provided is missing.
+     * <p>
+     * TODO: Possible memory leak since a new one is baked for every missing state. Perhaps we could store a singleton
+     * that's cached on first bake, that is reset on resource reload. Would that need a threadlocal?
+     */
     @Override
     public BakedModel bake(BakeData data) {
         final var vRot = data.getAffineMatrix();
