@@ -32,6 +32,8 @@ public class ModelQuad implements ModelQuadViewMutable {
 
     private boolean hasAmbientOcclusion = true;
     private int shaderBlockId;
+    private int emissiveness;
+    private boolean dirShading;
 
     public ModelQuad() {}
 
@@ -93,6 +95,16 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
+    public boolean setDirectionalShading(boolean dirShading) {
+        return this.dirShading = dirShading;
+    }
+
+    @Override
+    public int setEmissiveness(int emissiveness) {
+        return this.emissiveness = emissiveness;
+    }
+
+    @Override
     public void setLightFace(ModelQuadFacing face) {
         if (!face.isDirection()) {
             throw new IllegalArgumentException();
@@ -118,6 +130,16 @@ public class ModelQuad implements ModelQuadViewMutable {
     @Override
     public int getColorIndex() {
         return this.colorIdx;
+    }
+
+    @Override
+    public boolean hasDirectionalShading() {
+        return dirShading;
+    }
+
+    @Override
+    public int getEmissiveness() {
+        return emissiveness;
     }
 
     @Override
