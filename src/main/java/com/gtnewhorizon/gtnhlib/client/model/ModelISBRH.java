@@ -79,7 +79,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             // that direction and cull that list if it's false. Uses a mixin to remove the bounds checks because those
             // bounds have no effect on JSON geometry.
             if (dir.isDirection() && !renderer.renderAllFaces
-                    && shouldSideBeRendered(
+                    && !shouldSideBeRendered(
                             world,
                             x + dir.getStepX(),
                             y + dir.getStepY(),
