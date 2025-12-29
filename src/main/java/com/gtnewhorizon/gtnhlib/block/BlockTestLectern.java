@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.block;
 
+/// TODO: Fix UV rotation on lectern elements
 public class BlockTestLectern extends BlockTest {
 
     public BlockTestLectern() {
