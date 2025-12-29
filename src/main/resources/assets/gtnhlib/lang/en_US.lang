@@ -1,3 +1,8 @@
+# Test blocks
+tile.model_test.name=Test Block
+tile.model_test_tint.name=Tint Test Block
+tile.model_test_tint_mul.name=Tint Mul Test Block
+
 #Moved from WAWLA
 #Villager Professions
 description.villager.profession.farmer=Farmer

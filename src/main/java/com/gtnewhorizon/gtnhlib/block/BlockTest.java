@@ -13,6 +13,7 @@ public class BlockTest extends Block {
 
     public BlockTest() {
         super(Material.wood);
+        setBlockName("model_test");
     }
 
     @Override
