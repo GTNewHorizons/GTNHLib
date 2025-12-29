@@ -14,6 +14,9 @@ public class BlockTest extends Block {
     public BlockTest() {
         super(Material.wood);
         setBlockName("model_test");
+        // wood stats so it doesn't instabreak
+        setHardness(2.0F);
+        setResistance(5.0F);
     }
 
     @Override
