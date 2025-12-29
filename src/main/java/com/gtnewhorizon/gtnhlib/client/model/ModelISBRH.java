@@ -150,8 +150,18 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 // Unlike the others, this branch actually cares about the original UVs
                 final var sprite = (TextureAtlasSprite) quad.celeritas$getSprite();
-                final float mapU = map(sprite.getMinU(), sprite.getMaxU(), overrideTex.getMinU(), overrideTex.getMaxU(), u);
-                final float mapV = map(sprite.getMinV(), sprite.getMaxV(), overrideTex.getMinV(), overrideTex.getMaxV(), v);
+                final float mapU = map(
+                        sprite.getMinU(),
+                        sprite.getMaxU(),
+                        overrideTex.getMinU(),
+                        overrideTex.getMaxU(),
+                        u);
+                final float mapV = map(
+                        sprite.getMinV(),
+                        sprite.getMaxV(),
+                        overrideTex.getMinV(),
+                        overrideTex.getMaxV(),
+                        v);
                 return ((long) floatToIntBits(mapU) << 32) | floatToIntBits(mapV);
             }
 

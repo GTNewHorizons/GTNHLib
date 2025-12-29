@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.block;
 
 public class BlockTestLectern extends BlockTest {
+
     public BlockTestLectern() {
         super();
 
