@@ -1,10 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
+import org.lwjgl.opengl.GLContext;
+
 import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.opengl.UniversalVAO;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-import org.lwjgl.opengl.GLContext;
 
 public class VAOManager {
 

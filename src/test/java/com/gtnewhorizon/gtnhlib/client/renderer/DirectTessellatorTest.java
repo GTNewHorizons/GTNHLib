@@ -1,14 +1,16 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
-import net.minecraft.client.renderer.Tessellator;
-import org.junit.jupiter.api.*;
+import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.*;
+import net.minecraft.client.renderer.Tessellator;
 
-import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
+import org.junit.jupiter.api.*;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 
 public class DirectTessellatorTest {
 
@@ -19,9 +21,8 @@ public class DirectTessellatorTest {
     void setup() {
         initialBuffer = ByteBuffer.allocateDirect(1024); // initial direct buffer
         tess = new DirectTessellator(
-            t -> true, // Always reset
-            initialBuffer
-        );
+                t -> true, // Always reset
+                initialBuffer);
     }
 
     @Test

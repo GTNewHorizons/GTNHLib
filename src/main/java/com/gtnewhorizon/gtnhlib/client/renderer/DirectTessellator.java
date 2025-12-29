@@ -17,9 +17,9 @@ public final class DirectTessellator extends Tessellator {
     private DirectDrawCallback drawCallback;
     VertexFormat format;
 
-    final ByteBuffer baseBuffer;   // never resized, never freed
+    final ByteBuffer baseBuffer; // never resized, never freed
     final long baseBufferAddress;
-    ByteBuffer buffer;             // current active buffer
+    ByteBuffer buffer; // current active buffer
 
     long basePtr;
     long writePtr;
@@ -133,7 +133,7 @@ public final class DirectTessellator extends Tessellator {
         ensureCapacity(this.format.getVertexSize());
 
         writePtr = format.writeToBuffer0(
-            writePtr,
+                writePtr,
                 this,
                 (float) (x + this.xOffset),
                 (float) (y + this.yOffset),
@@ -157,7 +157,7 @@ public final class DirectTessellator extends Tessellator {
         final long newBufferSize = (long) vertexCount * newVertexSize;
 
         // Allocate temp buffer
-        ByteBuffer temp = memAlloc((int)newBufferSize);
+        ByteBuffer temp = memAlloc((int) newBufferSize);
         long tempPtr = memAddress0(temp);
 
         long readPtr = basePtr;
@@ -177,8 +177,8 @@ public final class DirectTessellator extends Tessellator {
         }
 
         // Copy back to main buffer
-        ensureCapacity((int)newBufferSize); // make sure the main buffer is large enough
-        memCopy(tempPtr, basePtr, (int)newBufferSize);
+        ensureCapacity((int) newBufferSize); // make sure the main buffer is large enough
+        memCopy(tempPtr, basePtr, (int) newBufferSize);
         writePtr = basePtr + newBufferSize;
 
         memFree(temp); // free temporary buffer
