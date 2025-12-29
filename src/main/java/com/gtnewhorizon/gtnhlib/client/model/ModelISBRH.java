@@ -1,7 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.*;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.*;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.VALUES;
+import static java.lang.Float.floatToIntBits;
+import static java.lang.Float.intBitsToFloat;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
@@ -13,6 +18,7 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
@@ -114,15 +120,85 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
-        // TODO: Respect overrideIcon
+        final var overrideTex = overrideIcon != null;
+        float u, v;
         for (int i = 0; i < 4; ++i) {
-            tessellator.addVertexWithUV(
-                    quad.getX(i) + x,
-                    quad.getY(i) + y,
-                    quad.getZ(i) + z,
-                    quad.getTexU(i),
-                    quad.getTexV(i));
+            if (overrideTex) {
+                final long pUV = getOverrideUV(quad, overrideIcon, i);
+                u = intBitsToFloat((int) (pUV >> 32));
+                v = intBitsToFloat((int) pUV);
+            } else {
+                u = quad.getTexU(i);
+                v = quad.getTexV(i);
+            }
+
+            tessellator.addVertexWithUV(quad.getX(i) + x, quad.getY(i) + y, quad.getZ(i) + z, u, v);
         }
+    }
+
+    /// This returns u,v packed in a long bitwise, because Java doesn't have tuple returns. This isn't for performance,
+    /// just clarity so I can set u and v in the same function.
+    private long getOverrideUV(ModelQuadView quad, IIcon overrideTex, int idx) {
+        final var side = quad.getNormalFace();
+        final float u, v;
+
+        switch (side) {
+            case UNASSIGNED -> {
+                // Just remap the original UVs. TODO is this correct?
+                u = quad.getTexU(idx);
+                v = quad.getTexV(idx);
+
+                // Unlike the others, this branch actually cares about the original UVs
+                final var sprite = (TextureAtlasSprite) quad.celeritas$getSprite();
+                final float mapU = map(sprite.getMinU(), sprite.getMaxU(), overrideTex.getMinU(), overrideTex.getMaxU(), u);
+                final float mapV = map(sprite.getMinV(), sprite.getMaxV(), overrideTex.getMinV(), overrideTex.getMaxV(), v);
+                return ((long) floatToIntBits(mapU) << 32) | floatToIntBits(mapV);
+            }
+
+            // spotless:off
+            // The remainder of these cases map block coords to UVs
+            //spotless:on
+
+            case POS_X -> {
+                // up y, right -z
+                v = quad.getY(idx);
+                u = 1 - quad.getZ(idx);
+            }
+            case POS_Y -> {
+                // up x, right z
+                v = quad.getX(idx);
+                u = quad.getZ(idx);
+            }
+            case POS_Z -> {
+                // up y, right x
+                v = quad.getY(idx);
+                u = quad.getX(idx);
+            }
+            case NEG_X -> {
+                // up y, right z
+                v = quad.getY(idx);
+                u = quad.getZ(idx);
+            }
+            case NEG_Y -> {
+                // up -x, right z
+                v = 1 - quad.getX(idx);
+                u = quad.getZ(idx);
+            }
+            case NEG_Z -> {
+                // up y, right -x
+                v = quad.getY(idx);
+                u = 1 - quad.getX(idx);
+            }
+            default -> throw new RuntimeException("Should be unreachable...");
+        }
+
+        final float mapU = map(0, 1, overrideTex.getMinU(), overrideTex.getMaxU(), u);
+        final float mapV = map(0, 1, overrideTex.getMinV(), overrideTex.getMaxV(), v);
+        return ((long) floatToIntBits(mapU) << 32) | floatToIntBits(mapV);
+    }
+
+    private float map(float oldMin, float oldMax, float newMin, float newMax, float val) {
+        return newMin + (val - oldMin) * (newMax - newMin) / (oldMax - oldMin);
     }
 
     public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
