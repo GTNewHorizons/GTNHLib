@@ -14,7 +14,7 @@ final class MemoryManage {
     private MemoryManage() {}
 
     static MemoryAllocator getInstance() {
-        final boolean hasLwjgl3ify = Launch.blackboard.get("lwjgl3ify:rfb-booted") == Boolean.TRUE;
+        final boolean hasLwjgl3ify = Launch.blackboard != null && Launch.blackboard.get("lwjgl3ify:rfb-booted") == Boolean.TRUE;
         return hasLwjgl3ify ? CheckIntrinsics.getLwjgl3ifyAllocator() : new StdlibAllocator();
     }
 

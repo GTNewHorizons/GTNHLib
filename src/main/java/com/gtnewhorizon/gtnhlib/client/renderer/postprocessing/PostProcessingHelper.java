@@ -6,10 +6,9 @@ import net.minecraft.client.shader.Framebuffer;
 
 import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
+import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 
 public class PostProcessingHelper {
@@ -73,7 +72,7 @@ public class PostProcessingHelper {
     }
 
     private static VertexBuffer genFullscreenQuadVAO() {
-        final CapturingTessellator tessellator = TessellatorManager.startCapturingAndGet();
+        final DirectTessellator tessellator = TessellatorManager.startCapturingDirect();
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(-1, -1, 0, 0, 0);
         tessellator.addVertexWithUV(1, -1, 0, 1, 0);
@@ -81,6 +80,6 @@ public class PostProcessingHelper {
         tessellator.addVertexWithUV(-1, 1, 0, 0, 1);
         tessellator.draw();
 
-        return TessellatorManager.stopCapturingToVAO(DefaultVertexFormat.POSITION_TEXTURE);
+        return TessellatorManager.stopCapturingDirectToVAO();
     }
 }

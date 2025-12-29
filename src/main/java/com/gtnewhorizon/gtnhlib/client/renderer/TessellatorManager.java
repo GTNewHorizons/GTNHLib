@@ -247,6 +247,7 @@ public class TessellatorManager {
     // --------------- DIRECT TESSELLATOR ---------------
 
     // Instance to use for capturing to vbo's (package-private)
+    // Cannot be used outside of the tessellator stack
     static final DirectTessellator mainInstance = new DirectTessellator(null);
 
     public static DirectTessellator startCapturingDirect() {
@@ -263,28 +264,28 @@ public class TessellatorManager {
 
     // Every call needs to be pushed onto the stack to make sure it gets properly cleaned up afterwards
     public static void startCapturingDirect(DirectTessellator tessellator) {
-        if (!isOnMainThread()) {
-            throw new IllegalStateException("Display list compilation can only happen on main thread!");
-        }
         directTessellators.push(tessellator);
     }
 
     public static void stopCapturingDirect() {
         if (directTessellators.isEmpty())
             throw new IllegalStateException("Tried to stop capturing when not capturing!");
-        directTessellators.pop().close();
-    }
-
-    private static DirectTessellator getDirectTessellator() {
-        if (directTessellators.isEmpty())
-            throw new IllegalStateException("Tried to stop capturing when not capturing!");
-        return directTessellators.peek();
+        directTessellators.pop().reset();
     }
 
     public static VertexBuffer stopCapturingDirectToVAO() {
-        final DirectTessellator tessellator = getDirectTessellator();
+        final DirectTessellator tessellator = directTessellators.pop();
         final VertexBuffer vbo = tessellator.uploadToVBO();
-        stopCapturingDirect();
+        tessellator.reset();
+        return vbo;
+    }
+
+    static VertexBuffer stopCapturingDirectToVAO(DirectTessellator tessellator) {
+        if (tessellator != directTessellators.pop()) {
+            throw new IllegalStateException("Tessellator mismatch");
+        }
+        final VertexBuffer vbo = tessellator.uploadToVBO();
+        tessellator.reset();
         return vbo;
     }
 
@@ -354,6 +355,7 @@ public class TessellatorManager {
         return new CapturedGeometry(vbos);
     }
 
+    @Deprecated
     private static VertexBuffer createLineVBO(List<ModelLine> lines, VertexFormat format) {
         ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * lines.size() * 2);
         for (int i = 0, size = lines.size(); i < size; i++) {
@@ -363,6 +365,7 @@ public class TessellatorManager {
         return new VertexBuffer(format, GL11.GL_LINES).upload(buffer);
     }
 
+    @Deprecated
     private static VertexBuffer createTriangleVBO(List<ModelTriangle> triangles, VertexFormat format) {
         ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * triangles.size() * 3);
         for (int i = 0, size = triangles.size(); i < size; i++) {
@@ -372,6 +375,7 @@ public class TessellatorManager {
         return new VertexBuffer(format, GL11.GL_TRIANGLES).upload(buffer);
     }
 
+    @Deprecated
     private static VertexBuffer createQuadVBO(List<ModelQuadViewMutable> quads, VertexFormat format) {
         ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
         format.writeQuads(quads, buffer);

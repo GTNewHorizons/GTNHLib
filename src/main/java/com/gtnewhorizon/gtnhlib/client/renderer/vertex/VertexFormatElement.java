@@ -7,6 +7,8 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.IVertexAttributeWriter;
+
 import lombok.Getter;
 
 @Getter
@@ -21,18 +23,12 @@ public class VertexFormatElement {
     protected final int vertexBit;
 
     public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit,
-            IVertexAttributeWriter writer) {
-        this.index = index;
-        this.type = type;
-        this.usage = usage;
-        this.count = count;
-        this.byteSize = type.getSize() * count;
-        this.vertexBit = vertexBit;
-        this.writer = writer;
+            @NotNull IVertexAttributeWriter writer) {
+        this(index, type, usage, count, vertexBit, writer, 0);
     }
 
     public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit,
-            IVertexAttributeWriter writer, int padding) {
+            @NotNull IVertexAttributeWriter writer, int padding) {
         this.index = index;
         this.type = type;
         this.usage = usage;

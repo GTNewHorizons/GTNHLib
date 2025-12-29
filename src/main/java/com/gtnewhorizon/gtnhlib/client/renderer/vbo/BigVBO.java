@@ -7,7 +7,7 @@ public final class BigVBO {
 
     private final SubVBO[] vbos;
 
-    public BigVBO(SubVBO[] vbos) {
+    BigVBO(SubVBO[] vbos) {
         this.vbos = vbos;
     }
 

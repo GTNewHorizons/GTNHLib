@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.client.renderer.Tessellator;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 
@@ -100,7 +102,7 @@ public class VertexFormat {
         return true;
     }
 
-    public void writeQuads(List<ModelQuadViewMutable> quads, ByteBuffer out) {
+    public final void writeQuads(List<ModelQuadViewMutable> quads, ByteBuffer out) {
         final int size = quads.size();
         if (out.remaining() < this.getVertexSize() * size) throw new IllegalArgumentException(
                 "Buffer only has " + out.remaining() + " out of " + this.getVertexSize() * size + " bytes remaining.");
@@ -125,7 +127,7 @@ public class VertexFormat {
         out.position((int) (writePointer - address));
     }
 
-    public void writeQuad(ModelQuadView quad, ByteBuffer out) {
+    public final void writeQuad(ModelQuadView quad, ByteBuffer out) {
         if (out.remaining() < this.getVertexSize()) throw new IllegalArgumentException(
                 "Buffer only has " + out.remaining() + " out of " + this.getVertexSize() + " bytes remaining.");
 
@@ -144,7 +146,7 @@ public class VertexFormat {
         out.position((int) (writePointer - address));
     }
 
-    public void writeToBuffer(ByteBuffer out, int[] data, int rawVertexCount) {
+    public final void writeToBuffer(ByteBuffer out, int[] data, int rawVertexCount) {
         // if (out.remaining() < this.getVertexSize() * (rawVertexCount / 8)) throw new IllegalArgumentException(
         // "Buffer only has " + out.remaining()
         // + " out of "
@@ -164,7 +166,7 @@ public class VertexFormat {
         out.position((int) (writePointer - address));
     }
 
-    public long writeToBuffer0(long pointer, int[] data, int rawVertexCount) {
+    public final long writeToBuffer0(long pointer, int[] data, int rawVertexCount) {
         final List<VertexFormatElement> list = this.getElements();
         final int listSize = list.size();
 
@@ -176,11 +178,39 @@ public class VertexFormat {
         return pointer;
     }
 
-    public int getVertexCount(ByteBuffer buffer) {
+    public final long writeToBuffer0(long pointer, Tessellator tessellator, float x, float y, float z) {
+        // Position
+        memPutFloat(pointer, x);
+        memPutFloat(pointer + 4, y);
+        memPutFloat(pointer + 8, z);
+        pointer += 12;
+
+        final List<VertexFormatElement> list = this.getElements();
+        final int listSize = list.size();
+        for (int i = 1; i < listSize; i++) {
+            pointer += list.get(i).writer.writeAttribute(pointer, tessellator);
+        }
+        return pointer;
+    }
+
+    /**
+     * Populate the passed-in Tessellator with the data of the buffer. Position data needs to be read before calling
+     * this method.
+     */
+    public final long readFromBuffer0(long pointer, Tessellator tessellator) {
+        final List<VertexFormatElement> list = this.getElements();
+        final int listSize = list.size();
+        for (int i = 1; i < listSize; i++) {
+            pointer += list.get(i).writer.readAttribute(pointer, tessellator);
+        }
+        return pointer;
+    }
+
+    public final int getVertexCount(ByteBuffer buffer) {
         return getVertexCount(buffer.remaining());
     }
 
-    public int getVertexCount(int bufferSize) {
+    public final int getVertexCount(int bufferSize) {
         return bufferSize / vertexSize;
     }
 

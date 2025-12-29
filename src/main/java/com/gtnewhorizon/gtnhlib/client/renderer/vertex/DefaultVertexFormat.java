@@ -4,6 +4,11 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.*;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement.Type;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement.Usage;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.ColorVertexAttributeWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.LightVertexAttributeWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.NormalVertexAttributeWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.PositionVertexAttributeWriter;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.TextureVertexAttributeWriter;
 
 public final class DefaultVertexFormat {
 
