@@ -124,7 +124,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         float u, v;
         for (int i = 0; i < 4; ++i) {
             if (overrideTex) {
-                final long pUV = getOverrideUV(quad, overrideIcon, i);
+                final long pUV = getOverrideUV(quad, i);
                 u = intBitsToFloat((int) (pUV >> 32));
                 v = intBitsToFloat((int) pUV);
             } else {
@@ -138,7 +138,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     /// This returns u,v packed in a long bitwise, because Java doesn't have tuple returns. This isn't for performance,
     /// just clarity so I can set u and v in the same function.
-    private long getOverrideUV(ModelQuadView quad, IIcon overrideTex, int idx) {
+    private long getOverrideUV(ModelQuadView quad, int idx) {
         final var side = quad.getNormalFace();
         final float u, v;
 
@@ -150,18 +150,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 // Unlike the others, this branch actually cares about the original UVs
                 final var sprite = (TextureAtlasSprite) quad.celeritas$getSprite();
-                final float mapU = map(
-                        sprite.getMinU(),
-                        sprite.getMaxU(),
-                        overrideTex.getMinU(),
-                        overrideTex.getMaxU(),
-                        u);
-                final float mapV = map(
-                        sprite.getMinV(),
-                        sprite.getMaxV(),
-                        overrideTex.getMinV(),
-                        overrideTex.getMaxV(),
-                        v);
+                final float mapU = mapTo01(sprite.getMinU(), sprite.getMaxU(), u);
+                final float mapV = mapTo01(sprite.getMinV(), sprite.getMaxV(), v);
                 return ((long) floatToIntBits(mapU) << 32) | floatToIntBits(mapV);
             }
 
@@ -202,13 +192,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             default -> throw new RuntimeException("Should be unreachable...");
         }
 
-        final float mapU = map(0, 1, overrideTex.getMinU(), overrideTex.getMaxU(), u);
-        final float mapV = map(0, 1, overrideTex.getMinV(), overrideTex.getMaxV(), v);
-        return ((long) floatToIntBits(mapU) << 32) | floatToIntBits(mapV);
+        return ((long) floatToIntBits(u) << 32) | floatToIntBits(v);
     }
 
-    private float map(float oldMin, float oldMax, float newMin, float newMax, float val) {
-        return newMin + (val - oldMin) * (newMax - newMin) / (oldMax - oldMin);
+    private float mapTo01(float oldMin, float oldMax, float val) {
+        return (val - oldMin) / (oldMax - oldMin);
     }
 
     public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
