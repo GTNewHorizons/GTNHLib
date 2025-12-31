@@ -15,4 +15,24 @@ repositories {
             includeGroup 'com.mojang'
         }
     }
+    maven {
+        name = "WagYourTail Maven"
+        url = "https://maven.wagyourtail.xyz/releases"
+        mavenContent {
+            releasesOnly()
+        }
+        content {
+            includeGroup 'xyz.wagyourtail.jvmdowngrader'
+        }
+    }
+    maven {
+        name = "WagYourTail Maven Snapshots"
+        url = "https://maven.wagyourtail.xyz/snapshots"
+        mavenContent {
+            snapshotsOnly()
+        }
+        content {
+            includeGroup 'xyz.wagyourtail.jvmdowngrader'
+        }
+    }
 }
