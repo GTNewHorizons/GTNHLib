@@ -9,7 +9,8 @@ public final class NumberFormatConfig {
     @Config.DefaultBoolean(false)
     public static boolean disableFormattedNotation = false;
 
-    @Config.Comment({ "Completely disables exponential notation. No scientific, standard form or engineering notation." })
+    @Config.Comment({
+            "Completely disables exponential notation. No scientific, standard form or engineering notation." })
     @Config.DefaultBoolean(false)
     public static boolean globalDisableExponentialNotation = false;
 

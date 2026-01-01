@@ -15,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 public enum ExponentialFormat {
 
     SCIENTIFIC {
+
         @Override
         String format(BigDecimal v, NumberOptionsBase<?> options) {
             return formatScientificStandard(v, options);
@@ -22,6 +23,7 @@ public enum ExponentialFormat {
     },
 
     ENGINEERING {
+
         @Override
         String format(BigDecimal v, NumberOptionsBase<?> options) {
             return formatScientificEngineering(v, options);
@@ -29,6 +31,7 @@ public enum ExponentialFormat {
     },
 
     POWER_OF_TEN {
+
         @Override
         String format(BigDecimal v, NumberOptionsBase<?> options) {
             return formatScientificPowerOfTen(v, options);
