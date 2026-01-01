@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.util.numberformatting.options;
 
+import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_THOUSAND;
+
 import java.math.BigDecimal;
 
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
@@ -7,8 +9,7 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 @SuppressWarnings("unchecked")
 public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
 
-    private static final BigDecimal DEFAULT_COMPACT_THRESHOLD = BigDecimal.valueOf(1_000);
-    private BigDecimal compactThreshold;
+    private BigDecimal compactThreshold = BD_THOUSAND;
 
     public CompactOptions() {}
 
@@ -50,6 +51,6 @@ public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
     // ---------- Getters ----------
 
     public BigDecimal getCompactThreshold() {
-        return (compactThreshold == null) ? DEFAULT_COMPACT_THRESHOLD : compactThreshold;
+        return compactThreshold;
     }
 }
