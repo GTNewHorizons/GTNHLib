@@ -14,5 +14,7 @@ public class Textures {
         }
     }
 
-    public static final ResourceLocation ALT_CRACK_TEX = new ResourceLocation("gtnhlib", "textures/blocks/up_arrow.png");
+    public static final ResourceLocation ALT_CRACK_TEX = new ResourceLocation(
+            "gtnhlib",
+            "textures/blocks/up_arrow.png");
 }
