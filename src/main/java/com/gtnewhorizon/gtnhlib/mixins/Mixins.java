@@ -23,6 +23,8 @@ public enum Mixins implements IMixins {
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
+    MODEL_BLOCK_CRACKS(new MixinBuilder("Fix crack texture appearance for modeled blocks")
+            .addClientMixins("models.MixinRenderGlobal").setPhase(Phase.EARLY)),
     MODEL_TEXTURE_LOADING(
             new MixinBuilder("Automatically load model textures")
                     .addClientMixins(
