@@ -165,9 +165,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 u = 1 - quad.getZ(idx);
             }
             case POS_Y -> {
-                // up x, right z
-                v = quad.getX(idx);
-                u = quad.getZ(idx);
+                // up z, right x
+                v = quad.getZ(idx);
+                u = quad.getX(idx);
             }
             case POS_Z -> {
                 // up y, right x
@@ -180,9 +180,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 u = quad.getZ(idx);
             }
             case NEG_Y -> {
-                // up -x, right z
-                v = 1 - quad.getX(idx);
-                u = quad.getZ(idx);
+                // up -z, right x
+                v = 1 - quad.getZ(idx);
+                u = quad.getX(idx);
             }
             case NEG_Z -> {
                 // up y, right -x
