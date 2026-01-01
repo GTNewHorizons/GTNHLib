@@ -35,7 +35,7 @@ public class MixinRenderGlobal {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/RenderBlocks;renderBlockUsingTexture(Lnet/minecraft/block/Block;IIILnet/minecraft/util/IIcon;)V",
                     shift = At.Shift.AFTER))
-    private void hodge$wrapBlockCrackTex(Tessellator tessellator, EntityLivingBase entity, float partialTicks,
+    private void nhlib$wrapBlockCrackTex(Tessellator tessellator, EntityLivingBase entity, float partialTicks,
             CallbackInfo ci, @Local Block block, @Local DestroyBlockProgress progress, @Local(name = "d0") double x,
             @Local(name = "d1") double y, @Local(name = "d2") double z) {
         if (block.getRenderType() != ModelISBRH.JSON_ISBRH_ID) return;
