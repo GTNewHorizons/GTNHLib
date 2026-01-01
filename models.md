@@ -67,7 +67,6 @@ public class BlockTestTint extends Block implements IBlockColor {
 
 ### TODO
 - Autoload item textures too.
-- Add smooth shading to ModelISBRH.
-- Add face culling to models.
-- Implement UV locking.
+- Integrate with Celeritas' AO.
+- Match modern crack texture behavior on unaligned quads.
 - Integrate with a proper BlockState API.
