@@ -13,4 +13,6 @@ public class Textures {
             BLOCK_CRACK_TEXS[i] = new ResourceLocation("textures/blocks/destroy_stage_" + i + ".png");
         }
     }
+
+    public static final ResourceLocation ALT_CRACK_TEX = new ResourceLocation("gtnhlib", "textures/blocks/up_arrow.png");
 }

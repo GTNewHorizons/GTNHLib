@@ -1,5 +1,11 @@
 package com.gtnewhorizon.gtnhlib.mixins.early.models;
 
+import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.testCrackTexture;
+import static com.gtnewhorizon.gtnhlib.client.model.Textures.ALT_CRACK_TEX;
+import static com.gtnewhorizon.gtnhlib.client.model.Textures.BLOCK_CRACK_TEXS;
+
+import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.DestroyBlockProgress;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -7,17 +13,12 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.EntityLivingBase;
-
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
-import com.gtnewhorizon.gtnhlib.client.model.Textures;
-import com.llamalad7.mixinextras.sugar.Local;
 
 @Mixin(RenderGlobal.class)
 public class MixinRenderGlobal {
@@ -38,7 +39,9 @@ public class MixinRenderGlobal {
         if (block.getRenderType() != ModelISBRH.JSON_ISBRH_ID) return;
 
         // Bind *just* the crack texture and draw
-        this.renderEngine.bindTexture(Textures.BLOCK_CRACK_TEXS[progress.getPartialBlockDamage()]);
+        this.renderEngine.bindTexture(testCrackTexture
+            ? ALT_CRACK_TEX
+            : BLOCK_CRACK_TEXS[progress.getPartialBlockDamage()]);
         tessellator.draw();
 
         // Reset the tesselator for any future blocks
