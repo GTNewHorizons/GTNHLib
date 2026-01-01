@@ -52,6 +52,8 @@ public enum Mixins implements IMixins {
     ITEM_TRANSLUCENCY(new MixinBuilder("ItemRenderer & RenderItem ITranslucentItem support")
             .addClientMixins("MixinItemRenderer_Translucency", "MixinRenderItem_Translucency").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
+    CUSTOM_CHAT_COMPONENT_REGISTRATION(new MixinBuilder("Custom chat component registration")
+            .addCommonMixins("MixinIChatComponentSerializer").setPhase(Phase.EARLY))
     //
     ;
 
