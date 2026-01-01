@@ -55,7 +55,7 @@ public class DirectTessellatorTest {
         assertTrue(tess.getDataSize() > 0, "Data size should increase after vertex with color");
 
         // Verify buffer contents for old vertex still has correct position
-        long ptr = tess.baseBufferAddress;
+        long ptr = tess.startPtr;
         float x0 = memGetFloat(ptr);
         float y0 = memGetFloat(ptr + 4);
         float z0 = memGetFloat(ptr + 8);
@@ -65,7 +65,7 @@ public class DirectTessellatorTest {
         assertEquals(1.0f, z0, 0.0001);
 
         // Verify second vertex
-        ptr = tess.baseBufferAddress + tess.format.getVertexSize(); // offset to second vertex
+        ptr = tess.startPtr + tess.format.getVertexSize(); // offset to second vertex
         float x1 = memGetFloat(ptr);
         float y1 = memGetFloat(ptr + 4);
         float z1 = memGetFloat(ptr + 8);
@@ -82,7 +82,7 @@ public class DirectTessellatorTest {
         tess.reset();
 
         assertEquals(0, tess.vertexCount, "Vertex count should be reset");
-        assertEquals(tess.baseBufferAddress, tess.writePtr, "Write pointer should be reset");
+        assertEquals(tess.startPtr, tess.writePtr, "Write pointer should be reset");
     }
 
     @Test
@@ -114,7 +114,7 @@ public class DirectTessellatorTest {
 
         assertEquals(10, tess.vertexCount);
 
-        long ptr = tess.basePtr;
+        long ptr = tess.startPtr;
 
         // Verify all vertices survived reallocation
         for (int i = 0; i < 10; i++) {
@@ -151,7 +151,7 @@ public class DirectTessellatorTest {
         assertEquals(5, tess.vertexCount);
 
         // Validate positions of all vertices
-        long ptr = tess.baseBufferAddress;
+        long ptr = tess.startPtr;
         for (int i = 0; i < 5; i++) {
             assertEquals(i, memGetFloat(ptr), 0.0001f);
             assertEquals(i, memGetFloat(ptr + 4), 0.0001f);
@@ -176,7 +176,7 @@ public class DirectTessellatorTest {
 
         assertTrue(callbackCalled.get());
         assertEquals(0, tess.vertexCount);
-        assertEquals(tess.baseBufferAddress, tess.writePtr);
+        assertEquals(tess.startPtr, tess.writePtr);
         assertTrue(bytes > 0);
     }
 
@@ -193,7 +193,7 @@ public class DirectTessellatorTest {
         assertEquals(2, tess.vertexCount);
         assertTrue(bytes > 0);
 
-        long ptr = tess.baseBufferAddress;
+        long ptr = tess.startPtr;
 
         assertEquals(1f, memGetFloat(ptr), 0.0001f);
         assertEquals(2f, memGetFloat(ptr + 4), 0.0001f);
@@ -221,7 +221,7 @@ public class DirectTessellatorTest {
         tess.reset();
 
         assertSame(small, tess.buffer);
-        assertEquals(tess.baseBufferAddress, tess.writePtr);
+        assertEquals(tess.startPtr, tess.writePtr);
     }
 
     @Test
@@ -232,7 +232,7 @@ public class DirectTessellatorTest {
         ByteBuffer copy = tess.allocateBufferCopy();
 
         // Modify original buffer
-        memPutFloat(tess.baseBufferAddress, 99f);
+        memPutFloat(tess.startPtr, 99f);
 
         float copied = memGetFloat(memAddress0(copy));
         assertEquals(1f, copied, 0.0001f);

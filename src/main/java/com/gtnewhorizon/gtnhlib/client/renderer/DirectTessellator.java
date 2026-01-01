@@ -17,28 +17,51 @@ public final class DirectTessellator extends Tessellator {
     private DirectDrawCallback drawCallback;
     VertexFormat format;
 
+    VertexFormat preDefinedFormat;
+
     final ByteBuffer baseBuffer; // never resized, never freed
-    final long baseBufferAddress;
+    private final long baseBufferAddress;
+
     ByteBuffer buffer; // current active buffer
 
-    long basePtr;
+    long startPtr;
     long writePtr;
     long endPtr;
 
-    public DirectTessellator(DirectDrawCallback callback) {
-        this(callback, Tessellator.byteBuffer);
+    int bufferCapacity() {
+        return (int) (endPtr - startPtr);
     }
 
-    public DirectTessellator(DirectDrawCallback callback, ByteBuffer initial) {
+    int bufferLimit() {
+        return (int) (writePtr - startPtr);
+    }
+
+    int bufferRemaining() {
+        return (int) (endPtr - writePtr);
+    }
+
+    public DirectTessellator() {
+        this(Tessellator.byteBuffer);
+    }
+
+    public DirectTessellator(DirectDrawCallback callback) {
+        this(Tessellator.byteBuffer, callback);
+    }
+
+    public DirectTessellator(ByteBuffer initial, DirectDrawCallback callback) {
+        this(initial);
         this.drawCallback = callback;
+    }
+
+    public DirectTessellator(ByteBuffer initial) {
 
         this.baseBuffer = initial;
         this.buffer = initial;
 
         this.baseBufferAddress = memAddress0(buffer);
-        this.basePtr = baseBufferAddress;
-        this.writePtr = basePtr;
-        this.endPtr = basePtr + buffer.capacity();
+        this.startPtr = baseBufferAddress;
+        this.writePtr = startPtr;
+        this.endPtr = startPtr + buffer.capacity();
     }
 
     @Override
@@ -62,6 +85,7 @@ public final class DirectTessellator extends Tessellator {
         this.hasNormals = tessellator.hasNormals;
         this.isColorDisabled = tessellator.isColorDisabled;
         this.drawMode = tessellator.drawMode;
+        this.preDefinedFormat = null;
         this.format = getOptimalVertexFormat();
 
         writePtr = format.writeToBuffer0(writePtr, tessellator.rawBuffer, tessellator.rawBufferIndex);
@@ -95,9 +119,9 @@ public final class DirectTessellator extends Tessellator {
             buffer = baseBuffer;
         }
 
-        basePtr = baseBufferAddress;
-        writePtr = basePtr;
-        endPtr = basePtr + buffer.capacity();
+        startPtr = baseBufferAddress;
+        writePtr = startPtr;
+        endPtr = startPtr + buffer.capacity();
         buffer.clear();
     }
 
@@ -119,9 +143,9 @@ public final class DirectTessellator extends Tessellator {
         int newCapacity = buffer.capacity() * 2;
 
         buffer = memRealloc(buffer, newCapacity);
-        basePtr = memAddress0(buffer);
-        writePtr = basePtr + used;
-        endPtr = basePtr + newCapacity;
+        startPtr = baseBufferAddress;
+        writePtr = startPtr + used;
+        endPtr = startPtr + newCapacity;
     }
 
     @Override
@@ -160,7 +184,7 @@ public final class DirectTessellator extends Tessellator {
         ByteBuffer temp = memAlloc((int) newBufferSize);
         long tempPtr = memAddress0(temp);
 
-        long readPtr = basePtr;
+        long readPtr = startPtr;
         long writePtrTemp = tempPtr;
 
         for (int i = 0; i < vertexCount; i++) {
@@ -178,8 +202,8 @@ public final class DirectTessellator extends Tessellator {
 
         // Copy back to main buffer
         ensureCapacity((int) newBufferSize); // make sure the main buffer is large enough
-        memCopy(tempPtr, basePtr, (int) newBufferSize);
-        writePtr = basePtr + newBufferSize;
+        memCopy(tempPtr, startPtr, (int) newBufferSize);
+        writePtr = startPtr + newBufferSize;
 
         memFree(temp); // free temporary buffer
         this.format = newFormat;
@@ -199,7 +223,7 @@ public final class DirectTessellator extends Tessellator {
     }
 
     @Override
-    public void setNormal(float p_78375_1_, float p_78375_2_, float p_78375_3_) {
+    public void setNormal(float nx, float ny, float nz) {
         if (!hasNormals) {
             this.hasNormals = true;
             if (format != null) {
@@ -207,9 +231,9 @@ public final class DirectTessellator extends Tessellator {
             }
         }
 
-        byte b0 = (byte) ((int) (p_78375_1_ * 127.0F));
-        byte b1 = (byte) ((int) (p_78375_2_ * 127.0F));
-        byte b2 = (byte) ((int) (p_78375_3_ * 127.0F));
+        byte b0 = (byte) ((int) (nx * 127.0F));
+        byte b1 = (byte) ((int) (ny * 127.0F));
+        byte b2 = (byte) ((int) (nz * 127.0F));
         this.normal = b0 & 255 | (b1 & 255) << 8 | (b2 & 255) << 16;
     }
 
@@ -278,7 +302,7 @@ public final class DirectTessellator extends Tessellator {
     }
 
     int getDataSize() {
-        return (int) (writePtr - basePtr);
+        return (int) (writePtr - startPtr);
     }
 
     VertexBuffer uploadToVBO() {
@@ -297,7 +321,7 @@ public final class DirectTessellator extends Tessellator {
     public ByteBuffer allocateBufferCopy() {
         final int size = getDataSize();
         ByteBuffer copy = memAlloc(size);
-        memCopy(basePtr, memAddress0(copy), size);
+        memCopy(startPtr, memAddress0(copy), size);
         copy.limit(size);
         return copy;
     }
