@@ -16,10 +16,10 @@ final class MultiReleaseMemCopy {
     }
 
     static void copy(long src, long dst, long bytes) {
-        // A custom Java loop is fastest at small sizes, approximately up to 160 bytes.
-        if (BITS64 && ((src | dst) & 7) == 0) {
+        // A custom Java loop is fastest at small sizes, approximately up to 64 bytes.
+        if (bytes < 64 && BITS64 && ((src | dst) & 7) == 0) {
             // both src and dst are aligned to 8 bytes
-            memCopyAligned64(src, dst, (int) bytes & 0xFF);
+            memCopyAligned64(src, dst, (int) bytes & 0x3F);
         } else {
             // Unaligned fallback. Poor performance until Java 16.
             UNSAFE.copyMemory(null, src, null, dst, bytes);

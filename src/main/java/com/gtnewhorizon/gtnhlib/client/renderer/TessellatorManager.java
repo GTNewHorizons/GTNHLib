@@ -68,6 +68,8 @@ public class TessellatorManager {
 
     private static final ThreadLocal<CapturingTessellator> capturingTessellator = ThreadLocal
             .withInitial(CapturingTessellator::new);
+    private static final ThreadLocal<LocalTessellator> localTessellator = ThreadLocal
+            .withInitial(LocalTessellator::new);
 
     private static final ThreadLocal<ArrayList<CaptureState>> captureStack = ThreadLocal.withInitial(ArrayList::new);
     private static final Thread mainThread = Thread.currentThread();
@@ -76,6 +78,10 @@ public class TessellatorManager {
     private static boolean isInCompilingCallback = false;
 
     public static Tessellator get() {
+        final LocalTessellator local = localTessellator.get();
+        if (local.active) {
+            return local;
+        }
         final ArrayList<CaptureState> stack = captureStack.get();
         if (!stack.isEmpty()) {
             return capturingTessellator.get();
@@ -84,6 +90,32 @@ public class TessellatorManager {
         } else {
             throw new IllegalStateException("Tried to get the Tessellator off the main thread when not capturing!");
         }
+    }
+
+    /**
+     * Returns a thread-local tessellator for standalone use. Caller manages lifecycle.
+     */
+    public static LocalTessellator getLocal() {
+        return localTessellator.get();
+    }
+
+    /**
+     * Enter local mode - get() will return the thread-local LocalTessellator. Use for worker threads where mod code
+     * calls Tessellator.instance directly.
+     */
+    public static LocalTessellator enterLocalMode() {
+        final LocalTessellator local = localTessellator.get();
+        local.active = true;
+        return local;
+    }
+
+    /**
+     * Exit local mode and reset tessellator state.
+     */
+    public static void exitLocalMode() {
+        final LocalTessellator local = localTessellator.get();
+        local.active = false;
+        local.discard();
     }
 
     public static boolean isCurrentlyCapturing() {

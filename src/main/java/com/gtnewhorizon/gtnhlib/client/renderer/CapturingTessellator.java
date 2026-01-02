@@ -14,8 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import net.minecraft.client.renderer.Tessellator;
-
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -27,7 +25,6 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimiti
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
-import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
 
@@ -38,7 +35,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 ///
 /// NOTE: This will _not_ (currently) capture, integrate, or stop any GL calls made around the tessellator draw calls.
 @SuppressWarnings("unused")
-public class CapturingTessellator extends Tessellator implements ITessellatorInstance {
+public class CapturingTessellator extends LocalTessellator implements ITessellatorInstance {
 
     // Object pools reduce allocations over time by reusing primitive instances across multiple
     // capture sessions. Not meant to avoid allocations within a single call, but to amortize
@@ -74,8 +71,6 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     // Reusable FLAGS instance to avoid allocations
     final Flags flags = new Flags(true, true, true, true);
 
-    private final Vector3dStack storedTranslation = new Vector3dStack();
-
     public void setOffset(BlockPos pos) {
         this.offset.set(pos);
     }
@@ -88,12 +83,6 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     public int draw() {
         // Delegate to TessellatorManager for shared logic
         return TessellatorManager.processDrawForCapturingTessellator(this);
-    }
-
-    @Override
-    public void discard() {
-        isDrawing = false;
-        reset();
     }
 
     @Override
@@ -150,20 +139,6 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         }
         byteBuffer.rewind();
         return byteBuffer;
-    }
-
-    public void storeTranslation() {
-        storedTranslation.push();
-
-        this.storedTranslation.set(xOffset, yOffset, zOffset);
-    }
-
-    public void restoreTranslation() {
-
-        xOffset = storedTranslation.x;
-        yOffset = storedTranslation.y;
-        zOffset = storedTranslation.z;
-        storedTranslation.pop();
     }
 
     public static int createBrightness(int sky, int block) {
