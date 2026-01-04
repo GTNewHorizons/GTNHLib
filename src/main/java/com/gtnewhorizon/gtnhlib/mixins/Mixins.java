@@ -47,7 +47,7 @@ public enum Mixins implements IMixins {
             .addClientMixins("block_sounds.MixinPlayerControllerMP", "block_sounds.MixinRenderGlobal")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
     ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
-            .addCommonMixins("EntityRendererAccessor")),
+            .addClientMixins("EntityRendererAccessor")),
     ITEM_TRANSLUCENCY(new MixinBuilder("ItemRenderer & RenderItem ITranslucentItem support")
             .addClientMixins("MixinItemRenderer_Translucency", "MixinRenderItem_Translucency").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
