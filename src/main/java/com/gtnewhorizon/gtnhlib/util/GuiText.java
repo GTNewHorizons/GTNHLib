@@ -1,4 +1,4 @@
-package main.java.com.gtnewhorizon.gtnhlib.util;
+package com.gtnewhorizon.gtnhlib.util;
 
 import java.util.Collections;
 import java.util.Set;
