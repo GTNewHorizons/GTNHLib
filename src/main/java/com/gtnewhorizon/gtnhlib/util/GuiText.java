@@ -80,23 +80,20 @@ public final class GuiText {
     public static String translate(String key, String fallback, Object... args) {
         String fullKey = PREFIX + key;
         String translated = I18n.format(fullKey, args);
-
-        // In MC 1.7.10, missing keys usually return the key itself
-        if (translated == null || translated.equals(fullKey)) {
-
-            if (DEBUG_CRASH_ON_MISSING) {
-                throw new IllegalStateException(
-                        "Missing GUI lang key: '" + fullKey + "' (fallback: '" + fallback + "')");
-            }
-
-            if (DEBUG_LOG_MISSING_KEYS) {
-                logMissingKeyOnce(fullKey, fallback);
-            }
-
-            return fallback;
+        if (translated != null && !translated.equals(fullKey)) {
+            return translated;
         }
 
-        return translated;
+        // Missing / invalid translation
+        if (DEBUG_CRASH_ON_MISSING) {
+            throw new IllegalStateException("Missing GUI lang key: '" + fullKey + "' (fallback: '" + fallback + "')");
+        }
+
+        if (DEBUG_LOG_MISSING_KEYS) {
+            logMissingKeyOnce(fullKey, fallback);
+        }
+
+        return fallback;
     }
 
     public static String format(String key, String fallback, Object... args) {
