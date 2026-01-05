@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gtnewhorizon.gtnhlib.chat.AbstractChatComponentCustom;
-import com.gtnewhorizon.gtnhlib.chat.ChatUtility;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 public abstract class AbstractChatComponentNumber extends AbstractChatComponentCustom {
@@ -30,7 +29,7 @@ public abstract class AbstractChatComponentNumber extends AbstractChatComponentC
     @Override
     public @NotNull JsonElement serialize() {
         final JsonObject obj = new JsonObject();
-        ChatUtility.serializeNumber(obj, number);
+        serializeNumber(obj, number);
 
         return obj;
     }
@@ -38,7 +37,14 @@ public abstract class AbstractChatComponentNumber extends AbstractChatComponentC
     @Override
     public void deserialize(@NotNull JsonElement jsonElement) {
         JsonObject obj = jsonElement.getAsJsonObject();
-        this.number = ChatUtility.deserializeNumber(obj);
+        this.number = deserializeNumber(obj);
     }
 
+    private void serializeNumber(@NotNull JsonObject obj, @NotNull BigDecimal num) {
+        obj.addProperty("number", num.stripTrailingZeros().toPlainString());
+    }
+
+    private BigDecimal deserializeNumber(@NotNull JsonObject obj) {
+        return new BigDecimal(obj.get("number").getAsString());
+    }
 }
