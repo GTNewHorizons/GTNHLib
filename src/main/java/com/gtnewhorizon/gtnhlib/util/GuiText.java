@@ -126,6 +126,9 @@ public final class GuiText {
         public static final String SLASH = "symbol.slash"; // "/"
         public static final String PLUS = "symbol.plus"; // "+"
         public static final String MINUS = "symbol.minus"; // "-"
+        public static final String SYMBOL_X = "symbol.x"; // "x" (count / multiply)
+        public static final String SYMBOL_EQ = "symbol.eq"; // "="
+        public static final String SYMBOL_COLON = "symbol.colon"; // ":"
         public static final String PERCENT = "symbol.percent"; // "%"
         public static final String BRACKET_OPEN = "symbol.bracket_open"; // "("
         public static final String BRACKET_CLOSE = "symbol.bracket_close"; // ")"
@@ -143,6 +146,35 @@ public final class GuiText {
         public static final String ENERGY_RF_S = "symbol.energy.rf_s"; // "RF/s"
         public static final String ENERGY_PER_T = "symbol.energy.per_t"; // "/t"
         public static final String ENERGY_PER_S = "symbol.energy.per_s"; // "/s"
+
+        public static final String UNIT_MB = "unit.mb"; // "mB"
+        public static final String UNIT_L = "unit.l"; // "L"
+
+        public static final String STATE_ON = "state.on"; // "ON"
+        public static final String STATE_OFF = "state.off"; // "OFF"
+        public static final String STATE_YES = "state.yes"; // "YES"
+        public static final String STATE_NO = "state.no"; // "NO"
+        public static final String STATE_ENABLED = "state.enabled"; // "Enabled"
+        public static final String STATE_DISABLED = "state.disabled"; // "Disabled"
+
+        public static final String DIR_IN = "dir.in"; // "IN"
+        public static final String DIR_OUT = "dir.out"; // "OUT"
+        public static final String DIR_INPUT = "dir.input"; // "Input"
+        public static final String DIR_OUTPUT = "dir.output"; // "Output"
+
+        public static final String LABEL_MAX = "label.max"; // "Max"
+        public static final String LABEL_MIN = "label.min"; // "Min"
+        public static final String LABEL_AVG = "label.avg"; // "Avg"
+
+        public static final String ACTION_ADD = "action.add"; // "Add"
+        public static final String ACTION_REMOVE = "action.remove"; // "Remove"
+        public static final String ACTION_CLEAR = "action.clear"; // "Clear"
+        public static final String ACTION_RESET = "action.reset"; // "Reset"
+        public static final String ACTION_APPLY = "action.apply"; // "Apply"
+
+        public static final String STATUS_OK = "status.ok"; // "OK"
+        public static final String STATUS_ACTIVE = "status.active"; // "Active"
+        public static final String STATUS_IDLE = "status.idle"; // "Idle"
 
     }
 
