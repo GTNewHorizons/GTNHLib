@@ -28,10 +28,19 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
     private static Boolean isObf;
 
     public GTNHLibCore() {
+        verifyDependencies();
         try {
             ConfigurationManager.registerConfig(GTNHLibConfig.class);
         } catch (ConfigException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void verifyDependencies() {
+        // Check for MixinExtras Expression support (added in UniMixins 0.1.23)
+        if (GTNHLibCore.class.getResource("/com/llamalad7/mixinextras/expression/Expression.class") == null) {
+            throw new RuntimeException(
+                    "UniMixins is outdated: GTNHLib requires UniMixins 0.1.23 or newer! Download the unimixins-all jar (not -dev) from: https://github.com/LegacyModdingMC/UniMixins/releases");
         }
     }
 
