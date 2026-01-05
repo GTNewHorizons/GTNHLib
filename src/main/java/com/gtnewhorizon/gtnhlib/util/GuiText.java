@@ -15,11 +15,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 /**
  * Helper for overrideable GUI text.
  *
- * Use this when a GUI draws hardcoded strings (like "+", "-1", "->", "/", etc.)
- * that you want resource packs to recolor / rewrite.
+ * Use this when a GUI draws hardcoded strings (like "+", "-1", "->", "/", etc.) that you want resource packs to recolor
+ * / rewrite.
  *
- * Keys are namespaced automatically with "gtnhlib." so you only pass the short key:
- *   "symbol.plus" -> looks up "gtnhlib.symbol.plus"
+ * Keys are namespaced automatically with "gtnhlib." so you only pass the short key: "symbol.plus" -> looks up
+ * "gtnhlib.symbol.plus"
  *
  * Client-side only.
  */
@@ -60,57 +60,22 @@ public final class GuiText {
     }
 
     /*
-     * -----------------------
-     * HOW TO USE (examples)
-     * -----------------------
-     *
-     * 1) Simple symbol replacement:
-     *    fontRenderer.drawString(
-     *        GuiText.get("symbol.plus", "+"),
-     *        x, y, 0x404040
-     *    );
-     *
-     *    assets/gtnhlib/lang/en_US.lang:
-     *      gtnhlib.symbol.plus=+
-     *
-     *    resource pack override:
-     *      gtnhlib.symbol.plus=§7+§r
-     *
-     * 2) Button label:
-     *    button.displayString = GuiText.get("button.minus_one", "-1");
-     *
-     *    lang:
-     *      gtnhlib.button.minus_one=-1
-     *
-     * 3) Replace string concatenation with a formatted key:
-     *    // BEFORE:
-     *    // "->" + value + "->"
-     *
-     *    // AFTER:
-     *    fontRenderer.drawString(
-     *        GuiText.format("symbol.arrow_math", "->%s->", value),
-     *        63, 59, 0x404040
-     *    );
-     *
-     *    lang:
-     *      gtnhlib.symbol.arrow_math=->%s->
-     *
-     *    resource pack override (color different parts):
-     *      gtnhlib.symbol.arrow_math=§7->§f%s§4->§r
-     *
-     * Notes:
-     * - Use %s / %d placeholders in the lang value when passing args.
-     * - Inline '§' color codes are allowed in lang entries (resource-pack controlled).
+     * ----------------------- HOW TO USE (examples) ----------------------- 1) Simple symbol replacement:
+     * fontRenderer.drawString( GuiText.get("symbol.plus", "+"), x, y, 0x404040 ); assets/gtnhlib/lang/en_US.lang:
+     * gtnhlib.symbol.plus=+ resource pack override: gtnhlib.symbol.plus=§7+§r 2) Button label: button.displayString =
+     * GuiText.get("button.minus_one", "-1"); lang: gtnhlib.button.minus_one=-1 3) Replace string concatenation with a
+     * formatted key: // BEFORE: // "->" + value + "->" // AFTER: fontRenderer.drawString(
+     * GuiText.format("symbol.arrow_math", "->%s->", value), 63, 59, 0x404040 ); lang: gtnhlib.symbol.arrow_math=->%s->
+     * resource pack override (color different parts): gtnhlib.symbol.arrow_math=§7->§f%s§4->§r Notes: - Use %s / %d
+     * placeholders in the lang value when passing args. - Inline '§' color codes are allowed in lang entries
+     * (resource-pack controlled).
      */
 
     /**
      * Returns overrideable GUI text.
      *
-     * If the key exists, its translated value is returned.
-     * If the key does not exist:
-     *  - fallback is returned
-     *  - optional debug logging may occur
-     *  - optional crash may be triggered (dev only)
+     * If the key exists, its translated value is returned. If the key does not exist: - fallback is returned - optional
+     * debug logging may occur - optional crash may be triggered (dev only)
      */
     public static String get(String key, String fallback, Object... args) {
         String fullKey = PREFIX + key;
