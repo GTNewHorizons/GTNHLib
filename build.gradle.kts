@@ -46,8 +46,13 @@ tasks.sourcesJar {
     exclude("META-INF/versions/9/module-info.java")
 }
 
+val jvmdgDowngraded17 = configurations.named("jvmdgDowngraded17").get()
+
 tasks.shadowJar {
-    into("META-INF/versions/17") { from(main17.output) }
+    into("META-INF/versions/17") {
+        from(main17.output)
+        from(zipTree(provider { jvmdgDowngraded17.files.single() }))
+    }
     exclude("META-INF/versions/9/module-info.class")
 }
 
