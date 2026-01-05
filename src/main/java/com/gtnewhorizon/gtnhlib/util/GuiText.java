@@ -61,10 +61,10 @@ public final class GuiText {
 
     /*
      * ----------------------- HOW TO USE (examples) ----------------------- 1) Simple symbol replacement:
-     * fontRenderer.drawString( GuiText.get("symbol.plus", "+"), x, y, 0x404040 ); assets/gtnhlib/lang/en_US.lang:
+     * fontRenderer.drawString(GuiText.format("symbol.plus", "+"), x, y, 0x404040 ); assets/gtnhlib/lang/en_US.lang:
      * gtnhlib.symbol.plus=+ resource pack override: gtnhlib.symbol.plus=§7+§r 2) Button label: button.displayString =
-     * GuiText.get("button.minus_one", "-1"); lang: gtnhlib.button.minus_one=-1 3) Replace string concatenation with a
-     * formatted key: // BEFORE: // "->" + value + "->" // AFTER: fontRenderer.drawString(
+     * GuiText.format("button.minus_one", "-1"); lang: gtnhlib.button.minus_one=-1 3) Replace string concatenation with
+     * a formatted key: // BEFORE: // "->" + value + "->" // AFTER: fontRenderer.drawString(
      * GuiText.format("symbol.arrow_math", "->%s->", value), 63, 59, 0x404040 ); lang: gtnhlib.symbol.arrow_math=->%s->
      * resource pack override (color different parts): gtnhlib.symbol.arrow_math=§7->§f%s§4->§r Notes: - Use %s / %d
      * placeholders in the lang value when passing args. - Inline '§' color codes are allowed in lang entries
@@ -77,7 +77,7 @@ public final class GuiText {
      * If the key exists, its translated value is returned. If the key does not exist: - fallback is returned - optional
      * debug logging may occur - optional crash may be triggered (dev only)
      */
-    public static String get(String key, String fallback, Object... args) {
+    public static String translate(String key, String fallback, Object... args) {
         String fullKey = PREFIX + key;
         String translated = I18n.format(fullKey, args);
 
@@ -99,13 +99,8 @@ public final class GuiText {
         return translated;
     }
 
-    /**
-     * Alias for get(...).
-     *
-     * Exists purely for readability in formatting-heavy call sites.
-     */
     public static String format(String key, String fallback, Object... args) {
-        return get(key, fallback, args);
+        return translate(key, fallback, args);
     }
 
     private static void logMissingKeyOnce(String fullKey, String fallback) {
@@ -113,4 +108,42 @@ public final class GuiText {
             LOGGER.debug("Missing GUI lang key '{}' (using fallback '{}')", fullKey, fallback);
         }
     }
+
+    /**
+     * Common key constants for GUI text.
+     *
+     * These are optional helpers to avoid typos and keep key names consistent. Example usage:
+     * (GuiText.format(GuiText.Keys.ARROW_LEFT,"<")
+     */
+    public static final class Keys {
+
+        private Keys() {}
+
+        public static final String ARROW_LEFT = "symbol.arrow_left"; // "<"
+        public static final String ARROW_RIGHT = "symbol.arrow_right"; // ">"
+        public static final String ARROW_LEFT_BIG = "symbol.arrow_left_big"; // "<-"
+        public static final String ARROW_RIGHT_BIG = "symbol.arrow_right_big"; // "->"
+        public static final String SLASH = "symbol.slash"; // "/"
+        public static final String PLUS = "symbol.plus"; // "+"
+        public static final String MINUS = "symbol.minus"; // "-"
+        public static final String PERCENT = "symbol.percent"; // "%"
+        public static final String BRACKET_OPEN = "symbol.bracket_open"; // "("
+        public static final String BRACKET_CLOSE = "symbol.bracket_close"; // ")"
+
+        public static final String ENERGY_EU = "symbol.energy.eu"; // "EU"
+        public static final String ENERGY_RF = "symbol.energy.rf"; // "RF"
+        public static final String ENERGY_MJ = "symbol.energy.mj"; // "MJ"
+        public static final String ENERGY_LP = "symbol.energy.lp"; // "LP"
+        public static final String ENERGY_AE = "symbol.energy.ae"; // "AE"
+        public static final String ENERGY_W = "symbol.energy.w"; // "W"
+
+        public static final String ENERGY_EU_T = "symbol.energy.eu_t"; // "EU/t"
+        public static final String ENERGY_EU_S = "symbol.energy.eu_s"; // "EU/s"
+        public static final String ENERGY_RF_T = "symbol.energy.rf_t"; // "RF/t"
+        public static final String ENERGY_RF_S = "symbol.energy.rf_s"; // "RF/s"
+        public static final String ENERGY_PER_T = "symbol.energy.per_t"; // "/t"
+        public static final String ENERGY_PER_S = "symbol.energy.per_s"; // "/s"
+
+    }
+
 }
