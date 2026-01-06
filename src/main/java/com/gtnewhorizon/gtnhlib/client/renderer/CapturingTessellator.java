@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import net.minecraft.client.renderer.Tessellator;
+
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -25,6 +27,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimiti
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
+import com.gtnewhorizon.gtnhlib.client.renderer.stacks.Vector3dStack;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
 
@@ -35,7 +38,26 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 ///
 /// NOTE: This will _not_ (currently) capture, integrate, or stop any GL calls made around the tessellator draw calls.
 @SuppressWarnings("unused")
-public class CapturingTessellator extends LocalTessellator implements ITessellatorInstance {
+public class CapturingTessellator extends Tessellator implements ITessellatorInstance {
+    boolean active = false;
+    private final Vector3dStack storedTranslation = new Vector3dStack();
+
+    public void storeTranslation() {
+        storedTranslation.push();
+        storedTranslation.set(xOffset, yOffset, zOffset);
+    }
+
+    public void restoreTranslation() {
+        xOffset = storedTranslation.x;
+        yOffset = storedTranslation.y;
+        zOffset = storedTranslation.z;
+        storedTranslation.pop();
+    }
+
+    public void discard() {
+        isDrawing = false;
+        reset();
+    }
 
     // Object pools reduce allocations over time by reusing primitive instances across multiple
     // capture sessions. Not meant to avoid allocations within a single call, but to amortize
