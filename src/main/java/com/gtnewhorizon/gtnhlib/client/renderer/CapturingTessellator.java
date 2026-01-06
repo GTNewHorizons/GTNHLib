@@ -142,7 +142,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     public static ByteBuffer quadsToBuffer(List<ModelQuadViewMutable> quads, VertexFormat format) {
         final ByteBuffer byteBuffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
         format.writeQuads(quads, byteBuffer);
-        byteBuffer.rewind();
+        byteBuffer.flip();
         return byteBuffer;
     }
 

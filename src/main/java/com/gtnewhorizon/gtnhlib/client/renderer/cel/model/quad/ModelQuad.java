@@ -45,40 +45,40 @@ public final class ModelQuad implements ModelQuadViewMutable {
 
     @Override
     public void setX(int idx, float x) {
-        this.data[vertexOffset(idx) | X_INDEX] = Float.floatToRawIntBits(x);
+        this.data[vertexOffset(idx) + X_INDEX] = Float.floatToRawIntBits(x);
         this.normal = 0;
     }
 
     @Override
     public void setY(int idx, float y) {
-        this.data[vertexOffset(idx) | Y_INDEX] = Float.floatToRawIntBits(y);
+        this.data[vertexOffset(idx) + Y_INDEX] = Float.floatToRawIntBits(y);
         this.normal = 0;
     }
 
     @Override
     public void setZ(int idx, float z) {
-        this.data[vertexOffset(idx) | Z_INDEX] = Float.floatToRawIntBits(z);
+        this.data[vertexOffset(idx) + Z_INDEX] = Float.floatToRawIntBits(z);
         this.normal = 0;
     }
 
     @Override
     public void setColor(int idx, int color) {
-        this.data[vertexOffset(idx) | COLOR_INDEX] = color;
+        this.data[vertexOffset(idx) + COLOR_INDEX] = color;
     }
 
     @Override
     public void setTexU(int idx, float u) {
-        this.data[vertexOffset(idx) | TEX_X_INDEX] = Float.floatToRawIntBits(u);
+        this.data[vertexOffset(idx) + TEX_X_INDEX] = Float.floatToRawIntBits(u);
     }
 
     @Override
     public void setTexV(int idx, float v) {
-        this.data[vertexOffset(idx) | TEX_Y_INDEX] = Float.floatToRawIntBits(v);
+        this.data[vertexOffset(idx) + TEX_Y_INDEX] = Float.floatToRawIntBits(v);
     }
 
     @Override
     public void setLight(int idx, int light) {
-        this.data[vertexOffset(idx) | LIGHT_INDEX] = light;
+        this.data[vertexOffset(idx) + LIGHT_INDEX] = light;
     }
 
     @Override
@@ -111,7 +111,7 @@ public final class ModelQuad implements ModelQuadViewMutable {
 
     @Override
     public void setForgeNormal(int idx, int normal) {
-        this.data[vertexOffset(idx) | NORMAL_INDEX] = normal;
+        this.data[vertexOffset(idx) + NORMAL_INDEX] = normal;
     }
 
     @Override
@@ -131,42 +131,42 @@ public final class ModelQuad implements ModelQuadViewMutable {
 
     @Override
     public float getX(int idx) {
-        return Float.intBitsToFloat(this.data[vertexOffset(idx) | X_INDEX]);
+        return Float.intBitsToFloat(this.data[vertexOffset(idx) + X_INDEX]);
     }
 
     @Override
     public float getY(int idx) {
-        return Float.intBitsToFloat(this.data[vertexOffset(idx) | Y_INDEX]);
+        return Float.intBitsToFloat(this.data[vertexOffset(idx) + Y_INDEX]);
     }
 
     @Override
     public float getZ(int idx) {
-        return Float.intBitsToFloat(this.data[vertexOffset(idx) | Z_INDEX]);
+        return Float.intBitsToFloat(this.data[vertexOffset(idx) + Z_INDEX]);
     }
 
     @Override
     public int getColor(int idx) {
-        return this.data[vertexOffset(idx) | COLOR_INDEX];
+        return this.data[vertexOffset(idx) + COLOR_INDEX];
     }
 
     @Override
     public float getTexU(int idx) {
-        return Float.intBitsToFloat(this.data[vertexOffset(idx) | TEX_X_INDEX]);
+        return Float.intBitsToFloat(this.data[vertexOffset(idx) + TEX_X_INDEX]);
     }
 
     @Override
     public float getTexV(int idx) {
-        return Float.intBitsToFloat(this.data[vertexOffset(idx) | TEX_Y_INDEX]);
+        return Float.intBitsToFloat(this.data[vertexOffset(idx) + TEX_Y_INDEX]);
     }
 
     @Override
     public int getLight(int idx) {
-        return this.data[vertexOffset(idx) | LIGHT_INDEX];
+        return this.data[vertexOffset(idx) + LIGHT_INDEX];
     }
 
     @Override
     public int getForgeNormal(int idx) {
-        return this.data[vertexOffset(idx) | NORMAL_INDEX];
+        return this.data[vertexOffset(idx) + NORMAL_INDEX];
     }
 
     @Override
@@ -239,7 +239,7 @@ public final class ModelQuad implements ModelQuadViewMutable {
     /// @param idx The index of the position coord to offset. 0 = x, 1 = y, 2 = z.
     /// @param offset The amount to shift the coord by.
     private void offsetPos(int idx, float offset) {
-        final int i = POSITION_INDEX | idx;
+        final int i = X_INDEX + idx;
         setData(0, i, getData(0, i) + offset);
         setData(1, i, getData(1, i) + offset);
         setData(2, i, getData(2, i) + offset);
@@ -263,10 +263,10 @@ public final class ModelQuad implements ModelQuadViewMutable {
 
     private void clearNormals() {
         normal = 0;
-        data[vertexOffset(0) | NORMAL_INDEX] = 0;
-        data[vertexOffset(1) | NORMAL_INDEX] = 0;
-        data[vertexOffset(2) | NORMAL_INDEX] = 0;
-        data[vertexOffset(3) | NORMAL_INDEX] = 0;
+        data[vertexOffset(0) + NORMAL_INDEX] = 0;
+        data[vertexOffset(1) + NORMAL_INDEX] = 0;
+        data[vertexOffset(2) + NORMAL_INDEX] = 0;
+        data[vertexOffset(3) + NORMAL_INDEX] = 0;
     }
 
     private void clearLightmap() {

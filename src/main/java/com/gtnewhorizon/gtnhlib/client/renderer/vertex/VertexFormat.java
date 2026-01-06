@@ -146,26 +146,6 @@ public class VertexFormat {
         out.position((int) (writePointer - address));
     }
 
-    public final void writeToBuffer(ByteBuffer out, int[] data, int rawVertexCount) {
-        // if (out.remaining() < this.getVertexSize() * (rawVertexCount / 8)) throw new IllegalArgumentException(
-        // "Buffer only has " + out.remaining()
-        // + " out of "
-        // + this.getVertexSize() * (rawVertexCount / 8)
-        // + " bytes remaining.");
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
-
-        final long address = memAddress0(out);
-        long writePointer = address + out.position();
-
-        for (int index = 0; index < rawVertexCount; index += 8) {
-            for (int i = 0; i < listSize; i++) {
-                writePointer += list.get(i).writer.writeAttribute(writePointer, data, index);
-            }
-        }
-        out.position((int) (writePointer - address));
-    }
-
     public final long writeToBuffer0(long pointer, int[] data, int rawVertexCount) {
         final List<VertexFormatElement> list = this.getElements();
         final int listSize = list.size();
@@ -207,7 +187,7 @@ public class VertexFormat {
     }
 
     public final int getVertexCount(ByteBuffer buffer) {
-        return getVertexCount(buffer.remaining());
+        return getVertexCount(buffer.limit());
     }
 
     public final int getVertexCount(int bufferSize) {

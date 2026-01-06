@@ -20,9 +20,8 @@ public class DirectTessellatorTest {
     @BeforeEach
     void setup() {
         initialBuffer = ByteBuffer.allocateDirect(1024); // initial direct buffer
-        tess = new DirectTessellator(
-                t -> true, // Always reset
-                initialBuffer);
+        tess = new DirectTessellator(initialBuffer);
+        tess.setDrawCallback(t -> true);
     }
 
     @Test
@@ -32,7 +31,7 @@ public class DirectTessellatorTest {
         tess.addVertex(4, 5, 6);
 
         assertEquals(2, tess.vertexCount, "Vertex count should be 2");
-        assertTrue(tess.getDataSize() > 0, "Data size should be > 0");
+        assertTrue(tess.bufferLimit() > 0, "Data size should be > 0");
     }
 
     @Test
@@ -40,19 +39,19 @@ public class DirectTessellatorTest {
         tess.startDrawing(0);
         tess.addVertex(1, 1, 1); // old format (no color)
 
-        assertEquals(DefaultVertexFormat.POSITION, tess.format);
+        assertEquals(DefaultVertexFormat.POSITION, tess.getVertexFormat());
 
         // Enable color → triggers fixBufferFormat
         tess.setColorRGBA(255, 128, 64, 32);
         tess.addVertex(2, 2, 2);
 
-        assertEquals(DefaultVertexFormat.POSITION_COLOR, tess.format);
+        assertEquals(DefaultVertexFormat.POSITION_COLOR, tess.getVertexFormat());
 
         // Verify vertex count
         assertEquals(2, tess.vertexCount);
 
         // Verify that writePtr advanced
-        assertTrue(tess.getDataSize() > 0, "Data size should increase after vertex with color");
+        assertTrue(tess.bufferLimit() > 0, "Data size should increase after vertex with color");
 
         // Verify buffer contents for old vertex still has correct position
         long ptr = tess.startPtr;
@@ -65,7 +64,7 @@ public class DirectTessellatorTest {
         assertEquals(1.0f, z0, 0.0001);
 
         // Verify second vertex
-        ptr = tess.startPtr + tess.format.getVertexSize(); // offset to second vertex
+        ptr = tess.startPtr + tess.getVertexFormat().getVertexSize(); // offset to second vertex
         float x1 = memGetFloat(ptr);
         float y1 = memGetFloat(ptr + 4);
         float z1 = memGetFloat(ptr + 8);
@@ -92,18 +91,18 @@ public class DirectTessellatorTest {
         tess.addVertex(4, 5, 6);
 
         ByteBuffer copy = tess.allocateBufferCopy();
-        assertEquals(tess.getDataSize(), copy.limit(), "Copy buffer size should match data size");
+        assertEquals(tess.bufferLimit(), copy.limit(), "Copy buffer size should match data size");
 
         float x0 = memGetFloat(memAddress0(copy));
         assertEquals(1.0f, x0, 0.0001);
-        memFree(copy); // remember to free native buffer
+        memFree(copy);
     }
 
     @Test
     void testEnsureCapacityPreservesData() {
         // Small initial buffer to force reallocation
         ByteBuffer small = ByteBuffer.allocateDirect(64);
-        tess = new DirectTessellator(t -> false, small);
+        tess = new DirectTessellator(small);
 
         tess.startDrawing(0);
 
@@ -126,7 +125,7 @@ public class DirectTessellatorTest {
             assertEquals(i + 1, y, 0.0001f);
             assertEquals(i + 2, z, 0.0001f);
 
-            ptr += tess.format.getVertexSize();
+            ptr += tess.getVertexFormat().getVertexSize();
         }
     }
 
@@ -156,7 +155,7 @@ public class DirectTessellatorTest {
             assertEquals(i, memGetFloat(ptr), 0.0001f);
             assertEquals(i, memGetFloat(ptr + 4), 0.0001f);
             assertEquals(i, memGetFloat(ptr + 8), 0.0001f);
-            ptr += tess.format.getVertexSize();
+            ptr += tess.getVertexFormat().getVertexSize();
         }
     }
 
@@ -164,10 +163,12 @@ public class DirectTessellatorTest {
     void testDrawCallbackResetBehavior() {
         AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
-        tess = new DirectTessellator(t -> {
-            callbackCalled.set(true);
-            return true; // request reset
-        }, initialBuffer);
+        tess = new DirectTessellator(initialBuffer);
+        tess.setDrawCallback(t -> {
+                callbackCalled.set(true);
+                return true; // request reset
+            }
+        );
 
         tess.startDrawing(0);
         tess.addVertex(1, 2, 3);
@@ -199,7 +200,7 @@ public class DirectTessellatorTest {
         assertEquals(2f, memGetFloat(ptr + 4), 0.0001f);
         assertEquals(3f, memGetFloat(ptr + 8), 0.0001f);
 
-        ptr += tess.format.getVertexSize();
+        ptr += tess.getVertexFormat().getVertexSize();
 
         assertEquals(4f, memGetFloat(ptr), 0.0001f);
         assertEquals(5f, memGetFloat(ptr + 4), 0.0001f);
@@ -209,7 +210,7 @@ public class DirectTessellatorTest {
     @Test
     void testResetAfterReallocRestoresBaseBuffer() {
         ByteBuffer small = ByteBuffer.allocateDirect(32);
-        tess = new DirectTessellator(t -> false, small);
+        tess = new DirectTessellator(small);
 
         tess.startDrawing(0);
         for (int i = 0; i < 5; i++) {
@@ -238,5 +239,13 @@ public class DirectTessellatorTest {
         assertEquals(1f, copied, 0.0001f);
 
         memFree(copy);
+    }
+
+    @Test
+    void testPreDefinedVertexFormat() {
+        tess.setVertexFormat(DefaultVertexFormat.POSITION);
+        tess.startDrawing(0);
+        tess.setColorRGBA(255, 255, 255, 255);
+        assertFalse(tess.hasColor);
     }
 }

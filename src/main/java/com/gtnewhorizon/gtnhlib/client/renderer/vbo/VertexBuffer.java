@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import org.lwjgl.opengl.GLContext;
 
 public class VertexBuffer implements AutoCloseable {
 
@@ -51,7 +52,6 @@ public class VertexBuffer implements AutoCloseable {
         this.unbindVBO();
     }
 
-    // WARNING: THIS DOES NOT WORK WITH flip(). USE rewind() INSTEAD
     public VertexBuffer upload(ByteBuffer buffer) {
         upload(buffer, format.getVertexCount(buffer), GL15.GL_STATIC_DRAW);
         return this;

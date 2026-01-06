@@ -248,28 +248,28 @@ public class TessellatorManager {
 
     // Instance to use for capturing to vbo's (package-private)
     // Cannot be used outside the tessellator stack
-    static final DirectTessellator mainInstance = new DirectTessellator();
-    static boolean tessBufferOccupied;
+    static final DirectTessellator mainInstance = new DirectTessellator(Tessellator.byteBuffer);
 
     public static DirectTessellator startCapturingDirect() {
-        return startCapturingDirect(null);
-    }
-
-    public static DirectTessellator startCapturingDirect(DirectDrawCallback callback) {
-        // Reuse the same instance if there's no other instances on the stack
         if (directTessellators.isEmpty()) {
-            mainInstance.setDrawCallback(callback);
             return directTessellators.push(mainInstance);
         }
-        DirectTessellator tessellator = new DirectTessellator(callback);
+        DirectTessellator tessellator = new DirectTessellator(Tessellator.byteBuffer);
         directTessellators.push(tessellator);
         return tessellator;
     }
-//
-//    // Every call needs to be pushed onto the stack to make sure it gets properly cleaned up afterwards
-//    public static void startCapturingDirect(DirectTessellator tessellator) {
-//        directTessellators.push(tessellator);
-//    }
+
+    public static DirectTessellator startCapturingDirect(VertexFormat format) {
+        DirectTessellator tessellator = startCapturingDirect();
+        tessellator.setVertexFormat(format);
+        return tessellator;
+    }
+
+    public static DirectTessellator startCapturingDirect(DirectDrawCallback callback) {
+        DirectTessellator tessellator = startCapturingDirect();
+        tessellator.setDrawCallback(callback);
+        return tessellator;
+    }
 
     public static void stopCapturingDirect() {
         if (directTessellators.isEmpty())
@@ -365,7 +365,7 @@ public class TessellatorManager {
         for (int i = 0, size = lines.size(); i < size; i++) {
             writePrimitiveToBuffer(lines.get(i), buffer, format);
         }
-        buffer.rewind();
+        buffer.flip();
         return new VertexBuffer(format, GL11.GL_LINES).upload(buffer);
     }
 
@@ -375,7 +375,7 @@ public class TessellatorManager {
         for (int i = 0, size = triangles.size(); i < size; i++) {
             writePrimitiveToBuffer(triangles.get(i), buffer, format);
         }
-        buffer.rewind();
+        buffer.flip();
         return new VertexBuffer(format, GL11.GL_TRIANGLES).upload(buffer);
     }
 
@@ -383,7 +383,7 @@ public class TessellatorManager {
     private static VertexBuffer createQuadVBO(List<ModelQuadViewMutable> quads, VertexFormat format) {
         ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
         format.writeQuads(quads, buffer);
-        buffer.rewind();
+        buffer.flip();
         return new VertexBuffer(format).upload(buffer);
     }
 

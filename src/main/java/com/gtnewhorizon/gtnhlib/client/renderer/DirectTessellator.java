@@ -12,15 +12,19 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
+/**
+ * A {@link Tessellator} implementation that directly populates a ByteBuffer, which can then be used for VBO uploads. <br>
+ *
+ */
 public final class DirectTessellator extends Tessellator {
 
     private DirectDrawCallback drawCallback;
-    VertexFormat format;
+    private VertexFormat format;
 
-    VertexFormat preDefinedFormat;
+    private VertexFormat preDefinedFormat;
 
     final ByteBuffer baseBuffer; // never resized, never freed
-    private final long baseBufferAddress;
+    final long baseAddress;
 
     ByteBuffer buffer; // current active buffer
 
@@ -32,20 +36,12 @@ public final class DirectTessellator extends Tessellator {
         return (int) (endPtr - startPtr);
     }
 
-    int bufferLimit() {
+    int bufferLimit() { // same as position
         return (int) (writePtr - startPtr);
     }
 
     int bufferRemaining() {
         return (int) (endPtr - writePtr);
-    }
-
-    public DirectTessellator() {
-        this(Tessellator.byteBuffer);
-    }
-
-    public DirectTessellator(DirectDrawCallback callback) {
-        this(Tessellator.byteBuffer, callback);
     }
 
     public DirectTessellator(ByteBuffer initial, DirectDrawCallback callback) {
@@ -54,12 +50,11 @@ public final class DirectTessellator extends Tessellator {
     }
 
     public DirectTessellator(ByteBuffer initial) {
-
         this.baseBuffer = initial;
         this.buffer = initial;
 
-        this.baseBufferAddress = memAddress0(buffer);
-        this.startPtr = baseBufferAddress;
+        this.baseAddress = memAddress0(buffer);
+        this.startPtr = baseAddress;
         this.writePtr = startPtr;
         this.endPtr = startPtr + buffer.capacity();
     }
@@ -85,8 +80,9 @@ public final class DirectTessellator extends Tessellator {
         this.hasNormals = tessellator.hasNormals;
         this.isColorDisabled = tessellator.isColorDisabled;
         this.drawMode = tessellator.drawMode;
-        this.preDefinedFormat = null;
-        this.format = getOptimalVertexFormat();
+        this.format = preDefinedFormat != null ? preDefinedFormat : getOptimalVertexFormat();
+
+        ensureCapacity(tessellator.rawBufferIndex);
 
         writePtr = format.writeToBuffer0(writePtr, tessellator.rawBuffer, tessellator.rawBufferIndex);
 
@@ -113,16 +109,16 @@ public final class DirectTessellator extends Tessellator {
         this.isColorDisabled = false;
 
         this.format = null;
+        this.preDefinedFormat = null;
 
         if (buffer != baseBuffer) {
             memFree(buffer);
             buffer = baseBuffer;
         }
 
-        startPtr = baseBufferAddress;
+        startPtr = baseAddress;
         writePtr = startPtr;
         endPtr = startPtr + buffer.capacity();
-        buffer.clear();
     }
 
     @Override
@@ -135,15 +131,15 @@ public final class DirectTessellator extends Tessellator {
     }
 
     private void ensureCapacity(int bytes) {
-        if (writePtr + bytes <= endPtr) {
+        if (bufferRemaining() >= bytes) {
             return;
         }
 
-        long used = getDataSize();
-        int newCapacity = buffer.capacity() * 2;
+        final long used = bufferLimit();
+        final int newCapacity = buffer.capacity() * 2;
 
-        buffer = memRealloc(buffer, newCapacity);
-        startPtr = baseBufferAddress;
+        startPtr = nmemReallocChecked(startPtr, newCapacity);
+        buffer = memByteBuffer(startPtr, newCapacity);
         writePtr = startPtr + used;
         endPtr = startPtr + newCapacity;
     }
@@ -151,7 +147,7 @@ public final class DirectTessellator extends Tessellator {
     @Override
     public void addVertex(double x, double y, double z) {
         if (format == null) {
-            setupVertexFormats(getOptimalVertexFormat());
+            this.format = getOptimalVertexFormat();
         }
 
         ensureCapacity(this.format.getVertexSize());
@@ -163,11 +159,6 @@ public final class DirectTessellator extends Tessellator {
                 (float) (y + this.yOffset),
                 (float) (z + this.zOffset));
         this.vertexCount++;
-    }
-
-    private void setupVertexFormats(VertexFormat format) {
-        this.format = format;
-        // this.endPointer = writeBuffer.capacity() - format.getVertexSize();
     }
 
     // If some mod does something illegal (like calling setColor after a vertex has been emitted), this will result in
@@ -212,7 +203,10 @@ public final class DirectTessellator extends Tessellator {
     @Override
     public void setTextureUV(double p_78385_1_, double p_78385_3_) {
         if (!hasTexture) {
+            if (preDefinedFormat != null) return;
+
             this.hasTexture = true;
+
             if (format != null) {
                 fixBufferFormat();
             }
@@ -225,7 +219,10 @@ public final class DirectTessellator extends Tessellator {
     @Override
     public void setNormal(float nx, float ny, float nz) {
         if (!hasNormals) {
+            if (preDefinedFormat != null) return;
+
             this.hasNormals = true;
+
             if (format != null) {
                 fixBufferFormat();
             }
@@ -242,7 +239,10 @@ public final class DirectTessellator extends Tessellator {
         if (this.isColorDisabled) return;
 
         if (!this.hasColor) {
+            if (preDefinedFormat != null) return;
+
             this.hasColor = true;
+
             if (format != null) {
                 fixBufferFormat();
             }
@@ -278,7 +278,10 @@ public final class DirectTessellator extends Tessellator {
     @Override
     public void setBrightness(int p_78380_1_) {
         if (!this.hasBrightness) {
+            if (preDefinedFormat != null) return;
+
             this.hasBrightness = true;
+
             if (format != null) {
                 fixBufferFormat();
             }
@@ -297,18 +300,13 @@ public final class DirectTessellator extends Tessellator {
         throw new UnsupportedOperationException("setVertexState not supported for DirectTessellator!");
     }
 
-    private void setBufferLimit() {
-        buffer.limit(getDataSize());
-    }
-
-    int getDataSize() {
-        return (int) (writePtr - startPtr);
-    }
-
     VertexBuffer uploadToVBO() {
-        setBufferLimit();
         VertexBuffer vbo = VAOManager.createVAO(this.format, this.drawMode);
+
+//        ByteBuffer buffer = memByteBuffer(startPtr, bufferCapacity());
+        buffer.limit(bufferLimit());
         vbo.upload(buffer, this.vertexCount);
+
         return vbo;
     }
 
@@ -319,11 +317,23 @@ public final class DirectTessellator extends Tessellator {
      * @return The buffer copy
      */
     public ByteBuffer allocateBufferCopy() {
-        final int size = getDataSize();
+        final int size = bufferLimit();
         ByteBuffer copy = memAlloc(size);
         memCopy(startPtr, memAddress0(copy), size);
-        copy.limit(size);
         return copy;
+    }
+
+
+    public void setVertexFormat(VertexFormat format) {
+        if (this.format != null) {
+            throw new IllegalStateException("Cannot call setVertexFormat() after a vertex has already been emitted!");
+        }
+        this.preDefinedFormat = format;
+        this.format = format;
+        this.hasTexture = format.hasTexture();
+        this.hasNormals = format.hasNormals();
+        this.hasBrightness = format.hasBrightness();
+        this.hasColor = format.hasColor();
     }
 
     public int getVertexCount() {
@@ -353,6 +363,7 @@ public final class DirectTessellator extends Tessellator {
     public int getPackedColor() {
         return this.color;
     }
+
 
     void setDrawCallback(DirectDrawCallback drawCallback) {
         this.drawCallback = drawCallback;

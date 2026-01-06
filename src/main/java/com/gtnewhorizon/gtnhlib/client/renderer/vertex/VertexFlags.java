@@ -10,6 +10,8 @@ public final class VertexFlags {
     public static final int NORMAL_BIT = 0x4;
     public static final int BRIGHTNESS_BIT = 0x8;
 
+    public static final int BITS_SIZE = 0x10;
+
     public static int convertToFlags(boolean hasTexture, boolean hasColor, boolean hasNormal, boolean hasBrightness) {
         return (hasTexture ? TEXTURE_BIT : 0) | (hasColor ? COLOR_BIT : 0)
                 | (hasNormal ? NORMAL_BIT : 0)
@@ -27,5 +29,9 @@ public final class VertexFlags {
                 tessellator.hasColor,
                 tessellator.hasNormals,
                 tessellator.hasBrightness)];
+    }
+
+    public static VertexFormat getFormat(int flags) {
+        return DefaultVertexFormat.ALL_FORMATS[flags];
     }
 }
