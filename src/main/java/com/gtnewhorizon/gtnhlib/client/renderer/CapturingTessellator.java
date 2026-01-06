@@ -39,6 +39,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 /// NOTE: This will _not_ (currently) capture, integrate, or stop any GL calls made around the tessellator draw calls.
 @SuppressWarnings("unused")
 public class CapturingTessellator extends Tessellator implements ITessellatorInstance {
+
     boolean active = false;
     private final Vector3dStack storedTranslation = new Vector3dStack();
 
