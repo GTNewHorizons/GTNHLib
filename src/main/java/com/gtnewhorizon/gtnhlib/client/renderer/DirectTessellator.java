@@ -13,7 +13,8 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 /**
- * A {@link Tessellator} implementation that directly populates a ByteBuffer, which can then be used for VBO uploads. <br>
+ * A {@link Tessellator} implementation that directly populates a ByteBuffer, which can then be used for VBO uploads.
+ * <br>
  *
  */
 public final class DirectTessellator extends Tessellator {
@@ -303,7 +304,7 @@ public final class DirectTessellator extends Tessellator {
     VertexBuffer uploadToVBO() {
         VertexBuffer vbo = VAOManager.createVAO(this.format, this.drawMode);
 
-//        ByteBuffer buffer = memByteBuffer(startPtr, bufferCapacity());
+        // ByteBuffer buffer = memByteBuffer(startPtr, bufferCapacity());
         buffer.limit(bufferLimit());
         vbo.upload(buffer, this.vertexCount);
 
@@ -322,7 +323,6 @@ public final class DirectTessellator extends Tessellator {
         memCopy(startPtr, memAddress0(copy), size);
         return copy;
     }
-
 
     public void setVertexFormat(VertexFormat format) {
         if (this.format != null) {
@@ -363,7 +363,6 @@ public final class DirectTessellator extends Tessellator {
     public int getPackedColor() {
         return this.color;
     }
-
 
     void setDrawCallback(DirectDrawCallback drawCallback) {
         this.drawCallback = drawCallback;

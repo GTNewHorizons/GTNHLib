@@ -3,8 +3,11 @@ package com.gtnewhorizon.gtnhlib.client.renderer;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.COLOR_INDEX;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.LIGHT_INDEX;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.NORMAL_INDEX;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.POSITION_INDEX;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TEXTURE_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TEX_X_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TEX_Y_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.X_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.Y_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.Z_INDEX;
 import static net.minecraft.util.MathHelper.clamp_int;
 
 import java.nio.ByteBuffer;
@@ -168,16 +171,16 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     public CapturingTessellator pos(double x, double y, double z) {
         ensureBuffer();
 
-        this.rawBuffer[this.rawBufferIndex + POSITION_INDEX + 0] = Float.floatToRawIntBits((float) (x + this.xOffset));
-        this.rawBuffer[this.rawBufferIndex + POSITION_INDEX + 1] = Float.floatToRawIntBits((float) (y + this.yOffset));
-        this.rawBuffer[this.rawBufferIndex + POSITION_INDEX + 2] = Float.floatToRawIntBits((float) (z + this.zOffset));
+        this.rawBuffer[this.rawBufferIndex + X_INDEX] = Float.floatToRawIntBits((float) (x + this.xOffset));
+        this.rawBuffer[this.rawBufferIndex + Y_INDEX] = Float.floatToRawIntBits((float) (y + this.yOffset));
+        this.rawBuffer[this.rawBufferIndex + Z_INDEX] = Float.floatToRawIntBits((float) (z + this.zOffset));
 
         return this;
     }
 
     public CapturingTessellator tex(double u, double v) {
-        this.rawBuffer[this.rawBufferIndex + TEXTURE_INDEX] = Float.floatToRawIntBits((float) u);
-        this.rawBuffer[this.rawBufferIndex + TEXTURE_INDEX + 1] = Float.floatToRawIntBits((float) v);
+        this.rawBuffer[this.rawBufferIndex + TEX_X_INDEX] = Float.floatToRawIntBits((float) u);
+        this.rawBuffer[this.rawBufferIndex + TEX_Y_INDEX] = Float.floatToRawIntBits((float) v);
         this.hasTexture = true;
 
         return this;

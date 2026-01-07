@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-import org.lwjgl.opengl.GLContext;
 
 public class VertexBuffer implements AutoCloseable {
 

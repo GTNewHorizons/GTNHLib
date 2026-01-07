@@ -165,10 +165,9 @@ public class DirectTessellatorTest {
 
         tess = new DirectTessellator(initialBuffer);
         tess.setDrawCallback(t -> {
-                callbackCalled.set(true);
-                return true; // request reset
-            }
-        );
+            callbackCalled.set(true);
+            return true; // request reset
+        });
 
         tess.startDrawing(0);
         tess.addVertex(1, 2, 3);

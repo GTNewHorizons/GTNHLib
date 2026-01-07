@@ -478,7 +478,7 @@ public class TessellatorManager {
      */
     public static boolean shouldInterceptDraw(Tessellator tess) {
         return ((ITessellatorInstance) tess).gtnhlib$isCompiling()
-                || (!directTessellators.isEmpty() && !isCurrentlyCapturing());
+                || (!directTessellators.isEmpty() && !isCurrentlyCapturing()); // Capturing has priority over Direct
     }
 
     /**
