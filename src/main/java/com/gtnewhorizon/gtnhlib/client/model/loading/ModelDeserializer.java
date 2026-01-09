@@ -194,9 +194,10 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
                 final Vector3f to = loadVec3(json, "to").div(16);
                 final ModelElement.Rotation rotation = loadRotation(json);
                 final boolean shade = JsonUtil.loadBool(json, "shade", true);
+                final int lightEmission = JsonUtil.loadInt(json, "light_emission", 0);
                 final List<ModelElement.Face> faces = loadFaces(json);
 
-                ret.add(new ModelElement(from, to, rotation, shade, faces));
+                ret.add(new ModelElement(from, to, rotation, shade, lightEmission, faces));
             }
         }
 
@@ -288,14 +289,16 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         private final Vector3f to;
         private final @Nullable Rotation rotation;
         private final boolean shade;
+        private final int lightEmission;
         private final List<Face> faces;
 
         public ModelElement(Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation,
-                boolean shade, List<Face> faces) {
+                boolean shade, int lightEmission, List<Face> faces) {
             this.from = from;
             this.to = to;
             this.rotation = rotation;
             this.shade = shade;
+            this.lightEmission = lightEmission;
             this.faces = faces;
         }
 
@@ -313,6 +316,10 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
         public boolean shade() {
             return shade;
+        }
+
+        public int lightEmission() {
+            return lightEmission;
         }
 
         public List<Face> faces() {

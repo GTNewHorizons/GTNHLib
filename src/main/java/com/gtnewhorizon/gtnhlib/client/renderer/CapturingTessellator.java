@@ -43,6 +43,26 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 @SuppressWarnings("unused")
 public class CapturingTessellator extends Tessellator implements ITessellatorInstance {
 
+    boolean active = false;
+    private final Vector3dStack storedTranslation = new Vector3dStack();
+
+    public void storeTranslation() {
+        storedTranslation.push();
+        storedTranslation.set(xOffset, yOffset, zOffset);
+    }
+
+    public void restoreTranslation() {
+        xOffset = storedTranslation.x;
+        yOffset = storedTranslation.y;
+        zOffset = storedTranslation.z;
+        storedTranslation.pop();
+    }
+
+    public void discard() {
+        isDrawing = false;
+        reset();
+    }
+
     // Object pools reduce allocations over time by reusing primitive instances across multiple
     // capture sessions. Not meant to avoid allocations within a single call, but to amortize
     // allocation costs across the lifetime of the CapturingTessellator.
@@ -77,8 +97,6 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     // Reusable FLAGS instance to avoid allocations
     final Flags flags = new Flags(true, true, true, true);
 
-    private final Vector3dStack storedTranslation = new Vector3dStack();
-
     public void setOffset(BlockPos pos) {
         this.offset.set(pos);
     }
@@ -91,12 +109,6 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     public int draw() {
         // Delegate to TessellatorManager for shared logic
         return TessellatorManager.processDrawForCapturingTessellator(this);
-    }
-
-    @Override
-    public void discard() {
-        isDrawing = false;
-        reset();
     }
 
     @Override
@@ -147,20 +159,6 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         format.writeQuads(quads, byteBuffer);
         byteBuffer.flip();
         return byteBuffer;
-    }
-
-    public void storeTranslation() {
-        storedTranslation.push();
-
-        this.storedTranslation.set(xOffset, yOffset, zOffset);
-    }
-
-    public void restoreTranslation() {
-
-        xOffset = storedTranslation.x;
-        yOffset = storedTranslation.y;
-        zOffset = storedTranslation.z;
-        storedTranslation.pop();
     }
 
     public static int createBrightness(int sky, int block) {

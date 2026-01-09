@@ -42,7 +42,7 @@ public final class JSONVariant implements BakeData {
     }
 
     @Override
-    public boolean lockUV() {
+    public boolean uvLock() {
         return uvLock;
     }
 
@@ -50,15 +50,13 @@ public final class JSONVariant implements BakeData {
         return model;
     }
 
+    @Override
     public int x() {
         return x;
     }
 
+    @Override
     public int y() {
         return y;
-    }
-
-    public boolean uvLock() {
-        return uvLock;
     }
 }
