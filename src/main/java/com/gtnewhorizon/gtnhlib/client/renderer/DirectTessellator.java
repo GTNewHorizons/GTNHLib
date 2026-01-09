@@ -27,8 +27,6 @@ public final class DirectTessellator extends Tessellator {
     final ByteBuffer baseBuffer; // never resized, never freed
     final long baseAddress;
 
-    ByteBuffer buffer; // current active buffer
-
     long startPtr;
     long writePtr;
     long endPtr;
@@ -45,19 +43,28 @@ public final class DirectTessellator extends Tessellator {
         return (int) (endPtr - writePtr);
     }
 
+    boolean isResized() {
+        return startPtr != baseAddress;
+    }
+
     public DirectTessellator(ByteBuffer initial, DirectDrawCallback callback) {
         this(initial);
         this.drawCallback = callback;
     }
 
     public DirectTessellator(ByteBuffer initial) {
-        this.baseBuffer = initial;
-        this.buffer = initial;
+        this(initial, false);
+    }
 
-        this.baseAddress = memAddress0(buffer);
+    public DirectTessellator(ByteBuffer initial, boolean deleteAfter) {
+        this.baseBuffer = initial;
+
+        this.baseAddress = memAddress0(initial);
         this.startPtr = baseAddress;
         this.writePtr = startPtr;
-        this.endPtr = startPtr + buffer.capacity();
+        this.endPtr = startPtr + initial.capacity();
+
+        this.defaultTexture = deleteAfter; // defaultTexture has no use, so might aswell use it to prevent allocations
     }
 
     @Override
@@ -112,14 +119,13 @@ public final class DirectTessellator extends Tessellator {
         this.format = null;
         this.preDefinedFormat = null;
 
-        if (buffer != baseBuffer) {
-            memFree(buffer);
-            buffer = baseBuffer;
+        if (isResized()) {
+            nmemFree(startPtr);
+            startPtr = baseAddress;
+            endPtr = startPtr + baseBuffer.capacity();
         }
 
-        startPtr = baseAddress;
         writePtr = startPtr;
-        endPtr = startPtr + buffer.capacity();
     }
 
     @Override
@@ -137,10 +143,9 @@ public final class DirectTessellator extends Tessellator {
         }
 
         final long used = bufferLimit();
-        final int newCapacity = buffer.capacity() * 2;
+        final int newCapacity = bufferCapacity() * 2;
 
         startPtr = nmemReallocChecked(startPtr, newCapacity);
-        buffer = memByteBuffer(startPtr, newCapacity);
         writePtr = startPtr + used;
         endPtr = startPtr + newCapacity;
     }
@@ -301,14 +306,24 @@ public final class DirectTessellator extends Tessellator {
         throw new UnsupportedOperationException("setVertexState not supported for DirectTessellator!");
     }
 
-    VertexBuffer uploadToVBO() {
-        VertexBuffer vbo = VAOManager.createVAO(this.format, this.drawMode);
-
-        // ByteBuffer buffer = memByteBuffer(startPtr, bufferCapacity());
-        buffer.limit(bufferLimit());
-        vbo.upload(buffer, this.vertexCount);
-
+    /**
+     * Uploads the Tessellator to a VBO.
+     */
+    public VertexBuffer uploadToVBO() {
+        final VertexBuffer vbo = VAOManager.createVAO(this.format, this.drawMode);
+        uploadToVBO(vbo);
         return vbo;
+    }
+
+    ByteBuffer getWriteBuffer() {
+        ByteBuffer buffer = isResized() ? memByteBuffer(startPtr, bufferCapacity()) : this.baseBuffer;
+        buffer.limit(bufferLimit());
+        return buffer;
+    }
+
+    public void uploadToVBO(VertexBuffer vbo) {
+        ByteBuffer buffer = getWriteBuffer();
+        vbo.upload(buffer, this.vertexCount);
     }
 
     /**
@@ -366,6 +381,13 @@ public final class DirectTessellator extends Tessellator {
 
     void setDrawCallback(DirectDrawCallback drawCallback) {
         this.drawCallback = drawCallback;
+    }
+
+    void onRemovedFromStack() {
+        reset();
+        if (this.defaultTexture) {
+            nmemFree(baseAddress);
+        }
     }
 
     public VertexBuffer stopCapturingDirectToVAO() {

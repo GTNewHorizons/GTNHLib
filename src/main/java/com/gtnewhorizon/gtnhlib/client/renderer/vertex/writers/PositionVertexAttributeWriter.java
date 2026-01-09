@@ -17,12 +17,12 @@ public final class PositionVertexAttributeWriter implements IVertexAttributeWrit
 
     @Override
     public int writeAttribute(long pointer, Tessellator tessellator) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Cannot write position to tessellator!");
     }
 
     @Override
     public int readAttribute(long pointer, Tessellator tessellator) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Cannot read position from tessellator!");
     }
 
 }

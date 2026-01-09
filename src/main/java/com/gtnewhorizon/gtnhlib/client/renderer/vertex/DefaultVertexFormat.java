@@ -16,7 +16,7 @@ public final class DefaultVertexFormat {
         // non-instantiable class
     }
 
-    public static final VertexFormat[] ALL_FORMATS = new VertexFormat[16]; // 2^4
+    public static final VertexFormat[] ALL_FORMATS = new VertexFormat[BITSET_SIZE];
 
     // --------------- ELEMENTS ---------------
 

@@ -216,11 +216,11 @@ public class DirectTessellatorTest {
             tess.addVertex(i, i, i); // force realloc
         }
 
-        assertNotSame(small, tess.buffer);
+        assertTrue(tess.isResized());
 
         tess.reset();
 
-        assertSame(small, tess.buffer);
+        assertFalse(tess.isResized());
         assertEquals(tess.startPtr, tess.writePtr);
     }
 
