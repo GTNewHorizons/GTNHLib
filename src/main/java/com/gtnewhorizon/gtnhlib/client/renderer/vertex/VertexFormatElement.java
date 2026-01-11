@@ -2,12 +2,12 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vertex;
 
 import java.util.function.IntConsumer;
 
-import com.google.common.annotations.Beta;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
+import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.IVertexAttributeWriter;
 
 import lombok.Getter;

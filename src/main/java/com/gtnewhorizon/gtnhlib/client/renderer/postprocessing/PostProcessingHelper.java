@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import net.coderbot.iris.rendertarget.IRenderTargetExt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.shader.Framebuffer;
@@ -8,12 +9,12 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 
 public class PostProcessingHelper {
 
-    private static VertexBuffer fullscreenQuadVAO;
+    private static IVertexBuffer fullscreenQuadVAO;
 
     /**
      * Ideally, you'd only call bindFullscreenVAO/unbind only once per post-processing pass. <br>
@@ -71,7 +72,7 @@ public class PostProcessingHelper {
         return ((IRenderTargetExt) framebuffer).iris$getDepthTextureId();
     }
 
-    private static VertexBuffer genFullscreenQuadVAO() {
+    private static IVertexBuffer genFullscreenQuadVAO() {
         final DirectTessellator tessellator = TessellatorManager.startCapturingDirect();
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(-1, -1, 0, 0, 0);
@@ -80,6 +81,6 @@ public class PostProcessingHelper {
         tessellator.addVertexWithUV(-1, 1, 0, 0, 1);
         tessellator.draw();
 
-        return TessellatorManager.stopCapturingDirectToVAO();
+        return TessellatorManager.stopCapturingDirectToVBO(VertexBufferType.IMMUTABLE);
     }
 }

@@ -2,10 +2,11 @@ package com.gtnewhorizon.gtnhlib.client.renderer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-import org.junit.jupiter.api.Test;
 
 public class VertexFormatTest {
 

@@ -4,33 +4,30 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager.VAO;
 
 import java.nio.ByteBuffer;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
+import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
-public final class VertexArrayBuffer extends VertexBuffer {
+@Beta
+public final class VertexArrayBufferStorage extends VertexBufferStorage {
 
     private int vaoID = -1;
 
-    /**
-     * This constructor is protected in order to prevent the usage of VAO's if they are incompatible. <br>
-     * Use VAOManager.createVAO() instead
-     */
-    VertexArrayBuffer(VertexFormat format, int drawMode) {
+    public VertexArrayBufferStorage(VertexFormat format, int drawMode) {
         super(format, drawMode);
     }
 
-    VertexArrayBuffer(VertexFormat format) {
-        super(format);
+    public VertexArrayBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int flags) {
+        super(format, drawMode, data, flags);
     }
 
-    VertexArrayBuffer(VertexFormat format, int drawMode, ByteBuffer buffer, int type) {
-        super(format, drawMode, buffer, type);
+    public VertexArrayBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
+        super(format, drawMode, data, vertexCount, flags);
     }
 
     @Override
     public void delete() {
         super.delete();
-        if (vaoID >= 0) {
+        if (vaoID != -1) {
             VAO.glDeleteVertexArrays(vaoID);
             vaoID = -1;
         }

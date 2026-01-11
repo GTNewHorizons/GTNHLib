@@ -4,11 +4,14 @@ import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
 
 import java.nio.ByteBuffer;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferStorage;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.shader.TesselatorVertexState;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -309,21 +312,18 @@ public final class DirectTessellator extends Tessellator {
     /**
      * Uploads the Tessellator to a VBO.
      */
-    public VertexBuffer uploadToVBO() {
-        final VertexBuffer vbo = VAOManager.createVAO(this.format, this.drawMode);
-        uploadToVBO(vbo);
-        return vbo;
+    public IVertexBuffer uploadToVBO(VertexBufferType bufferType) {
+        return bufferType.allocate(this.format, this.drawMode, getWriteBuffer(), vertexCount);
+    }
+
+    public void uploadToVBO(IVertexBuffer vbo) {
+        vbo.update(getWriteBuffer());
     }
 
     ByteBuffer getWriteBuffer() {
         ByteBuffer buffer = isResized() ? memByteBuffer(startPtr, bufferCapacity()) : this.baseBuffer;
         buffer.limit(bufferLimit());
         return buffer;
-    }
-
-    public void uploadToVBO(VertexBuffer vbo) {
-        ByteBuffer buffer = getWriteBuffer();
-        vbo.upload(buffer, this.vertexCount);
     }
 
     /**
@@ -356,7 +356,7 @@ public final class DirectTessellator extends Tessellator {
     }
 
     public boolean isEmpty() {
-        return format == null;
+        return startPtr == writePtr;
     }
 
     public VertexFormat getVertexFormat() {
@@ -379,7 +379,7 @@ public final class DirectTessellator extends Tessellator {
         return this.color;
     }
 
-    void setDrawCallback(DirectDrawCallback drawCallback) {
+    public void setDrawCallback(DirectDrawCallback drawCallback) {
         this.drawCallback = drawCallback;
     }
 
@@ -390,8 +390,12 @@ public final class DirectTessellator extends Tessellator {
         }
     }
 
-    public VertexBuffer stopCapturingDirectToVAO() {
-        return TessellatorManager.stopCapturingDirectToVAO();
+    public IVertexBuffer stopCapturingToVBO(VertexBufferType bufferType) {
+        return TessellatorManager.stopCapturingDirectToVBO(bufferType);
+    }
+
+    public void stopCapturingToVBO(IVertexBuffer vbo) {
+        TessellatorManager.stopCapturingDirectToVBO(vbo);
     }
 
     private VertexFormat getOptimalVertexFormat() {

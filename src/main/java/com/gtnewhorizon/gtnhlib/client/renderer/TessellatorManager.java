@@ -1,12 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
+import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
+
 import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
+import java.util.function.Consumer;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import net.minecraft.client.renderer.Tessellator;
 
 import org.apache.logging.log4j.LogManager;
@@ -20,10 +21,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimiti
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-
-import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
 
 @SuppressWarnings("unused")
 public class TessellatorManager {
@@ -206,10 +206,12 @@ public class TessellatorManager {
         }
     }
 
+    @Deprecated // Replaced in favor of DirectTessellator (startCapturingDirect/compileToVBO)
     public static void startCapturing() {
         startCapturingAndGet();
     }
 
+    @Deprecated // Replaced in favor of DirectTessellator (startCapturingDirect/compileToVBO)
     public static CapturingTessellator startCapturingAndGet() {
         ArrayList<CaptureState> stack = captureStack.get();
         final CapturingTessellator tess = capturingTessellator.get();
@@ -274,6 +276,7 @@ public class TessellatorManager {
 
     /// Stops the CapturingTessellator, stores the quads in a buffer (based on the VertexFormat provided), uploads the
     /// buffer to a new VertexBuffer, and clears the quads.
+    @Deprecated // Replaced by DirectTessellator
     public static VertexBuffer stopCapturingToVBO(VertexFormat format) {
         return new VertexBuffer(format).upload(stopCapturingToBuffer(format));
     }
@@ -288,7 +291,7 @@ public class TessellatorManager {
     static final DirectTessellator[] directTessellators = new DirectTessellator[DIRECT_TESSELLATOR_STACK_DEPTH];
     static int directTessellatorIndex = -1;
 
-    static DirectTessellator getDirectTessellator() {
+    private static DirectTessellator getDirectTessellator() {
         return directTessellators[directTessellatorIndex];
     }
 
@@ -297,20 +300,33 @@ public class TessellatorManager {
     }
 
     public static void stopCapturingDirect() {
-        if (!hasDirectTessellator())
-            throw new IllegalStateException("Tried to stop capturing when not capturing!");
+        if (!hasDirectTessellator()) throw new IllegalStateException("Tried to stop capturing when not capturing!");
         final DirectTessellator tessellator = getDirectTessellator();
         directTessellators[directTessellatorIndex--] = null;
         tessellator.onRemovedFromStack();
     }
 
+    public static IVertexBuffer compileToVBO(VertexBufferType bufferType, Consumer<DirectTessellator> consumer) {
+        DirectTessellator tessellator = startCapturingDirect();
+        consumer.accept(tessellator);
+        return stopCapturingDirectToVBO(bufferType);
+    }
+
+    public static IVertexBuffer compileToVBO(VertexBufferType bufferType, VertexFormat format, Consumer<DirectTessellator> consumer) {
+        DirectTessellator tessellator = startCapturingDirect();
+        tessellator.setVertexFormat(format);
+        consumer.accept(tessellator);
+        return stopCapturingDirectToVBO(bufferType);
+    }
+
     public static DirectTessellator startCapturingDirect() {
         if (!hasDirectTessellator()) {
             directTessellators[++directTessellatorIndex] = mainInstance;
+            mainInstance.setDrawCallback(null);
             return mainInstance;
         }
         // Will be deleted after being removed from the stack
-        ByteBuffer buffer = memAlloc(0x100000);
+        ByteBuffer buffer = memAlloc(0x100000); // TODO
         DirectTessellator tessellator = new DirectTessellator(buffer, true);
         directTessellators[++directTessellatorIndex] = tessellator;
         return tessellator;
@@ -328,11 +344,17 @@ public class TessellatorManager {
         return tessellator;
     }
 
-    public static VertexBuffer stopCapturingDirectToVAO() {
+    public static IVertexBuffer stopCapturingDirectToVBO(VertexBufferType bufferType) {
         final DirectTessellator tessellator = getDirectTessellator();
-        final VertexBuffer vbo = tessellator.uploadToVBO();
+        final IVertexBuffer vbo = tessellator.uploadToVBO(bufferType);
         stopCapturingDirect();
         return vbo;
+    }
+
+    public static void stopCapturingDirectToVBO(IVertexBuffer vbo) {
+        final DirectTessellator tessellator = getDirectTessellator();
+        tessellator.uploadToVBO(vbo);
+        stopCapturingDirect();
     }
 
     /**
@@ -484,6 +506,7 @@ public class TessellatorManager {
      * Populates the passed-in VBO with the data from the CapturingTessellator. If the passed-in VBO is null, it will
      * create & return a new one.
      */
+    @Deprecated // Replaced by DirectTessellator
     public static VertexBuffer stopCapturingToVBO(VertexBuffer vbo, VertexFormat format) {
         if (vbo == null) {
             vbo = new VertexBuffer(format);
@@ -496,6 +519,7 @@ public class TessellatorManager {
      * This method is in 99% of cases better since it's both faster and safer. <br>
      * If VAO's are not supported, this will create a VBO instead.
      */
+    @Deprecated // Replaced by DirectTessellator
     public static VertexBuffer stopCapturingToVAO(VertexFormat format) {
         return VAOManager.createVAO(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
     }
@@ -504,6 +528,7 @@ public class TessellatorManager {
      * Populates the passed-in VAO with the data from the CapturingTessellator. If the passed-in VAO is null, it will
      * create & return a new one.
      */
+    @Deprecated // Replaced by DirectTessellator
     public static VertexBuffer stopCapturingToVAO(VertexBuffer vao, VertexFormat format) {
         if (vao == null) {
             vao = VAOManager.createVAO(format, GL11.GL_QUADS);
@@ -542,7 +567,7 @@ public class TessellatorManager {
 
         if (hasDirectTessellator()) {
             final DirectTessellator tessellator = getDirectTessellator();
-            int result = tessellator.interceptDraw(tess);
+            final int result = tessellator.interceptDraw(tess);
 
             ((ITessellatorInstance) tess).discard();
             return result;
