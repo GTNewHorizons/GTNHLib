@@ -32,6 +32,7 @@ import cpw.mods.fml.relauncher.SideOnly;
  * </pre>
  * <p>
  * Lang entries:
+ * 
  * <pre>
  * {@code
  * gtnhlib.symbol.plus=+
@@ -59,16 +60,12 @@ public final class GuiText {
     // Logger used only for debug output
     private static final Logger LOGGER = LogManager.getLogger("GTNHLib-GuiText");
 
-    /*
-     * Enables debug logging for missing language keys Enable with: -Dgtnhlib.guiTextDebug=true
-     */
+    // Enables debug logging for missing language keys Enable with: -Dgtnhlib.guiTextDebug=true
     private static final boolean DEBUG_LOG_MISSING_KEYS = Boolean
             .parseBoolean(System.getProperty("gtnhlib.guiTextDebug", "false"));
 
-    /*
-     * Enables crash-on-missing-key behavior This is STRICTLY opt-in and intended for development only Enable with:
-     * -Dgtnhlib.guiTextCrashOnMissing=true
-     */
+    // Enables crash-on-missing-key behavior This is STRICTLY opt-in and intended for development only Enable with:
+    // -Dgtnhlib.guiTextCrashOnMissing=true
     private static final boolean DEBUG_CRASH_ON_MISSING = Boolean
             .parseBoolean(System.getProperty("gtnhlib.guiTextCrashOnMissing", "false"));
 
@@ -79,17 +76,24 @@ public final class GuiText {
         // Utility class
     }
 
-    /*
-     * ----------------------- HOW TO USE (examples) ----------------------- 1) Simple symbol replacement:
-     * fontRenderer.drawString(GuiText.format("symbol.plus", "+"), x, y, 0x404040) assets/gtnhlib/lang/en_US.lang:
-     * gtnhlib.symbol.plus=+ resource pack override: gtnhlib.symbol.plus=§7+§r 2) Button label: button.displayString =
-     * GuiText.format("button.minus_one", "-1") lang: gtnhlib.button.minus_one=-1 3) Replace string concatenation with a
-     * formatted key: // BEFORE: // "->" + value + "->" // AFTER:
-     * fontRenderer.drawString(GuiText.format("symbol.arrow_math", "->%s->", value), 63, 59, 0x404040) lang:
-     * gtnhlib.symbol.arrow_math=->%s-> resource pack override (color different parts):
-     * gtnhlib.symbol.arrow_math=§7->§f%s§4->§r Notes: - Use %s / %d placeholders in the lang value when passing args -
-     * Inline '§' color codes are allowed in lang entries (resource-pack controlled)
-     */
+    // ----------------------- HOW TO USE (examples) -----------------------
+    // 1) Simple symbol replacement:
+    // fontRenderer.drawString(GuiText.format("symbol.plus", "+"), x, y, 0x404040)
+    // assets/gtnhlib/lang/en_US.lang: gtnhlib.symbol.plus=+
+    // resource pack override: gtnhlib.symbol.plus=§7+§r
+    //
+    // 2) Button label: button.displayString = GuiText.format("button.minus_one", "-1")
+    // lang: gtnhlib.button.minus_one=-1
+    //
+    // 3) Replace string concatenation with a formatted key:
+    // // BEFORE: // "->" + value + "->"
+    // // AFTER: fontRenderer.drawString(GuiText.format("symbol.arrow_math", "->%s->", value), 63, 59, 0x404040)
+    // lang: gtnhlib.symbol.arrow_math=->%s->
+    // resource pack override (color different parts): gtnhlib.symbol.arrow_math=§7->§f%s§4->§r
+    //
+    // Notes:
+    // Use %s / %d placeholders in the lang value when passing args
+    // Inline '§' color codes are allowed in lang entries (resource-pack controlled)
 
     /**
      * Returns overrideable GUI text. If the key exists, its translated value is returned. If the key does not exist,
@@ -130,10 +134,8 @@ public final class GuiText {
         }
     }
 
-    /**
-     * Common key constants for GUI text. These are optional helpers to avoid typos and keep key names consistent.
-     * Example usage: GuiText.format(GuiText.Keys.ARROW_LEFT, "<")
-     */
+    // Common key constants for GUI text. These are optional helpers to avoid typos and keep key names consistent.
+    // Example usage: GuiText.format(GuiText.Keys.ARROW_LEFT, "<")
     public static final class Keys {
 
         private Keys() {}
