@@ -3,21 +3,22 @@ package com.gtnewhorizon.gtnhlib.hash;
 /**
  * The 32-bit version of <a href="http://www.isthe.com/chongo/tech/comp/fnv/index.html">Fowler/Noll/Vo 1-alternate</a>
  * hash. To use this class, you need to keep track of a single {@code int} worth of state yourself, for example:
- * 
+ *
  * <pre>
  * int hash = Fnv1a32.initialState();
  * hash = Fnv1a32.hashStep(hash, value1);
  * hash = Fnv1a32.hashStep(hash, value2);
  * hash = Fnv1a32.hashStep(hash, value3);
  * </pre>
- * 
+ *
  * The final hash is just the state after performing all the hashing steps, there is no separate finalization step
  * needed.
- * 
+ * <p>
  * The values produced by this class will not be the same as a true Fnv1a 32-bit implementation, because of a bug where
  * Java's signed byte type causes any octet with the highest (sign) bit set to flip the upper 24 bytes of the state in
  * the XOR step. As it's just flipping all the bits, it shouldn't affect dispersion that much in theory, so it is left
- * in to not change the behaviour of existing worldgen code. */
+ * in to not change the behaviour of existing worldgen code.
+ */
 @SuppressWarnings("unused") // Public API
 public final class Fnv1a32 {
 
@@ -35,7 +36,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes a single byte into the given state, and returns the updated state.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -49,7 +50,7 @@ public final class Fnv1a32 {
     /**
      * Hashes a single value into the given state byte by byte, and returns the updated state. Booleans are converted to
      * a 0/1 byte first.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -61,7 +62,7 @@ public final class Fnv1a32 {
     /**
      * Hashes a single value into the given state byte by byte, and returns the updated state. Chars are hashed like
      * their underlying short representation.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -73,7 +74,7 @@ public final class Fnv1a32 {
     /**
      * Hashes a single value into the given state byte by byte, and returns the updated state. Integers are hashed in
      * order from most to least significant byte.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -87,7 +88,7 @@ public final class Fnv1a32 {
     /**
      * Hashes a single value into the given state byte by byte, and returns the updated state. Integers are hashed in
      * order from most to least significant byte.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -103,7 +104,7 @@ public final class Fnv1a32 {
     /**
      * Hashes a single value into the given state byte by byte, and returns the updated state. Integers are hashed in
      * order from most to least significant byte.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -123,7 +124,7 @@ public final class Fnv1a32 {
     /**
      * Hashes a single value into the given state byte by byte, and returns the updated state. Floats are hashed in
      * order from most to least significant byte of their integer representation.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -135,7 +136,7 @@ public final class Fnv1a32 {
     /**
      * Hashes a single value into the given state byte by byte, and returns the updated state. Floats are hashed in
      * order from most to least significant byte of their integer representation.
-     * 
+     *
      * @param prevState The state to update
      * @param value     The value to hash into the new state
      * @return The new hash state, computed by hashing the value into the previous state
@@ -146,7 +147,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -160,7 +161,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -174,7 +175,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -188,7 +189,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -202,7 +203,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -216,7 +217,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -230,7 +231,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -244,7 +245,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes an array of values by hashing each individual element.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
@@ -258,7 +259,7 @@ public final class Fnv1a32 {
 
     /**
      * Hashes any {@link CharSequence} (including {@link String}) by hashing each individual code unit in it.
-     * 
+     *
      * @param prevState The state to update
      * @param array     The array to hash
      * @return The new hash state, computed by hashing the values into the previous state
