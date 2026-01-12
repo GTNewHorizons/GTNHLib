@@ -12,8 +12,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public enum VertexBufferType implements VertexBufferFactory {
     /**
-     *     Allows the contents to be mutated & allows the buffer to grow/shrink via {@link IVertexBuffer#allocate}
-      */
+     * Allows the contents to be mutated via {@link IVertexBuffer#update} & allows the buffer to grow/shrink via
+     * {@link IVertexBuffer#allocate}
+     */
     MUTABLE_RESIZABLE {
 
         @Override
@@ -23,7 +24,9 @@ public enum VertexBufferType implements VertexBufferFactory {
         }
     },
     /**
-     * Allows the contents to be mutated, but does not allow {@link IVertexBuffer#allocate} calls. May improve performance.
+     * Allows the contents to be mutated via {@link IVertexBuffer#update}, but does not allow
+     * {@link IVertexBuffer#allocate} calls. <br>
+     * May improve performance.
      */
     MUTABLE {
 
@@ -36,7 +39,9 @@ public enum VertexBufferType implements VertexBufferFactory {
         }
     },
     /**
-     * Doesn't allow mutations of the contents and does not allow {@link IVertexBuffer#allocate} calls. May improve performance.
+     * Does not allow mutations of the contents via {@link IVertexBuffer#update} and does not allow
+     * {@link IVertexBuffer#allocate} calls. <br>
+     * May improve performance.
      */
     IMMUTABLE {
 

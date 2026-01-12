@@ -1,5 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.PositionTextureVertex;
 import net.minecraft.client.model.TexturedQuad;
@@ -38,7 +42,7 @@ public class BakedModelBuilder {
     private float rotateAngleY;
     private float rotateAngleZ;
     private boolean mirror;
-    private final CapturingTessellator tessellator;
+    private final DirectTessellator tessellator;
 
     private final Matrix4f modelMatrix = new Matrix4f();
 
@@ -46,8 +50,7 @@ public class BakedModelBuilder {
         this.textureWidth = textureWidth;
         this.textureHeight = textureHeight;
 
-        TessellatorManager.startCapturing();
-        this.tessellator = (CapturingTessellator) TessellatorManager.get();
+        this.tessellator = TessellatorManager.startCapturingDirect();
         tessellator.startDrawing(GL11.GL_QUADS);
     }
 
@@ -138,8 +141,13 @@ public class BakedModelBuilder {
         return mat4f;
     }
 
+    @Deprecated
     public VertexBuffer finish(VertexFormat format) {
-        return TessellatorManager.stopCapturingToVBO(format);
+        return (VertexBuffer) tessellator.stopCapturingToVBO(VertexBufferType.MUTABLE_RESIZABLE);
+    }
+
+    public IVertexBuffer finish() {
+        return tessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
     }
 
     // spotless:off
@@ -259,7 +267,7 @@ public class BakedModelBuilder {
         }
 
         public void addVerticesToTesselator(
-            CapturingTessellator tessellator,
+            DirectTessellator tessellator,
             Matrix4f mat4f,
             float scale
         ) {
@@ -277,7 +285,7 @@ public class BakedModelBuilder {
                 vec3f.x = (float) cross.xCoord;
                 vec3f.y = (float) cross.yCoord;
                 vec3f.z = (float) cross.zCoord;
-                tessellator.setNormalTransformed(vec3f, normalMat);
+                NormalHelper.setNormalTransformed(tessellator, vec3f, normalMat);
                 // Reverse so it works with culling
                 for (int i = 3; i >= 0; i--) {
                     PositionTextureVertex vertex = quad.vertexPositions[i];

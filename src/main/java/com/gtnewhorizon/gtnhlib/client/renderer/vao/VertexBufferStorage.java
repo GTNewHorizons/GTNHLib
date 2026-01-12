@@ -24,11 +24,6 @@ public class VertexBufferStorage implements IVertexBuffer {
         this.drawMode = drawMode;
     }
 
-    public VertexBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int flags) {
-        this(format, drawMode);
-        alloc(data, format.getVertexCount(data), flags);
-    }
-
     public VertexBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
         this(format, drawMode);
         alloc(data, vertexCount, flags);

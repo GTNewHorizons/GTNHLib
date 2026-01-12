@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.mixins.early;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraftforge.client.model.obj.GroupObject;
 import net.minecraftforge.client.model.obj.WavefrontObject;
@@ -11,6 +10,7 @@ import org.spongepowered.asm.mixin.Unique;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IModelCustomExt;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;

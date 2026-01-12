@@ -14,20 +14,19 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
     protected final VertexFormat format;
     protected final int drawMode;
 
-    @Deprecated
     public VertexBuffer(VertexFormat format, int drawMode) {
         this.id = GL15.glGenBuffers();
         this.format = format;
         this.drawMode = drawMode;
     }
 
-    public VertexBuffer(VertexFormat format, int drawMode, ByteBuffer buffer, int type) {
+    public VertexBuffer(VertexFormat format, int drawMode, ByteBuffer buffer, int vertexCount) {
         this.id = GL15.glGenBuffers();
         this.format = format;
         this.drawMode = drawMode;
-        this.vertexCount = format.getVertexCount(buffer);
+        this.vertexCount = vertexCount;
         this.bindVBO();
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, type);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
         this.unbindVBO();
     }
 

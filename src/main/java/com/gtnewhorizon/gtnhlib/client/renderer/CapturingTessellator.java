@@ -225,15 +225,15 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
      * @param dest         The vector that gets transformed
      * @param normalMatrix The normal matrix (typically the transpose of the inverse transformation matrix)
      */
+    @Deprecated // Use NormalHelper instead
     public CapturingTessellator setNormalTransformed(Vector3f normal, Vector3f dest, Matrix3f normalMatrix) {
         normalMatrix.transform(normal, dest).normalize();
         this.setNormal(dest.x, dest.y, dest.z);
         return this;
     }
 
-    /**
-     * Same as the method above, but this one will mutate the passed Vector3f
-     */
+
+    @Deprecated // Use NormalHelper instead
     public CapturingTessellator setNormalTransformed(Vector3f normal, Matrix3f normalMatrix) {
         return setNormalTransformed(normal, normal, normalMatrix);
     }

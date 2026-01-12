@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import net.coderbot.iris.rendertarget.IRenderTargetExt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.shader.Framebuffer;
@@ -9,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 

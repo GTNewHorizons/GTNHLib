@@ -16,10 +16,6 @@ public final class VertexArrayBufferStorage extends VertexBufferStorage {
         super(format, drawMode);
     }
 
-    public VertexArrayBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int flags) {
-        super(format, drawMode, data, flags);
-    }
-
     public VertexArrayBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
         super(format, drawMode, data, vertexCount, flags);
     }

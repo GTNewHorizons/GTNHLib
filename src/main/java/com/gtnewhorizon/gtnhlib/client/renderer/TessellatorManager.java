@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import net.minecraft.client.renderer.Tessellator;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +20,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimiti
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
@@ -206,12 +206,10 @@ public class TessellatorManager {
         }
     }
 
-    @Deprecated // Replaced in favor of DirectTessellator (startCapturingDirect/compileToVBO)
     public static void startCapturing() {
         startCapturingAndGet();
     }
 
-    @Deprecated // Replaced in favor of DirectTessellator (startCapturingDirect/compileToVBO)
     public static CapturingTessellator startCapturingAndGet() {
         ArrayList<CaptureState> stack = captureStack.get();
         final CapturingTessellator tess = capturingTessellator.get();
@@ -312,7 +310,8 @@ public class TessellatorManager {
         return stopCapturingDirectToVBO(bufferType);
     }
 
-    public static IVertexBuffer compileToVBO(VertexBufferType bufferType, VertexFormat format, Consumer<DirectTessellator> consumer) {
+    public static IVertexBuffer compileToVBO(VertexBufferType bufferType, VertexFormat format,
+            Consumer<DirectTessellator> consumer) {
         DirectTessellator tessellator = startCapturingDirect();
         tessellator.setVertexFormat(format);
         consumer.accept(tessellator);

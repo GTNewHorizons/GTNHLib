@@ -4,13 +4,10 @@ import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
 
 import java.nio.ByteBuffer;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferStorage;
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.shader.TesselatorVertexState;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;

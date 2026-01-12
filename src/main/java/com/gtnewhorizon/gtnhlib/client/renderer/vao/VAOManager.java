@@ -1,8 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
-import java.nio.ByteBuffer;
-
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL44;
 import org.lwjgl.opengl.GLContext;
 
