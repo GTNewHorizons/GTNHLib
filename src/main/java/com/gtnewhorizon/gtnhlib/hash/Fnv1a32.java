@@ -14,11 +14,10 @@ package com.gtnewhorizon.gtnhlib.hash;
  * The final hash is just the state after performing all the hashing steps, there is no separate finalization step
  * needed.
  * 
- * The values produced by this class will not be the same as a true Fnv1a 32-bit implementation, because of a bug
- * where Java's signed byte type causes any octet with the highest (sign) bit set to flip the upper 24 bytes of
- * the state in the XOR step. As it's just flipping all the bits, it shouldn't affect dispersion that much in
- * theory, so it is left in to not change the behaviour of existing worldgen code.
- */
+ * The values produced by this class will not be the same as a true Fnv1a 32-bit implementation, because of a bug where
+ * Java's signed byte type causes any octet with the highest (sign) bit set to flip the upper 24 bytes of the state in
+ * the XOR step. As it's just flipping all the bits, it shouldn't affect dispersion that much in theory, so it is left
+ * in to not change the behaviour of existing worldgen code. */
 @SuppressWarnings("unused") // Public API
 public final class Fnv1a32 {
 
