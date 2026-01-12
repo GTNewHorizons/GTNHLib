@@ -106,6 +106,20 @@ public class ArrayProximityMap4D<T> {
         }
     }
 
+    public void forEachInRange(int dim, double x, double y, double z, double range, Consumer<T> action) {
+        final DimensionData<T> dimData = getDataForDim(dim);
+        if (dimData == null) {
+            return;
+        }
+        if (shape == VolumeShape.SPHERE) {
+            dimData.forEachInSphere(x, y, z, range, action);
+        } else if (shape == VolumeShape.CUBE) {
+            dimData.forEachInCube(x, y, z, range, action);
+        } else {
+            throw new IllegalArgumentException("Invalid shape");
+        }
+    }
+
     @SuppressWarnings("ForLoopReplaceableByForEach")
     public int size() {
         int size = 0;
@@ -312,6 +326,22 @@ public class ArrayProximityMap4D<T> {
         }
 
         @SuppressWarnings("unchecked")
+        public void forEachInSphere(double x, double y, double z, double radius, Consumer<T> action) {
+            final int maxIndex = size * 4;
+            final int[] a = data;
+            final double rSq = radius * radius;
+            for (int i = 0; i < maxIndex; i += 4) {
+                final double dx = x + 0.5D - a[i];
+                final double dy = y + 0.5D - a[i + 1];
+                final double dz = z + 0.5D - a[i + 2];
+                final double distSq = dx * dx + dy * dy + dz * dz;
+                if (distSq < rSq) {
+                    action.accept((T) objects[i / 4]);
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
         public void forEachInCube(double x, double y, double z, Consumer<T> action) {
             final int maxIndex = size * 4;
             final int[] a = data;
@@ -325,6 +355,24 @@ public class ArrayProximityMap4D<T> {
                         && y < centerY + radius
                         && centerZ - radius < z
                         && z < centerZ + radius) {
+                    action.accept((T) objects[i / 4]);
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        public void forEachInCube(double x, double y, double z, double radius, Consumer<T> action) {
+            final int maxIndex = size * 4;
+            final int[] a = data;
+            final double centerX = x + 0.5D;
+            final double centerY = y + 0.5D;
+            final double centerZ = z + 0.5D;
+            for (int i = 0; i < maxIndex; i += 4) {
+                if (centerX - radius < a[i] && a[i] < centerX + radius
+                        && centerY - radius < a[i + 1]
+                        && a[i + 1] < centerY + radius
+                        && centerZ - radius < a[i + 2]
+                        && a[i + 2] < centerZ + radius) {
                     action.accept((T) objects[i / 4]);
                 }
             }
