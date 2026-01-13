@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "meta=1": { "model": "minecraft:block/lectern", "y": 270 },
+    "meta=2": { "model": "minecraft:block/lectern", "y": 180 },
+    "meta=3": { "model": "minecraft:block/lectern", "y": 90 },
+    "meta=0": { "model": "minecraft:block/lectern", "y": 0 }
+  }
+}
