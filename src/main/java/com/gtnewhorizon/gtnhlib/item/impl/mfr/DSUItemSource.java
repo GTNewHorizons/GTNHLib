@@ -17,6 +17,6 @@ public class DSUItemSource extends SimpleItemSource {
 
     @Override
     protected @NotNull InventoryIterator iterator(int[] allowedSlots) {
-        return new DSUInventoryIterator(dsu, allowedSlots);
+        return new DSUInventoryIterator(dsu, allowedSlots, false);
     }
 }
