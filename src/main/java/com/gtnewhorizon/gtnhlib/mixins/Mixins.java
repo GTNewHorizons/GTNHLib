@@ -43,17 +43,18 @@ public enum Mixins implements IMixins {
                     "block_sounds.MixinEntityLivingBase",
                     "block_sounds.MixinEntityHorse",
                     "block_sounds.MixinItemBlock",
-                    "block_sounds.MixinItemSlab",
-                    "block_sounds.MixinPlayerControllerMP")
-            .addClientMixins("block_sounds.MixinRenderGlobal").setPhase(Phase.EARLY)
-            .setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
+                    "block_sounds.MixinItemSlab")
+            .addClientMixins("block_sounds.MixinPlayerControllerMP", "block_sounds.MixinRenderGlobal")
+            .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
     ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
-            .addCommonMixins("EntityRendererAccessor")),
+            .addClientMixins("EntityRendererAccessor")),
     ITEM_TRANSLUCENCY(new MixinBuilder("ItemRenderer & RenderItem ITranslucentItem support")
             .addClientMixins("MixinItemRenderer_Translucency", "MixinRenderItem_Translucency").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
     CUSTOM_CHAT_COMPONENT_REGISTRATION(new MixinBuilder("Custom chat component registration")
             .addCommonMixins("MixinIChatComponentSerializer").setPhase(Phase.EARLY))
+    MULTI_RELEASE_JAR_FILTER(new MixinBuilder("Skip multi-release JAR entries in mod discovery")
+            .addCommonMixins("fml.MixinJarDiscoverer").setPhase(Phase.EARLY).addExcludedMod(TargetMods.LWJGL3IFY)),
     //
     ;
 
