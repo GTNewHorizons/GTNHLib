@@ -10,7 +10,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 /**
  * Represents a GPU-side vertex buffer object (VBO).
  * <p>
- * Storage is defined via {@link #allocate} and may be updated afterward using {@link #update}.
+ * Any implementation that returns a {@link IVertexBuffer} is already allocated and ready to use. Depending on the
+ * implementation, it may not allow further {@link #update} calls (see more under
+ * {@link com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType}
  * </p>
  */
 public interface IVertexBuffer {
@@ -26,29 +28,7 @@ public interface IVertexBuffer {
     void unbind();
 
     /**
-     * Allocates or reallocates storage for this vertex buffer and uploads initial data.
-     * <p>
-     * This call defines the size of the buffer and replaces any existing contents. Any previous storage associated with
-     * this buffer is discarded.
-     * </p>
-     * <p>
-     * Note that some implementations may not allow more than 1 allocate() call per VertexBuffer (see more under
-     * {@link com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType}
-     * </p>
-     *
-     * @param buffer      the vertex data to upload; its remaining bytes determine the buffer size
-     * @param vertexCount the number of vertices contained in the buffer
-     * @param mutable     whether the buffer is expected to be updated after allocation (implementations may choose an
-     *                    appropriate usage hint)
-     */
-    void allocate(ByteBuffer buffer, int vertexCount, boolean mutable);
-
-    /**
      * Updates a subrange of this vertex buffer's contents.
-     * <p>
-     * The buffer must have been previously allocated via {@link #allocate}. This method does not change the size of the
-     * buffer.
-     * </p>
      * <p>
      * Note that some implementations may not allow any mutations on the contents (see more under
      * {@link com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType}
@@ -118,10 +98,6 @@ public interface IVertexBuffer {
      * @return the OpenGL buffer ID, or a negative value if the buffer has been deleted
      */
     int getId();
-
-    default void allocate(ByteBuffer buffer, boolean mutable) {
-        allocate(buffer, getVertexFormat().getVertexCount(buffer), mutable);
-    }
 
     default void update(ByteBuffer buffer) {
         update(buffer, 0);

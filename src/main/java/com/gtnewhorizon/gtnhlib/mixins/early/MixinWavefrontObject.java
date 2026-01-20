@@ -48,7 +48,7 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
         tess.startDrawing(currentGroupObject.glDrawingMode);
         tessellateAll(tess);
 
-        this.vertexBuffer = tess.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
+        this.vertexBuffer = DirectTessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
     }
 
     @Override

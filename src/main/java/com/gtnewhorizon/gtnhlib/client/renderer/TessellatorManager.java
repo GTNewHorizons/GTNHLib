@@ -1,11 +1,8 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
-import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import net.minecraft.client.renderer.Tessellator;
 
@@ -281,13 +278,18 @@ public class TessellatorManager {
 
     // --------------- DIRECT TESSELLATOR ---------------
 
-    // Instance to use for capturing to vbo's (package-private)
-    // Cannot be used outside the tessellator stack
-    static final DirectTessellator mainInstance = new DirectTessellator(Tessellator.byteBuffer);
+    public static final int DEFAULT_BUFFER_SIZE = 0x8000; // 32KB, enough to store 1024 vertices
+
+    // Instance to use for capturing to vbo's (Cannot be used outside the tessellator stack)
+    private static final DirectTessellator mainInstance = new DirectTessellator(Tessellator.byteBuffer);
+    private static final CallbackTessellator mainCallbackInstance = new CallbackTessellator(Tessellator.byteBuffer);
+    private static final int BUFFER_CAPACITY = Tessellator.byteBuffer.capacity();
+    // Any Tessellator that uses the Tessellator.byteBuffer is considered to be the "main instance" (to preserve data)
+    private static boolean mainInstanceInStack = false;
 
     private static final int DIRECT_TESSELLATOR_STACK_DEPTH = 16;
-    static final DirectTessellator[] directTessellators = new DirectTessellator[DIRECT_TESSELLATOR_STACK_DEPTH];
-    static int directTessellatorIndex = -1;
+    private static final DirectTessellator[] directTessellators = new DirectTessellator[DIRECT_TESSELLATOR_STACK_DEPTH];
+    private static int directTessellatorIndex = -1; // Points to the DirectTessellator in the stack (-1 = stack empty)
 
     private static DirectTessellator getDirectTessellator() {
         return directTessellators[directTessellatorIndex];
@@ -297,38 +299,54 @@ public class TessellatorManager {
         return directTessellatorIndex != -1;
     }
 
-    public static void stopCapturingDirect() {
-        if (!hasDirectTessellator()) throw new IllegalStateException("Tried to stop capturing when not capturing!");
-        final DirectTessellator tessellator = getDirectTessellator();
-        directTessellators[directTessellatorIndex--] = null;
-        tessellator.onRemovedFromStack();
-    }
-
-    public static IVertexBuffer compileToVBO(VertexBufferType bufferType, Consumer<DirectTessellator> consumer) {
-        DirectTessellator tessellator = startCapturingDirect();
-        consumer.accept(tessellator);
-        return stopCapturingDirectToVBO(bufferType);
-    }
-
-    public static IVertexBuffer compileToVBO(VertexBufferType bufferType, VertexFormat format,
-            Consumer<DirectTessellator> consumer) {
-        DirectTessellator tessellator = startCapturingDirect();
-        tessellator.setVertexFormat(format);
-        consumer.accept(tessellator);
-        return stopCapturingDirectToVBO(bufferType);
-    }
-
     public static DirectTessellator startCapturingDirect() {
-        if (!hasDirectTessellator()) {
+        if (!mainInstanceInStack) {
+            mainInstanceInStack = true;
+
             directTessellators[++directTessellatorIndex] = mainInstance;
-            mainInstance.setDrawCallback(null);
             return mainInstance;
         }
-        // Will be deleted after being removed from the stack
-        ByteBuffer buffer = memAlloc(0x100000); // TODO
-        DirectTessellator tessellator = new DirectTessellator(buffer, true);
+        DirectTessellator tessellator = new DirectTessellator(DEFAULT_BUFFER_SIZE);
         directTessellators[++directTessellatorIndex] = tessellator;
         return tessellator;
+    }
+
+    public static DirectTessellator startCapturingDirect(int capacity) {
+        if (!mainInstanceInStack && BUFFER_CAPACITY >= capacity) {
+            mainInstanceInStack = true;
+
+            directTessellators[++directTessellatorIndex] = mainInstance;
+            return mainInstance;
+        }
+        DirectTessellator tessellator = new DirectTessellator(capacity);
+        directTessellators[++directTessellatorIndex] = tessellator;
+        return tessellator;
+    }
+
+    public static void startCapturingDirect(DirectTessellator tessellator) {
+        mainInstanceInStack = mainInstanceInStack || tessellator.baseBuffer == Tessellator.byteBuffer;
+        directTessellators[++directTessellatorIndex] = tessellator;
+    }
+
+    public static CallbackTessellator startCapturingCallback(DirectDrawCallback callback) {
+        if (!mainInstanceInStack) {
+            mainInstanceInStack = true;
+
+            directTessellators[++directTessellatorIndex] = mainCallbackInstance;
+            mainCallbackInstance.setDrawCallback(callback);
+            return mainCallbackInstance;
+        }
+        CallbackTessellator tessellator = new CallbackTessellator(DEFAULT_BUFFER_SIZE);
+        tessellator.setDrawCallback(callback);
+        directTessellators[++directTessellatorIndex] = tessellator;
+        return tessellator;
+    }
+
+    public static void stopCapturingDirect() {
+        final DirectTessellator tessellator = getDirectTessellator();
+        directTessellators[directTessellatorIndex--] = null;
+        mainInstanceInStack = mainInstanceInStack && tessellator.baseBuffer != Tessellator.byteBuffer;
+        tessellator.onRemovedFromStack();
     }
 
     public static DirectTessellator startCapturingDirect(VertexFormat format) {
@@ -337,23 +355,11 @@ public class TessellatorManager {
         return tessellator;
     }
 
-    public static DirectTessellator startCapturingDirect(DirectDrawCallback callback) {
-        DirectTessellator tessellator = startCapturingDirect();
-        tessellator.setDrawCallback(callback);
-        return tessellator;
-    }
-
     public static IVertexBuffer stopCapturingDirectToVBO(VertexBufferType bufferType) {
         final DirectTessellator tessellator = getDirectTessellator();
         final IVertexBuffer vbo = tessellator.uploadToVBO(bufferType);
         stopCapturingDirect();
         return vbo;
-    }
-
-    public static void stopCapturingDirectToVBO(IVertexBuffer vbo) {
-        final DirectTessellator tessellator = getDirectTessellator();
-        tessellator.uploadToVBO(vbo);
-        stopCapturingDirect();
     }
 
     /**
@@ -558,18 +564,18 @@ public class TessellatorManager {
      * @return The result that draw() should return
      */
     public static int interceptDraw(Tessellator tess) {
-        // Detect recursive draw() calls from within callback
-        if (isInCompilingCallback) {
-            throw new IllegalStateException(
-                    "Tessellator.draw() called from within a compiling callback - this is not allowed!");
-        }
-
         if (hasDirectTessellator()) {
             final DirectTessellator tessellator = getDirectTessellator();
             final int result = tessellator.interceptDraw(tess);
 
             ((ITessellatorInstance) tess).discard();
             return result;
+        }
+
+        // Detect recursive draw() calls from within callback
+        if (isInCompilingCallback) {
+            throw new IllegalStateException(
+                    "Tessellator.draw() called from within a compiling callback - this is not allowed!");
         }
 
         // Get callback from stack

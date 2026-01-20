@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL15;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
-public class VertexBuffer implements IVertexBuffer, AutoCloseable {
+public class VertexBuffer implements IEmptyVertexBuffer, AutoCloseable {
 
     protected int id;
     protected int vertexCount;
@@ -54,7 +54,6 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
     }
 
     public void upload(ByteBuffer buffer, int vertexCount, int type) {
-        if (this.id == -1) return;
         this.vertexCount = vertexCount;
         this.bindVBO();
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, type);
@@ -63,10 +62,7 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
 
     @Override
     public void allocate(ByteBuffer buffer, int vertexCount, boolean mutable) {
-        this.vertexCount = vertexCount;
-        this.bindVBO();
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
-        this.unbindVBO();
+        upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
     }
 
     @Override
@@ -115,10 +111,7 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
 
     @Override
     public void delete() {
-        if (this.id >= 0) {
-            GL15.glDeleteBuffers(this.id);
-            this.id = -1;
-        }
+        GL15.glDeleteBuffers(this.id);
     }
 
     @Override

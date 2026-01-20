@@ -3,7 +3,9 @@ package com.gtnewhorizon.gtnhlib.client.opengl;
 import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTFramebufferObject;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GLContext;
 
 public final class GLCaps {

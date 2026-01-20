@@ -232,7 +232,6 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         return this;
     }
 
-
     @Deprecated // Use NormalHelper instead
     public CapturingTessellator setNormalTransformed(Vector3f normal, Matrix3f normalMatrix) {
         return setNormalTransformed(normal, normal, normalMatrix);

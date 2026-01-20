@@ -12,11 +12,11 @@ public final class VertexArrayBufferStorage extends VertexBufferStorage {
 
     private int vaoID = -1;
 
-    public VertexArrayBufferStorage(VertexFormat format, int drawMode) {
+    VertexArrayBufferStorage(VertexFormat format, int drawMode) {
         super(format, drawMode);
     }
 
-    public VertexArrayBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
+    VertexArrayBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
         super(format, drawMode, data, vertexCount, flags);
     }
 

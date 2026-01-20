@@ -3,10 +3,9 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 import org.lwjgl.opengl.GL44;
 import org.lwjgl.opengl.GLContext;
 
-import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
 import com.gtnewhorizon.gtnhlib.client.opengl.UniversalVAO;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -16,12 +15,11 @@ public final class VAOManager {
     static boolean vaoEnabled;
 
     private static final boolean vaoUnsupported;
-    @Beta
     public static final VaoFunctions VAO;
 
-    @Deprecated // use createMutableVAO / createStorageVAO instead
+    @Deprecated // For clarity, use createMutableVAO / createStorageVAO instead
     public static VertexBuffer createVAO(VertexFormat format, int drawMode) {
-        return vaoEnabled ? new VertexArrayBuffer(format, drawMode) : new VertexBuffer(format, drawMode);
+        return createMutableVAO(format, drawMode);
     }
 
     /**
@@ -36,7 +34,7 @@ public final class VAOManager {
         return mutable ? GL44.GL_DYNAMIC_STORAGE_BIT : 0;
     }
 
-    public static IVertexBuffer createStorageVAO(VertexFormat format, int drawMode) {
+    public static IEmptyVertexBuffer createStorageVAO(VertexFormat format, int drawMode) {
         if (GLCaps.bufferStorageSupported()) {
             return vaoEnabled ? new VertexArrayBufferStorage(format, drawMode)
                     : new VertexBufferStorage(format, drawMode);

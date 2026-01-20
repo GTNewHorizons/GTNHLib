@@ -13,8 +13,10 @@ public class VertexFormatTest {
     @Test
     void testDefaultVertexFormats() {
         assertEquals(VertexFlags.BITSET_SIZE, DefaultVertexFormat.ALL_FORMATS.length);
-        for (VertexFormat format : DefaultVertexFormat.ALL_FORMATS) {
+        for (int i = 0; i < DefaultVertexFormat.ALL_FORMATS.length; i++) {
+            final VertexFormat format = DefaultVertexFormat.ALL_FORMATS[i];
             assertNotNull(format);
+            assertEquals(i, format.getVertexFlags());
         }
     }
 }
