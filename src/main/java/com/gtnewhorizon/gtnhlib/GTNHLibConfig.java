@@ -37,8 +37,12 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(true)
     public static boolean enableTranslucentItemRenders;
 
-    @Config.Comment("If you're not a dev, you don't need this")
+    @Config.Comment("If you're not a dev, you don't need this.")
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart
     public static boolean enableTestBlocks;
+
+    @Config.Comment("Swaps out the block crack texture on modeled blocks, to make it easier to see the rotation.")
+    @Config.DefaultBoolean(false)
+    public static boolean testCrackTexture;
 }
