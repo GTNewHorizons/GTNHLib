@@ -55,6 +55,7 @@ public enum Mixins implements IMixins {
             .addCommonMixins("MixinIChatComponentSerializer").setPhase(Phase.EARLY))
     MULTI_RELEASE_JAR_FILTER(new MixinBuilder("Skip multi-release JAR entries in mod discovery")
             .addCommonMixins("fml.MixinJarDiscoverer").setPhase(Phase.EARLY).addExcludedMod(TargetMods.LWJGL3IFY)),
+    PICK_BLOCK_TRAP(Side.CLIENT, "MixinMinecraft_PickBlockTrap"),
     //
     ;
 
