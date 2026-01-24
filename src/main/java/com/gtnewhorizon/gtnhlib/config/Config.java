@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import cpw.mods.fml.client.config.GuiConfigEntries;
+
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -236,9 +238,21 @@ public @interface Config {
 
         /**
          * Can be used to overwrite the sync behavior for fields in classes annotated with {@link Sync}.
-         * 
+         *
          * @return Whether the field should be synced. Defaults to true.
          */
         boolean value() default true;
     }
+
+    /**
+     * Use this annotation to specify a custom IConfigEntry class for a field or category. This allows for custom GUI
+     * rendering (colors, buttons, special inputs) in the Mod Config Menu.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.FIELD, ElementType.TYPE })
+    @interface CustomEntry {
+
+        Class<? extends GuiConfigEntries.IConfigEntry> value();
+    }
+
 }

@@ -157,6 +157,8 @@ public class ConfigurationManager {
                 .map((lines) -> String.join("\n", lines)).ifPresent(subCat::setComment);
         Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
                 .ifPresent(subCat::setLanguageKey);
+        Optional.ofNullable(subCategoryField.getAnnotation(Config.CustomEntry.class)).map(Config.CustomEntry::value)
+                .ifPresent(subCat::setConfigEntryClass);
 
         if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)) {
             subCat.setRequiresMcRestart(true);
