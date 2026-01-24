@@ -1,12 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.opengl;
 
-import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTFramebufferObject;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GLContext;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
 
 public final class GLCaps {
 
@@ -15,7 +14,7 @@ public final class GLCaps {
 
     // Since I hate the OpenGlHelper method names
     public static final FBOFunctions FBO;
-    private static final boolean fboSupported;
+    public static final VaoFunctions VAO;
 
     public static boolean bufferStorageSupported() {
         return bufferStorage;
@@ -26,7 +25,7 @@ public final class GLCaps {
     }
 
     public static boolean fboSupported() {
-        return fboSupported;
+        return FBO != null;
     }
 
     static {
@@ -38,15 +37,10 @@ public final class GLCaps {
         } else if (caps.GL_EXT_framebuffer_object) {
             FBO = new FBOEXT();
         } else {
-            FBO = null;
+            FBO = null; // Any device that does not support FBO's likely won't be able to run MC anyway
         }
-        fboSupported = FBO != null;
-        LogManager.getLogger("GLCaps").info(
-                "Initialized GLCaps. Buffer Storage supported: {}, Tex storage supported: {}, FBO Provider: {}",
-                bufferStorage,
-                texStorage,
-                FBO == null ? "none" : FBO.getClass().getSimpleName());
-        System.out.println();
+
+        VAO = UniversalVAO.getImplementation(caps);
     }
 
     private static final class FBOGL3 implements FBOFunctions {

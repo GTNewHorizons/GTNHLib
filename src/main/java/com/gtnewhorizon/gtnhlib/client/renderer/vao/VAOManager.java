@@ -1,18 +1,19 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
+import java.nio.ByteBuffer;
+
 import org.lwjgl.opengl.GL44;
-import org.lwjgl.opengl.GLContext;
 
 import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
-import com.gtnewhorizon.gtnhlib.client.opengl.UniversalVAO;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public final class VAOManager {
 
     // true by default, false if disabled/unsupported
-    static boolean vaoEnabled;
+    private static boolean vaoEnabled;
 
     private static final boolean vaoUnsupported;
     public static final VaoFunctions VAO;
@@ -28,6 +29,21 @@ public final class VAOManager {
      */
     public static VertexBuffer createMutableVAO(VertexFormat format, int drawMode) {
         return vaoEnabled ? new VertexArrayBuffer(format, drawMode) : new VertexBuffer(format, drawMode);
+    }
+
+    public static VertexBuffer allocateMutableVAO(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount) {
+        return vaoEnabled ? new VertexArrayBuffer(format, drawMode, data, vertexCount)
+                : new VertexBuffer(format, drawMode, data, vertexCount);
+    }
+
+    public static IVertexBuffer allocateStorageVAO(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount,
+            int flags) {
+        if (GLCaps.bufferStorageSupported()) {
+            return vaoEnabled ? new VertexArrayBufferStorage(format, drawMode, data, vertexCount, flags)
+                    : new VertexBufferStorage(format, drawMode, data, vertexCount, flags);
+        }
+
+        return allocateMutableVAO(format, drawMode, data, vertexCount);
     }
 
     public static int getStorageFlags(boolean mutable) {
@@ -57,7 +73,7 @@ public final class VAOManager {
     }
 
     static {
-        VAO = UniversalVAO.getImplementation(GLContext.getCapabilities());
+        VAO = GLCaps.VAO;
         vaoUnsupported = VAO == null;
         vaoEnabled = !vaoUnsupported;
     }

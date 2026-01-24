@@ -12,6 +12,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.github.bsideup.jabel.Desugar;
+import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
@@ -278,16 +279,17 @@ public class TessellatorManager {
 
     // --------------- DIRECT TESSELLATOR ---------------
 
-    public static final int DEFAULT_BUFFER_SIZE = 0x8000; // 32KB, enough to store 1024 vertices
+    public static final int DEFAULT_BUFFER_SIZE = 0x8000; // 32KB, enough to store 1024 full-sized vertices
+    private static final int BUFFER_CAPACITY = Tessellator.byteBuffer.capacity();
+    private static final int DIRECT_TESSELLATOR_STACK_DEPTH = 16;
 
-    // Instance to use for capturing to vbo's (Cannot be used outside the tessellator stack)
+    // Instances to use for capturing to vbo's (Cannot be used outside the tessellator stack)
     private static final DirectTessellator mainInstance = new DirectTessellator(Tessellator.byteBuffer);
     private static final CallbackTessellator mainCallbackInstance = new CallbackTessellator(Tessellator.byteBuffer);
-    private static final int BUFFER_CAPACITY = Tessellator.byteBuffer.capacity();
+
     // Any Tessellator that uses the Tessellator.byteBuffer is considered to be the "main instance" (to preserve data)
     private static boolean mainInstanceInStack = false;
 
-    private static final int DIRECT_TESSELLATOR_STACK_DEPTH = 16;
     private static final DirectTessellator[] directTessellators = new DirectTessellator[DIRECT_TESSELLATOR_STACK_DEPTH];
     private static int directTessellatorIndex = -1; // Points to the DirectTessellator in the stack (-1 = stack empty)
 
@@ -328,7 +330,14 @@ public class TessellatorManager {
         directTessellators[++directTessellatorIndex] = tessellator;
     }
 
-    public static CallbackTessellator startCapturingCallback(DirectDrawCallback callback) {
+    public static DirectTessellator startCapturingDirect(VertexFormat format) {
+        DirectTessellator tessellator = startCapturingDirect();
+        tessellator.setVertexFormat(format);
+        return tessellator;
+    }
+
+    @Beta // Not a stable API. May change in the future.
+    public static CallbackTessellator startCapturingDirect(DirectDrawCallback callback) {
         if (!mainInstanceInStack) {
             mainInstanceInStack = true;
 
@@ -342,6 +351,7 @@ public class TessellatorManager {
         return tessellator;
     }
 
+
     public static void stopCapturingDirect() {
         final DirectTessellator tessellator = getDirectTessellator();
         directTessellators[directTessellatorIndex--] = null;
@@ -349,15 +359,16 @@ public class TessellatorManager {
         tessellator.onRemovedFromStack();
     }
 
-    public static DirectTessellator startCapturingDirect(VertexFormat format) {
-        DirectTessellator tessellator = startCapturingDirect();
-        tessellator.setVertexFormat(format);
-        return tessellator;
-    }
-
     public static IVertexBuffer stopCapturingDirectToVBO(VertexBufferType bufferType) {
         final DirectTessellator tessellator = getDirectTessellator();
         final IVertexBuffer vbo = tessellator.uploadToVBO(bufferType);
+        stopCapturingDirect();
+        return vbo;
+    }
+
+    public static VertexBuffer stopCapturingDirectToMutableVBO() {
+        final DirectTessellator tessellator = getDirectTessellator();
+        final VertexBuffer vbo = tessellator.uploadToMutableVBO();
         stopCapturingDirect();
         return vbo;
     }

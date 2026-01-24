@@ -141,11 +141,11 @@ public class BakedModelBuilder {
 
     @Deprecated
     public VertexBuffer finish(VertexFormat format) {
-        return (VertexBuffer) tessellator.stopCapturingToVBO(VertexBufferType.MUTABLE_RESIZABLE);
+        return TessellatorManager.stopCapturingDirectToMutableVBO();
     }
 
     public IVertexBuffer finish() {
-        return tessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
+        return DirectTessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
     }
 
     // spotless:off

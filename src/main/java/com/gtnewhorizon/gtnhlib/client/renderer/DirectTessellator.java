@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.shader.TesselatorVertexState;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
@@ -73,7 +74,7 @@ public class DirectTessellator extends Tessellator {
         return this.vertexCount * 32;
     }
 
-    final int interceptDraw(Tessellator tessellator) {
+    protected int interceptDraw(Tessellator tessellator) {
         this.vertexCount = tessellator.vertexCount;
         this.hasColor = tessellator.hasColor;
         this.hasTexture = tessellator.hasTexture;
@@ -130,15 +131,28 @@ public class DirectTessellator extends Tessellator {
         }
 
         final long used = bufferLimit();
-        final int newCapacity = bufferCapacity() * 2;
 
-        startPtr = nmemReallocChecked(startPtr, newCapacity);
+        int newCapacity = bufferCapacity() * 2;
+        long required = used + bytes;
+
+        while (newCapacity < required) {
+            newCapacity *= 2;
+        }
+
+        if (!isResized()) {
+            long newPtr = nmemAllocChecked(newCapacity);
+            memCopy(startPtr, newPtr, used);
+            startPtr = newPtr;
+        } else {
+            startPtr = nmemReallocChecked(startPtr, newCapacity);
+        }
+
         writePtr = startPtr + used;
         endPtr = startPtr + newCapacity;
     }
 
     @Override
-    public final void addVertex(double x, double y, double z) {
+    public void addVertex(double x, double y, double z) {
         if (format == null) {
             this.format = getOptimalVertexFormat();
         }
@@ -300,6 +314,10 @@ public class DirectTessellator extends Tessellator {
         return bufferType.allocate(this.format, this.drawMode, getWriteBuffer(), vertexCount);
     }
 
+    public final VertexBuffer uploadToMutableVBO() {
+        return VAOManager.allocateMutableVAO(this.format, this.drawMode, getWriteBuffer(), vertexCount);
+    }
+
     public final void updateToVBO(IVertexBuffer vbo) {
         vbo.update(getWriteBuffer());
     }
@@ -329,7 +347,6 @@ public class DirectTessellator extends Tessellator {
         this.hasBrightness = format.hasBrightness();
         this.hasColor = format.hasColor();
     }
-
 
     /**
      * Allocates a new ByteBuffer with the contents of the tessellator's draw. <br>

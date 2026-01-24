@@ -1,10 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
-import net.minecraft.client.renderer.Tessellator;
-
 import java.nio.ByteBuffer;
 
+import net.minecraft.client.renderer.Tessellator;
+
 public final class CallbackTessellator extends DirectTessellator {
+
     private DirectDrawCallback drawCallback;
 
     public CallbackTessellator(DirectDrawCallback callback) {
