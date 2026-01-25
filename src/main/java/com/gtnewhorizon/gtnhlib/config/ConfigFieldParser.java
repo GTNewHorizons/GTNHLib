@@ -109,10 +109,10 @@ public class ConfigFieldParser {
     }
 
     private static void getCustomEntry(Field field, Configuration config, String category, String name) {
-        if (field.isAnnotationPresent(Config.CustomEntry.class)) {
+        if (field.isAnnotationPresent(Config.Entry.class)) {
             Property prop = config.getCategory(category).get(name);
             if (prop != null) {
-                prop.setConfigEntryClass(field.getAnnotation(Config.CustomEntry.class).value());
+                prop.setConfigEntryClass(field.getAnnotation(Config.Entry.class).value());
             }
         }
     }
