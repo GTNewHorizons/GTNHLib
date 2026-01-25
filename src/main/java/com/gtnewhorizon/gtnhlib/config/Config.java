@@ -34,6 +34,20 @@ public @interface Config {
      */
     String filename() default "";
 
+    /**
+     * Controls automatic removal of unused configuration categories.
+     *
+     * <p>
+     * When enabled, categories that are not observed during config processing will be removed from the configuration
+     * file. This helps clean up stale categories from older versions.
+     * </p>
+     *
+     * <p>
+     * Disable this if your mod uses dynamically created or externally managed categories that should be preserved.
+     * </p>
+     */
+    boolean categoryCulling() default true;
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ ElementType.FIELD, ElementType.TYPE })
     @interface LangKey {

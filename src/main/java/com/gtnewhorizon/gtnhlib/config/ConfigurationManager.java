@@ -518,6 +518,12 @@ public class ConfigurationManager {
     private static void cullDeadCategories() {
         for (val entry : observedCategories.entrySet()) {
             val config = entry.getKey();
+
+            if (!isCategoryCullingEnabled(config)) {
+                LOGGER.info("Skipping category culling for config {}", config);
+                continue;
+            }
+
             val observedCategoryNames = entry.getValue();
 
             if (config.getCategoryNames().size() == observedCategoryNames.size()) {
@@ -541,5 +547,20 @@ public class ConfigurationManager {
             config.save();
         }
         observedCategories.clear();
+    }
+
+    private static boolean isCategoryCullingEnabled(Configuration config) {
+        Map<String, Set<Class<?>>> map = configToCategoryClassMap.get(config);
+        if (map == null) return true;
+
+        for (Set<Class<?>> classes : map.values()) {
+            for (Class<?> clazz : classes) {
+                Config cfg = clazz.getAnnotation(Config.class);
+                if (cfg != null && !cfg.categoryCulling()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
