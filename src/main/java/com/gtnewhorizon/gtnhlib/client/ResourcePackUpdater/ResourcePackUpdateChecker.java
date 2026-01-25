@@ -1,0 +1,207 @@
+package com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.client.resources.ResourcePackRepository;
+
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+
+public final class ResourcePackUpdateChecker {
+
+    private static final long FAILURE_COOLDOWN_MILLIS = 30L * 60L * 1000L;
+    private static boolean hasRunThisSession = false;
+    private static long lastFailureMillis = 0L;
+    private static final Set<String> mismatchNotified = new HashSet<>();
+
+    private ResourcePackUpdateChecker() {}
+
+    public static void runAutoCheckIfNeeded() {
+        if (hasRunThisSession) {
+            return;
+        }
+        hasRunThisSession = true;
+        if (!GTNHLibConfig.enableResourcePackUpdateCheck) {
+            RpUpdaterLog.debug("Auto-check skipped (disabled in config)");
+            return;
+        }
+        CheckResult result = runCheck(false, false);
+        if (result.cooldownBlocked) {
+            RpUpdaterLog.debug("Auto-check skipped due to cooldown");
+        }
+    }
+
+    public static CheckResult runManualCheck(boolean force) {
+        return runCheck(force, true);
+    }
+
+    private static CheckResult runCheck(boolean force, boolean isManual) {
+        CheckResult result = new CheckResult();
+        if (isOnCooldown() && !force) {
+            result.cooldownBlocked = true;
+            return result;
+        }
+        String playerLine = getPlayerLineNormalized();
+        RpUpdaterLog.debug("Starting update check (player line: {})", playerLine);
+        List<UpdaterMeta> packs = scanEnabledPacks(result);
+        Map<RepoKey, Optional<ReleaseMatch>> releaseCache = new HashMap<>();
+        for (UpdaterMeta meta : packs) {
+            checkOnePack(meta, playerLine, releaseCache, result);
+        }
+        return result;
+    }
+
+    private static List<UpdaterMeta> scanEnabledPacks(CheckResult result) {
+        ResourcePackRepository repo = Minecraft.getMinecraft().getResourcePackRepository();
+        List<ResourcePackRepository.Entry> entries = repo.getRepositoryEntries();
+        result.packsScanned = entries.size();
+        List<UpdaterMeta> metas = new ArrayList<>();
+        for (ResourcePackRepository.Entry entry : entries) {
+            IResourcePack pack = entry.getResourcePack();
+            if (pack == null) {
+                continue;
+            }
+            Optional<UpdaterMeta> meta = PackMcmetaReader.readUpdaterMeta(pack);
+            if (meta.isPresent()) {
+                result.packsWithUpdater++;
+                metas.add(meta.get());
+                RpUpdaterLog.debug("Found updater metadata in pack {}", pack.getPackName());
+            }
+        }
+        RpUpdaterLog.debug("Scanned {} packs ({} with updater metadata)", result.packsScanned, result.packsWithUpdater);
+        return metas;
+    }
+
+    private static void checkOnePack(UpdaterMeta meta, String playerLine, Map<RepoKey, Optional<ReleaseMatch>> cache,
+            CheckResult result) {
+        String installedLine = meta.packGameVersion;
+        String targetLine = "unknown".equals(playerLine) ? installedLine : playerLine;
+        if (!"unknown".equals(playerLine) && !installedLine.equals(playerLine) && mismatchNotified.add(meta.packName)) {
+            ChatNotifier.sendLineMismatch(meta.packName, installedLine, playerLine);
+        }
+        Optional<ReleaseMatch> match = getNewestRelease(meta, targetLine, cache, result);
+        if (!match.isPresent()) {
+            RpUpdaterLog.debug("No compatible release for {} on {}", meta.packName, targetLine);
+            return;
+        }
+        ReleaseMatch release = match.get();
+        try {
+            PackVersion installed = PackVersion.parse(meta.packVersion);
+            PackVersion remote = PackVersion.parse(release.packVersion);
+            if (remote.compareTo(installed) > 0) {
+                ChatNotifier.sendUpdateMessage(meta.packName, meta.packVersion, release.packVersion, release.htmlUrl);
+                result.updatesFound++;
+            } else {
+                RpUpdaterLog.debug(
+                        "No update for {} (installed {}, remote {})",
+                        meta.packName,
+                        meta.packVersion,
+                        release.packVersion);
+            }
+        } catch (IllegalArgumentException e) {
+            RpUpdaterLog.warn("Invalid pack version for {}: {}", meta.packName, e.toString());
+        }
+    }
+
+    private static Optional<ReleaseMatch> getNewestRelease(UpdaterMeta meta, String targetLine,
+            Map<RepoKey, Optional<ReleaseMatch>> cache, CheckResult result) {
+        RepoKey key = new RepoKey(meta.owner, meta.repo, targetLine);
+        if (cache.containsKey(key)) {
+            return cache.get(key);
+        }
+        try {
+            Optional<ReleaseMatch> match = GitHubReleaseClient
+                    .findNewestCompatibleRelease(meta.owner, meta.repo, targetLine);
+            cache.put(key, match);
+            return match;
+        } catch (Exception e) {
+            result.hadFailure = true;
+            lastFailureMillis = System.currentTimeMillis();
+            RpUpdaterLog.warn("GitHub request failed for {}/{}: {}", meta.owner, meta.repo, e.toString());
+            return Optional.empty();
+        }
+    }
+
+    private static boolean isOnCooldown() {
+        if (lastFailureMillis == 0L) {
+            return false;
+        }
+        return System.currentTimeMillis() - lastFailureMillis < FAILURE_COOLDOWN_MILLIS;
+    }
+
+    private static String getPlayerLineNormalized() {
+        String version = readModpackVersion();
+        if (version == null) {
+            return "unknown";
+        }
+        if (version.startsWith("2.8")) {
+            return "2.8.X";
+        }
+        if (version.startsWith("2.9")) {
+            return "2.9.X";
+        }
+        if (version.matches("\\d+\\.\\d+\\.X")) {
+            return version;
+        }
+        return "unknown";
+    }
+
+    private static String readModpackVersion() { // TODO Get Actual modpack version somehow, because yes
+        try {
+            Class<?> refstrings = Class.forName("com.dreammaster.lib.Refstrings");
+            return (String) refstrings.getField("MODPACKPACK_VERSION").get(null);
+        } catch (Exception e) {
+            RpUpdaterLog.debug("Refstrings not available: {}", e.toString());
+            return null;
+        }
+    }
+
+    public static final class CheckResult {
+
+        public int packsScanned;
+        public int packsWithUpdater;
+        public int updatesFound;
+        public boolean cooldownBlocked;
+        public boolean hadFailure;
+    }
+
+    private static final class RepoKey {
+
+        private final String owner;
+        private final String repo;
+        private final String targetLine;
+
+        private RepoKey(String owner, String repo, String targetLine) {
+            this.owner = owner;
+            this.repo = repo;
+            this.targetLine = targetLine;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof RepoKey)) {
+                return false;
+            }
+            RepoKey other = (RepoKey) obj;
+            return owner.equals(other.owner) && repo.equals(other.repo) && targetLine.equals(other.targetLine);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = owner.hashCode();
+            result = 31 * result + repo.hashCode();
+            result = 31 * result + targetLine.hashCode();
+            return result;
+        }
+    }
+}
