@@ -476,6 +476,12 @@ public class ConfigurationManager {
                 && fieldClass.getSuperclass().equals(Object.class);
     }
 
+    public static Configuration getConfig(Class<?> configClass) {
+        val cfg = configClass.getAnnotation(Config.class);
+        if (cfg == null) return null;
+        return configs.get(getConfigKey(cfg));
+    }
+
     private static String getConfigKey(Config cfg) {
         return cfg.modid() + "|" + cfg.configSubDirectory() + "|" + cfg.filename();
     }
