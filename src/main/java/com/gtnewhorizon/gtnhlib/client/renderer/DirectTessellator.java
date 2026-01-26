@@ -175,11 +175,10 @@ public class DirectTessellator extends Tessellator {
         final VertexFormat newFormat = this.getOptimalVertexFormat();
 
         final int vertexCount = this.vertexCount;
-        final int newVertexSize = newFormat.getVertexSize();
-        final long newBufferSize = (long) vertexCount * newVertexSize;
+        final int newBufferSize = vertexCount * newFormat.getVertexSize();
 
         // Allocate temp buffer
-        ByteBuffer temp = memAlloc((int) newBufferSize);
+        ByteBuffer temp = memAlloc(newBufferSize);
         long tempPtr = memAddress0(temp);
 
         long readPtr = startPtr;
@@ -199,8 +198,8 @@ public class DirectTessellator extends Tessellator {
         }
 
         // Copy back to main buffer
-        ensureCapacity((int) newBufferSize); // make sure the main buffer is large enough
-        memCopy(tempPtr, startPtr, (int) newBufferSize);
+        ensureCapacity(newBufferSize); // make sure the main buffer is large enough
+        memCopy(tempPtr, startPtr, newBufferSize);
         writePtr = startPtr + newBufferSize;
 
         memFree(temp); // free temporary buffer

@@ -351,7 +351,6 @@ public class TessellatorManager {
         return tessellator;
     }
 
-
     public static void stopCapturingDirect() {
         final DirectTessellator tessellator = getDirectTessellator();
         directTessellators[directTessellatorIndex--] = null;

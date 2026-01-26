@@ -32,10 +32,8 @@ public final class CallbackTessellator extends DirectTessellator {
 
     @Override
     public int draw() {
-        if (drawCallback != null) {
-            if (drawCallback.onDraw(this)) {
-                this.reset();
-            }
+        if (drawCallback.onDraw(this)) {
+            this.reset();
         }
         return super.draw();
     }
