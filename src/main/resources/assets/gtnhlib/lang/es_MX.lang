@@ -25,3 +25,9 @@ description.villager.profession.railcraft.trackman=Trabajador ferroviario
 description.villager.profession.minefactoryreloaded.zoologist=Zoólogo
 description.villager.profession.pneumaticcraft.VillagerMechanic=Mecánico
 description.villager.profession.compactmachines.villager=Maquinista compacto
+
+# Resource Pack Updater
+gtnhlib.chat.rpupdater.update_available=§3New update available for §f%s: v%s §7(you have v%s)§3.
+gtnhlib.chat.rpupdater.click_here=§6Click here
+gtnhlib.chat.rpupdater.open_release= §3to open the release page.
+gtnhlib.chat.rpupdater.line_mismatch=§f%s §3is for GTNH §f%s§3, but you are on §fGTNH %s§3.
