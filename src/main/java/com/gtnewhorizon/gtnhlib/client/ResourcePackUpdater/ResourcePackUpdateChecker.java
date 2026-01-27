@@ -22,6 +22,7 @@ public final class ResourcePackUpdateChecker {
     private static boolean hasRunThisSession = false;
     private static long lastFailureMillis = 0L;
     private static long lastManualMillis = 0L;
+    private static long lastCheckMillis = 0L;
     private static final Set<String> mismatchNotified = new HashSet<>();
     private static final AtomicBoolean checkInProgress = new AtomicBoolean(false);
 
@@ -88,6 +89,7 @@ public final class ResourcePackUpdateChecker {
                 ChatNotifier.sendNoUpdatesFound();
             }
         } finally {
+            lastCheckMillis = System.currentTimeMillis();
             checkInProgress.set(false);
         }
     }
@@ -219,6 +221,74 @@ public final class ResourcePackUpdateChecker {
         public int updatesFound;
         public boolean cooldownBlocked;
         public boolean hadFailure;
+    }
+
+    public static List<PackSummary> getActivePackSummaries() {
+        List<IResourcePack> packs = getEnabledPacks();
+        List<PackSummary> summaries = new ArrayList<>(packs.size());
+        for (IResourcePack pack : packs) {
+            Optional<UpdaterMeta> meta = PackMcmetaReader.readUpdaterMeta(pack);
+            if (meta.isPresent()) {
+                UpdaterMeta updater = meta.get();
+                summaries.add(
+                        new PackSummary(
+                                pack.getPackName(),
+                                true,
+                                updater.packName,
+                                updater.packVersion,
+                                updater.packGameVersion,
+                                updater.owner,
+                                updater.repo));
+            } else {
+                summaries.add(new PackSummary(pack.getPackName(), false, null, null, null, null, null));
+            }
+        }
+        return summaries;
+    }
+
+    public static StatusSnapshot getStatusSnapshot() {
+        long now = System.currentTimeMillis();
+        long failureRemaining = Math.max(0L, (lastFailureMillis + FAILURE_COOLDOWN_MILLIS) - now);
+        long manualRemaining = Math.max(0L, (lastManualMillis + MANUAL_COOLDOWN_MILLIS) - now);
+        return new StatusSnapshot(checkInProgress.get(), lastCheckMillis, failureRemaining, manualRemaining);
+    }
+
+    public static final class PackSummary {
+
+        public final String packDisplayName;
+        public final boolean hasUpdater;
+        public final String updaterPackName;
+        public final String packVersion;
+        public final String packGameVersion;
+        public final String owner;
+        public final String repo;
+
+        private PackSummary(String packDisplayName, boolean hasUpdater, String updaterPackName, String packVersion,
+                String packGameVersion, String owner, String repo) {
+            this.packDisplayName = packDisplayName;
+            this.hasUpdater = hasUpdater;
+            this.updaterPackName = updaterPackName;
+            this.packVersion = packVersion;
+            this.packGameVersion = packGameVersion;
+            this.owner = owner;
+            this.repo = repo;
+        }
+    }
+
+    public static final class StatusSnapshot {
+
+        public final boolean running;
+        public final long lastCheckMillis;
+        public final long failureCooldownRemainingMillis;
+        public final long manualCooldownRemainingMillis;
+
+        private StatusSnapshot(boolean running, long lastCheckMillis, long failureCooldownRemainingMillis,
+                long manualCooldownRemainingMillis) {
+            this.running = running;
+            this.lastCheckMillis = lastCheckMillis;
+            this.failureCooldownRemainingMillis = failureCooldownRemainingMillis;
+            this.manualCooldownRemainingMillis = manualCooldownRemainingMillis;
+        }
     }
 
     private static final class RepoKey {
