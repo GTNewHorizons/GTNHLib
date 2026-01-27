@@ -126,8 +126,10 @@ public final class ResourcePackUpdateChecker {
     private static void checkOnePack(UpdaterMeta meta, String playerLine, Map<RepoKey, Optional<ReleaseMatch>> cache,
             CheckResult result) {
         String installedLine = meta.packGameVersion;
-        String targetLine = "unknown".equals(playerLine) ? installedLine : playerLine;
-        if (!"unknown".equals(playerLine) && !installedLine.equals(playerLine) && mismatchNotified.add(meta.packName)) {
+        List<String> installedLines = parseLineList(installedLine);
+        String targetLine = "unknown".equals(playerLine) ? firstLineOrUnknown(installedLines) : playerLine;
+        if (!"unknown".equals(playerLine) && !containsLine(installedLines, playerLine)
+                && mismatchNotified.add(meta.packName)) {
             ChatNotifier.sendLineMismatch(meta.packName, installedLine, playerLine);
         }
         Optional<ReleaseMatch> match = getNewestRelease(meta, targetLine, cache, result);
@@ -185,6 +187,39 @@ public final class ResourcePackUpdateChecker {
             return false;
         }
         return System.currentTimeMillis() - lastManualMillis < MANUAL_COOLDOWN_MILLIS;
+    }
+
+    private static List<String> parseLineList(String field) {
+        List<String> lines = new ArrayList<>();
+        if (field == null) {
+            return lines;
+        }
+        for (String part : field.split(";")) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                lines.add(trimmed);
+            }
+        }
+        return lines;
+    }
+
+    private static boolean containsLine(List<String> lines, String target) {
+        if (lines == null || target == null) {
+            return false;
+        }
+        for (String line : lines) {
+            if (line.equals(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String firstLineOrUnknown(List<String> lines) {
+        if (lines == null || lines.isEmpty()) {
+            return "unknown";
+        }
+        return lines.get(0);
     }
 
     private static String getPlayerLineNormalized() {
