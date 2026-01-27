@@ -1,6 +1,9 @@
 package com.gtnewhorizon.gtnhlib.commands;
 
+import java.util.List;
+
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.StatCollector;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater.ResourcePackUpdateChecker;
@@ -26,26 +29,29 @@ public class CommandResourcePack extends GTNHClientCommand {
         if ("updateCheck".equalsIgnoreCase(args[0])) {
             boolean force = args.length > 1 && "force".equalsIgnoreCase(args[1]);
             if (!GTNHLibConfig.enableResourcePackUpdateCheck && !force) {
-                addChatMessage("Resource pack update checking is disabled in config.");
+                addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.rpupdater.disabled"));
                 return;
             }
-            ResourcePackUpdateChecker.CheckResult result = ResourcePackUpdateChecker.runManualCheck(force);
-            if (result.cooldownBlocked) {
-                addChatMessage(
-                        "Update check is on cooldown due to a recent failure. Try later or use /resourcepack updateCheck force.");
-                return;
-            }
-            if (result.updatesFound == 0) {
-                addChatMessage("No updates found for active resource packs.");
-            }
+            ResourcePackUpdateChecker.runManualCheck(force);
             return;
         }
         printHelp();
     }
 
     private void printHelp() {
-        addChatMessage("Resource pack commands:");
+        addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.rpupdater.commands"));
         addChatMessage("/resourcepack updateCheck [force]");
         addChatMessage("/resourcepack help");
+    }
+
+    @Override
+    public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return getListOfStringsMatchingLastWord(args, "updateCheck", "help");
+        }
+        if (args.length == 2 && "updateCheck".equalsIgnoreCase(args[0])) {
+            return getListOfStringsMatchingLastWord(args, "force");
+        }
+        return null;
     }
 }

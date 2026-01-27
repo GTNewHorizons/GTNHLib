@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
@@ -17,9 +18,12 @@ import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 public final class ResourcePackUpdateChecker {
 
     private static final long FAILURE_COOLDOWN_MILLIS = 30L * 60L * 1000L;
+    private static final long MANUAL_COOLDOWN_MILLIS = 30L * 1000L;
     private static boolean hasRunThisSession = false;
     private static long lastFailureMillis = 0L;
+    private static long lastManualMillis = 0L;
     private static final Set<String> mismatchNotified = new HashSet<>();
+    private static final AtomicBoolean checkInProgress = new AtomicBoolean(false);
 
     private ResourcePackUpdateChecker() {}
 
@@ -32,42 +36,80 @@ public final class ResourcePackUpdateChecker {
             RpUpdaterLog.debug("Auto-check skipped (disabled in config)");
             return;
         }
-        CheckResult result = runCheck(false, false);
-        if (result.cooldownBlocked) {
-            RpUpdaterLog.debug("Auto-check skipped due to cooldown");
-        }
+        runCheckAsync(false, false);
     }
 
     public static CheckResult runManualCheck(boolean force) {
-        return runCheck(force, true);
+        if (!force && isManualOnCooldown()) {
+            ChatNotifier.sendManualCooldown();
+            return new CheckResult();
+        }
+        lastManualMillis = System.currentTimeMillis();
+        runCheckAsync(force, true);
+        return new CheckResult();
     }
 
-    private static CheckResult runCheck(boolean force, boolean isManual) {
-        CheckResult result = new CheckResult();
+    private static void runCheckAsync(boolean force, boolean isManual) {
+        if (!checkInProgress.compareAndSet(false, true)) {
+            RpUpdaterLog.debug("Update check already in progress");
+            if (isManual) {
+                ChatNotifier.sendAlreadyRunning();
+            }
+            return;
+        }
         if (isOnCooldown() && !force) {
-            result.cooldownBlocked = true;
-            return result;
+            if (isManual) {
+                ChatNotifier.sendCooldownMessage();
+            }
+            RpUpdaterLog.debug("Check skipped due to cooldown");
+            checkInProgress.set(false);
+            return;
         }
         String playerLine = getPlayerLineNormalized();
-        RpUpdaterLog.debug("Starting update check (player line: {})", playerLine);
-        List<UpdaterMeta> packs = scanEnabledPacks(result);
-        Map<RepoKey, Optional<ReleaseMatch>> releaseCache = new HashMap<>();
-        for (UpdaterMeta meta : packs) {
-            checkOnePack(meta, playerLine, releaseCache, result);
+        List<IResourcePack> packs = getEnabledPacks();
+        if (isManual) {
+            ChatNotifier.sendChecking();
         }
-        return result;
+        Thread worker = new Thread(() -> runCheckWorker(packs, playerLine, isManual), "GTNHLib-RPUpdater");
+        worker.setDaemon(true);
+        worker.start();
     }
 
-    private static List<UpdaterMeta> scanEnabledPacks(CheckResult result) {
+    private static void runCheckWorker(List<IResourcePack> packs, String playerLine, boolean isManual) {
+        try {
+            RpUpdaterLog.debug("Starting update check (player line: {})", playerLine);
+            CheckResult result = new CheckResult();
+            List<UpdaterMeta> metas = scanEnabledPacks(packs, result);
+            Map<RepoKey, Optional<ReleaseMatch>> releaseCache = new HashMap<>();
+            for (UpdaterMeta meta : metas) {
+                checkOnePack(meta, playerLine, releaseCache, result);
+            }
+            if (isManual && result.updatesFound == 0) {
+                ChatNotifier.sendNoUpdatesFound();
+            }
+        } finally {
+            checkInProgress.set(false);
+        }
+    }
+
+    private static List<IResourcePack> getEnabledPacks() {
         ResourcePackRepository repo = Minecraft.getMinecraft().getResourcePackRepository();
         List<ResourcePackRepository.Entry> entries = repo.getRepositoryEntries();
-        result.packsScanned = entries.size();
-        List<UpdaterMeta> metas = new ArrayList<>();
+        List<IResourcePack> packs = new ArrayList<>(entries.size());
         for (ResourcePackRepository.Entry entry : entries) {
             IResourcePack pack = entry.getResourcePack();
             if (pack == null) {
                 continue;
             }
+            packs.add(pack);
+        }
+        return packs;
+    }
+
+    private static List<UpdaterMeta> scanEnabledPacks(List<IResourcePack> packs, CheckResult result) {
+        result.packsScanned = packs.size();
+        List<UpdaterMeta> metas = new ArrayList<>();
+        for (IResourcePack pack : packs) {
             Optional<UpdaterMeta> meta = PackMcmetaReader.readUpdaterMeta(pack);
             if (meta.isPresent()) {
                 result.packsWithUpdater++;
@@ -134,6 +176,13 @@ public final class ResourcePackUpdateChecker {
             return false;
         }
         return System.currentTimeMillis() - lastFailureMillis < FAILURE_COOLDOWN_MILLIS;
+    }
+
+    private static boolean isManualOnCooldown() {
+        if (lastManualMillis == 0L) {
+            return false;
+        }
+        return System.currentTimeMillis() - lastManualMillis < MANUAL_COOLDOWN_MILLIS;
     }
 
     private static String getPlayerLineNormalized() {
