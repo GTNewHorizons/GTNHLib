@@ -190,6 +190,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             for (JsonElement e : arr) {
 
                 final JsonObject json = e.getAsJsonObject();
+                final String name = JsonUtil.loadStr(json, "name", "");
                 final Vector3f from = loadVec3(json, "from").div(16);
                 final Vector3f to = loadVec3(json, "to").div(16);
                 final ModelElement.Rotation rotation = loadRotation(json);
@@ -197,7 +198,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
                 final int lightEmission = JsonUtil.loadInt(json, "light_emission", 0);
                 final List<ModelElement.Face> faces = loadFaces(json);
 
-                ret.add(new ModelElement(from, to, rotation, shade, lightEmission, faces));
+                ret.add(new ModelElement(name, from, to, rotation, shade, lightEmission, faces));
             }
         }
 
@@ -285,6 +286,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
     public static final class ModelElement {
 
+        private final String name;
         private final Vector3f from;
         private final Vector3f to;
         private final @Nullable Rotation rotation;
@@ -292,8 +294,9 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         private final int lightEmission;
         private final List<Face> faces;
 
-        public ModelElement(Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation,
+        public ModelElement(String name, Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation,
                 boolean shade, int lightEmission, List<Face> faces) {
+            this.name = name;
             this.from = from;
             this.to = to;
             this.rotation = rotation;
@@ -301,6 +304,8 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             this.lightEmission = lightEmission;
             this.faces = faces;
         }
+
+        public String name() { return name; }
 
         public Vector3f from() {
             return from;
