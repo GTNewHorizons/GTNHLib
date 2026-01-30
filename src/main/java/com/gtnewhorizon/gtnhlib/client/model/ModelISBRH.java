@@ -10,6 +10,7 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
 
+import com.gtnewhorizon.gtnhlib.api.IModelProvider;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -53,6 +54,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// Override this if you want programmatic model selection
     @SuppressWarnings("unused")
     public BakedModel getModel(@Nullable IBlockAccess world, Block block, int meta, int x, int y, int z) {
+        if (block instanceof IModelProvider selector) return selector.getModel(world, block, meta, x, y, z);
         return ModelRegistry.getBakedModel(new BlockState(block, meta));
     }
 
