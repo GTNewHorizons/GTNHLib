@@ -35,7 +35,7 @@ final class GitHubReleaseClient {
             if (meta == null) {
                 continue;
             }
-            if (targetLine.equals(meta.packGameVersion)) {
+            if (matchesLine(meta.packGameVersion, targetLine)) {
                 RpUpdaterLog
                         .debug("Found compatible release {} for {}/{} ({})", release.htmlUrl, owner, repo, targetLine);
                 return Optional.of(new ReleaseMatch(meta.packVersion, release.htmlUrl));
@@ -130,6 +130,19 @@ final class GitHubReleaseClient {
             return def;
         }
         return obj.get(field).getAsInt();
+    }
+
+    private static boolean matchesLine(String field, String targetLine) {
+        if (field == null || targetLine == null) {
+            return false;
+        }
+        for (String part : field.split(";")) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty() && trimmed.equals(targetLine)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static final class ReleaseInfo {
