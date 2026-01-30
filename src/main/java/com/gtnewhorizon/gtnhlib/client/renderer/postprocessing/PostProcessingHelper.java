@@ -8,13 +8,13 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 
 public class PostProcessingHelper {
 
-    private static IVertexBuffer fullscreenQuadVAO;
+    private static IVertexArrayObject fullscreenQuadVAO;
 
     /**
      * Ideally, you'd only call bindFullscreenVAO/unbind only once per post-processing pass. <br>
@@ -72,7 +72,7 @@ public class PostProcessingHelper {
         return ((IRenderTargetExt) framebuffer).iris$getDepthTextureId();
     }
 
-    private static IVertexBuffer genFullscreenQuadVAO() {
+    private static IVertexArrayObject genFullscreenQuadVAO() {
         final DirectTessellator tessellator = TessellatorManager.startCapturingDirect();
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(-1, -1, 0, 0, 0);

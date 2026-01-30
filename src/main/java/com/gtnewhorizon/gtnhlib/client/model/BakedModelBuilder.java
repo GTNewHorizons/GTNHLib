@@ -14,10 +14,8 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 /**
  * A class that converts multiple quads with different rotations/translations/scales into 1 VBO. This has the benefit of
@@ -139,12 +137,7 @@ public class BakedModelBuilder {
         return mat4f;
     }
 
-    @Deprecated
-    public VertexBuffer finish(VertexFormat format) {
-        return TessellatorManager.stopCapturingDirectToMutableVBO();
-    }
-
-    public IVertexBuffer finish() {
+    public IVertexArrayObject finish() {
         return DirectTessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
     }
 

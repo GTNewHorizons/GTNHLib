@@ -77,6 +77,8 @@ public interface IVertexBuffer {
      */
     void draw(int first, int count);
 
+    void draw(int drawMode, int first, int count);
+
     /**
      * Deletes the underlying GPU buffer and releases any associated resources.
      * <p>
@@ -99,6 +101,10 @@ public interface IVertexBuffer {
      */
     int getId();
 
+    int getDrawMode();
+
+    int getVertexCount();
+
     default void update(ByteBuffer buffer) {
         update(buffer, 0);
     }
@@ -109,33 +115,11 @@ public interface IVertexBuffer {
         cleanupState();
     }
 
-    default void draw(FloatBuffer floatBuffer) {
+    default void draw(FloatBuffer matrix) {
         GL11.glPushMatrix();
         GL11.glLoadIdentity();
-        GL11.glMultMatrix(floatBuffer);
+        GL11.glMultMatrix(matrix);
         draw();
         GL11.glPopMatrix();
-    }
-
-    default void render(int drawMode, int first, int count) {
-        setupState();
-        draw(drawMode, first, count);
-        cleanupState();
-    }
-
-    static void draw(int drawMode, int first, int count) {
-        GL11.glDrawArrays(drawMode, first, count);
-    }
-
-    default void render(int first, int count) {
-        setupState();
-        draw(first, count);
-        cleanupState();
-    }
-
-    default void render(FloatBuffer floatBuffer) {
-        setupState();
-        draw(floatBuffer);
-        cleanupState();
     }
 }

@@ -137,6 +137,11 @@ public class VertexBuffer implements IEmptyVertexBuffer, AutoCloseable {
     }
 
     @Override
+    public void draw(int drawMode, int first, int count) {
+        GL11.glDrawArrays(drawMode, first, count);
+    }
+
+    @Override
     public final VertexFormat getVertexFormat() {
         return format;
     }
@@ -146,10 +151,12 @@ public class VertexBuffer implements IEmptyVertexBuffer, AutoCloseable {
         return id;
     }
 
+    @Override
     public final int getDrawMode() {
         return drawMode;
     }
 
+    @Override
     public final int getVertexCount() {
         return vertexCount;
     }

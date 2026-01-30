@@ -7,12 +7,15 @@ import java.nio.ByteBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.shader.TesselatorVertexState;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
+import org.lwjgl.opengl.GL11;
+
+import com.google.common.annotations.Beta;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexOptimizer;
 
 /**
  * A {@link Tessellator} implementation that directly populates a ByteBuffer, which can then be used for VBO uploads.
@@ -309,16 +312,17 @@ public class DirectTessellator extends Tessellator {
     /**
      * Uploads the Tessellator to a VBO.
      */
-    public final IVertexBuffer uploadToVBO(VertexBufferType bufferType) {
+    public final IVertexArrayObject uploadToVBO(VertexBufferType bufferType) {
+        if (this.drawMode == GL11.GL_QUADS) {
+            return VertexOptimizer.optimizeQuads(bufferType, format, vertexCount, getWriteBuffer());
+        }
         return bufferType.allocate(this.format, this.drawMode, getWriteBuffer(), vertexCount);
     }
 
-    public final VertexBuffer uploadToMutableVBO() {
-        return VAOManager.allocateMutableVAO(this.format, this.drawMode, getWriteBuffer(), vertexCount);
-    }
-
-    public final void updateToVBO(IVertexBuffer vbo) {
-        vbo.update(getWriteBuffer());
+    public final void updateToVBO(IVertexArrayObject vbo) {
+        final ByteBuffer data = getWriteBuffer();
+        VertexOptimizer.optimizeQuads(format, this.vertexCount, data);
+        vbo.getVBO().update(data);
     }
 
     public final void allocateToVBO(VertexBuffer vbo) {
@@ -403,11 +407,36 @@ public class DirectTessellator extends Tessellator {
         nmemFree(baseAddress);
     }
 
-    public static IVertexBuffer stopCapturingToVBO(VertexBufferType bufferType) {
-        return TessellatorManager.stopCapturingDirectToVBO(bufferType);
-    }
-
     private VertexFormat getOptimalVertexFormat() {
         return VertexFlags.getFormat(this);
+    }
+
+    public static DirectTessellator startCapturing() {
+        return TessellatorManager.startCapturingDirect();
+    }
+
+    public static DirectTessellator startCapturing(int capacity) {
+        return TessellatorManager.startCapturingDirect(capacity);
+    }
+
+    public static void startCapturing(DirectTessellator tessellator) {
+        TessellatorManager.startCapturingDirect(tessellator);
+    }
+
+    public static DirectTessellator startCapturing(VertexFormat format) {
+        return TessellatorManager.startCapturingDirect(format);
+    }
+
+    @Beta // Not a stable API. May change in the future.
+    public static CallbackTessellator startCapturing(DirectDrawCallback callback) {
+        return TessellatorManager.startCapturingDirect(callback);
+    }
+
+    public static void stopCapturing() {
+        TessellatorManager.stopCapturingDirect();
+    }
+
+    public static IVertexArrayObject stopCapturingToVBO(VertexBufferType bufferType) {
+        return TessellatorManager.stopCapturingDirectToVBO(bufferType);
     }
 }

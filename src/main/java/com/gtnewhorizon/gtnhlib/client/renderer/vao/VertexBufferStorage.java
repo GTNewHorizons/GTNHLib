@@ -11,12 +11,12 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 @Beta
-public class VertexBufferStorage implements IEmptyVertexBuffer {
+public final class VertexBufferStorage implements IEmptyVertexBuffer {
 
-    protected int id;
-    protected int vertexCount;
-    protected final VertexFormat format;
-    protected final int drawMode;
+    private final int id;
+    private int vertexCount;
+    private final VertexFormat format;
+    private final int drawMode;
 
     public VertexBufferStorage(VertexFormat format, int drawMode) {
         this.id = GL15.glGenBuffers();
@@ -36,16 +36,16 @@ public class VertexBufferStorage implements IEmptyVertexBuffer {
 
     public void alloc(ByteBuffer data, int vertexCount, int flags) {
         this.vertexCount = vertexCount;
-        bindVBO();
+        bind();
         GL44.glBufferStorage(GL15.GL_ARRAY_BUFFER, data, flags);
-        unbindVBO();
+        unbind();
     }
 
     @Override
     public void update(ByteBuffer buffer, long offset) {
-        this.bindVBO();
+        this.bind();
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, offset, buffer);
-        this.unbindVBO();
+        this.unbind();
     }
 
     @Override
@@ -58,15 +58,6 @@ public class VertexBufferStorage implements IEmptyVertexBuffer {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
 
-    // Same as the methods above, but these are safer to use internally
-    protected final void bindVBO() {
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.id);
-    }
-
-    protected final void unbindVBO() {
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-    }
-
     @Override
     public void delete() {
         GL15.glDeleteBuffers(this.id);
@@ -74,24 +65,29 @@ public class VertexBufferStorage implements IEmptyVertexBuffer {
 
     @Override
     public void setupState() {
-        bindVBO();
+        bind();
         format.setupBufferState(0L);
     }
 
     @Override
     public void cleanupState() {
         format.clearBufferState();
-        unbindVBO();
+        unbind();
     }
 
     @Override
-    public final void draw() {
+    public void draw() {
         GL11.glDrawArrays(this.drawMode, 0, this.vertexCount);
     }
 
     @Override
-    public final void draw(int first, int count) {
+    public void draw(int first, int count) {
         GL11.glDrawArrays(this.drawMode, first, count);
+    }
+
+    @Override
+    public void draw(int drawMode, int first, int count) {
+        GL11.glDrawArrays(drawMode, first, count);
     }
 
     @Override
@@ -104,10 +100,12 @@ public class VertexBufferStorage implements IEmptyVertexBuffer {
         return id;
     }
 
+    @Override
     public int getDrawMode() {
         return drawMode;
     }
 
+    @Override
     public int getVertexCount() {
         return vertexCount;
     }

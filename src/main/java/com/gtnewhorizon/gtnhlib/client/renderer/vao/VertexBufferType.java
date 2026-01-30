@@ -16,8 +16,14 @@ public enum VertexBufferType implements VertexBufferFactory {
     MUTABLE_RESIZABLE {
 
         @Override
-        public final IVertexBuffer allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount) {
+        public final IVertexArrayObject allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount) {
             return VAOManager.allocateMutableVAO(format, drawMode, data, vertexCount);
+        }
+
+        @Override
+        public IVertexArrayObject allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount,
+                IndexBuffer ebo) {
+            return VAOManager.allocateMutableVAO(format, drawMode, data, vertexCount, ebo);
         }
     },
     /**
@@ -28,8 +34,14 @@ public enum VertexBufferType implements VertexBufferFactory {
     MUTABLE {
 
         @Override
-        public final IVertexBuffer allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount) {
+        public final IVertexArrayObject allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount) {
             return VAOManager.allocateStorageVAO(format, drawMode, data, vertexCount, GL44.GL_DYNAMIC_STORAGE_BIT);
+        }
+
+        @Override
+        public IVertexArrayObject allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount,
+                IndexBuffer ebo) {
+            return VAOManager.allocateStorageVAO(format, drawMode, data, vertexCount, GL44.GL_DYNAMIC_STORAGE_BIT, ebo);
         }
     },
     /**
@@ -40,8 +52,14 @@ public enum VertexBufferType implements VertexBufferFactory {
     IMMUTABLE {
 
         @Override
-        public final IVertexBuffer allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount) {
+        public final IVertexArrayObject allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount) {
             return VAOManager.allocateStorageVAO(format, drawMode, data, vertexCount, 0);
+        }
+
+        @Override
+        public IVertexArrayObject allocate(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount,
+                IndexBuffer ebo) {
+            return VAOManager.allocateStorageVAO(format, drawMode, data, vertexCount, 0, ebo);
         }
     };
 }

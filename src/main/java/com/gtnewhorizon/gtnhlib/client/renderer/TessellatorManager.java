@@ -17,9 +17,9 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -358,16 +358,9 @@ public class TessellatorManager {
         tessellator.onRemovedFromStack();
     }
 
-    public static IVertexBuffer stopCapturingDirectToVBO(VertexBufferType bufferType) {
+    public static IVertexArrayObject stopCapturingDirectToVBO(VertexBufferType bufferType) {
         final DirectTessellator tessellator = getDirectTessellator();
-        final IVertexBuffer vbo = tessellator.uploadToVBO(bufferType);
-        stopCapturingDirect();
-        return vbo;
-    }
-
-    public static VertexBuffer stopCapturingDirectToMutableVBO() {
-        final DirectTessellator tessellator = getDirectTessellator();
-        final VertexBuffer vbo = tessellator.uploadToMutableVBO();
+        final IVertexArrayObject vbo = tessellator.uploadToVBO(bufferType);
         stopCapturingDirect();
         return vbo;
     }
