@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL15;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
-public class VertexBuffer implements IEmptyVertexBuffer, AutoCloseable {
+public class VertexBuffer implements IVertexBuffer, AutoCloseable {
 
     protected int id;
     protected int vertexCount;
@@ -61,7 +61,7 @@ public class VertexBuffer implements IEmptyVertexBuffer, AutoCloseable {
     }
 
     @Override
-    public void allocate(ByteBuffer buffer, int vertexCount, boolean mutable) {
+    public void allocate(ByteBuffer buffer, int vertexCount, int flags) {
         upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
     }
 
@@ -104,7 +104,7 @@ public class VertexBuffer implements IEmptyVertexBuffer, AutoCloseable {
         upload(buffer, format.getVertexCount(buffer), GL15.GL_STREAM_DRAW);
     }
 
-    @Deprecated // use delete() instead
+    @Deprecated // For clarity, use delete() instead
     public final void close() {
         this.delete();
     }
@@ -137,7 +137,7 @@ public class VertexBuffer implements IEmptyVertexBuffer, AutoCloseable {
     }
 
     @Override
-    public void draw(int drawMode, int first, int count) {
+    public final void draw(int drawMode, int first, int count) {
         GL11.glDrawArrays(drawMode, first, count);
     }
 

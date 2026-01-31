@@ -320,9 +320,7 @@ public class DirectTessellator extends Tessellator {
     }
 
     public final void updateToVBO(IVertexArrayObject vbo) {
-        final ByteBuffer data = getWriteBuffer();
-        VertexOptimizer.optimizeQuads(format, this.vertexCount, data);
-        vbo.getVBO().update(data);
+        vbo.getVBO().update(getWriteBuffer());
     }
 
     public final void allocateToVBO(VertexBuffer vbo) {

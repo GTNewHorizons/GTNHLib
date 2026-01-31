@@ -28,6 +28,31 @@ public interface IVertexBuffer {
     void unbind();
 
     /**
+     * Allocates or reallocates storage for this vertex buffer and uploads initial data.
+     * <p>
+     * This call defines the size of the buffer and replaces any existing contents. Any previous storage associated with
+     * this buffer is discarded.
+     * </p>
+     * <p>
+     * Note that some implementations may not allow more than 1 allocate() call per VertexBuffer (see more under
+     * {@link com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType}
+     * </p>
+     *
+     * @param buffer      the vertex data to upload; its remaining bytes determine the buffer size
+     * @param vertexCount the number of vertices contained in the buffer
+     * @param flags       0 means immutable (no {@link #update} allowed), {@code GL_DYNAMIC_STORAGE_BIT} means mutations
+     *                    allowed. <br>
+     *                    For reference, check out
+     *                    <a href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBufferStorage.xhtml">the
+     *                    Khronos docs.</a>
+     */
+    void allocate(ByteBuffer buffer, int vertexCount, int flags);
+
+    default void allocate(ByteBuffer buffer, int flags) {
+        allocate(buffer, getVertexFormat().getVertexCount(buffer), flags);
+    }
+
+    /**
      * Updates a subrange of this vertex buffer's contents.
      * <p>
      * Note that some implementations may not allow any mutations on the contents (see more under

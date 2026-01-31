@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 
 public interface IVertexArrayObject {
 
@@ -16,7 +16,7 @@ public interface IVertexArrayObject {
 
     void delete();
 
-    IEmptyVertexBuffer getVBO();
+    IVertexBuffer getVBO();
 
     default void render() {
         bind();

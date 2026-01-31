@@ -352,6 +352,7 @@ public class TessellatorManager {
     }
 
     public static void stopCapturingDirect() {
+        if (!hasDirectTessellator()) throw new IllegalStateException("Tried to stop capturing when not capturing!");
         final DirectTessellator tessellator = getDirectTessellator();
         directTessellators[directTessellatorIndex--] = null;
         mainInstanceInStack = mainInstanceInStack && tessellator.baseBuffer != Tessellator.byteBuffer;
@@ -359,6 +360,7 @@ public class TessellatorManager {
     }
 
     public static IVertexArrayObject stopCapturingDirectToVBO(VertexBufferType bufferType) {
+        if (!hasDirectTessellator()) throw new IllegalStateException("Tried to stop capturing when not capturing!");
         final DirectTessellator tessellator = getDirectTessellator();
         final IVertexArrayObject vbo = tessellator.uploadToVBO(bufferType);
         stopCapturingDirect();

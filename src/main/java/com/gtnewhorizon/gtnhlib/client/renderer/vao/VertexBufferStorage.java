@@ -7,11 +7,11 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL44;
 
 import com.google.common.annotations.Beta;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 @Beta
-public final class VertexBufferStorage implements IEmptyVertexBuffer {
+public final class VertexBufferStorage implements IVertexBuffer {
 
     private final int id;
     private int vertexCount;
@@ -26,15 +26,11 @@ public final class VertexBufferStorage implements IEmptyVertexBuffer {
 
     public VertexBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
         this(format, drawMode);
-        alloc(data, vertexCount, flags);
+        allocate(data, vertexCount, flags);
     }
 
     @Override
-    public void allocate(ByteBuffer buffer, int vertexCount, boolean mutable) {
-        alloc(buffer, vertexCount, VAOManager.getStorageFlags(mutable));
-    }
-
-    public void alloc(ByteBuffer data, int vertexCount, int flags) {
+    public void allocate(ByteBuffer data, int vertexCount, int flags) {
         this.vertexCount = vertexCount;
         bind();
         GL44.glBufferStorage(GL15.GL_ARRAY_BUFFER, data, flags);

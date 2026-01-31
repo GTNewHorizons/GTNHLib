@@ -1,12 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 
 public class VertexArrayUnsupported implements IVertexArrayObject {
 
-    protected final IEmptyVertexBuffer vbo;
+    protected final IVertexBuffer vbo;
 
-    public VertexArrayUnsupported(IEmptyVertexBuffer vbo) {
+    public VertexArrayUnsupported(IVertexBuffer vbo) {
         this.vbo = vbo;
     }
 
@@ -41,7 +41,7 @@ public class VertexArrayUnsupported implements IVertexArrayObject {
     }
 
     @Override
-    public final IEmptyVertexBuffer getVBO() {
+    public final IVertexBuffer getVBO() {
         return this.vbo;
     }
 

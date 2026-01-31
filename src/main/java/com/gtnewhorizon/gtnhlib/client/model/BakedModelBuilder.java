@@ -10,7 +10,6 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -47,7 +46,7 @@ public class BakedModelBuilder {
         this.textureHeight = textureHeight;
 
         this.tessellator = TessellatorManager.startCapturingDirect();
-        tessellator.startDrawing(GL11.GL_QUADS);
+        tessellator.startDrawingQuads();
     }
 
     public BakedModelBuilder(ModelBase model) {

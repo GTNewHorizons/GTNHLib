@@ -2,15 +2,15 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
 import static com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager.VAO;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 
 public class BaseVAO implements IVertexArrayObject {
 
     protected int vaoID = -1;
 
-    protected final IEmptyVertexBuffer vbo;
+    protected final IVertexBuffer vbo;
 
-    public BaseVAO(IEmptyVertexBuffer vbo) {
+    public BaseVAO(IVertexBuffer vbo) {
         this.vbo = vbo;
     }
 
@@ -55,7 +55,7 @@ public class BaseVAO implements IVertexArrayObject {
     }
 
     @Override
-    public final IEmptyVertexBuffer getVBO() {
+    public final IVertexBuffer getVBO() {
         return this.vbo;
     }
 

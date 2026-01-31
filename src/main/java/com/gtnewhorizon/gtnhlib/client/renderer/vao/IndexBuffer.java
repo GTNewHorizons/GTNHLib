@@ -4,6 +4,7 @@ import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
 
 import java.nio.ByteBuffer;
 
+import io.netty.buffer.ByteBuf;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL44;
@@ -31,14 +32,18 @@ public final class IndexBuffer {
         GL15.glDeleteBuffers(id);
     }
 
-    public void upload(ByteBuffer data) {
+    public void allocateImmutable(ByteBuffer data) {
         bind();
         if (GLCaps.bufferStorageSupported()) {
             GL44.glBufferStorage(GL15.GL_ELEMENT_ARRAY_BUFFER, data, 0);
         } else {
-            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, data, GL15.GL_STATIC_DRAW);
+            upload(data);
         }
         unbind();
+    }
+
+    public void upload(ByteBuffer data) {
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, data, GL15.GL_STATIC_DRAW);
     }
 
     public int getId() {
@@ -71,7 +76,7 @@ public final class IndexBuffer {
             ptr += 12;
         }
 
-        ebo.upload(data);
+        ebo.allocateImmutable(data);
 
         nmemFree(address);
 

@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL44;
 
 import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -17,11 +17,11 @@ public final class VAOManager {
     private static final boolean vaoUnsupported;
     public static final VaoFunctions VAO;
 
-    private static IVertexArrayObject vao(IEmptyVertexBuffer vbo) {
+    private static IVertexArrayObject vao(IVertexBuffer vbo) {
         return vaoEnabled ? new BaseVAO(vbo) : new VertexArrayUnsupported(vbo);
     }
 
-    private static IVertexArrayObject vao(IEmptyVertexBuffer vbo, IndexBuffer ebo) {
+    private static IVertexArrayObject vao(IVertexBuffer vbo, IndexBuffer ebo) {
         return new IndexedVAO(vbo, ebo); // TODO
     }
 
@@ -45,8 +45,8 @@ public final class VAOManager {
         return vao(new VertexBuffer(format, drawMode, data, vertexCount), ebo);
     }
 
-    private static IEmptyVertexBuffer allocateStorageVBO(VertexFormat format, int drawMode, ByteBuffer data,
-            int vertexCount, int flags) {
+    private static IVertexBuffer allocateStorageVBO(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount,
+            int flags) {
         if (GLCaps.bufferStorageSupported()) {
             return new VertexBufferStorage(format, drawMode, data, vertexCount, flags);
         }

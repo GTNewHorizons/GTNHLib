@@ -4,13 +4,13 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.vao.IndexBuffer.EBO_DATA_
 
 import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IEmptyVertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 
 public class IndexedVAO extends BaseVAO {
 
     private final IndexBuffer ebo;
 
-    public IndexedVAO(IEmptyVertexBuffer vbo, IndexBuffer ebo) {
+    public IndexedVAO(IVertexBuffer vbo, IndexBuffer ebo) {
         super(vbo);
         this.ebo = ebo;
     }
