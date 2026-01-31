@@ -1,10 +1,11 @@
 package com.gtnewhorizon.gtnhlib.api;
 
-
-import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
+
 import org.jetbrains.annotations.Nullable;
+
+import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 
 public interface IModelProvider {
 

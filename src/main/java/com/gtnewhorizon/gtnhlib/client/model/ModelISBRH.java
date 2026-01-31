@@ -10,9 +10,6 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.api.IModelProvider;
-import com.gtnewhorizons.angelica.proxy.ClientProxy;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -23,11 +20,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
-import net.minecraftforge.client.MinecraftForgeClient;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
+import com.gtnewhorizon.gtnhlib.api.IModelProvider;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;

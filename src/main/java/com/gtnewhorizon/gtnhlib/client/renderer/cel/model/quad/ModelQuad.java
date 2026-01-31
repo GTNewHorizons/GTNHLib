@@ -96,7 +96,9 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
-    public void setTransparent() { this.transparent = true; }
+    public void setTransparent() {
+        this.transparent = true;
+    }
 
     @Override
     public boolean setDirectionalShading(boolean dirShading) {
@@ -137,7 +139,9 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
-    public boolean isTransparent() { return this.transparent; }
+    public boolean isTransparent() {
+        return this.transparent;
+    }
 
     @Override
     public boolean hasDirectionalShading() {

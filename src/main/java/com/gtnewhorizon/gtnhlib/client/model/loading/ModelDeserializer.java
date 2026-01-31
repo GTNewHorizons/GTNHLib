@@ -294,8 +294,9 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         private final int lightEmission;
         private final List<Face> faces;
 
-        public ModelElement(String name, Vector3f from, Vector3f to, @Nullable ModelDeserializer.ModelElement.Rotation rotation,
-                boolean shade, int lightEmission, List<Face> faces) {
+        public ModelElement(String name, Vector3f from, Vector3f to,
+                @Nullable ModelDeserializer.ModelElement.Rotation rotation, boolean shade, int lightEmission,
+                List<Face> faces) {
             this.name = name;
             this.from = from;
             this.to = to;
@@ -305,7 +306,9 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             this.faces = faces;
         }
 
-        public String name() { return name; }
+        public String name() {
+            return name;
+        }
 
         public Vector3f from() {
             return from;
