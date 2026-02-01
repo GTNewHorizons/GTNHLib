@@ -329,10 +329,6 @@ public class DirectTessellator extends Tessellator {
         vbo.upload(getWriteBuffer(), this.vertexCount);
     }
 
-    public final void updateToVBO(VertexBuffer vbo) {
-        vbo.upload(getWriteBuffer());
-    }
-
     protected ByteBuffer getWriteBuffer() {
         ByteBuffer buffer = isResized() ? memByteBuffer(startPtr, bufferCapacity()) : this.baseBuffer;
         buffer.limit(bufferLimit());
