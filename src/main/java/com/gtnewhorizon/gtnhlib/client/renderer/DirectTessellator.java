@@ -11,8 +11,9 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.IndexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
+import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexOptimizer;
@@ -321,12 +322,31 @@ public class DirectTessellator extends Tessellator {
         return bufferType.allocate(this.format, this.drawMode, getWriteBuffer(), vertexCount);
     }
 
-    public final void updateToVBO(IVertexArrayObject vbo) {
-        vbo.getVBO().update(getWriteBuffer());
+    /**
+     * Uploads the data to the vbo via {@link IVertexBuffer#update}. Requires the data to already be allocated once.
+     * <p>
+     * May throw {@link UnsupportedOperationException}.
+     */
+    public final void updateToVBO(IVertexBuffer vbo) {
+        vbo.update(getWriteBuffer());
     }
 
-    public final void allocateToVBO(VertexBuffer vbo) {
-        vbo.upload(getWriteBuffer(), this.vertexCount);
+    /**
+     * Allocates the data to the vbo via {@link IVertexBuffer#allocate}.
+     * <p>
+     * Note that, depending on the {@link IVertexBuffer} type, it may not allow further allocations.
+     */
+    public final void allocateToVBO(IVertexBuffer vbo) {
+        vbo.allocate(getWriteBuffer(), this.vertexCount);
+    }
+
+    /**
+     * Uploads the data to the VBO & uploads the needed indices to the EBO.
+     */
+    @Beta // May change in the future
+    public final void allocateToVBO(IVertexArrayObject vao, IndexBuffer ebo) {
+        vao.getVBO().allocate(getWriteBuffer(), this.vertexCount / 4 * 6);
+        ebo.upload(vertexCount);
     }
 
     protected ByteBuffer getWriteBuffer() {
@@ -403,6 +423,7 @@ public class DirectTessellator extends Tessellator {
      * Deletes the allocated byte buffer.
      */
     public void delete() {
+        reset();
         nmemFree(baseAddress);
     }
 

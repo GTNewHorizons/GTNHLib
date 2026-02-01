@@ -61,7 +61,7 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
     }
 
     @Override
-    public void allocate(ByteBuffer buffer, int vertexCount, int flags) {
+    public void allocate(ByteBuffer buffer, int vertexCount) {
         upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
     }
 

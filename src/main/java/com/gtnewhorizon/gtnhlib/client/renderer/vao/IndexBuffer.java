@@ -32,34 +32,54 @@ public final class IndexBuffer {
     }
 
     public void allocateImmutable(ByteBuffer data) {
-        bind();
         if (GLCaps.bufferStorageSupported()) {
+            bind();
             GL44.glBufferStorage(GL15.GL_ELEMENT_ARRAY_BUFFER, data, 0);
-        } else {
-            upload(data);
+            unbind();
+            return;
         }
-        unbind();
+
+        upload(data);
     }
 
     public void upload(ByteBuffer data) {
+        bind();
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, data, GL15.GL_STATIC_DRAW);
+        unbind();
+    }
+
+    public void upload(int vertexCount) {
+        upload(0, vertexCount);
+    }
+
+    public void upload(int start, int end) {
+        final ByteBuffer data = createQuadEBOBuffer(start, end);
+        upload(data);
+        memFree(data);
     }
 
     public int getId() {
         return this.id;
     }
 
-    public static IndexBuffer convertQuadsToTrigs(int vertexCount) {
-        return convertQuadsToTrigs(0, vertexCount);
+    /**
+     * Allocates a buffer that contains the needed indices to map GL_QUADS into GL_TRIANGLES.
+     * <p>
+     * Buffer must be freed via {@link com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities#memFree(ByteBuffer)} afterwards.
+     */
+    private static ByteBuffer createQuadEBOBuffer(int vertexCount) {
+        return createQuadEBOBuffer(0, vertexCount);
     }
 
-    public static IndexBuffer convertQuadsToTrigs(int start, int end) {
-        IndexBuffer ebo = new IndexBuffer();
-
+    /**
+     * Allocates a buffer that contains the needed indices to map GL_QUADS into GL_TRIANGLES.
+     * <p>
+     * Buffer must be freed via {@link com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities#memFree(ByteBuffer)} afterwards.
+     */
+    private static ByteBuffer createQuadEBOBuffer(int start, int end) {
         final int quadCount = (end - start) / 4;
-        ByteBuffer data = memAlloc(quadCount * 6 * 2);
-        long address = memAddress0(data);
-        long ptr = address;
+        final ByteBuffer data = memAlloc(quadCount * 6 * 2);
+        long ptr = memAddress0(data);
         for (int i = 0; i < quadCount; i++) {
             int base = (start + i * 4);
 
@@ -74,10 +94,20 @@ public final class IndexBuffer {
             memPutShort(ptr + 10, (short) base);
             ptr += 12;
         }
+        return data;
+    }
 
+    public static IndexBuffer convertQuadsToTrigs(int vertexCount) {
+        return convertQuadsToTrigs(0, vertexCount);
+    }
+
+    public static IndexBuffer convertQuadsToTrigs(int start, int end) {
+        final IndexBuffer ebo = new IndexBuffer();
+
+        final ByteBuffer data = createQuadEBOBuffer(start, end);
         ebo.allocateImmutable(data);
 
-        nmemFree(address);
+        memFree(data);
 
         return ebo;
     }

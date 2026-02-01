@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
+@Deprecated
 public final class VertexArrayBuffer extends VertexBuffer {
 
     private int vaoID = -1;

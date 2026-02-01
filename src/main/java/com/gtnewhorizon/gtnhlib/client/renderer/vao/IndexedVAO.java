@@ -41,4 +41,8 @@ public class IndexedVAO extends BaseVAO {
     public void draw(int drawMode, int first, int count) {
         GL11.glDrawElements(drawMode, count, EBO_DATA_SIZE, 0);
     }
+
+    public final IndexBuffer getEBO() {
+        return this.ebo;
+    }
 }

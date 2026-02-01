@@ -9,11 +9,6 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 /**
  * Represents a GPU-side vertex buffer object (VBO).
- * <p>
- * Any implementation that returns a {@link IVertexBuffer} is already allocated and ready to use. Depending on the
- * implementation, it may not allow further {@link #update} calls (see more under
- * {@link com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType}
- * </p>
  */
 public interface IVertexBuffer {
 
@@ -40,29 +35,30 @@ public interface IVertexBuffer {
      *
      * @param buffer      the vertex data to upload; its remaining bytes determine the buffer size
      * @param vertexCount the number of vertices contained in the buffer
-     * @param flags       0 means immutable (no {@link #update} allowed), {@code GL_DYNAMIC_STORAGE_BIT} means mutations
-     *                    allowed. <br>
-     *                    For reference, check out
-     *                    <a href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBufferStorage.xhtml">the
-     *                    Khronos docs.</a>
      */
-    void allocate(ByteBuffer buffer, int vertexCount, int flags);
+    void allocate(ByteBuffer buffer, int vertexCount);
 
-    default void allocate(ByteBuffer buffer, int flags) {
-        allocate(buffer, getVertexFormat().getVertexCount(buffer), flags);
+    default void allocate(ByteBuffer buffer) {
+        allocate(buffer, getVertexFormat().getVertexCount(buffer));
     }
 
     /**
      * Updates a subrange of this vertex buffer's contents.
      * <p>
-     * Note that some implementations may not allow any mutations on the contents (see more under
+     * Note that some implementations may throw a {@link UnsupportedOperationException} (see more under
      * {@link com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType}
      * </p>
      *
      * @param buffer the data to write into the buffer
      * @param offset byte offset into the buffer at which to start writing
+     *
+     * @throws UnsupportedOperationException If the buffer does not allow data mutations
      */
     void update(ByteBuffer buffer, long offset);
+
+    default void update(ByteBuffer buffer) {
+        update(buffer, 0);
+    }
 
     /**
      * Configures the vertex attribute state required to interpret this buffer's data.
@@ -129,10 +125,6 @@ public interface IVertexBuffer {
     int getDrawMode();
 
     int getVertexCount();
-
-    default void update(ByteBuffer buffer) {
-        update(buffer, 0);
-    }
 
     default void render() {
         setupState();

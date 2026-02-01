@@ -17,28 +17,33 @@ public final class VertexBufferStorage implements IVertexBuffer {
     private int vertexCount;
     private final VertexFormat format;
     private final int drawMode;
+    private final int flags;
 
-    public VertexBufferStorage(VertexFormat format, int drawMode) {
+    public VertexBufferStorage(VertexFormat format, int drawMode, int flags) {
         this.id = GL15.glGenBuffers();
         this.format = format;
         this.drawMode = drawMode;
+        this.flags = flags;
     }
 
     public VertexBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
-        this(format, drawMode);
-        allocate(data, vertexCount, flags);
+        this(format, drawMode, flags);
+        allocate(data, vertexCount);
     }
 
     @Override
-    public void allocate(ByteBuffer data, int vertexCount, int flags) {
+    public void allocate(ByteBuffer data, int vertexCount) {
         this.vertexCount = vertexCount;
         bind();
-        GL44.glBufferStorage(GL15.GL_ARRAY_BUFFER, data, flags);
+        GL44.glBufferStorage(GL15.GL_ARRAY_BUFFER, data, this.flags);
         unbind();
     }
 
     @Override
     public void update(ByteBuffer buffer, long offset) {
+        if ((this.flags & GL44.GL_DYNAMIC_STORAGE_BIT) == 0) {
+            throw new UnsupportedOperationException("Cannot call update() on an immutable buffer!");
+        }
         this.bind();
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, offset, buffer);
         this.unbind();

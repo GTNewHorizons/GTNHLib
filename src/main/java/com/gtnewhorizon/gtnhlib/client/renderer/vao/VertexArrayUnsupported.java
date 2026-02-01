@@ -1,7 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
+import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 
+@Beta
 public class VertexArrayUnsupported implements IVertexArrayObject {
 
     protected final IVertexBuffer vbo;
