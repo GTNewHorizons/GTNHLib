@@ -136,6 +136,9 @@ public class BakedModelBuilder {
         return mat4f;
     }
 
+    /**
+     * Allocates & returns a fully immutable Vertex buffer object.
+     */
     public IVertexArrayObject finish() {
         return DirectTessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
     }

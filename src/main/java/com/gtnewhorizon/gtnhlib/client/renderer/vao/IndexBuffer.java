@@ -4,7 +4,6 @@ import static com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities.*;
 
 import java.nio.ByteBuffer;
 
-import io.netty.buffer.ByteBuf;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL44;

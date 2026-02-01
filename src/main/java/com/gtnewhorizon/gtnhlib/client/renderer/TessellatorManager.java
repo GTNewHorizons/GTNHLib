@@ -287,7 +287,8 @@ public class TessellatorManager {
     private static final DirectTessellator mainInstance = new DirectTessellator(Tessellator.byteBuffer);
     private static final CallbackTessellator mainCallbackInstance = new CallbackTessellator(Tessellator.byteBuffer);
 
-    // Any Tessellator that uses the Tessellator.byteBuffer is considered to be the "main instance" (to preserve data)
+    // Any Tessellator that uses the Tessellator.byteBuffer is considered to be the "main instance"
+    // This is to prevent new buffer allocations every capture
     private static boolean mainInstanceInStack = false;
 
     private static final DirectTessellator[] directTessellators = new DirectTessellator[DIRECT_TESSELLATOR_STACK_DEPTH];
@@ -301,37 +302,36 @@ public class TessellatorManager {
         return directTessellatorIndex != -1;
     }
 
+    private static void setDirectTessellator(DirectTessellator tessellator) {
+        if (++directTessellatorIndex >= DIRECT_TESSELLATOR_STACK_DEPTH) {
+            throw new IllegalStateException("DirectTessellator stack overflow");
+        }
+        mainInstanceInStack = mainInstanceInStack || tessellator.baseBuffer == Tessellator.byteBuffer;
+        directTessellators[directTessellatorIndex] = tessellator;
+    }
+
     public static DirectTessellator startCapturingDirect() {
         if (!mainInstanceInStack) {
-            mainInstanceInStack = true;
-
-            directTessellators[++directTessellatorIndex] = mainInstance;
+            setDirectTessellator(mainInstance);
             return mainInstance;
         }
-        DirectTessellator tessellator = new DirectTessellator(DEFAULT_BUFFER_SIZE);
-        directTessellators[++directTessellatorIndex] = tessellator;
+        final DirectTessellator tessellator = new DirectTessellator(DEFAULT_BUFFER_SIZE);
+        setDirectTessellator(tessellator);
         return tessellator;
     }
 
     public static DirectTessellator startCapturingDirect(int capacity) {
         if (!mainInstanceInStack && BUFFER_CAPACITY >= capacity) {
-            mainInstanceInStack = true;
-
-            directTessellators[++directTessellatorIndex] = mainInstance;
+            setDirectTessellator(mainInstance);
             return mainInstance;
         }
-        DirectTessellator tessellator = new DirectTessellator(capacity);
-        directTessellators[++directTessellatorIndex] = tessellator;
+        final DirectTessellator tessellator = new DirectTessellator(capacity);
+        setDirectTessellator(tessellator);
         return tessellator;
     }
 
-    public static void startCapturingDirect(DirectTessellator tessellator) {
-        mainInstanceInStack = mainInstanceInStack || tessellator.baseBuffer == Tessellator.byteBuffer;
-        directTessellators[++directTessellatorIndex] = tessellator;
-    }
-
     public static DirectTessellator startCapturingDirect(VertexFormat format) {
-        DirectTessellator tessellator = startCapturingDirect();
+        final DirectTessellator tessellator = startCapturingDirect();
         tessellator.setVertexFormat(format);
         return tessellator;
     }
@@ -339,16 +339,19 @@ public class TessellatorManager {
     @Beta // Not a stable API. May change in the future.
     public static CallbackTessellator startCapturingDirect(DirectDrawCallback callback) {
         if (!mainInstanceInStack) {
-            mainInstanceInStack = true;
-
-            directTessellators[++directTessellatorIndex] = mainCallbackInstance;
-            mainCallbackInstance.setDrawCallback(callback);
-            return mainCallbackInstance;
+            final CallbackTessellator tessellator = mainCallbackInstance;
+            tessellator.setDrawCallback(callback);
+            setDirectTessellator(tessellator);
+            return tessellator;
         }
-        CallbackTessellator tessellator = new CallbackTessellator(DEFAULT_BUFFER_SIZE);
+        final CallbackTessellator tessellator = new CallbackTessellator(DEFAULT_BUFFER_SIZE);
         tessellator.setDrawCallback(callback);
-        directTessellators[++directTessellatorIndex] = tessellator;
+        setDirectTessellator(tessellator);
         return tessellator;
+    }
+
+    public static void startCapturingDirect(DirectTessellator tessellator) {
+        setDirectTessellator(tessellator);
     }
 
     public static void stopCapturingDirect() {

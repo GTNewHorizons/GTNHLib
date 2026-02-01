@@ -74,6 +74,8 @@ public class DirectTessellator extends Tessellator {
     @Override
     public int draw() {
         isDrawing = false;
+        // Note that this does not represent the actual byte size of the data,
+        // but rather it returns the same as Tessellator.draw() would
         return this.vertexCount * 32;
     }
 
@@ -401,6 +403,9 @@ public class DirectTessellator extends Tessellator {
         }
     }
 
+    /**
+     * Deletes the allocated byte buffer.
+     */
     public void delete() {
         nmemFree(baseAddress);
     }

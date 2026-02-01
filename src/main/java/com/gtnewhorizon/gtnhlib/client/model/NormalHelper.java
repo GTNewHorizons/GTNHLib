@@ -26,7 +26,7 @@ public class NormalHelper {
     }
 
     /**
-     * Sets the normal based on a given normal matrix
+     * Sets the normal based on the given normal matrix
      *
      * @param normal       The normal vector
      * @param dest         The vector that gets transformed
@@ -38,12 +38,15 @@ public class NormalHelper {
     }
 
     /**
-     * Same as the method above, but this one will mutate the passed Vector3f
+     * Sets the normal based on the given normal matrix and mutates the passed-in Vector3f
      */
     public static Vector3f setNormalTransformed(Vector3f normal, Matrix3f normalMatrix) {
         return setNormalTransformed(normal, normal, normalMatrix);
     }
 
+    /**
+     * Sets the normal of the Tessellator based on the given normal matrix and mutates the passed-in Vector3f
+     */
     public static void setNormalTransformed(Tessellator tessellator, Vector3f normal, Matrix3f normalMatrix) {
         setNormalTransformed(normal, normalMatrix);
         tessellator.setNormal(normal.x, normal.y, normal.z);

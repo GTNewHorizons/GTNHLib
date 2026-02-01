@@ -12,7 +12,7 @@ public final class GLCaps {
     private static final boolean bufferStorage;
     private static final boolean texStorage;
 
-    // Since I hate the OpenGlHelper method names
+    // To replace the obfuscated OpenGlHelper method names
     public static final FBOFunctions FBO;
     public static final VaoFunctions VAO;
 
