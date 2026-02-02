@@ -274,7 +274,7 @@ public class TessellatorManager {
     /// buffer to a new VertexBuffer, and clears the quads.
     @Deprecated // Replaced by DirectTessellator
     public static VertexBuffer stopCapturingToVBO(VertexFormat format) {
-        return new VertexBuffer(format).upload(stopCapturingToBuffer(format));
+        return new VertexBuffer(format, GL11.GL_QUADS).upload(stopCapturingToBuffer(format));
     }
 
     // --------------- DIRECT TESSELLATOR ---------------
@@ -461,7 +461,7 @@ public class TessellatorManager {
         ByteBuffer buffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
         format.writeQuads(quads, buffer);
         buffer.flip();
-        return new VertexBuffer(format).upload(buffer);
+        return new VertexBuffer(format, GL11.GL_QUADS).upload(buffer);
     }
 
     /**
@@ -522,7 +522,7 @@ public class TessellatorManager {
     @Deprecated // Replaced by DirectTessellator
     public static VertexBuffer stopCapturingToVBO(VertexBuffer vbo, VertexFormat format) {
         if (vbo == null) {
-            vbo = new VertexBuffer(format);
+            vbo = new VertexBuffer(format, GL11.GL_QUADS);
         }
         return vbo.upload(stopCapturingToBuffer(format));
     }

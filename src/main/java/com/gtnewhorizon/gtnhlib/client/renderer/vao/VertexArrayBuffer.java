@@ -20,10 +20,6 @@ public final class VertexArrayBuffer extends VertexBuffer {
         super(format, drawMode);
     }
 
-    VertexArrayBuffer(VertexFormat format) {
-        super(format);
-    }
-
     VertexArrayBuffer(VertexFormat format, int drawMode, ByteBuffer buffer, int vertexCount) {
         super(format, drawMode, buffer, vertexCount);
     }

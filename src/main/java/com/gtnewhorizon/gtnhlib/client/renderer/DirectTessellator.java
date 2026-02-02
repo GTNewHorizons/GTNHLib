@@ -37,22 +37,6 @@ public class DirectTessellator extends Tessellator {
     protected long writePtr;
     protected long endPtr;
 
-    protected final int bufferCapacity() {
-        return (int) (endPtr - startPtr);
-    }
-
-    protected final int bufferLimit() { // same as position
-        return (int) (writePtr - startPtr);
-    }
-
-    protected final int bufferRemaining() {
-        return (int) (endPtr - writePtr);
-    }
-
-    protected final boolean isResized() {
-        return startPtr != baseAddress;
-    }
-
     public DirectTessellator(ByteBuffer initial) {
         this(initial, false);
     }
@@ -174,44 +158,6 @@ public class DirectTessellator extends Tessellator {
         this.vertexCount++;
     }
 
-    // If some mod does something illegal (like calling setColor after a vertex has been emitted), this will result in
-    // undefined behavior, but I still have to take that into account here.
-    private void fixBufferFormat() {
-        final VertexFormat oldFormat = this.format;
-        final VertexFormat newFormat = this.getOptimalVertexFormat();
-
-        final int vertexCount = this.vertexCount;
-        final int newBufferSize = vertexCount * newFormat.getVertexSize();
-
-        // Allocate temp buffer
-        ByteBuffer temp = memAlloc(newBufferSize);
-        long tempPtr = memAddress0(temp);
-
-        long readPtr = startPtr;
-        long writePtrTemp = tempPtr;
-
-        for (int i = 0; i < vertexCount; i++) {
-            float x = memGetFloat(readPtr);
-            float y = memGetFloat(readPtr + 4);
-            float z = memGetFloat(readPtr + 8);
-            readPtr += 12;
-
-            // Read other attributes from old format
-            readPtr = oldFormat.readFromBuffer0(readPtr, this);
-
-            // Write vertex into temporary buffer using new format
-            writePtrTemp = newFormat.writeToBuffer0(writePtrTemp, this, x, y, z);
-        }
-
-        // Copy back to main buffer
-        ensureCapacity(newBufferSize); // make sure the main buffer is large enough
-        memCopy(tempPtr, startPtr, newBufferSize);
-        writePtr = startPtr + newBufferSize;
-
-        memFree(temp); // free temporary buffer
-        this.format = newFormat;
-    }
-
     @Override
     public final void setTextureUV(double p_78385_1_, double p_78385_3_) {
         if (!hasTexture) {
@@ -302,16 +248,6 @@ public class DirectTessellator extends Tessellator {
         this.brightness = p_78380_1_;
     }
 
-    @Override
-    public final TesselatorVertexState getVertexState(float p_147564_1_, float p_147564_2_, float p_147564_3_) {
-        throw new UnsupportedOperationException("getVertexState not supported for DirectTessellator!");
-    }
-
-    @Override
-    public final void setVertexState(TesselatorVertexState p_147565_1_) {
-        throw new UnsupportedOperationException("setVertexState not supported for DirectTessellator!");
-    }
-
     /**
      * Uploads the Tessellator to a VBO.
      */
@@ -355,6 +291,62 @@ public class DirectTessellator extends Tessellator {
         return buffer;
     }
 
+    /**
+     * Allocates a new ByteBuffer with the contents of the tessellator's draw. <br>
+     * The buffer needs to be freed with {@link com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities#memFree}
+     *
+     * @return The buffer copy
+     */
+    public final ByteBuffer allocateBufferCopy() {
+        final int size = bufferLimit();
+        final ByteBuffer copy = memAlloc(size);
+        memCopy(startPtr, memAddress0(copy), size);
+        return copy;
+    }
+
+    // If some mod does something illegal (like calling setColor after a vertex has been emitted), this will result in
+    // undefined behavior, but I still have to take that into account here.
+    protected final void fixBufferFormat() {
+        final VertexFormat oldFormat = this.format;
+        final VertexFormat newFormat = this.getOptimalVertexFormat();
+
+        final int vertexCount = this.vertexCount;
+        final int newBufferSize = vertexCount * newFormat.getVertexSize();
+
+        // Allocate temp buffer
+        ByteBuffer temp = memAlloc(newBufferSize);
+        long tempPtr = memAddress0(temp);
+
+        long readPtr = startPtr;
+        long writePtrTemp = tempPtr;
+
+        for (int i = 0; i < vertexCount; i++) {
+            float x = memGetFloat(readPtr);
+            float y = memGetFloat(readPtr + 4);
+            float z = memGetFloat(readPtr + 8);
+            readPtr += 12;
+
+            // Read other attributes from old format
+            readPtr = oldFormat.readFromBuffer0(readPtr, this);
+
+            // Write vertex into temporary buffer using new format
+            writePtrTemp = newFormat.writeToBuffer0(writePtrTemp, this, x, y, z);
+        }
+
+        // Copy back to main buffer
+        ensureCapacity(newBufferSize); // make sure the main buffer is large enough
+        memCopy(tempPtr, startPtr, newBufferSize);
+        writePtr = startPtr + newBufferSize;
+
+        memFree(temp); // free temporary buffer
+        this.format = newFormat;
+    }
+
+    private VertexFormat getOptimalVertexFormat() {
+        return VertexFlags.getFormat(this);
+    }
+
+
     public final void setVertexFormat(VertexFormat format) {
         if (this.format != null) {
             throw new IllegalStateException("Cannot call setVertexFormat() after a vertex has already been emitted!");
@@ -367,17 +359,21 @@ public class DirectTessellator extends Tessellator {
         this.hasColor = format.hasColor();
     }
 
-    /**
-     * Allocates a new ByteBuffer with the contents of the tessellator's draw. <br>
-     * The buffer needs to be freed with {@link com.gtnewhorizon.gtnhlib.bytebuf.MemoryUtilities#memFree}
-     *
-     * @return The buffer copy
-     */
-    public final ByteBuffer allocateBufferCopy() {
-        final int size = bufferLimit();
-        final ByteBuffer copy = memAlloc(size);
-        memCopy(startPtr, memAddress0(copy), size);
-        return copy;
+
+    protected final int bufferCapacity() {
+        return (int) (endPtr - startPtr);
+    }
+
+    protected final int bufferLimit() { // same as position
+        return (int) (writePtr - startPtr);
+    }
+
+    protected final int bufferRemaining() {
+        return (int) (endPtr - writePtr);
+    }
+
+    protected final boolean isResized() {
+        return startPtr != baseAddress;
     }
 
     public final int getVertexCount() {
@@ -412,6 +408,19 @@ public class DirectTessellator extends Tessellator {
         return this.drawMode;
     }
 
+
+
+    @Override
+    public final TesselatorVertexState getVertexState(float p_147564_1_, float p_147564_2_, float p_147564_3_) {
+        throw new UnsupportedOperationException("getVertexState not supported for DirectTessellator!");
+    }
+
+    @Override
+    public final void setVertexState(TesselatorVertexState p_147565_1_) {
+        throw new UnsupportedOperationException("setVertexState not supported for DirectTessellator!");
+    }
+
+
     protected void onRemovedFromStack() {
         reset();
         if (this.deleteAfter) {
@@ -427,9 +436,7 @@ public class DirectTessellator extends Tessellator {
         nmemFree(baseAddress);
     }
 
-    private VertexFormat getOptimalVertexFormat() {
-        return VertexFlags.getFormat(this);
-    }
+    // TessellatorManager delegates
 
     public static DirectTessellator startCapturing() {
         return TessellatorManager.startCapturingDirect();

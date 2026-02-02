@@ -22,7 +22,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil;
 
 /// A simple implementation of the [ModelQuadViewMutable] interface which can provide an on-heap scratch area
 /// for storing quad vertex data.
-public final class ModelQuad implements ModelQuadViewMutable {
+public class ModelQuad implements ModelQuadViewMutable {
 
     private final int[] data = new int[VERTEX_SIZE * 4];
     private int flags;
