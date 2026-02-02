@@ -51,4 +51,10 @@ public class NormalHelper {
         setNormalTransformed(normal, normalMatrix);
         tessellator.setNormal(normal.x, normal.y, normal.z);
     }
+
+    public static void setNormalTransformed(Tessellator tessellator, Vector3f normal, Vector3f dest,
+            Matrix3f normalMatrix) {
+        setNormalTransformed(normal, dest, normalMatrix);
+        tessellator.setNormal(normal.x, normal.y, normal.z);
+    }
 }

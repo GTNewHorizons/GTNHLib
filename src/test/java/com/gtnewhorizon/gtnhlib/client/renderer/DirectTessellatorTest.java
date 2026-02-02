@@ -21,7 +21,6 @@ public class DirectTessellatorTest {
     void setup() {
         initialBuffer = ByteBuffer.allocateDirect(1024); // initial direct buffer
         tess = new DirectTessellator(initialBuffer);
-        tess.setDrawCallback(t -> true);
     }
 
     @Test
@@ -102,7 +101,7 @@ public class DirectTessellatorTest {
     void testEnsureCapacityPreservesData() {
         // Small initial buffer to force reallocation
         ByteBuffer small = ByteBuffer.allocateDirect(64);
-        tess = new DirectTessellator(small);
+        tess = new CallbackTessellator(small);
 
         tess.startDrawing(0);
 
@@ -163,7 +162,7 @@ public class DirectTessellatorTest {
     void testDrawCallbackResetBehavior() {
         AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
-        tess = new DirectTessellator(initialBuffer);
+        final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
         tess.setDrawCallback(t -> {
             callbackCalled.set(true);
             return true; // request reset
@@ -183,6 +182,7 @@ public class DirectTessellatorTest {
     @Test
     void testInterceptDrawCopiesVertices() {
         Tessellator vanilla = Tessellator.instance;
+        final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
         tess.setDrawCallback((t) -> false);
         vanilla.startDrawing(0);
         vanilla.addVertex(1, 2, 3);
