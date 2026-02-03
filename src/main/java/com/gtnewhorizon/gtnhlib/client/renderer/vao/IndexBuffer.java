@@ -14,7 +14,7 @@ public final class IndexBuffer {
 
     static final int EBO_DATA_TYPE = GL11.GL_UNSIGNED_SHORT;
     static final int EBO_DATA_SIZE = 2; // short
-    private final int id;
+    private int id;
 
     public IndexBuffer() {
         id = GL15.glGenBuffers();
@@ -29,7 +29,10 @@ public final class IndexBuffer {
     }
 
     public void delete() {
-        GL15.glDeleteBuffers(id);
+        if (id > 0) {
+            GL15.glDeleteBuffers(id);
+            id = -1;
+        }
     }
 
     public void allocateImmutable(ByteBuffer data) {
