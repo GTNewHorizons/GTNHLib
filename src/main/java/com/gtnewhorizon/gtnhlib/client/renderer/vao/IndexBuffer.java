@@ -12,7 +12,8 @@ import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
 
 public final class IndexBuffer {
 
-    static final int EBO_DATA_SIZE = GL11.GL_UNSIGNED_SHORT;
+    static final int EBO_DATA_TYPE = GL11.GL_UNSIGNED_SHORT;
+    static final int EBO_DATA_SIZE = 2; // short
     private final int id;
 
     public IndexBuffer() {

@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.Tessellator;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class NormalHelper {
 
@@ -32,7 +33,7 @@ public class NormalHelper {
      * @param dest         The vector that gets transformed
      * @param normalMatrix The normal matrix (typically the transpose of the inverse transformation matrix)
      */
-    public static Vector3f setNormalTransformed(Vector3f normal, Vector3f dest, Matrix3f normalMatrix) {
+    public static Vector3f setNormalTransformed(Vector3fc normal, Vector3f dest, Matrix3f normalMatrix) {
         normalMatrix.transform(normal, dest).normalize();
         return dest;
     }
@@ -52,9 +53,9 @@ public class NormalHelper {
         tessellator.setNormal(normal.x, normal.y, normal.z);
     }
 
-    public static void setNormalTransformed(Tessellator tessellator, Vector3f normal, Vector3f dest,
+    public static void setNormalTransformed(Tessellator tessellator, Vector3fc normal, Vector3f dest,
             Matrix3f normalMatrix) {
         setNormalTransformed(normal, dest, normalMatrix);
-        tessellator.setNormal(normal.x, normal.y, normal.z);
+        tessellator.setNormal(dest.x, dest.y, dest.z);
     }
 }
