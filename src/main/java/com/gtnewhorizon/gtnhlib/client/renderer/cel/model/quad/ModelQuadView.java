@@ -111,5 +111,8 @@ public interface ModelQuadView extends ModelPrimitiveView {
 
     int getShaderBlockId();
 
-    int[] getDataArray();
+    default int[] getDataArray() {
+        throw new UnsupportedOperationException(
+                "getDataArray not yet implemented for " + this.getClass().getName() + "!");
+    }
 }
