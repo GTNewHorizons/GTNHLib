@@ -13,7 +13,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 @Beta
 public final class VertexBufferStorage implements IVertexBuffer {
 
-    private final int id;
+    private int id;
     private int vertexCount;
     private final VertexFormat format;
     private final int drawMode;
@@ -61,7 +61,10 @@ public final class VertexBufferStorage implements IVertexBuffer {
 
     @Override
     public void delete() {
-        GL15.glDeleteBuffers(this.id);
+        if (id > 0) {
+            GL15.glDeleteBuffers(this.id);
+            id = -1;
+        }
     }
 
     @Override

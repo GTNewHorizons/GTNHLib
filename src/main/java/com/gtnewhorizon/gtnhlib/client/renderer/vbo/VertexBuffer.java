@@ -102,7 +102,10 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
 
     @Override
     public void delete() {
-        GL15.glDeleteBuffers(this.id);
+        if (id > 0) {
+            GL15.glDeleteBuffers(this.id);
+            id = -1;
+        }
     }
 
     @Override
