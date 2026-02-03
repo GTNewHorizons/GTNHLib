@@ -346,7 +346,6 @@ public class DirectTessellator extends Tessellator {
         return VertexFlags.getFormat(this);
     }
 
-
     public final void setVertexFormat(VertexFormat format) {
         if (this.format != null) {
             throw new IllegalStateException("Cannot call setVertexFormat() after a vertex has already been emitted!");
@@ -358,7 +357,6 @@ public class DirectTessellator extends Tessellator {
         this.hasBrightness = format.hasBrightness();
         this.hasColor = format.hasColor();
     }
-
 
     protected final int bufferCapacity() {
         return (int) (endPtr - startPtr);
@@ -408,8 +406,6 @@ public class DirectTessellator extends Tessellator {
         return this.drawMode;
     }
 
-
-
     @Override
     public final TesselatorVertexState getVertexState(float p_147564_1_, float p_147564_2_, float p_147564_3_) {
         throw new UnsupportedOperationException("getVertexState not supported for DirectTessellator!");
@@ -419,7 +415,6 @@ public class DirectTessellator extends Tessellator {
     public final void setVertexState(TesselatorVertexState p_147565_1_) {
         throw new UnsupportedOperationException("setVertexState not supported for DirectTessellator!");
     }
-
 
     protected void onRemovedFromStack() {
         reset();
