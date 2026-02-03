@@ -21,7 +21,7 @@ public final class ColorVertexAttributeWriter implements IVertexAttributeWriter 
 
     @Override
     public int readAttribute(long pointer, Tessellator tessellator) {
-        tessellator.normal = memGetInt(pointer);
+        tessellator.color = memGetInt(pointer);
         return 4;
     }
 }
