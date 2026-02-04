@@ -16,6 +16,7 @@ public interface ITessellatorInstance {
      *
      * @return true if currently compiling, false otherwise
      */
+    @Deprecated
     boolean gtnhlib$isCompiling();
 
     /**
@@ -23,5 +24,6 @@ public interface ITessellatorInstance {
      *
      * @param compiling true to enable compiling mode, false to disable
      */
+    @Deprecated
     void gtnhlib$setCompiling(boolean compiling);
 }

@@ -8,6 +8,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMuta
 /**
  * Callback interface for per-draw notifications during display list compilation.
  */
+@Deprecated
 public interface DrawCallback {
 
     /**

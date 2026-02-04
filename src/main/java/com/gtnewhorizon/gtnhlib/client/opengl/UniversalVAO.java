@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.client.opengl;
 import java.nio.IntBuffer;
 
 import org.lwjgl.opengl.APPLEVertexArrayObject;
-import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -29,7 +28,7 @@ public final class UniversalVAO {
         } else if (caps.GL_APPLE_vertex_array_object) {
             return new VaoApple();
         } else if (caps.GL_ARB_vertex_array_object) {
-            return new VaoArb();
+            return new VaoGL3();
         } else {
             return null;
         }
@@ -207,43 +206,4 @@ public final class UniversalVAO {
             APPLEVertexArrayObject.glBindVertexArrayAPPLE(id);
         }
     }
-
-    private static final class VaoArb implements VaoFunctions {
-
-        @Override
-        public int getCurrentBinding() {
-            return GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
-        }
-
-        @Override
-        public int glGenVertexArrays() {
-            return ARBVertexArrayObject.glGenVertexArrays();
-        }
-
-        @Override
-        public void glGenVertexArrays(IntBuffer output) {
-            ARBVertexArrayObject.glGenVertexArrays(output);
-        }
-
-        @Override
-        public void glDeleteVertexArrays(int id) {
-            ARBVertexArrayObject.glDeleteVertexArrays(id);
-        }
-
-        @Override
-        public void glDeleteVertexArrays(IntBuffer ids) {
-            ARBVertexArrayObject.glDeleteVertexArrays(ids);
-        }
-
-        @Override
-        public boolean glIsVertexArray(int id) {
-            return ARBVertexArrayObject.glIsVertexArray(id);
-        }
-
-        @Override
-        public void glBindVertexArray(int id) {
-            ARBVertexArrayObject.glBindVertexArray(id);
-        }
-    }
-
 }
