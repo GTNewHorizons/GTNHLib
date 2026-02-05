@@ -2,6 +2,8 @@ package com.gtnewhorizon.gtnhlib.client.opengl;
 
 import java.nio.IntBuffer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.APPLEVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
@@ -19,6 +21,8 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
  */
 public final class UniversalVAO {
 
+    private static final Logger LOGGER = LogManager.getLogger("UniversalVAO");
+
     /**
      * Returns the implementation based on the ContextCapabilities.
      */
@@ -29,9 +33,16 @@ public final class UniversalVAO {
             return new VaoApple();
         } else if (caps.GL_ARB_vertex_array_object) {
             return new VaoGL3();
-        } else {
-            return null;
         }
+
+        // LWJGL3 fallback: GL_APPLE_vertex_array_object capability is bugged on LWJGL3,
+        VaoFunctions appleLwjgl3Fallback = VaoAppleLwjgl3Fallback.tryCreate();
+        if (appleLwjgl3Fallback != null) {
+            return appleLwjgl3Fallback;
+        }
+
+        LOGGER.warn("No VAO implementation available");
+        return null;
     }
 
     /**
