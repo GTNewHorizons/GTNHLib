@@ -80,6 +80,9 @@ public abstract class SimpleItemIO implements ItemIO {
         return iterator(allowedSinkSlots);
     }
 
+    @Override
+    public abstract @Nullable InventoryIterator simulatedSinkIterator();
+
     @NotNull
     protected abstract InventoryIterator iterator(int[] allowedSlots);
 }
