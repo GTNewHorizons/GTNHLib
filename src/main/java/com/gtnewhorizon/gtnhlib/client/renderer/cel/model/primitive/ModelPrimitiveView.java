@@ -4,6 +4,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive;
  * Base interface for all primitive types (lines, triangles, quads). Provides common vertex accessors with variable
  * vertex count.
  */
+@Deprecated // Replaced in favor of DirectTessellator (see TessellatorManager for more info)
 public interface ModelPrimitiveView {
 
     /**
