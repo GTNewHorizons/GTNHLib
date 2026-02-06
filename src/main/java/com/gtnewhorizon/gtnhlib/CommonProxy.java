@@ -7,6 +7,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.block.BlockTest;
+import com.gtnewhorizon.gtnhlib.block.BlockTestLectern;
 import com.gtnewhorizon.gtnhlib.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
@@ -56,6 +57,7 @@ public class CommonProxy {
             GameRegistry.registerBlock(new BlockTest(), "model_test");
             GameRegistry.registerBlock(new BlockTestTint(), "model_test_tint");
             GameRegistry.registerBlock(new BlockTestTintMul(), "model_test_tint_mul");
+            GameRegistry.registerBlock(new BlockTestLectern(), "model_test_lectern");
         }
 
         BlockPropertyInit.init();
