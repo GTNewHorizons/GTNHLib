@@ -2,9 +2,13 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vertex;
 
 import java.util.function.IntConsumer;
 
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
+
+import com.google.common.annotations.Beta;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.IVertexAttributeWriter;
 
 import lombok.Getter;
 
@@ -16,13 +20,24 @@ public class VertexFormatElement {
     protected final int index;
     protected final int count;
     protected final int byteSize;
+    @Beta
+    protected final @NotNull IVertexAttributeWriter writer;
+    protected final int vertexBit;
 
-    public VertexFormatElement(int index, Type type, Usage usage, int count) {
+    public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit,
+            @NotNull IVertexAttributeWriter writer) {
+        this(index, type, usage, count, vertexBit, writer, 0);
+    }
+
+    public VertexFormatElement(int index, Type type, Usage usage, int count, int vertexBit,
+            @NotNull IVertexAttributeWriter writer, int padding) {
         this.index = index;
         this.type = type;
         this.usage = usage;
         this.count = count;
-        this.byteSize = type.getSize() * count;
+        this.byteSize = type.getSize() * count + padding;
+        this.vertexBit = vertexBit;
+        this.writer = writer;
     }
 
     public void setupBufferState(long offset, int stride) {

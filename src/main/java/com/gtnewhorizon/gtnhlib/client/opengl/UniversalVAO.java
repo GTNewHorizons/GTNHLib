@@ -2,8 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.opengl;
 
 import java.nio.IntBuffer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.APPLEVertexArrayObject;
-import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -20,6 +21,8 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
  */
 public final class UniversalVAO {
 
+    private static final Logger LOGGER = LogManager.getLogger("UniversalVAO");
+
     /**
      * Returns the implementation based on the ContextCapabilities.
      */
@@ -29,10 +32,17 @@ public final class UniversalVAO {
         } else if (caps.GL_APPLE_vertex_array_object) {
             return new VaoApple();
         } else if (caps.GL_ARB_vertex_array_object) {
-            return new VaoArb();
-        } else {
-            return null;
+            return new VaoGL3();
         }
+
+        // LWJGL3 fallback: GL_APPLE_vertex_array_object capability is bugged on LWJGL3,
+        VaoFunctions appleLwjgl3Fallback = VaoAppleLwjgl3Fallback.tryCreate();
+        if (appleLwjgl3Fallback != null) {
+            return appleLwjgl3Fallback;
+        }
+
+        LOGGER.warn("No VAO implementation available");
+        return null;
     }
 
     /**
@@ -207,43 +217,4 @@ public final class UniversalVAO {
             APPLEVertexArrayObject.glBindVertexArrayAPPLE(id);
         }
     }
-
-    private static final class VaoArb implements VaoFunctions {
-
-        @Override
-        public int getCurrentBinding() {
-            return GL11.glGetInteger(ARBVertexArrayObject.GL_VERTEX_ARRAY_BINDING);
-        }
-
-        @Override
-        public int glGenVertexArrays() {
-            return ARBVertexArrayObject.glGenVertexArrays();
-        }
-
-        @Override
-        public void glGenVertexArrays(IntBuffer output) {
-            ARBVertexArrayObject.glGenVertexArrays(output);
-        }
-
-        @Override
-        public void glDeleteVertexArrays(int id) {
-            ARBVertexArrayObject.glDeleteVertexArrays(id);
-        }
-
-        @Override
-        public void glDeleteVertexArrays(IntBuffer ids) {
-            ARBVertexArrayObject.glDeleteVertexArrays(ids);
-        }
-
-        @Override
-        public boolean glIsVertexArray(int id) {
-            return ARBVertexArrayObject.glIsVertexArray(id);
-        }
-
-        @Override
-        public void glBindVertexArray(int id) {
-            ARBVertexArrayObject.glBindVertexArray(id);
-        }
-    }
-
 }
