@@ -240,11 +240,8 @@ public final class NumberFormatUtil {
     private static Locale getMinecraftLocale() {
         if (cachedLocale == null) {
             try {
-                String langCode = Minecraft.getMinecraft()
-                    .getLanguageManager()
-                    .getCurrentLanguage()
-                    .getLanguageCode();
-                
+                String langCode = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
+
                 String[] parts = langCode.split("_");
                 if (parts.length == 2) {
                     cachedLocale = new Locale(parts[0], parts[1]);
