@@ -15,16 +15,23 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 @SuppressWarnings("unused")
 public final class NumberFormatUtil {
 
     /* ========================= Formatters ========================= */
+
+    private static Locale cachedLocale = null;
 
     private NumberFormatUtil() {}
 
@@ -229,8 +236,42 @@ public final class NumberFormatUtil {
         return !disabledGlobally && enabledInOptions && aboveThreshold;
     }
 
+    @SideOnly(Side.CLIENT)
+    private static Locale getMinecraftLocale() {
+        if (cachedLocale == null) {
+            try {
+                String langCode = Minecraft.getMinecraft()
+                    .getLanguageManager()
+                    .getCurrentLanguage()
+                    .getLanguageCode();
+                
+                String[] parts = langCode.split("_");
+                if (parts.length == 2) {
+                    cachedLocale = new Locale(parts[0], parts[1]);
+                } else {
+                    cachedLocale = new Locale(parts[0]);
+                }
+            } catch (Exception e) {
+                cachedLocale = Locale.getDefault(Locale.Category.FORMAT);
+            }
+        }
+        return cachedLocale;
+    }
+
+    private static Locale getLocale() {
+        if (FMLCommonHandler.instance().getSide().isServer()) {
+            return Locale.getDefault(Locale.Category.FORMAT);
+        }
+
+        try {
+            return getMinecraftLocale();
+        } catch (Exception e) {
+            return Locale.getDefault(Locale.Category.FORMAT);
+        }
+    }
+
     private static DecimalFormat getDefaultDecimalFormatter(NumberOptionsBase<?> options) {
-        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        Locale locale = getLocale();
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
         df.setDecimalFormatSymbols(symbols);
