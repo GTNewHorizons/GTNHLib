@@ -256,13 +256,18 @@ public final class NumberFormatUtil {
     }
 
     private static Locale getLocale() {
-        if (FMLCommonHandler.instance().getSide().isServer()) {
+        try {
+            FMLCommonHandler handler = FMLCommonHandler.instance();
+            if (handler != null && handler.getSide().isServer()) {
+                return Locale.getDefault(Locale.Category.FORMAT);
+            }
+        } catch (Throwable ignored) {
             return Locale.getDefault(Locale.Category.FORMAT);
         }
 
         try {
             return getMinecraftLocale();
-        } catch (Exception e) {
+        } catch (Throwable ignored) {
             return Locale.getDefault(Locale.Category.FORMAT);
         }
     }
