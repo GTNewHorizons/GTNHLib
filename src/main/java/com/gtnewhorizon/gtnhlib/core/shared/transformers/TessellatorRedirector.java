@@ -14,12 +14,10 @@ public final class TessellatorRedirector {
     private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
 
     private final ClassConstantPoolParser cstPoolParser;
-    private final String OpenGlHelper$glBlendFunc;
     private final String Tessellator$instance;
 
     public TessellatorRedirector(boolean isObf) {
         cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
-        OpenGlHelper$glBlendFunc = isObf ? "func_148821_a" : "glBlendFunc";
         Tessellator$instance = isObf ? "field_78398_a" : "instance";
     }
 
@@ -41,10 +39,6 @@ public final class TessellatorRedirector {
         }
         boolean changed = false;
         for (MethodNode mn : cn.methods) {
-            if ("net.minecraft.client.renderer.OpenGlHelper".equals(className)
-                    && mn.name.equals(OpenGlHelper$glBlendFunc)) {
-                continue;
-            }
             for (AbstractInsnNode node : mn.instructions.toArray()) {
                 if (node.getOpcode() == Opcodes.GETSTATIC && node instanceof FieldInsnNode fNode) {
                     if (TessellatorClass.equals(fNode.owner) && fNode.name.equals(Tessellator$instance)) {

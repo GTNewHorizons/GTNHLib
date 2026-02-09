@@ -19,6 +19,7 @@ import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
  * Utility class for extracting primitives (lines, triangles, quads) from Tessellator raw buffers. Supports GL_QUADS,
  * GL_TRIANGLES, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN.
  */
+@Deprecated // Replaced in favor of DirectTessellator (see TessellatorManager for more info)
 public final class PrimitiveExtractor {
 
     private static final Logger LOGGER = LogManager.getLogger("PrimitiveExtractor");

@@ -1,0 +1,23 @@
+package com.gtnewhorizon.gtnhlib.mixins;
+
+import javax.annotation.Nonnull;
+
+import com.gtnewhorizon.gtnhmixins.builders.ITargetMod;
+import com.gtnewhorizon.gtnhmixins.builders.TargetModBuilder;
+
+public enum TargetMods implements ITargetMod {
+
+    LWJGL3IFY("me.eigenraven.lwjgl3ify.core.Lwjgl3ifyCoremod");
+
+    private final TargetModBuilder builder;
+
+    TargetMods(String coreModClass) {
+        this.builder = new TargetModBuilder().setCoreModClass(coreModClass);
+    }
+
+    @Nonnull
+    @Override
+    public TargetModBuilder getBuilder() {
+        return builder;
+    }
+}
