@@ -24,6 +24,8 @@ import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
+import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -53,6 +55,10 @@ public class ClientProxy extends CommonProxy {
         // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
         // you too can automatically load textures for your models!
         ModelRegistry.registerModid(MODID);
+
+        if (GTNHLibConfig.enableTestItems) {
+            TexturedItemRenderer.register(TestItem.INSTANCE);
+        }
     }
 
     @Override

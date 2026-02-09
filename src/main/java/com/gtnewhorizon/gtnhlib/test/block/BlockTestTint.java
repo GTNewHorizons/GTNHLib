@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.block;
+package com.gtnewhorizon.gtnhlib.test.block;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 
