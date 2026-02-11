@@ -21,7 +21,7 @@ public class EnhancedInfusionRecipe extends InfusionRecipe {
     }
 
     public ItemStack getReplacement(ItemStack key) {
-        for (ReplacementMap replacement : replacements) {
+        for (ReplacementMap replacement : this.replacements) {
             if (OreDictionary.itemMatches(replacement.input, key, replacement.strict)) {
                 return replacement.output;
             }

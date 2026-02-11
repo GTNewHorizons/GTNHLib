@@ -46,6 +46,8 @@ dependencies {
     devOnlyNonPublishable("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev") {transitive = false}
     devOnlyNonPublishable('com.github.GTNewHorizons:Baubles-Expanded:2.2.2-GTNH:dev') {transitive = false} // For testing Thaumcraft
 
+    devOnlyNonPublishable("com.github.GTNewHorizons:ServerUtilities:2.2.17-pre:dev") {transitive = false}
+
 
     project.getConfigurations()
 
