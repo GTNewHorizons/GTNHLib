@@ -1,27 +1,34 @@
 package com.gtnewhorizon.gtnhlib.api.thaumcraft;
 
+import java.util.List;
+
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
+
+import com.github.bsideup.jabel.Desugar;
+
 import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.crafting.InfusionRecipe;
 
-import java.util.Map;
+public class EnhancedInfusionRecipe extends InfusionRecipe {
 
-public class EnhancedInfusionRecipe extends InfusionRecipe  {
-    private Map<ItemStack, ItemStack> replacements;
+    private List<ReplacementMap> replacements;
 
-    public EnhancedInfusionRecipe(String research, Object output, int inst, AspectList aspects2, ItemStack input, ItemStack[] recipe, Map<ItemStack, ItemStack> replacements) {
+    public EnhancedInfusionRecipe(String research, Object output, int inst, AspectList aspects2, ItemStack input,
+            ItemStack[] recipe, List<ReplacementMap> replacements) {
         super(research, output, inst, aspects2, input, recipe);
         this.replacements = replacements;
     }
 
-
-    public boolean hasReplacement (ItemStack key) {
-        return this.replacements.containsKey(key);
+    public ItemStack getReplacement(ItemStack key) {
+        for (ReplacementMap replacement : replacements) {
+            if (OreDictionary.itemMatches(replacement.input, key, replacement.strict)) {
+                return replacement.output;
+            }
+        }
+        return null;
     }
 
-
-    public ItemStack getReplacement( ItemStack key) {
-        return this.replacements.get(key);
-    }
-
+    @Desugar
+    public record ReplacementMap(ItemStack input, ItemStack output, boolean strict) {}
 }
