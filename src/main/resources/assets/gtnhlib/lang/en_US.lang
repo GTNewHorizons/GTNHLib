@@ -83,3 +83,7 @@ description.villager.profession.wa.priest=Priest
 description.villager.profession.rftools.rftoolsvillager=RFTools Engineer
 description.villager.profession.forbidden.heretic=Heretic
 description.villager.profession.agricraft.villager=Agricraft Farmer
+
+# Number Formatting Config
+gtnhlib.config.number_formatting.numberFormatLocale=Number Format Locale
+gtnhlib.config.number_formatting.numberFormatLocale.tooltip=Override the language format for numbers. Examples: en_US (1,234.56), ru_RU (1 234,56), de_DE (1.234,56). Leave empty for system default.

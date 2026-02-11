@@ -1,5 +1,8 @@
 package com.gtnewhorizon.gtnhlib.util.numberformatting;
 
+import java.util.Locale;
+
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.config.Config;
 
 @Config(modid = "gtnhlib", category = "number_formatting", filename = "gtnhlib-number-formatting")
@@ -26,6 +29,126 @@ public final class NumberFormatConfig {
     @Config.DefaultString("SCIENTIFIC")
     public static String formatPattern = "SCIENTIFIC";
 
+    @Config.Comment({ "Select language format for number formatting.", "Each option shows example formatting:",
+            "  SYSTEM_DEFAULT – Use your system language settings",
+            "  ENGLISH_US     – 1,234.56 (comma grouping, period decimal)",
+            "  RUSSIAN        – 1 234,56 (space grouping, comma decimal)",
+            "  GERMAN         – 1.234,56 (period grouping, comma decimal)",
+            "  FRENCH         – 1 234,56 (space grouping, comma decimal)",
+            "  SPANISH        – 1.234,56 (period grouping, comma decimal)",
+            "  ITALIAN        – 1.234,56 (period grouping, comma decimal)",
+            "  JAPANESE       – 1,234.56 (comma grouping, period decimal)",
+            "  CHINESE        – 1,234.56 (comma grouping, period decimal)",
+            "  POLISH         – 1 234,56 (space grouping, comma decimal)",
+            "  PORTUGUESE_BR  – 1.234,56 (period grouping, comma decimal)",
+            "  DUTCH          – 1.234,56 (period grouping, comma decimal)",
+            "  SWEDISH        – 1 234,56 (space grouping, comma decimal)",
+            "  NORWEGIAN      – 1 234,56 (space grouping, comma decimal)",
+            "  FINNISH        – 1 234,56 (space grouping, comma decimal)",
+            "  CZECH          – 1 234,56 (space grouping, comma decimal)",
+            "  HUNGARIAN      – 1 234,56 (space grouping, comma decimal)" })
+    @Config.DefaultEnum("SYSTEM_DEFAULT")
+    public static LocaleOption numberFormatLocale = LocaleOption.SYSTEM_DEFAULT;
+
     @Config.Ignore
     public static ExponentialFormat EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
+
+    @Config.Ignore
+    private static Locale customLocale = null;
+
+    /**
+     * Enum representing available locale options for number formatting
+     */
+    public enum LocaleOption {
+
+        SYSTEM_DEFAULT("System Default", null),
+        ENGLISH_US("English (US) - 1,234.56", new Locale("en", "US")),
+        RUSSIAN("Russian - 1 234,56", new Locale("ru", "RU")),
+        GERMAN("German - 1.234,56", new Locale("de", "DE")),
+        FRENCH("French - 1 234,56", new Locale("fr", "FR")),
+        SPANISH("Spanish - 1.234,56", new Locale("es", "ES")),
+        ITALIAN("Italian - 1.234,56", new Locale("it", "IT")),
+        JAPANESE("Japanese - 1,234.56", new Locale("ja", "JP")),
+        CHINESE("Chinese - 1,234.56", new Locale("zh", "CN")),
+        POLISH("Polish - 1 234,56", new Locale("pl", "PL")),
+        PORTUGUESE_BR("Portuguese (Brazil) - 1.234,56", new Locale("pt", "BR")),
+        DUTCH("Dutch - 1.234,56", new Locale("nl", "NL")),
+        SWEDISH("Swedish - 1 234,56", new Locale("sv", "SE")),
+        NORWEGIAN("Norwegian - 1 234,56", new Locale("no", "NO")),
+        FINNISH("Finnish - 1 234,56", new Locale("fi", "FI")),
+        CZECH("Czech - 1 234,56", new Locale("cs", "CZ")),
+        HUNGARIAN("Hungarian - 1 234,56", new Locale("hu", "HU"));
+
+        private final String displayName;
+        private final Locale locale;
+
+        LocaleOption(String displayName, Locale locale) {
+            this.displayName = displayName;
+            this.locale = locale;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public Locale getLocale() {
+            return locale;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+
+    /**
+     * Synchronizes the number formatting locale from config. Called during mod initialization and when config changes.
+     */
+    public static void syncNumberFormatting() {
+        // Parse and apply exponential format pattern
+        try {
+            EXPONENTIAL_FORMAT = ExponentialFormat.parse(formatPattern);
+        } catch (Exception e) {
+            GTNHLib.error("Invalid exponential format pattern: " + formatPattern + ", using SCIENTIFIC");
+            EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
+        }
+
+        // Apply locale from enum selection
+        if (numberFormatLocale == null) {
+            numberFormatLocale = LocaleOption.SYSTEM_DEFAULT;
+        }
+
+        customLocale = numberFormatLocale.getLocale();
+
+        if (customLocale == null) {
+            GTNHLib.info(
+                    "Number formatting: Using system default locale ("
+                            + Locale.getDefault(Locale.Category.FORMAT).toString()
+                            + ")");
+        } else {
+            GTNHLib.info(
+                    "Number formatting: Using " + numberFormatLocale.getDisplayName()
+                            + " ("
+                            + customLocale.toString()
+                            + ")");
+        }
+    }
+
+    /**
+     * Gets the currently active locale for number formatting.
+     * 
+     * @return Custom locale if set, otherwise system default locale
+     */
+    public static Locale getActiveLocale() {
+        return (customLocale != null) ? customLocale : Locale.getDefault(Locale.Category.FORMAT);
+    }
+
+    /**
+     * Checks if a custom locale override is active.
+     * 
+     * @return true if custom locale is set, false otherwise
+     */
+    public static boolean hasCustomLocale() {
+        return customLocale != null;
+    }
 }
