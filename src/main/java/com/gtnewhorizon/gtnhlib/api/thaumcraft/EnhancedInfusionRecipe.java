@@ -29,6 +29,14 @@ public class EnhancedInfusionRecipe extends InfusionRecipe {
         return null;
     }
 
+    public List<ReplacementMap> getReplacementMap() {
+        return this.replacements;
+    }
+
+    public boolean isRepEmpty() {
+        return this.replacements.isEmpty();
+    }
+
     @Desugar
     public record ReplacementMap(ItemStack input, ItemStack output, boolean strict) {}
 }
