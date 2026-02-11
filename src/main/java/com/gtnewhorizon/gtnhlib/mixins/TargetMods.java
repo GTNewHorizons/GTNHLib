@@ -2,14 +2,13 @@ package com.gtnewhorizon.gtnhlib.mixins;
 
 import javax.annotation.Nonnull;
 
-import cpw.mods.fml.common.Loader;
 import com.gtnewhorizon.gtnhmixins.builders.ITargetMod;
 import com.gtnewhorizon.gtnhmixins.builders.TargetModBuilder;
 
 public enum TargetMods implements ITargetMod {
 
     LWJGL3IFY("me.eigenraven.lwjgl3ify.core.Lwjgl3ifyCoremod"),
-    THAUMCRAFT( "", "Thaumcraft");
+    THAUMCRAFT("", "Thaumcraft");
 
     private final TargetModBuilder builder;
 

@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.gtnewhorizon.gtnhlib.mixins.Mixins;
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
-import com.gtnewhorizon.gtnhlib.mixins.Mixins;
-
 
 @LateMixin
-public class GTNHLibLateMixinLoader  implements ILateMixinLoader {
+public class GTNHLibLateMixinLoader implements ILateMixinLoader {
 
     @Override
     public String getMixinConfig() {
