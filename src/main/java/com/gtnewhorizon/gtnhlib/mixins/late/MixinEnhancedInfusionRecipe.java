@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
-
 import net.minecraftforge.oredict.OreDictionary;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.gtnewhorizon.gtnhlib.api.thaumcraft.EnhancedInfusionRecipe;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.sugar.Local;
 
 import thaumcraft.api.TileThaumcraft;
@@ -31,9 +32,7 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
     @Shadow
     private ArrayList<ItemStack> recipeIngredients;
     @Unique
-    private boolean gTNHLib$enhancedInfusion = false;
-    @Unique
-    private List<EnhancedInfusionRecipe.ReplacementMap> gTNHLib$replacements = null;
+    private List<EnhancedInfusionRecipe.ReplacementMap> gTNHLib$replacements = new ArrayList<>();
 
     @Unique
     public ItemStack getReplacement(ItemStack key) {
@@ -50,18 +49,21 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
             method = "craftingStart",
             at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;recipeType:I"))
     public void setRecipe(CallbackInfo ci, @Local InfusionRecipe recipe) {
-        this.gTNHLib$enhancedInfusion = (recipe instanceof EnhancedInfusionRecipe);
-        if (this.gTNHLib$enhancedInfusion)
-        this.gTNHLib$replacements = ((EnhancedInfusionRecipe) recipe).getReplacementMap();
+        if (recipe instanceof EnhancedInfusionRecipe r) {
+            this.gTNHLib$replacements = r.getReplacementMap();
+        }
     }
 
     // if recipe is instanceOf EnhancedInfusionRecipe, replace item with the corresponding replacement item, if defined
     @Inject(
             method = "craftCycle",
             cancellable = true,
-            at = @At(value = "INVOKE", target = "Lthaumcraft/common/tiles/TilePedestal;getStackInSlot(I)Lnet/minecraft/item/ItemStack;", ordinal = 4))
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lthaumcraft/common/tiles/TilePedestal;getStackInSlot(I)Lnet/minecraft/item/ItemStack;",
+                    ordinal = 4))
     public void itemReplacement(CallbackInfo ci, @Local boolean valid, @Local TileEntity te, @Local int slot) {
-        if (this.gTNHLib$enhancedInfusion) {
+        if (!this.gTNHLib$replacements.isEmpty()) {
             TilePedestal pedestal = (TilePedestal) te;
             ItemStack stack = pedestal.getStackInSlot(0);
             ItemStack replacement = getReplacement(stack);
@@ -74,54 +76,52 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
     @Inject(method = "craftingFinish", at = @At(value = "RETURN"))
     public void clearRecipe(CallbackInfo ci) {
         this.gTNHLib$replacements = null;
-        this.gTNHLib$enhancedInfusion = false;
     }
 
     // write to NBT with the other ingredients and stuff
-    @Inject(method = "writeToNBT", at = @At(value = "INVOKE",
-        target = "Lthaumcraft/api/TileThaumcraft;writeToNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", shift = At.Shift.AFTER))
-    public void writeToNBT(CallbackInfo ci, @Local NBTTagCompound nbtCompound) {
-        if (this.gTNHLib$enhancedInfusion) {
+    @WrapMethod(method = "writeToNBT")
+    public void writeToNBT(NBTTagCompound nbtCompound, Operation<Void> original) {
+        original.call(nbtCompound);
+        if (!this.gTNHLib$replacements.isEmpty()) {
             NBTTagList nbttaglist = new NBTTagList();
-            for(EnhancedInfusionRecipe.ReplacementMap triad : this.gTNHLib$replacements) {
-                NBTTagCompound replacementMap = new NBTTagCompound();
-                    if (triad.input() == null)
-                            continue;
-                    replacementMap.setTag("input", triad.input().writeToNBT(new NBTTagCompound()));
+            for (EnhancedInfusionRecipe.ReplacementMap replacement : this.gTNHLib$replacements) {
+                NBTTagCompound replacements = new NBTTagCompound();
+                if (replacement.input() == null) continue;
+                replacements.setTag("input", replacement.input().writeToNBT(new NBTTagCompound()));
 
-                    if (triad.output() != null)
-                        replacementMap.setTag("output", triad.output().writeToNBT(new NBTTagCompound()));
-                    else
-                        replacementMap.setBoolean("nullOutput", true);
+                ItemStack output = replacement.output();
+                if (output != null) {
+                    replacements.setTag("output", output.writeToNBT(new NBTTagCompound()));
+                } else {
+                    replacements.setBoolean("nullOutput", true);
+                }
 
-                    replacementMap.setBoolean("strict", triad.strict());
-                    nbttaglist.appendTag(replacementMap);
+                replacements.setBoolean("strict", replacement.strict());
+                nbttaglist.appendTag(replacements);
             }
-            nbtCompound.setBoolean("isEnhancedRecipe", this.gTNHLib$enhancedInfusion);
-            nbtCompound.setTag("replacments", nbttaglist);
+            nbtCompound.setTag("replacements", nbttaglist);
         }
     }
 
     // write to NBT with the other ingredients and stuff
-    @Inject(method = "readFromNBT", at = @At(value = "INVOKE",
-        target = "Lthaumcraft/api/TileThaumcraft;readFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", shift = At.Shift.AFTER))
-    public void readFromNBT(CallbackInfo ci, @Local NBTTagCompound nbtCompound) {
-        this.gTNHLib$enhancedInfusion = nbtCompound.getBoolean("isEnhancedRecipe");
+    @WrapMethod(method = "readFromNBT")
+    public void readFromNBT(NBTTagCompound nbtCompound, Operation<Void> original) {
+        original.call(nbtCompound);
+        if (!nbtCompound.hasKey("replacements")) {
+            return;
+        }
+        gTNHLib$replacements.clear();
+        NBTTagList nbttaglist = nbtCompound.getTagList("replacements", 10); // the list of replacements
+        for (int i = 0; i < nbttaglist.tagCount(); ++i) { // for every replacement entry in replacements
+            NBTTagCompound replacementEntry = nbttaglist.getCompoundTagAt(i); // get the replacament entry
+            ItemStack input = ItemStack.loadItemStackFromNBT(replacementEntry.getCompoundTag("input"));
+            ItemStack output = null;
+            if (!replacementEntry.getBoolean("nullOutput"))
+                output = ItemStack.loadItemStackFromNBT(replacementEntry.getCompoundTag("output"));
 
-        if (this.gTNHLib$enhancedInfusion) {
-            NBTTagList nbttaglist = nbtCompound.getTagList("replacments", 9); // the list of replacements
-            this.gTNHLib$replacements = new ArrayList<EnhancedInfusionRecipe.ReplacementMap>(); //make a new map
-            for(int i = 0; i < nbttaglist.tagCount(); ++i) {  //for every replacement entry in replacements
-                NBTTagCompound replacementEntry = nbttaglist.getCompoundTagAt(i); //get the replacament entry
-                ItemStack input = ItemStack.loadItemStackFromNBT(replacementEntry.getCompoundTag("input"));
-                ItemStack output = null;
-                if (!replacementEntry.getBoolean("nullOutput"))
-                    output = ItemStack.loadItemStackFromNBT(replacementEntry.getCompoundTag("output"));
+            boolean strict = replacementEntry.getBoolean("strict");
 
-                boolean strict = replacementEntry.getBoolean("strict");
-
-                this.gTNHLib$replacements.add(new EnhancedInfusionRecipe.ReplacementMap(input, output, strict));
-            }
+            this.gTNHLib$replacements.add(new EnhancedInfusionRecipe.ReplacementMap(input, output, strict));
         }
     }
 
