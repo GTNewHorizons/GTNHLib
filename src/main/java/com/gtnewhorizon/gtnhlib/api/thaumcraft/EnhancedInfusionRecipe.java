@@ -14,8 +14,14 @@ public class EnhancedInfusionRecipe extends InfusionRecipe  {
         this.replacements = replacements;
     }
 
-    public Map<ItemStack, ItemStack> getReplacements() {
-        return replacements;
+
+    public boolean hasReplacement (ItemStack key) {
+        return this.replacements.containsKey(key);
+    }
+
+
+    public ItemStack getReplacement( ItemStack key) {
+        return this.replacements.get(key);
     }
 
 }

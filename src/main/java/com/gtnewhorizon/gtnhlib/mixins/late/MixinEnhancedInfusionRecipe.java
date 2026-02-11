@@ -1,49 +1,56 @@
 package com.gtnewhorizon.gtnhlib.mixins.late;
 
 import com.gtnewhorizon.gtnhlib.api.thaumcraft.EnhancedInfusionRecipe;
-import cpw.mods.fml.common.eventhandler.Event;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChunkCoordinates;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import thaumcraft.api.TileThaumcraft;
 import thaumcraft.api.crafting.InfusionRecipe;
-import thaumcraft.common.entities.EntityPermanentItem;
-import thaumcraft.common.entities.EntitySpecialItem;
 import thaumcraft.common.tiles.TileInfusionMatrix;
 import thaumcraft.common.tiles.TilePedestal;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 @Mixin(value = TileInfusionMatrix.class, remap = false)
-public abstract class MixinEnhancedInfusionRecipe {
+public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
+    @Shadow
+    private ArrayList<ItemStack> recipeIngredients;
     @Unique
     private InfusionRecipe recipe;
+
+    //setter since its complaining
+    @Unique
+    public void setRecipe (InfusionRecipe recipe) {
+        this.recipe = recipe;
+    }
 
     // Get the recipe from the crafting method
     @Inject (method = "craftingStart",
         at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;recipeType:I"))
-    public void getRecipe(EntityPlayer player, CallbackInfo ci) {
-        this.recipe = recipe;
+    public void setRecipe(CallbackInfo ci) {
+        setRecipe(recipe);
+        // System.out.println("Recipe got pulled! LETS GOOOOOO"); // logger
     }
 
-    //if recipe is instanceOf EnhancedInfusionRecipe, consume item and pop off the corresponding replacement item, if defined
-    /*@Inject (method = "craftingCycle",
-        at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;itemCount:I", ordinal = 2, shift = "BY", by = 2))
-    public void popoffReplacement(EntityPlayer player, CallbackInfo ci) {
-        if (this.recipe instanceof EnhancedInfusionRecipe)
-            if (recipe.replacements.containsKey(((TilePedestal)te).getStackInSlot(0).getItem().getContainerItem(((TilePedestal)te).getStackInSlot(0)))) {
-                EntitySpecialItem entityitem = new EntityPermanentItem(
-                    this.worldObj,
-                    cc.posX, cc.posY, cc.posZ,
-                    new ItemStack(
-                        recipe.replacements[((TilePedestal)te).getStackInSlot(0).getItem().getContainerItem(((TilePedestal)te).getStackInSlot(0))]));
-                entityitem.motionX = entityitem.motionY = entityitem.motionZ = 0;
-                this.worldObj.spawnEntityInWorld(entityitem);
-            }
-
-    }*/
-
-
+    //if recipe is instanceOf EnhancedInfusionRecipe, replace item with the corresponding replacement item, if defined
+    @Inject (method = "craftCycle", locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true,
+        at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;itemCount:I", ordinal = 3, shift = At.Shift.BY, by = 2))
+    public void itemReplacement(CallbackInfo ci, boolean valid, TileEntity te, int a, Iterator i$, ChunkCoordinates cc) {
+        if (this.recipe instanceof EnhancedInfusionRecipe && ((EnhancedInfusionRecipe)recipe).hasReplacement(((TilePedestal) te)
+                .getStackInSlot(0).getItem().getContainerItem(((TilePedestal) te).getStackInSlot(0)))) {
+            ItemStack is2 = ((TilePedestal) te).getStackInSlot(0).getItem().getContainerItem(((TilePedestal) te).getStackInSlot(0));
+            ((TilePedestal) te).setInventorySlotContentsFromInfusion(0, ((EnhancedInfusionRecipe)recipe).getReplacement(is2));
+            this.recipeIngredients.remove(a);
+            // System.out.println("Replacement was made! LETS GOOOOOO"); // logger
+            ci.cancel();
+        }
+    }
 }

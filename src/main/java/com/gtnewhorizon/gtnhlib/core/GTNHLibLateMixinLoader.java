@@ -22,6 +22,6 @@ public class GTNHLibLateMixinLoader  implements ILateMixinLoader {
     public List<String> getMixins(Set<String> loadedMods) {
         final List<String> mixins = new ArrayList<>();
         mixins.add("MixinEnhancedInfusionRecipe");
-        return IMixins.getEarlyMixins(Mixins.class, loadedMods);
+        return IMixins.getLateMixins(Mixins.class, loadedMods);
     }
 }
