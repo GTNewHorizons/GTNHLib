@@ -12,16 +12,28 @@ import thaumcraft.api.crafting.InfusionRecipe;
 
 public class EnhancedInfusionRecipe extends InfusionRecipe {
 
-    private List<ReplacementMap> replacements;
+    private final List<Replacement> replacements;
+    public static final Replacement NO_REPLACEMENT = new Replacement(null, null, true);
 
+    /**
+     * Create a new EnhancedInfusionRecipe, capable of
+     *
+     * @param research     The required research for this infusion
+     * @param output       The item created by this infusion
+     * @param inst         The instability of this infusion
+     * @param aspects2     The required essentia for this infusion
+     * @param input        The item required to be placed on the central pedestal
+     * @param recipe       The items required to be placed on the outer pedestals
+     * @param replacements What items to replace consumed items with on the outer pedestals
+     */
     public EnhancedInfusionRecipe(String research, Object output, int inst, AspectList aspects2, ItemStack input,
-            ItemStack[] recipe, List<ReplacementMap> replacements) {
+            ItemStack[] recipe, List<Replacement> replacements) {
         super(research, output, inst, aspects2, input, recipe);
         this.replacements = replacements;
     }
 
     public ItemStack getReplacement(ItemStack key) {
-        for (ReplacementMap replacement : this.replacements) {
+        for (Replacement replacement : this.replacements) {
             if (OreDictionary.itemMatches(replacement.input, key, replacement.strict)) {
                 return replacement.output;
             }
@@ -29,7 +41,7 @@ public class EnhancedInfusionRecipe extends InfusionRecipe {
         return null;
     }
 
-    public List<ReplacementMap> getReplacementMap() {
+    public List<Replacement> getReplacementMap() {
         return this.replacements;
     }
 
@@ -38,5 +50,5 @@ public class EnhancedInfusionRecipe extends InfusionRecipe {
     }
 
     @Desugar
-    public record ReplacementMap(ItemStack input, ItemStack output, boolean strict) {}
+    public record Replacement(ItemStack input, ItemStack output, boolean strict) {}
 }

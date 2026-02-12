@@ -94,17 +94,13 @@ public class CommonProxy {
     }
 
     public void postInit(FMLPostInitializationEvent event) {
-        List<EnhancedInfusionRecipe.ReplacementMap> replacements = new ArrayList<>();
+        List<EnhancedInfusionRecipe.Replacement> replacements = new ArrayList<>();
+        replacements.add(new EnhancedInfusionRecipe.Replacement(new ItemStack(Items.water_bucket), null, false));
         replacements.add(
-                new EnhancedInfusionRecipe.ReplacementMap(
-                        new ItemStack(Items.water_bucket),
-                        null,
+                new EnhancedInfusionRecipe.Replacement(
+                        new ItemStack(Items.iron_ingot),
+                        new ItemStack(Items.diamond_axe),
                         false));
-        replacements.add(
-            new EnhancedInfusionRecipe.ReplacementMap(
-                new ItemStack(Items.iron_ingot),
-                new ItemStack(Items.diamond_axe),
-                false));
         ThaumcraftApi.getCraftingRecipes().add(
                 new EnhancedInfusionRecipe(
                         "ASPECTS",
@@ -112,7 +108,8 @@ public class CommonProxy {
                         0,
                         new AspectList(new ItemStack(Items.iron_ingot)),
                         new ItemStack(Items.iron_ingot),
-                        new ItemStack[] { new ItemStack(Items.water_bucket), new ItemStack(Items.iron_ingot) },
+                        new ItemStack[] { new ItemStack(Items.water_bucket), new ItemStack(Items.iron_ingot),
+                                new ItemStack(Items.lava_bucket) },
                         replacements));
     }
 

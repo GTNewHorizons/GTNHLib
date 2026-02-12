@@ -32,16 +32,16 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
     @Shadow
     private ArrayList<ItemStack> recipeIngredients;
     @Unique
-    private List<EnhancedInfusionRecipe.ReplacementMap> gTNHLib$replacements = new ArrayList<>();
+    private List<EnhancedInfusionRecipe.Replacement> gTNHLib$replacements = new ArrayList<>();
 
     @Unique
-    public EnhancedInfusionRecipe.ReplacementMap getReplacement(ItemStack key) {
-        for (EnhancedInfusionRecipe.ReplacementMap replacement : this.gTNHLib$replacements) {
+    public EnhancedInfusionRecipe.Replacement getReplacement(ItemStack key) {
+        for (EnhancedInfusionRecipe.Replacement replacement : this.gTNHLib$replacements) {
             if (OreDictionary.itemMatches(replacement.input(), key, replacement.strict())) {
                 return replacement;
             }
         }
-        return null;
+        return EnhancedInfusionRecipe.NO_REPLACEMENT;
     }
 
     // Get the recipe from the crafting method
@@ -66,7 +66,8 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
         if (!this.gTNHLib$replacements.isEmpty()) {
             TilePedestal pedestal = (TilePedestal) te;
             ItemStack stack = pedestal.getStackInSlot(0);
-            EnhancedInfusionRecipe.ReplacementMap replacement = getReplacement(stack);
+            EnhancedInfusionRecipe.Replacement replacement = getReplacement(stack);
+            if (replacement == EnhancedInfusionRecipe.NO_REPLACEMENT) return;
             this.recipeIngredients.remove(slot);
             if (!OreDictionary.itemMatches(stack, replacement.output(), replacement.strict())) {
                 pedestal.setInventorySlotContents(0, replacement.output());
@@ -86,7 +87,7 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
         original.call(nbtCompound);
         if (!this.gTNHLib$replacements.isEmpty()) {
             NBTTagList nbttaglist = new NBTTagList();
-            for (EnhancedInfusionRecipe.ReplacementMap replacement : this.gTNHLib$replacements) {
+            for (EnhancedInfusionRecipe.Replacement replacement : this.gTNHLib$replacements) {
                 NBTTagCompound replacements = new NBTTagCompound();
                 if (replacement.input() == null) continue;
                 replacements.setTag("input", replacement.input().writeToNBT(new NBTTagCompound()));
@@ -123,7 +124,7 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
 
             boolean strict = replacementEntry.getBoolean("strict");
 
-            this.gTNHLib$replacements.add(new EnhancedInfusionRecipe.ReplacementMap(input, output, strict));
+            this.gTNHLib$replacements.add(new EnhancedInfusionRecipe.Replacement(input, output, strict));
         }
     }
 
