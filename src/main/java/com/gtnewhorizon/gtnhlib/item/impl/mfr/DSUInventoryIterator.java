@@ -13,10 +13,12 @@ public class DSUInventoryIterator extends AbstractInventoryIterator {
     private static final int[] SLOTS = { 0 };
 
     public final IDeepStorageUnit dsu;
+    private final boolean simulated;
 
-    public DSUInventoryIterator(IDeepStorageUnit dsu, int[] allowedSlots) {
+    public DSUInventoryIterator(IDeepStorageUnit dsu, int[] allowedSlots, boolean simulated) {
         super(SLOTS, allowedSlots);
         this.dsu = dsu;
+        this.simulated = simulated;
     }
 
     @Override
@@ -34,7 +36,9 @@ public class DSUInventoryIterator extends AbstractInventoryIterator {
 
         int toExtract = Math.min(amount, stored.stackSize);
 
-        dsu.setStoredItemCount(stored.stackSize - toExtract);
+        if (!simulated) {
+            dsu.setStoredItemCount(stored.stackSize - toExtract);
+        }
 
         return ItemUtil.copyAmount(toExtract, stored);
     }
@@ -48,11 +52,13 @@ public class DSUInventoryIterator extends AbstractInventoryIterator {
         int storedAmount = stored == null ? 0 : stored.stackSize;
         int toInsert = Math.min(stack.getStackSize(), dsu.getMaxStoredCount() - storedAmount);
 
-        if (stored == null) {
-            dsu.setStoredItemType(stack.toStack(1), 1);
-        }
+        if (!simulated) {
+            if (stored == null) {
+                dsu.setStoredItemType(stack.toStack(1), 1);
+            }
 
-        dsu.setStoredItemCount(storedAmount + toInsert);
+            dsu.setStoredItemCount(storedAmount + toInsert);
+        }
 
         return stack.getStackSize() - toInsert;
     }

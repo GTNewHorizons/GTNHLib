@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.item.impl.mfr;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.item.InventoryIterator;
 import com.gtnewhorizon.gtnhlib.item.SimpleItemSink;
@@ -17,6 +18,11 @@ public class DSUItemSink extends SimpleItemSink {
 
     @Override
     protected @NotNull InventoryIterator iterator(int[] allowedSlots) {
-        return new DSUInventoryIterator(dsu, allowedSlots);
+        return new DSUInventoryIterator(dsu, allowedSlots, false);
+    }
+
+    @Override
+    public @Nullable InventoryIterator simulatedSinkIterator() {
+        return new DSUInventoryIterator(dsu, allowedSinkSlots, true);
     }
 }
