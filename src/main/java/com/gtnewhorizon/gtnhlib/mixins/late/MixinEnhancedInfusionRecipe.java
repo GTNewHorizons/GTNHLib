@@ -35,10 +35,10 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
     private List<EnhancedInfusionRecipe.ReplacementMap> gTNHLib$replacements = new ArrayList<>();
 
     @Unique
-    public ItemStack getReplacement(ItemStack key) {
+    public EnhancedInfusionRecipe.ReplacementMap getReplacement(ItemStack key) {
         for (EnhancedInfusionRecipe.ReplacementMap replacement : this.gTNHLib$replacements) {
             if (OreDictionary.itemMatches(replacement.input(), key, replacement.strict())) {
-                return replacement.output();
+                return replacement;
             }
         }
         return null;
@@ -66,9 +66,11 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
         if (!this.gTNHLib$replacements.isEmpty()) {
             TilePedestal pedestal = (TilePedestal) te;
             ItemStack stack = pedestal.getStackInSlot(0);
-            ItemStack replacement = getReplacement(stack);
+            EnhancedInfusionRecipe.ReplacementMap replacement = getReplacement(stack);
             this.recipeIngredients.remove(slot);
-            pedestal.setInventorySlotContents(0, replacement);
+            if (!OreDictionary.itemMatches(stack, replacement.output(), replacement.strict())) {
+                pedestal.setInventorySlotContents(0, replacement.output());
+            }
             ci.cancel();
         }
     }
