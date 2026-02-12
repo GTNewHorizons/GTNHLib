@@ -1,17 +1,11 @@
 package com.gtnewhorizon.gtnhlib;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
-import com.gtnewhorizon.gtnhlib.api.thaumcraft.EnhancedInfusionRecipe;
 import com.gtnewhorizon.gtnhlib.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
@@ -46,8 +40,6 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import thaumcraft.api.ThaumcraftApi;
-import thaumcraft.api.aspects.AspectList;
 
 @EventBusSubscriber
 public class CommonProxy {
@@ -93,25 +85,7 @@ public class CommonProxy {
         }
     }
 
-    public void postInit(FMLPostInitializationEvent event) {
-        List<EnhancedInfusionRecipe.Replacement> replacements = new ArrayList<>();
-        replacements.add(new EnhancedInfusionRecipe.Replacement(new ItemStack(Items.water_bucket), null, false));
-        replacements.add(
-                new EnhancedInfusionRecipe.Replacement(
-                        new ItemStack(Items.iron_ingot),
-                        new ItemStack(Items.diamond_axe),
-                        false));
-        ThaumcraftApi.getCraftingRecipes().add(
-                new EnhancedInfusionRecipe(
-                        "ASPECTS",
-                        new ItemStack(Items.diamond),
-                        0,
-                        new AspectList(new ItemStack(Items.iron_ingot)),
-                        new ItemStack(Items.iron_ingot),
-                        new ItemStack[] { new ItemStack(Items.water_bucket), new ItemStack(Items.iron_ingot),
-                                new ItemStack(Items.lava_bucket) },
-                        replacements));
-    }
+    public void postInit(FMLPostInitializationEvent event) {}
 
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         BrigadierApi.init();

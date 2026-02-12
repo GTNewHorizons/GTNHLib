@@ -34,27 +34,17 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
     @Unique
     private List<EnhancedInfusionRecipe.Replacement> gTNHLib$replacements = new ArrayList<>();
 
-    @Unique
-    public EnhancedInfusionRecipe.Replacement getReplacement(ItemStack key) {
-        for (EnhancedInfusionRecipe.Replacement replacement : this.gTNHLib$replacements) {
-            if (OreDictionary.itemMatches(replacement.input(), key, replacement.strict())) {
-                return replacement;
-            }
-        }
-        return EnhancedInfusionRecipe.NO_REPLACEMENT;
-    }
-
-    // Get the recipe from the crafting method
+    // Save the replacements for use in itemReplacement
     @Inject(
             method = "craftingStart",
             at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;recipeType:I"))
     public void setRecipe(CallbackInfo ci, @Local InfusionRecipe recipe) {
         if (recipe instanceof EnhancedInfusionRecipe r) {
-            this.gTNHLib$replacements = r.getReplacementMap();
+            this.gTNHLib$replacements = r.getReplacements();
         }
     }
 
-    // if recipe is instanceOf EnhancedInfusionRecipe, replace item with the corresponding replacement item, if defined
+    // If one exists, replace the item on the pedestal with its replacement and skip the normal consumption logic
     @Inject(
             method = "craftCycle",
             cancellable = true,
@@ -63,50 +53,50 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
                     target = "Lthaumcraft/common/tiles/TilePedestal;getStackInSlot(I)Lnet/minecraft/item/ItemStack;",
                     ordinal = 4))
     public void itemReplacement(CallbackInfo ci, @Local boolean valid, @Local TileEntity te, @Local int slot) {
-        if (!this.gTNHLib$replacements.isEmpty()) {
-            TilePedestal pedestal = (TilePedestal) te;
-            ItemStack stack = pedestal.getStackInSlot(0);
-            EnhancedInfusionRecipe.Replacement replacement = getReplacement(stack);
-            if (replacement == EnhancedInfusionRecipe.NO_REPLACEMENT) return;
-            this.recipeIngredients.remove(slot);
-            if (!OreDictionary.itemMatches(stack, replacement.output(), replacement.strict())) {
-                pedestal.setInventorySlotContents(0, replacement.output());
-            }
-            ci.cancel();
+        if (this.gTNHLib$replacements.isEmpty()) {
+            return;
         }
+        TilePedestal pedestal = (TilePedestal) te;
+        ItemStack stack = pedestal.getStackInSlot(0);
+        EnhancedInfusionRecipe.Replacement replacement = gTNHLib$getReplacement(stack);
+        if (replacement == EnhancedInfusionRecipe.NO_REPLACEMENT) return;
+        this.recipeIngredients.remove(slot);
+        if (!OreDictionary.itemMatches(stack, replacement.output(), replacement.strict())) {
+            pedestal.setInventorySlotContents(0, replacement.output());
+        }
+        ci.cancel();
     }
 
     @Inject(method = "craftingFinish", at = @At(value = "RETURN"))
     public void clearRecipe(CallbackInfo ci) {
-        this.gTNHLib$replacements = null;
+        this.gTNHLib$replacements.clear();
     }
 
-    // write to NBT with the other ingredients and stuff
     @WrapMethod(method = "writeToNBT")
     public void writeToNBT(NBTTagCompound nbtCompound, Operation<Void> original) {
         original.call(nbtCompound);
-        if (!this.gTNHLib$replacements.isEmpty()) {
-            NBTTagList nbttaglist = new NBTTagList();
-            for (EnhancedInfusionRecipe.Replacement replacement : this.gTNHLib$replacements) {
-                NBTTagCompound replacements = new NBTTagCompound();
-                if (replacement.input() == null) continue;
-                replacements.setTag("input", replacement.input().writeToNBT(new NBTTagCompound()));
-
-                ItemStack output = replacement.output();
-                if (output != null) {
-                    replacements.setTag("output", output.writeToNBT(new NBTTagCompound()));
-                } else {
-                    replacements.setBoolean("nullOutput", true);
-                }
-
-                replacements.setBoolean("strict", replacement.strict());
-                nbttaglist.appendTag(replacements);
-            }
-            nbtCompound.setTag("replacements", nbttaglist);
+        if (this.gTNHLib$replacements.isEmpty()) {
+            return;
         }
+        NBTTagList nbttaglist = new NBTTagList();
+        for (EnhancedInfusionRecipe.Replacement replacement : this.gTNHLib$replacements) {
+            NBTTagCompound replacements = new NBTTagCompound();
+            if (replacement.input() == null) continue;
+            replacements.setTag("input", replacement.input().writeToNBT(new NBTTagCompound()));
+
+            ItemStack output = replacement.output();
+            if (output != null) {
+                replacements.setTag("output", output.writeToNBT(new NBTTagCompound()));
+            } else {
+                replacements.setBoolean("nullOutput", true);
+            }
+
+            replacements.setBoolean("strict", replacement.strict());
+            nbttaglist.appendTag(replacements);
+        }
+        nbtCompound.setTag("replacements", nbttaglist);
     }
 
-    // write to NBT with the other ingredients and stuff
     @WrapMethod(method = "readFromNBT")
     public void readFromNBT(NBTTagCompound nbtCompound, Operation<Void> original) {
         original.call(nbtCompound);
@@ -119,13 +109,29 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
             NBTTagCompound replacementEntry = nbttaglist.getCompoundTagAt(i); // get the replacament entry
             ItemStack input = ItemStack.loadItemStackFromNBT(replacementEntry.getCompoundTag("input"));
             ItemStack output = null;
-            if (!replacementEntry.getBoolean("nullOutput"))
+            if (!replacementEntry.getBoolean("nullOutput")) {
                 output = ItemStack.loadItemStackFromNBT(replacementEntry.getCompoundTag("output"));
+            }
 
             boolean strict = replacementEntry.getBoolean("strict");
 
             this.gTNHLib$replacements.add(new EnhancedInfusionRecipe.Replacement(input, output, strict));
         }
+    }
+
+    /**
+     * @param key The ItemStack to find a Replacement for.
+     * @return the Replacement for the given ItemStack. EnhancedInfusionRecipe.NO_REPLACEMENT if no replacement was
+     *         found.
+     */
+    @Unique
+    public EnhancedInfusionRecipe.Replacement gTNHLib$getReplacement(ItemStack key) {
+        for (EnhancedInfusionRecipe.Replacement replacement : this.gTNHLib$replacements) {
+            if (OreDictionary.itemMatches(replacement.input(), key, replacement.strict())) {
+                return replacement;
+            }
+        }
+        return EnhancedInfusionRecipe.NO_REPLACEMENT;
     }
 
 }
