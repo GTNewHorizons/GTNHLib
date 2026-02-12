@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,7 +36,11 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
     // Save the replacements for use in itemReplacement
     @Inject(
             method = "craftingStart",
-            at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;recipeType:I", ordinal = 0))
+            at = @At(
+                    value = "FIELD",
+                    target = "Lthaumcraft/common/tiles/TileInfusionMatrix;recipeType:I",
+                    ordinal = 0,
+                    opcode = Opcodes.PUTFIELD))
     public void setRecipe(CallbackInfo ci, @Local InfusionRecipe recipe) {
         if (recipe instanceof EnhancedInfusionRecipe r) {
             this.gTNHLib$replacements = r.getReplacements();
