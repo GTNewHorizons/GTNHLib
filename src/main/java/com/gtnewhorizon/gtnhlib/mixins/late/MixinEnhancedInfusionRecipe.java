@@ -17,8 +17,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.gtnewhorizon.gtnhlib.api.thaumcraft.EnhancedInfusionRecipe;
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.sugar.Local;
 
 import thaumcraft.api.TileThaumcraft;
@@ -37,7 +35,7 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
     // Save the replacements for use in itemReplacement
     @Inject(
             method = "craftingStart",
-            at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;recipeType:I"))
+            at = @At(value = "FIELD", target = "Lthaumcraft/common/tiles/TileInfusionMatrix;recipeType:I", ordinal = 0))
     public void setRecipe(CallbackInfo ci, @Local InfusionRecipe recipe) {
         if (recipe instanceof EnhancedInfusionRecipe r) {
             this.gTNHLib$replacements = r.getReplacements();
@@ -52,7 +50,7 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
                     value = "INVOKE",
                     target = "Lthaumcraft/common/tiles/TilePedestal;getStackInSlot(I)Lnet/minecraft/item/ItemStack;",
                     ordinal = 4))
-    public void itemReplacement(CallbackInfo ci, @Local boolean valid, @Local TileEntity te, @Local int slot) {
+    public void itemReplacement(CallbackInfo ci, @Local TileEntity te, @Local int slot) {
         if (this.gTNHLib$replacements.isEmpty()) {
             return;
         }
@@ -72,16 +70,16 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
         this.gTNHLib$replacements.clear();
     }
 
-    @WrapMethod(method = "writeToNBT")
-    public void writeToNBT(NBTTagCompound nbtCompound, Operation<Void> original) {
-        original.call(nbtCompound);
-        if (this.gTNHLib$replacements.isEmpty()) {
+    @Inject(method = "writeToNBT", at = @At(value = "RETURN"))
+    public void writeToNBT(NBTTagCompound nbtCompound, CallbackInfo ci) {
+        if (this.gTNHLib$replacements == null || this.gTNHLib$replacements.isEmpty()) {
             return;
         }
         NBTTagList nbttaglist = new NBTTagList();
         for (EnhancedInfusionRecipe.Replacement replacement : this.gTNHLib$replacements) {
-            NBTTagCompound replacements = new NBTTagCompound();
             if (replacement.input() == null) continue;
+            NBTTagCompound replacements = new NBTTagCompound();
+
             replacements.setTag("input", replacement.input().writeToNBT(new NBTTagCompound()));
 
             ItemStack output = replacement.output();
@@ -97,9 +95,8 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
         nbtCompound.setTag("replacements", nbttaglist);
     }
 
-    @WrapMethod(method = "readFromNBT")
-    public void readFromNBT(NBTTagCompound nbtCompound, Operation<Void> original) {
-        original.call(nbtCompound);
+    @Inject(method = "readFromNBT", at = @At(value = "RETURN"))
+    public void readFromNBT(NBTTagCompound nbtCompound, CallbackInfo ci) {
         if (!nbtCompound.hasKey("replacements")) {
             return;
         }

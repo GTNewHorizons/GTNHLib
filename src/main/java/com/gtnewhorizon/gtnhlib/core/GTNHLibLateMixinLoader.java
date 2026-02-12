@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.core;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -19,8 +18,6 @@ public class GTNHLibLateMixinLoader implements ILateMixinLoader {
 
     @Override
     public List<String> getMixins(Set<String> loadedMods) {
-        final List<String> mixins = new ArrayList<>();
-        mixins.add("MixinEnhancedInfusionRecipe");
         return IMixins.getLateMixins(Mixins.class, loadedMods);
     }
 }

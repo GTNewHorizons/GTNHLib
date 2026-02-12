@@ -19,7 +19,7 @@ public class EnhancedInfusionRecipe extends InfusionRecipe {
     /**
      * Create a new EnhancedInfusionRecipe, capable of replacing items on the outer pedestals with other items rather
      * than consuming them or leaving their containers behind. An example use case is Witching Gadgets' Primordial Armor
-     * recipes leaving the Primordial Pearls on the outer pedestals.
+     * recipes leaving the Inert Primordial Pearls on the outer pedestals in place of Primordial Pearls.
      *
      * @param research     The required research for this infusion
      * @param output       The item created by this infusion
@@ -43,7 +43,7 @@ public class EnhancedInfusionRecipe extends InfusionRecipe {
      * A Replacement defines one type of ItemStack (e.g. all Iron Ingots) to replace with another ItemStack (e.g.
      * Diamonds). Setting strict to false allows input to match with all metadata if input is given metadata of
      * Short.MAX_VALUE. NBT data (such as enchantments) is ignored when comparing against input.
-     * 
+     *
      * @param input  The input ItemStack to compare recipe ingredients against
      * @param output The ItemStack to replace items that match the input
      * @param strict Whether to use strict mode in OreDictionary.itemMatches while comparing recipe ingredients to input
