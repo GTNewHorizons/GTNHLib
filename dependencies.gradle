@@ -24,14 +24,14 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
-    compileOnly("com.github.GTNewHorizons:lwjgl3ify:3.0.5") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:lwjgl3ify:3.0.8") { transitive = false }
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.10") { transitive = false }
 
-    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.48-GTNH:dev") { transitive = false }
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.60-GTNH:dev") { transitive = false }
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev") { transitive = false }
 
     // Annotation things
-    compileOnly("com.github.GTNewHorizons:Angelica:1.0.0-beta68a:dev") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:Angelica:2.0.0-alpha20:dev") { transitive = false }
     compileOnly('org.jetbrains:annotations:26.0.1')
     compileOnly("org.projectlombok:lombok:1.18.36") {transitive = false }
     annotationProcessor("org.projectlombok:lombok:1.18.36")

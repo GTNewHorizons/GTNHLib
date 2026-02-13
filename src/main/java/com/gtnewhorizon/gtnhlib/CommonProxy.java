@@ -21,6 +21,7 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
+import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
@@ -28,6 +29,7 @@ import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -46,6 +48,9 @@ public class CommonProxy {
 
     public void construct(FMLConstructionEvent event) {
         AutoEventBus.executePhase(Phase.CONSTRUCT);
+
+        // Register config change handler early
+        FMLCommonHandler.instance().bus().register(new ConfigEventHandler());
     }
 
     public void preInit(FMLPreInitializationEvent event) {

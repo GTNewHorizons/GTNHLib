@@ -113,3 +113,6 @@ gtnhlib.chat.rpupdater.info.no_updater=No updater metadata found for this pack.
 gtnhlib.chat.rpupdater.info.updater_name=Updater name: §7%s
 gtnhlib.chat.rpupdater.info.version=Version: §7%s (GTNH %s)
 gtnhlib.chat.rpupdater.info.source=Source: §7%s/%s
+# Number Formatting Config
+gtnhlib.config.number_formatting.numberFormatLocale=Number Format Locale
+gtnhlib.config.number_formatting.numberFormatLocale.tooltip=Override the language format for numbers. Examples: en_US (1,234.56), ru_RU (1 234,56), de_DE (1.234,56). Leave empty for system default.
