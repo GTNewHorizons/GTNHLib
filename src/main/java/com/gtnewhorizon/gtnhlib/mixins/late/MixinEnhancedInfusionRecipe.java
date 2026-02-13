@@ -54,7 +54,8 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
             at = @At(
                     value = "INVOKE",
                     target = "Lthaumcraft/common/tiles/TilePedestal;getStackInSlot(I)Lnet/minecraft/item/ItemStack;",
-                    ordinal = 4))
+                    ordinal = 4,
+                    remap = true))
     public void itemReplacement(CallbackInfo ci, @Local TileEntity te, @Local int slot) {
         if (this.gTNHLib$replacements.isEmpty()) {
             return;
