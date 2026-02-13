@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8.3-GTNH",
+  "package": "com.gtnewhorizon.gtnhlib.mixins.late",
+  "refmap": "mixins.gtnhlib.refmap.json",
+  "target": "@env(DEFAULT)",
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  },
+  "compatibilityLevel": "JAVA_8"
+}
+
