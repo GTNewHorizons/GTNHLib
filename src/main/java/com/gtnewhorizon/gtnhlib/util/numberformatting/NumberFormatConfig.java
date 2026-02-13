@@ -54,7 +54,7 @@ public final class NumberFormatConfig {
     public static ExponentialFormat EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
 
     @Config.Ignore
-    private static Locale customLocale = null;
+    private static Locale customLocale = LocaleOption.SYSTEM_DEFAULT.getLocale();
 
     /**
      * Enum representing available locale options for number formatting
@@ -113,42 +113,29 @@ public final class NumberFormatConfig {
             EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
         }
 
-        // Apply locale from enum selection
-        if (numberFormatLocale == null) {
-            numberFormatLocale = LocaleOption.SYSTEM_DEFAULT;
-        }
-
         customLocale = numberFormatLocale.getLocale();
-
-        if (customLocale == null) {
-            GTNHLib.info(
-                    "Number formatting: Using system default locale ("
-                            + Locale.getDefault(Locale.Category.FORMAT).toString()
-                            + ")");
-        } else {
-            GTNHLib.info(
-                    "Number formatting: Using " + numberFormatLocale.getDisplayName()
-                            + " ("
-                            + customLocale.toString()
-                            + ")");
-        }
+        GTNHLib.info(
+                "Number formatting: Using " + numberFormatLocale.getDisplayName()
+                        + " ("
+                        + customLocale.toString()
+                        + ")");
     }
 
     /**
      * Gets the currently active locale for number formatting.
-     * 
-     * @return Custom locale if set, otherwise system default locale
+     *
+     * @return Active locale selected by configuration
      */
     public static Locale getActiveLocale() {
         return customLocale;
     }
 
     /**
-     * Checks if a custom locale override is active.
-     * 
-     * @return true if custom locale is set, false otherwise
+     * Checks if a non-system locale override is active.
+     *
+     * @return true if a locale other than system default is selected
      */
     public static boolean hasCustomLocale() {
-        return customLocale != null;
+        return numberFormatLocale != LocaleOption.SYSTEM_DEFAULT;
     }
 }
