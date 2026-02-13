@@ -140,7 +140,7 @@ public final class NumberFormatConfig {
      * @return Custom locale if set, otherwise system default locale
      */
     public static Locale getActiveLocale() {
-        return (customLocale != null) ? customLocale : Locale.getDefault(Locale.Category.FORMAT);
+        return customLocale;
     }
 
     /**
