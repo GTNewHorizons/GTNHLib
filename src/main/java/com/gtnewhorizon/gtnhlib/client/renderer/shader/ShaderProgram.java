@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.util.ResourceLocation;
 
 import org.joml.Vector2f;
@@ -55,10 +54,6 @@ public class ShaderProgram implements AutoCloseable {
     }
 
     private static int createProgram(String domain, String vertShaderFilename, String fragShaderFilename) {
-        if (!OpenGlHelper.shadersSupported) {
-            return 0;
-        }
-
         final int program = GL20.glCreateProgram();
 
         final int vertShader = loadAndCompileShader(program, domain, vertShaderFilename, GL20.GL_VERTEX_SHADER);
@@ -130,10 +125,6 @@ public class ShaderProgram implements AutoCloseable {
 
     // ONLY WORKS IN DEV ENV
     private static int createProgramFromPath(Path vertexPath, Path fragmentPath) {
-        if (!OpenGlHelper.shadersSupported) {
-            return 0;
-        }
-
         final int program = GL20.glCreateProgram();
 
         final int vertShader = loadAndCompileShader(program, vertexPath, GL20.GL_VERTEX_SHADER);

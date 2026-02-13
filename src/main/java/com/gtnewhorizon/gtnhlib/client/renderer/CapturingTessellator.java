@@ -3,8 +3,11 @@ package com.gtnewhorizon.gtnhlib.client.renderer;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.COLOR_INDEX;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.LIGHT_INDEX;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.NORMAL_INDEX;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.POSITION_INDEX;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TEXTURE_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TEX_X_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.TEX_Y_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.X_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.Y_INDEX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.util.ModelQuadUtil.Z_INDEX;
 import static net.minecraft.util.MathHelper.clamp_int;
 
 import java.nio.ByteBuffer;
@@ -22,6 +25,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
+import com.gtnewhorizon.gtnhlib.client.model.NormalHelper;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
@@ -84,7 +88,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     // Reusable lists for stopCapturingToGeometry to avoid allocations
     final List<ModelLine> lineListCache = new ArrayList<>();
     final List<ModelTriangle> triangleListCache = new ArrayList<>();
-    final List<ModelQuad> quadListCache = new ArrayList<>();
+    final List<ModelQuadViewMutable> quadListCache = new ArrayList<>();
 
     int shaderBlockId = -1;
 
@@ -152,15 +156,9 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     }
 
     public static ByteBuffer quadsToBuffer(List<ModelQuadViewMutable> quads, VertexFormat format) {
-        if (!format.canWriteQuads()) {
-            throw new IllegalStateException("Vertex format has no quad writer: " + format);
-        }
         final ByteBuffer byteBuffer = BufferUtils.createByteBuffer(format.getVertexSize() * quads.size() * 4);
-        // noinspection ForLoopReplaceableByForEach
-        for (int i = 0, quadsSize = quads.size(); i < quadsSize; i++) {
-            format.writeQuad(quads.get(i), byteBuffer);
-        }
-        byteBuffer.rewind();
+        format.writeQuads(quads, byteBuffer);
+        byteBuffer.flip();
         return byteBuffer;
     }
 
@@ -172,16 +170,16 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
     public CapturingTessellator pos(double x, double y, double z) {
         ensureBuffer();
 
-        this.rawBuffer[this.rawBufferIndex + POSITION_INDEX + 0] = Float.floatToRawIntBits((float) (x + this.xOffset));
-        this.rawBuffer[this.rawBufferIndex + POSITION_INDEX + 1] = Float.floatToRawIntBits((float) (y + this.yOffset));
-        this.rawBuffer[this.rawBufferIndex + POSITION_INDEX + 2] = Float.floatToRawIntBits((float) (z + this.zOffset));
+        this.rawBuffer[this.rawBufferIndex + X_INDEX] = Float.floatToRawIntBits((float) (x + this.xOffset));
+        this.rawBuffer[this.rawBufferIndex + Y_INDEX] = Float.floatToRawIntBits((float) (y + this.yOffset));
+        this.rawBuffer[this.rawBufferIndex + Z_INDEX] = Float.floatToRawIntBits((float) (z + this.zOffset));
 
         return this;
     }
 
     public CapturingTessellator tex(double u, double v) {
-        this.rawBuffer[this.rawBufferIndex + TEXTURE_INDEX] = Float.floatToRawIntBits((float) u);
-        this.rawBuffer[this.rawBufferIndex + TEXTURE_INDEX + 1] = Float.floatToRawIntBits((float) v);
+        this.rawBuffer[this.rawBufferIndex + TEX_X_INDEX] = Float.floatToRawIntBits((float) u);
+        this.rawBuffer[this.rawBufferIndex + TEX_Y_INDEX] = Float.floatToRawIntBits((float) v);
         this.hasTexture = true;
 
         return this;
@@ -229,16 +227,13 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
      * @param normalMatrix The normal matrix (typically the transpose of the inverse transformation matrix)
      */
     public CapturingTessellator setNormalTransformed(Vector3f normal, Vector3f dest, Matrix3f normalMatrix) {
-        normalMatrix.transform(normal, dest).normalize();
-        this.setNormal(dest.x, dest.y, dest.z);
+        NormalHelper.setNormalTransformed(this, normal, dest, normalMatrix);
         return this;
     }
 
-    /**
-     * Same as the method above, but this one will mutate the passed Vector3f
-     */
     public CapturingTessellator setNormalTransformed(Vector3f normal, Matrix3f normalMatrix) {
-        return setNormalTransformed(normal, normal, normalMatrix);
+        NormalHelper.setNormalTransformed(this, normal, normalMatrix);
+        return this;
     }
 
     public CapturingTessellator lightmap(int skyLight, int blockLight) {
@@ -288,6 +283,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         public boolean hasBrightness;
         public boolean hasColor;
         public boolean hasNormals;
+        @Deprecated
         public int drawMode = GL11.GL_QUADS;
 
         public Flags(boolean hasTexture, boolean hasBrightness, boolean hasColor, boolean hasNormals) {
