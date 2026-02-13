@@ -61,7 +61,7 @@ public final class NumberFormatConfig {
      */
     public enum LocaleOption {
 
-        SYSTEM_DEFAULT("System Default", null),
+        SYSTEM_DEFAULT("System Default", Locale.getDefault(Locale.Category.FORMAT)),
         ENGLISH_US("English (US) - 1,234.56", new Locale("en", "US")),
         RUSSIAN("Russian - 1 234,56", new Locale("ru", "RU")),
         GERMAN("German - 1.234,56", new Locale("de", "DE")),
