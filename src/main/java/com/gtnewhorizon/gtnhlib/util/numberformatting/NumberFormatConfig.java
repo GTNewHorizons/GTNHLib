@@ -92,6 +92,9 @@ public final class NumberFormatConfig {
         }
 
         public Locale getLocale() {
+            if (this == SYSTEM_DEFAULT) {
+                return Locale.getDefault(Locale.Category.FORMAT);
+            }
             return locale;
         }
 
@@ -127,6 +130,9 @@ public final class NumberFormatConfig {
      * @return Active locale selected by configuration
      */
     public static Locale getActiveLocale() {
+        if (numberFormatLocale == LocaleOption.SYSTEM_DEFAULT) {
+            return Locale.getDefault(Locale.Category.FORMAT);
+        }
         return customLocale;
     }
 
