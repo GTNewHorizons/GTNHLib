@@ -34,7 +34,10 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQ
 public class ModelQuadUtil {
 
     // Integer indices for vertex attributes, useful for accessing baked quad data
+    // These are the same for all Tessellators, even vanilla.
     public static final int POSITION_INDEX = 0, COLOR_INDEX = 5, TEXTURE_INDEX = 3, LIGHT_INDEX = 7, NORMAL_INDEX = 6;
+
+    public static final int X_INDEX = 0, Y_INDEX = 1, Z_INDEX = 2, TEX_X_INDEX = 3, TEX_Y_INDEX = 4;
 
     // Size of vertex format in 4-byte integers
     public static final int VERTEX_SIZE = 8;
