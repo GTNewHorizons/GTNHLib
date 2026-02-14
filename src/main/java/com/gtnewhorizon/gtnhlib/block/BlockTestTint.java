@@ -17,6 +17,7 @@ public class BlockTestTint extends Block implements IBlockColor {
 
     public BlockTestTint() {
         super(Material.wood);
+        setBlockName("model_test_tint");
         setHardness(2f);
     }
 
