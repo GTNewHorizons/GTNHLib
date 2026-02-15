@@ -2,11 +2,11 @@ package com.gtnewhorizon.gtnhlib.chat.customcomponents;
 
 import java.io.IOException;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fluids.FluidStack;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.chat.AbstractChatComponentCustom;
 
 public class ChatComponentFluidName extends AbstractChatComponentBuffer<ChatComponentFluidName> {
