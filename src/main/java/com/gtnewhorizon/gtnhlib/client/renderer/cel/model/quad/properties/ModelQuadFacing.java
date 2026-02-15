@@ -2,6 +2,9 @@ package com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties;
 
 import java.util.Arrays;
 
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 
 import lombok.Getter;
@@ -17,7 +20,7 @@ public enum ModelQuadFacing {
     UNASSIGNED(0, 0, 0, null);
 
     public static final ModelQuadFacing[] VALUES = ModelQuadFacing.values();
-    public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(facing -> facing != UNASSIGNED)
+    public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(ModelQuadFacing::isDirection)
             .toArray(ModelQuadFacing[]::new);
     public static final ModelQuadFacing[] HORIZONTAL_DIRECTIONS = Arrays.stream(DIRECTIONS)
             .filter(facing -> facing.axis != Axis.Y).toArray(ModelQuadFacing[]::new);
@@ -74,5 +77,53 @@ public enum ModelQuadFacing {
                 case Z -> positive ? POS_Z : NEG_Z;
             };
         }
+    }
+
+    public static ModelQuadFacing fromForgeDir(ForgeDirection dir) {
+        return switch (dir) {
+            case UP -> POS_Y;
+            case DOWN -> NEG_Y;
+            case EAST -> POS_X;
+            case WEST -> NEG_X;
+            case SOUTH -> POS_Z;
+            case NORTH -> NEG_Z;
+            case UNKNOWN -> UNASSIGNED;
+        };
+    }
+
+    public static ModelQuadFacing fromEnumFacing(EnumFacing dir) {
+        return switch (dir) {
+            case UP -> POS_Y;
+            case DOWN -> NEG_Y;
+            case WEST -> POS_X;
+            case EAST -> NEG_X;
+            case NORTH -> NEG_Z;
+            case SOUTH -> POS_Z;
+        };
+    }
+
+    public ForgeDirection toForgeDir() {
+        return switch (this) {
+            case POS_Y -> ForgeDirection.UP;
+            case NEG_Y -> ForgeDirection.DOWN;
+            case POS_X -> ForgeDirection.EAST;
+            case NEG_X -> ForgeDirection.WEST;
+            case POS_Z -> ForgeDirection.SOUTH;
+            case NEG_Z -> ForgeDirection.NORTH;
+            case UNASSIGNED -> ForgeDirection.UNKNOWN;
+        };
+    }
+
+    public EnumFacing toEnumFacing() {
+        return switch (this) {
+            case POS_Y -> EnumFacing.UP;
+            case NEG_Y -> EnumFacing.DOWN;
+            case POS_X -> EnumFacing.WEST;
+            case NEG_X -> EnumFacing.EAST;
+            case POS_Z -> EnumFacing.SOUTH;
+            case NEG_Z -> EnumFacing.NORTH;
+            case UNASSIGNED -> throw new IllegalArgumentException(
+                    "Cannot convert UNASSIGNED ModelQuadFacing to EnumFacing!");
+        };
     }
 }

@@ -14,6 +14,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimiti
  * A line primitive with 2 vertices. Supports full vertex attributes including position, color, texture coordinates,
  * lightmap, and normals.
  */
+@Deprecated // Replaced in favor of DirectTessellator (see TessellatorManager for more info)
 public class ModelLine implements ModelPrimitiveView {
 
     private final int[] data = new int[VERTEX_SIZE * 2];

@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
+import static com.gtnewhorizon.gtnhlib.client.opengl.GLCaps.FBO;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
@@ -10,14 +12,12 @@ import java.nio.IntBuffer;
 import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.client.renderer.shader.ShaderProgram;
+import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.BloomTonemapShader;
 
 /**
  * Constructs a new framebuffer with the specified configuration flags.
@@ -69,7 +69,6 @@ public class CustomFramebuffer {
     public CustomFramebuffer(int width, int height, int settings) {
         this(settings);
         createFramebuffer(width, height);
-        unbindFramebuffer();
     }
 
     protected int createBufferBits() {
@@ -123,9 +122,9 @@ public class CustomFramebuffer {
         this.framebufferWidth = width;
         this.framebufferHeight = height;
 
-        this.framebufferObject = OpenGlHelper.func_153165_e();
+        this.framebufferObject = FBO.glGenFramebuffers();
 
-        OpenGlHelper.func_153171_g(GL30.GL_FRAMEBUFFER, this.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.framebufferObject);
 
         this.framebufferTexture = createFramebufferAttachment();
 
@@ -148,6 +147,7 @@ public class CustomFramebuffer {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_COMPARE_MODE, 0);
+            // Allocate texture
             if (stencil) {
                 GL11.glTexImage2D(
                         GL11.GL_TEXTURE_2D,
@@ -171,51 +171,65 @@ public class CustomFramebuffer {
                         GL11.GL_FLOAT,
                         (IntBuffer) null);
             }
-            OpenGlHelper.func_153188_a(
-                    GL30.GL_FRAMEBUFFER,
-                    GL30.GL_DEPTH_ATTACHMENT,
-                    GL11.GL_TEXTURE_2D,
-                    this.depthAttachment,
-                    0);
-            if (stencil) {
-                OpenGlHelper.func_153188_a(
-                        GL30.GL_FRAMEBUFFER,
-                        GL30.GL_STENCIL_ATTACHMENT,
-                        GL11.GL_TEXTURE_2D,
-                        this.depthAttachment,
-                        0);
-            }
+            // Link texture to framebuffer
+            linkDepthTexture(stencil);
         } else {
-            depthAttachment = OpenGlHelper.func_153185_f();
-            OpenGlHelper.func_153176_h(GL30.GL_RENDERBUFFER, this.depthAttachment);
+            depthAttachment = FBO.glGenRenderbuffers();
+            FBO.glBindRenderbuffer(GL30.GL_RENDERBUFFER, this.depthAttachment);
+            // Allocate renderbuffer
             if (stencil) {
-                OpenGlHelper.func_153186_a(
+                FBO.glRenderbufferStorage(
                         GL30.GL_RENDERBUFFER,
                         EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT,
                         framebufferWidth,
                         framebufferHeight);
-                OpenGlHelper.func_153190_b(
-                        GL30.GL_FRAMEBUFFER,
-                        EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
-                        GL30.GL_RENDERBUFFER,
-                        this.depthAttachment);
-                OpenGlHelper.func_153190_b(
-                        GL30.GL_FRAMEBUFFER,
-                        EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
-                        GL30.GL_RENDERBUFFER,
-                        this.depthAttachment);
             } else {
-                OpenGlHelper.func_153186_a(
+                FBO.glRenderbufferStorage(
                         GL30.GL_FRAMEBUFFER,
                         GL14.GL_DEPTH_COMPONENT24,
                         framebufferWidth,
                         framebufferHeight);
-                OpenGlHelper.func_153190_b(
-                        GL30.GL_FRAMEBUFFER,
-                        GL30.GL_DEPTH_ATTACHMENT,
-                        GL30.GL_RENDERBUFFER,
-                        this.depthAttachment);
             }
+            // Link renderbuffer to framebuffer
+            linkDepthRenderbuffer(stencil);
+        }
+    }
+
+    protected final void linkDepthTexture(boolean stencil) {
+        FBO.glFramebufferTexture2D(
+                GL30.GL_FRAMEBUFFER,
+                GL30.GL_DEPTH_ATTACHMENT,
+                GL11.GL_TEXTURE_2D,
+                this.depthAttachment,
+                0);
+        if (stencil) {
+            FBO.glFramebufferTexture2D(
+                    GL30.GL_FRAMEBUFFER,
+                    GL30.GL_STENCIL_ATTACHMENT,
+                    GL11.GL_TEXTURE_2D,
+                    this.depthAttachment,
+                    0);
+        }
+    }
+
+    protected final void linkDepthRenderbuffer(boolean stencil) {
+        if (stencil) {
+            FBO.glFramebufferRenderbuffer(
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
+            FBO.glFramebufferRenderbuffer(
+                    GL30.GL_FRAMEBUFFER,
+                    EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
+        } else {
+            FBO.glFramebufferRenderbuffer(
+                    GL30.GL_FRAMEBUFFER,
+                    GL30.GL_DEPTH_ATTACHMENT,
+                    GL30.GL_RENDERBUFFER,
+                    this.depthAttachment);
         }
     }
 
@@ -250,9 +264,12 @@ public class CustomFramebuffer {
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
 
-        // glFramebufferTexture2D
-        OpenGlHelper
-                .func_153188_a(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0 | slot, GL11.GL_TEXTURE_2D, texture, 0);
+        FBO.glFramebufferTexture2D(
+                GL30.GL_FRAMEBUFFER,
+                GL30.GL_COLOR_ATTACHMENT0 | slot,
+                GL11.GL_TEXTURE_2D,
+                texture,
+                0);
         return texture;
     }
 
@@ -270,7 +287,7 @@ public class CustomFramebuffer {
             if (isEnabled(DEPTH_TEXTURE)) {
                 GL11.glDeleteTextures(this.depthAttachment);
             } else {
-                OpenGlHelper.func_153184_g(this.depthAttachment);
+                FBO.glDeleteRenderbuffers(this.depthAttachment);
             }
             this.depthAttachment = -1;
         }
@@ -280,7 +297,7 @@ public class CustomFramebuffer {
             this.framebufferTexture = -1;
         }
 
-        OpenGlHelper.func_153174_h(this.framebufferObject);
+        FBO.glDeleteFramebuffers(this.framebufferObject);
         this.framebufferObject = -1;
     }
 
@@ -297,8 +314,8 @@ public class CustomFramebuffer {
     }
 
     public void copyDepthFromFramebuffer(Framebuffer other) {
-        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, other.framebufferObject);
-        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, other.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, framebufferObject);
         blitFramebuffer(
                 other.framebufferWidth,
                 other.framebufferHeight,
@@ -309,8 +326,8 @@ public class CustomFramebuffer {
     }
 
     public void copyDepthToFramebuffer(Framebuffer other) {
-        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
-        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, other.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, other.framebufferObject);
         blitFramebuffer(
                 framebufferWidth,
                 framebufferHeight,
@@ -320,8 +337,8 @@ public class CustomFramebuffer {
     }
 
     public void copyStencilFromFramebuffer(Framebuffer other) {
-        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, other.framebufferObject);
-        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, other.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, framebufferObject);
         blitFramebuffer(
                 other.framebufferWidth,
                 other.framebufferHeight,
@@ -332,9 +349,8 @@ public class CustomFramebuffer {
     }
 
     public void copyStencilToFramebuffer(Framebuffer other) {
-        // TODO
-        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
-        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, other.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, other.framebufferObject);
         blitFramebuffer(
                 framebufferWidth,
                 framebufferHeight,
@@ -356,15 +372,15 @@ public class CustomFramebuffer {
     }
 
     public void bindFramebuffer() {
-        OpenGlHelper.func_153171_g(GL30.GL_FRAMEBUFFER, this.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.framebufferObject);
     }
 
     public void bindReadFramebuffer() {
-        OpenGlHelper.func_153171_g(GL30.GL_READ_FRAMEBUFFER, this.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, this.framebufferObject);
     }
 
     public void bindDrawFramebuffer() {
-        OpenGlHelper.func_153171_g(GL30.GL_DRAW_FRAMEBUFFER, this.framebufferObject);
+        FBO.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, this.framebufferObject);
     }
 
     public void clearBindFramebuffer() {
@@ -438,52 +454,23 @@ public class CustomFramebuffer {
         pixelBuffer.get(pixels);
     }
 
-    // TONEMAP SHADER
-
-    private static ShaderProgram tonemapShader;
-    private static int uMultiplier;
-    private static float tonemapMultiplier;
-
     public void applyTonemapping(float multiplier) {
-        if (tonemapShader == null) {
-            tonemapShader = new ShaderProgram(
-                    GTNHLib.RESOURCE_DOMAIN,
-                    "shaders/hdr/tonemap.vert.glsl",
-                    "shaders/hdr/tonemap.frag.glsl");
-            tonemapShader.use();
-            uMultiplier = tonemapShader.getUniformLocation("multiplier");
-            tonemapShader.bindTextureSlot("uScene", 0);
-            tonemapShader.bindTextureSlot("uOverlay", 1);
-            ShaderProgram.clear();
-        }
-
-        tonemapShader.use();
-        if (tonemapMultiplier != multiplier) {
-            GL20.glUniform1f(uMultiplier, multiplier);
-            tonemapMultiplier = multiplier;
-        }
-        Minecraft.getMinecraft().getFramebuffer().bindFramebufferTexture();
-        GL13.glActiveTexture(GL13.GL_TEXTURE1);
-        bindFramebufferTexture();
-        GL11.glDisable(GL11.GL_BLEND);
-        PostProcessingHelper.drawFullscreenQuad();
-        // this.copyTextureToFile("bloomshader", "framebuffer_final.png");
-        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        BloomTonemapShader.getInstance().applyTonemapping(multiplier, framebufferTexture);
     }
 
     // DEBUG TOOLS
 
     public void checkFramebufferComplete() {
-        int i = OpenGlHelper.func_153167_i(OpenGlHelper.field_153198_e);
+        int i = FBO.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
 
-        if (i != OpenGlHelper.field_153202_i) {
-            if (i == OpenGlHelper.field_153203_j) {
+        if (i != GL30.GL_FRAMEBUFFER_COMPLETE) {
+            if (i == GL30.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
                 throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
-            } else if (i == OpenGlHelper.field_153204_k) {
+            } else if (i == GL30.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
                 throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
-            } else if (i == OpenGlHelper.field_153205_l) {
+            } else if (i == GL30.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
                 throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
-            } else if (i == OpenGlHelper.field_153206_m) {
+            } else if (i == GL30.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
                 throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
             } else {
                 throw new RuntimeException("glCheckFramebufferStatus returned unknown status:" + i);

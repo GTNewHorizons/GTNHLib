@@ -22,6 +22,7 @@ public enum Mixins implements IMixins {
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
+    BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(
             new MixinBuilder("Automatically load model textures")
                     .addClientMixins(
@@ -30,9 +31,10 @@ public enum Mixins implements IMixins {
                             "models.MixinFolderResourcePack",
                             "models.SRRMAccessor")
                     .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
-    BLOCK_PARTICLE(
-            new MixinBuilder("Automatically override model block particle").addClientMixins("models.MixinBlockParticle")
-                    .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
+    MODEL_ICON_WRAPPER(new MixinBuilder(
+            "Ensures that blocks always return a valid icon for JSON model blocks, by using the particle icon.")
+                    .addClientMixins("models.MixinBlock_IconWrapper").setPhase(Phase.EARLY)
+                    .setApplyIf(() -> GTNHLibConfig.modelIconWrapperMixin)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
@@ -41,15 +43,19 @@ public enum Mixins implements IMixins {
                     "block_sounds.MixinEntityLivingBase",
                     "block_sounds.MixinEntityHorse",
                     "block_sounds.MixinItemBlock",
-                    "block_sounds.MixinItemSlab",
-                    "block_sounds.MixinPlayerControllerMP")
-            .addClientMixins("block_sounds.MixinRenderGlobal").setPhase(Phase.EARLY)
-            .setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
+                    "block_sounds.MixinItemSlab")
+            .addClientMixins("block_sounds.MixinPlayerControllerMP", "block_sounds.MixinRenderGlobal")
+            .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.blockSoundMixins)),
     ENTITY_RENDERER_ACCESSOR(new MixinBuilder("Accesses the lightmap property of EntityRenderer").setPhase(Phase.EARLY)
-            .addCommonMixins("EntityRendererAccessor")),
+            .addClientMixins("EntityRendererAccessor")),
     ITEM_TRANSLUCENCY(new MixinBuilder("ItemRenderer & RenderItem ITranslucentItem support")
             .addClientMixins("MixinItemRenderer_Translucency", "MixinRenderItem_Translucency").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
+    CUSTOM_CHAT_COMPONENT_REGISTRATION(new MixinBuilder("Custom chat component registration")
+            .addCommonMixins("MixinIChatComponentSerializer").setPhase(Phase.EARLY)),
+    MULTI_RELEASE_JAR_FILTER(new MixinBuilder("Skip multi-release JAR entries in mod discovery")
+            .addCommonMixins("fml.MixinJarDiscoverer").setPhase(Phase.EARLY).addExcludedMod(TargetMods.LWJGL3IFY)),
+    PICK_BLOCK_TRAP(Side.CLIENT, "MixinMinecraft_PickBlockTrap"),
     //
     ;
 

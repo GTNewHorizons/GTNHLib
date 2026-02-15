@@ -34,7 +34,10 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQ
 public class ModelQuadUtil {
 
     // Integer indices for vertex attributes, useful for accessing baked quad data
+    // These are the same for all Tessellators, even vanilla.
     public static final int POSITION_INDEX = 0, COLOR_INDEX = 5, TEXTURE_INDEX = 3, LIGHT_INDEX = 7, NORMAL_INDEX = 6;
+
+    public static final int X_INDEX = 0, Y_INDEX = 1, Z_INDEX = 2, TEX_X_INDEX = 3, TEX_Y_INDEX = 4;
 
     // Size of vertex format in 4-byte integers
     public static final int VERTEX_SIZE = 8;
@@ -88,6 +91,9 @@ public class ModelQuadUtil {
     }
 
     public static int calculateNormal(ModelQuadView quad) {
+        // Now using Newell's method for computing polygon normals.
+        // This handles both proper quads and degenerate quads (triangles) correctly. For degenerate quads where v3=v2,
+        // the edge v2→v3 contributes zero, naturally giving the correct triangle normal.
         final float x0 = quad.getX(0);
         final float y0 = quad.getY(0);
         final float z0 = quad.getZ(0);
@@ -104,16 +110,14 @@ public class ModelQuadUtil {
         final float y3 = quad.getY(3);
         final float z3 = quad.getZ(3);
 
-        final float dx0 = x2 - x0;
-        final float dy0 = y2 - y0;
-        final float dz0 = z2 - z0;
-        final float dx1 = x3 - x1;
-        final float dy1 = y3 - y1;
-        final float dz1 = z3 - z1;
+        // nx = Σ (yi - yi+1)(zi + zi+1)
+        float normX = (y0 - y1) * (z0 + z1) + (y1 - y2) * (z1 + z2) + (y2 - y3) * (z2 + z3) + (y3 - y0) * (z3 + z0);
 
-        float normX = dy0 * dz1 - dz0 * dy1;
-        float normY = dz0 * dx1 - dx0 * dz1;
-        float normZ = dx0 * dy1 - dy0 * dx1;
+        // ny = Σ (zi - zi+1)(xi + xi+1)
+        float normY = (z0 - z1) * (x0 + x1) + (z1 - z2) * (x1 + x2) + (z2 - z3) * (x2 + x3) + (z3 - z0) * (x3 + x0);
+
+        // nz = Σ (xi - xi+1)(yi + yi+1)
+        float normZ = (x0 - x1) * (y0 + y1) + (x1 - x2) * (y1 + y2) + (x2 - x3) * (y2 + y3) + (x3 - x0) * (y3 + y0);
 
         float l = (float) Math.sqrt(normX * normX + normY * normY + normZ * normZ);
 

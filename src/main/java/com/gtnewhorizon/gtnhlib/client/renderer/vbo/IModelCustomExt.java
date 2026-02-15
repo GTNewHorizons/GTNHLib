@@ -19,6 +19,7 @@ public interface IModelCustomExt extends IModelCustom {
     @SideOnly(CLIENT)
     void renderAllVBO();
 
+    @Deprecated // Same as renderAllVBO
     @SideOnly(CLIENT)
     void renderAllVAO();
 }

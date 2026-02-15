@@ -9,7 +9,6 @@ minecraft {
 
 // Add a Java 17 sourceset for including code optimized for newer Java versions
 val java17ToolchainSpec: JavaToolchainSpec.() -> Unit = {
-    vendor = JvmVendorSpec.AZUL
     // Use a Java 21 compiler with a target of 17
     languageVersion = JavaLanguageVersion.of(21)
 }
@@ -32,9 +31,10 @@ tasks.sourcesJar.configure {
 }
 
 tasks.processResources {
-    inputs.property("version", project.version.toString())
+    val projectVersion = project.version.toString()
+    inputs.property("version", projectVersion)
     filesMatching("META-INF/rfb-plugin/*") {
-        expand("version" to project.version.toString())
+        expand("version" to projectVersion)
     }
 }
 
@@ -46,8 +46,13 @@ tasks.sourcesJar {
     exclude("META-INF/versions/9/module-info.java")
 }
 
+val jvmdgDowngraded17 = configurations.named("jvmdgDowngraded17").get()
+
 tasks.shadowJar {
-    into("META-INF/versions/17") { from(main17.output) }
+    into("META-INF/versions/17") {
+        from(main17.output)
+        from(zipTree(provider { jvmdgDowngraded17.files.single() }))
+    }
     exclude("META-INF/versions/9/module-info.class")
 }
 
@@ -56,6 +61,17 @@ tasks.test {
     testLogging {
         events("passed", "skipped", "failed")
     }
+    // On macOS ARM64, use an ARM64-compatible JVM for tests
+    val isMacOsArm64 = System.getProperty("os.name").lowercase().contains("mac") &&
+        System.getProperty("os.arch") == "aarch64"
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+        if (isMacOsArm64) {
+            vendor = JvmVendorSpec.AZUL
+        }
+    }
+    dependsOn(tasks.extractNatives2)
+    jvmArgs("-Djava.library.path=${tasks.extractNatives2.get().destinationFolder.asFile.get().path}")
 }
 
 for (jarTask in listOf(tasks.jar, tasks.shadowJar, tasks.sourcesJar)) {
