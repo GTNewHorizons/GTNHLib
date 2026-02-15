@@ -15,6 +15,8 @@ import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentItemName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -63,6 +65,8 @@ public class CommonProxy {
         ChatComponentCustomRegistry.register(ChatComponentNumber::new);
         ChatComponentCustomRegistry.register(ChatComponentFluid::new);
         ChatComponentCustomRegistry.register(ChatComponentEnergy::new);
+        ChatComponentCustomRegistry.register(ChatComponentFluidName::new);
+        ChatComponentCustomRegistry.register(ChatComponentItemName::new);
 
         // Number formatting config registration. Primarily aimed at client side, but does exist on server side
         // as well, just in-case calls are made to number formatting.
