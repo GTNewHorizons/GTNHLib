@@ -9,7 +9,7 @@ import cpw.mods.fml.common.network.ByteBufUtils;
 
 public class ChatComponentItemName extends AbstractChatComponentBuffer<ChatComponentItemName> {
 
-    protected ItemStack stack = null;
+    public ItemStack stack = null;
 
     public ChatComponentItemName() {}
 
