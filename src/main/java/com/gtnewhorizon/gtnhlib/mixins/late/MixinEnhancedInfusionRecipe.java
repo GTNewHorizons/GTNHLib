@@ -54,7 +54,8 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
             at = @At(
                     value = "INVOKE",
                     target = "Lthaumcraft/common/tiles/TilePedestal;getStackInSlot(I)Lnet/minecraft/item/ItemStack;",
-                    ordinal = 4))
+                    ordinal = 4,
+                    remap = true))
     public void itemReplacement(CallbackInfo ci, @Local TileEntity te, @Local int slot) {
         if (this.gTNHLib$replacements.isEmpty()) {
             return;
@@ -75,7 +76,8 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
         this.gTNHLib$replacements.clear();
     }
 
-    @Inject(method = "writeToNBT", at = @At(value = "RETURN"))
+    // Remap the injection because writeToNBT is a MC TileEntity method
+    @Inject(method = "writeToNBT", at = @At(value = "RETURN"), remap = true)
     public void writeToNBT(NBTTagCompound nbtCompound, CallbackInfo ci) {
         if (this.gTNHLib$replacements == null || this.gTNHLib$replacements.isEmpty()) {
             return;
@@ -100,7 +102,8 @@ public abstract class MixinEnhancedInfusionRecipe extends TileThaumcraft {
         nbtCompound.setTag("replacements", nbttaglist);
     }
 
-    @Inject(method = "readFromNBT", at = @At(value = "RETURN"))
+    // Remap the injection because writeToNBT is a MC TileEntity method
+    @Inject(method = "readFromNBT", at = @At(value = "RETURN"), remap = true)
     public void readFromNBT(NBTTagCompound nbtCompound, CallbackInfo ci) {
         if (!nbtCompound.hasKey("replacements")) {
             return;
