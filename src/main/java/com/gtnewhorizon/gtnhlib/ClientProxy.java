@@ -13,10 +13,12 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 
+import com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater.ResourcePackUpdateEventHandler;
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.UniversiumShader;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
+import com.gtnewhorizon.gtnhlib.commands.CommandResourcePack;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
@@ -63,6 +65,8 @@ public class ClientProxy extends CommonProxy {
     public void init(FMLInitializationEvent event) {
         super.init(event);
         ClientCommandHandler.instance.registerCommand(new ItemInHandCommand());
+        ClientCommandHandler.instance.registerCommand(new CommandResourcePack());
+        FMLCommonHandler.instance().bus().register(new ResourcePackUpdateEventHandler());
         UniversiumShader.init();
     }
 
