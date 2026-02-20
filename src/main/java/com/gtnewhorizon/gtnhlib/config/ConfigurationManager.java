@@ -51,6 +51,7 @@ public class ConfigurationManager {
     private static final Boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
+    private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
     private final static Path configDir;
@@ -157,8 +158,6 @@ public class ConfigurationManager {
                 .map((lines) -> String.join("\n", lines)).ifPresent(subCat::setComment);
         Optional.ofNullable(subCategoryField.getAnnotation(Config.LangKey.class)).map(Config.LangKey::value)
                 .ifPresent(subCat::setLanguageKey);
-        Optional.ofNullable(subCategoryField.getAnnotation(Config.Entry.class)).map(Config.Entry::value)
-                .ifPresent(subCat::setConfigEntryClass);
 
         if (subCategoryField.isAnnotationPresent(Config.RequiresMcRestart.class)) {
             subCat.setRequiresMcRestart(true);
@@ -248,11 +247,6 @@ public class ConfigurationManager {
                 }
             }
 
-            Config.Entry fieldEntry = field.getAnnotation(Config.Entry.class);
-            if (fieldEntry != null && fieldEntry.value() != null) {
-                cat.get(fieldName).setConfigEntryClass(fieldEntry.value());
-            }
-
             if (!requiresMcRestart) {
                 requiresMcRestart = field.isAnnotationPresent(Config.RequiresMcRestart.class);
             }
@@ -279,17 +273,14 @@ public class ConfigurationManager {
             cat.setLanguageKey(langKey);
         }
 
-        Config.Entry entry = getClassOrBaseAnnotation(configClass, Config.Entry.class);
-        if (entry != null && entry.value() != null) {
-            cat.setConfigEntryClass(entry.value());
-        }
-
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
         observedCategories.computeIfAbsent(rawConfig, k -> new HashSet<>()).add(cat.getQualifiedName());
 
         Optional.ofNullable(configClass.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
                 .map((lines) -> String.join("\n", lines)).ifPresent(cat::setComment);
+
+        configEntries.put(cat, configClass);
     }
 
     /**
@@ -513,6 +504,28 @@ public class ConfigurationManager {
         cullDeadCategories();
         if (DUMP_KEYS) {
             writeLangKeysToFile();
+        }
+    }
+
+    public static void applyConfigEntries() {
+        for (Map.Entry<ConfigCategory, Class<?>> entry : configEntries.entrySet()) {
+            ConfigCategory cat = entry.getKey();
+            Class<?> configClass = entry.getValue();
+
+            for (val field : configClass.getDeclaredFields()) {
+                val fieldName = ConfigFieldParser.getFieldName(field);
+                Config.Entry fieldEntry = field.getAnnotation(Config.Entry.class);
+                if (fieldEntry != null && fieldEntry.value() != null) {
+                    if (cat.get(fieldName) != null) {
+                        cat.get(fieldName).setConfigEntryClass(fieldEntry.value());
+                    }
+                }
+            }
+
+            Config.Entry classEntry = getClassOrBaseAnnotation(configClass, Config.Entry.class);
+            if (classEntry != null && classEntry.value() != null) {
+                cat.setConfigEntryClass(classEntry.value());
+            }
         }
     }
 
