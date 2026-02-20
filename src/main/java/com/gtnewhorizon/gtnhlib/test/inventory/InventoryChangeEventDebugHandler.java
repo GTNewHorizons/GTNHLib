@@ -6,8 +6,8 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.event.inventory.InventoryChangedEvent;
 import com.gtnewhorizon.gtnhlib.event.inventory.InventoryChangeScanner;
+import com.gtnewhorizon.gtnhlib.event.inventory.InventoryChangedEvent;
 import com.gtnewhorizon.gtnhlib.event.inventory.InventoryKey;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 
