@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.test.inventory;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
@@ -24,11 +23,7 @@ public final class InventoryChangeEventDebugHandler {
 
     @EventBusSubscriber.Condition
     public static boolean shouldRegister() {
-        if (Launch.blackboard == null) {
-            return false;
-        }
-        Object value = Launch.blackboard.get("fml.deobfuscatedEnvironment");
-        boolean shouldRegister = Boolean.TRUE.equals(value);
+        boolean shouldRegister = false;
         if (shouldRegister) {
             InventoryChangeScanner.requireScanner();
         }
