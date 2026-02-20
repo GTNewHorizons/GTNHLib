@@ -50,7 +50,6 @@ public class ConfigFieldParser {
             val name = getFieldName(field);
             val defValueString = getModDefault(field);
             parser.load(instance, defValueString, field, config, category, name, comment, key);
-            getCustomEntry(field, config, category, name);
         } catch (Exception e) {
             throw new ConfigException(
                     "Failed to load field " + field.getName()
@@ -106,15 +105,6 @@ public class ConfigFieldParser {
             return field.getAnnotation(Config.Name.class).value();
         }
         return field.getName();
-    }
-
-    private static void getCustomEntry(Field field, Configuration config, String category, String name) {
-        if (field.isAnnotationPresent(Config.Entry.class)) {
-            Property prop = config.getCategory(category).get(name);
-            if (prop != null) {
-                prop.setConfigEntryClass(field.getAnnotation(Config.Entry.class).value());
-            }
-        }
     }
 
     private static @Nullable String getModDefault(Field field) {

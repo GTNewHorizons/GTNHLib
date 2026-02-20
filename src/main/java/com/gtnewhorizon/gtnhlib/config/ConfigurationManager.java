@@ -248,6 +248,11 @@ public class ConfigurationManager {
                 }
             }
 
+            Config.Entry fieldEntry = field.getAnnotation(Config.Entry.class);
+            if (fieldEntry != null && fieldEntry.value() != null) {
+                cat.get(fieldName).setConfigEntryClass(fieldEntry.value());
+            }
+
             if (!requiresMcRestart) {
                 requiresMcRestart = field.isAnnotationPresent(Config.RequiresMcRestart.class);
             }
@@ -273,6 +278,12 @@ public class ConfigurationManager {
             val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
             cat.setLanguageKey(langKey);
         }
+
+        Config.Entry entry = getClassOrBaseAnnotation(configClass, Config.Entry.class);
+        if (entry != null && entry.value() != null) {
+            cat.setConfigEntryClass(entry.value());
+        }
+
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
         observedCategories.computeIfAbsent(rawConfig, k -> new HashSet<>()).add(cat.getQualifiedName());
@@ -478,7 +489,6 @@ public class ConfigurationManager {
 
     public static Configuration getConfig(Class<?> configClass) {
         val cfg = configClass.getAnnotation(Config.class);
-        if (cfg == null) return null;
         return configs.get(getConfigKey(cfg));
     }
 
