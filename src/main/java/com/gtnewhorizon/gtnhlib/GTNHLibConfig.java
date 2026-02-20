@@ -50,4 +50,12 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart
     public static boolean enableTestItems;
+
+    @Config.Comment("Enable the centralized player inventory scanner and InventoryChanged events.")
+    @Config.DefaultBoolean(true)
+    public static boolean inventoryScannerEnabled;
+
+    @Config.Comment("Treat item stacks with different NBT as different inventory identities in scanner events.")
+    @Config.DefaultBoolean(true)
+    public static boolean inventoryScannerStrictNBT;
 }
