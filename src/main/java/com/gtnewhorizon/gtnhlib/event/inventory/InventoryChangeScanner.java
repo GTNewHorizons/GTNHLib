@@ -28,12 +28,22 @@ public final class InventoryChangeScanner {
 
     private static final Object2ObjectMap<UUID, PlayerScanState> SERVER_STATES = new Object2ObjectOpenHashMap<>();
     private static final Object2ObjectMap<UUID, PlayerScanState> CLIENT_STATES = new Object2ObjectOpenHashMap<>();
+    private static boolean scannerRequired;
 
     private InventoryChangeScanner() {}
 
+    /**
+     * Opt in to centralized inventory scanning.
+     * <p>
+     * Mods that consume {@link InventoryChangedEvent} should call this during startup.
+     */
+    public static void requireScanner() {
+        scannerRequired = true;
+    }
+
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (!GTNHLibConfig.inventoryScannerEnabled) return;
+        if (!scannerRequired) return;
         if (event.phase != TickEvent.Phase.END) return;
         if (event.player == null) return;
 

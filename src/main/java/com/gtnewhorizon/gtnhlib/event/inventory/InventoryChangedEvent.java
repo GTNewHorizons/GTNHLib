@@ -10,6 +10,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 /**
  * Base event for centralized inventory scanner changes.
  * <p>
+ * Requires an explicit call to {@link InventoryChangeScanner#requireScanner()} by at least one consumer mod.
+ * <p>
  * This event is posted on {@link net.minecraftforge.common.MinecraftForge#EVENT_BUS}.
  */
 public abstract class InventoryChangedEvent extends Event {

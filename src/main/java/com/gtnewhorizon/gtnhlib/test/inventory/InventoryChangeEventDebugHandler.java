@@ -7,6 +7,7 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.event.inventory.InventoryChangedEvent;
+import com.gtnewhorizon.gtnhlib.event.inventory.InventoryChangeScanner;
 import com.gtnewhorizon.gtnhlib.event.inventory.InventoryKey;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 
@@ -27,7 +28,11 @@ public final class InventoryChangeEventDebugHandler {
             return false;
         }
         Object value = Launch.blackboard.get("fml.deobfuscatedEnvironment");
-        return Boolean.TRUE.equals(value);
+        boolean shouldRegister = Boolean.TRUE.equals(value);
+        if (shouldRegister) {
+            InventoryChangeScanner.requireScanner();
+        }
+        return shouldRegister;
     }
 
     @SubscribeEvent
