@@ -6,8 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
-import com.gtnewhorizon.gtnhlib.block.BlockTest;
-import com.gtnewhorizon.gtnhlib.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
@@ -26,6 +24,9 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
+import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
@@ -61,6 +62,10 @@ public class CommonProxy {
             GameRegistry.registerBlock(new BlockTest(), "model_test");
             GameRegistry.registerBlock(new BlockTestTint(), "model_test_tint");
             GameRegistry.registerBlock(new BlockTestTintMul(), "model_test_tint_mul");
+        }
+
+        if (GTNHLibConfig.enableTestItems) {
+            GameRegistry.registerItem(TestItem.INSTANCE, "testitem");
         }
 
         BlockPropertyInit.init();
