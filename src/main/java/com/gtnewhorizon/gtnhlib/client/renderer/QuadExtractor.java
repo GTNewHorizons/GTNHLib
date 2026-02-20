@@ -16,6 +16,7 @@ import com.gtnewhorizon.gtnhlib.util.ObjectPooler;
  * Utility class for extracting ModelQuad objects from Tessellator raw buffers. This is used by both vanilla Tessellator
  * (during display list compilation) and CapturingTessellator.
  */
+@Deprecated // Replaced in favor of DirectTessellator (see TessellatorManager for more info)
 public final class QuadExtractor {
 
     private static final Logger LOGGER = LogManager.getLogger("QuadExtractor");

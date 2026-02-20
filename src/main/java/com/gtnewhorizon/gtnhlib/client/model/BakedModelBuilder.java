@@ -10,12 +10,11 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
+import com.gtnewhorizon.gtnhlib.client.renderer.DirectTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
-import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
+import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 
 /**
  * A class that converts multiple quads with different rotations/translations/scales into 1 VBO. This has the benefit of
@@ -38,7 +37,7 @@ public class BakedModelBuilder {
     private float rotateAngleY;
     private float rotateAngleZ;
     private boolean mirror;
-    private final CapturingTessellator tessellator;
+    private final DirectTessellator tessellator;
 
     private final Matrix4f modelMatrix = new Matrix4f();
 
@@ -46,9 +45,8 @@ public class BakedModelBuilder {
         this.textureWidth = textureWidth;
         this.textureHeight = textureHeight;
 
-        TessellatorManager.startCapturing();
-        this.tessellator = (CapturingTessellator) TessellatorManager.get();
-        tessellator.startDrawing(GL11.GL_QUADS);
+        this.tessellator = TessellatorManager.startCapturingDirect();
+        tessellator.startDrawingQuads();
     }
 
     public BakedModelBuilder(ModelBase model) {
@@ -138,8 +136,11 @@ public class BakedModelBuilder {
         return mat4f;
     }
 
-    public VertexBuffer finish(VertexFormat format) {
-        return TessellatorManager.stopCapturingToVBO(format);
+    /**
+     * Allocates & returns a fully immutable Vertex buffer object.
+     */
+    public IVertexArrayObject finish() {
+        return DirectTessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
     }
 
     // spotless:off
@@ -259,7 +260,7 @@ public class BakedModelBuilder {
         }
 
         public void addVerticesToTesselator(
-            CapturingTessellator tessellator,
+            DirectTessellator tessellator,
             Matrix4f mat4f,
             float scale
         ) {
@@ -277,7 +278,7 @@ public class BakedModelBuilder {
                 vec3f.x = (float) cross.xCoord;
                 vec3f.y = (float) cross.yCoord;
                 vec3f.z = (float) cross.zCoord;
-                tessellator.setNormalTransformed(vec3f, normalMat);
+                NormalHelper.setNormalTransformed(tessellator, vec3f, normalMat);
                 // Reverse so it works with culling
                 for (int i = 3; i >= 0; i--) {
                     PositionTextureVertex vertex = quad.vertexPositions[i];

@@ -1,8 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.postprocessing;
 
+import static com.gtnewhorizon.gtnhlib.client.opengl.GLCaps.FBO;
+
 import net.coderbot.iris.rendertarget.IRenderTargetExt;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraftforge.client.MinecraftForgeClient;
 
@@ -85,7 +86,7 @@ public class SharedDepthFramebuffer extends CustomFramebuffer {
             this.framebufferTexture = -1;
         }
 
-        OpenGlHelper.func_153174_h(this.framebufferObject);
+        FBO.glDeleteFramebuffers(this.framebufferObject);
         this.framebufferObject = -1;
     }
 
