@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
@@ -120,7 +121,10 @@ public final class SyncedKeybind {
     public boolean isKeyDown(EntityPlayer player) {
         if (player.worldObj.isRemote) {
             if (keybinding != null) {
-                return keybinding.getIsKeyPressed();
+                // fallback on the client when in a gui
+                return keybinding.getIsKeyPressed()
+                        || (keybinding.getKeyCode() < 0 ? Mouse.isButtonDown(keybinding.getKeyCode() + 100)
+                                : Keyboard.isKeyDown(keybinding.getKeyCode()));
             }
             return Keyboard.isKeyDown(keyCode);
         }
