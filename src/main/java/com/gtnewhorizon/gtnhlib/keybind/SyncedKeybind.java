@@ -120,7 +120,8 @@ public final class SyncedKeybind {
     public boolean isKeyDown(EntityPlayer player) {
         if (player.worldObj.isRemote) {
             if (keybinding != null) {
-                return keybinding.getIsKeyPressed();
+                // fallback on the client when in a gui
+                return keybinding.getIsKeyPressed() || Keyboard.isKeyDown(keybinding.getKeyCode());
             }
             return Keyboard.isKeyDown(keyCode);
         }
