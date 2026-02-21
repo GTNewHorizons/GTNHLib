@@ -13,15 +13,19 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 
+import com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater.ResourcePackUpdateEventHandler;
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.UniversiumShader;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
+import com.gtnewhorizon.gtnhlib.commands.CommandResourcePack;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
+import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -51,12 +55,18 @@ public class ClientProxy extends CommonProxy {
         // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
         // you too can automatically load textures for your models!
         ModelRegistry.registerModid(MODID);
+
+        if (GTNHLibConfig.enableTestItems) {
+            TexturedItemRenderer.register(TestItem.INSTANCE);
+        }
     }
 
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
         ClientCommandHandler.instance.registerCommand(new ItemInHandCommand());
+        ClientCommandHandler.instance.registerCommand(new CommandResourcePack());
+        FMLCommonHandler.instance().bus().register(new ResourcePackUpdateEventHandler());
         UniversiumShader.init();
     }
 
