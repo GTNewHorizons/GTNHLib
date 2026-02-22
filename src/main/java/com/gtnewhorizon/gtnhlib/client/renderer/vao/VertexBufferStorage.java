@@ -7,23 +7,30 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL44;
 
 import com.google.common.annotations.Beta;
+import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 @Beta
 public final class VertexBufferStorage implements IVertexBuffer {
 
+    private static final VaoFunctions vao = GLCaps.VAO;
+
     private int id;
     private int vertexCount;
     private final VertexFormat format;
     private final int drawMode;
     private final int flags;
+    private int vaoId;
+    private boolean vaoDirty;
 
     public VertexBufferStorage(VertexFormat format, int drawMode, int flags) {
         this.id = GL15.glGenBuffers();
         this.format = format;
         this.drawMode = drawMode;
         this.flags = flags;
+        this.vaoId = vao != null ? vao.glGenVertexArrays() : -1;
+        this.vaoDirty = true;
     }
 
     public VertexBufferStorage(VertexFormat format, int drawMode, ByteBuffer data, int vertexCount, int flags) {
@@ -37,6 +44,7 @@ public final class VertexBufferStorage implements IVertexBuffer {
         bind();
         GL44.glBufferStorage(GL15.GL_ARRAY_BUFFER, data, this.flags);
         unbind();
+        this.vaoDirty = true;
     }
 
     @Override
@@ -65,18 +73,35 @@ public final class VertexBufferStorage implements IVertexBuffer {
             GL15.glDeleteBuffers(this.id);
             id = -1;
         }
+        if (vaoId >= 0) {
+            vao.glDeleteVertexArrays(vaoId);
+            vaoId = -1;
+        }
     }
 
     @Override
     public void setupState() {
-        bind();
-        format.setupBufferState(0L);
+        if (vaoId >= 0) {
+            vao.glBindVertexArray(vaoId);
+            if (vaoDirty) {
+                bind();
+                format.setupBufferState(0L);
+                vaoDirty = false;
+            }
+        } else {
+            bind();
+            format.setupBufferState(0L);
+        }
     }
 
     @Override
     public void cleanupState() {
-        format.clearBufferState();
-        unbind();
+        if (vaoId >= 0) {
+            vao.glBindVertexArray(0);
+        } else {
+            format.clearBufferState();
+            unbind();
+        }
     }
 
     @Override

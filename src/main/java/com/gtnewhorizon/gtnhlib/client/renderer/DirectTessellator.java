@@ -285,7 +285,7 @@ public class DirectTessellator extends Tessellator {
         ebo.upload(vertexCount);
     }
 
-    protected ByteBuffer getWriteBuffer() {
+    public ByteBuffer getWriteBuffer() {
         ByteBuffer buffer = isResized() ? memByteBuffer(startPtr, bufferCapacity()) : this.baseBuffer;
         buffer.limit(bufferLimit());
         return buffer;
