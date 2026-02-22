@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib;
 
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.isObf;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
@@ -78,6 +80,8 @@ public class CommonProxy {
         // as well, just in-case calls are made to number formatting.
         try {
             ConfigurationManager.registerConfig(NumberFormatConfig.class);
+            // only register in dev
+            if (!isObf()) ConfigurationManager.registerConfig(ExampleConfig.class);
         } catch (ConfigException e) {
             throw new RuntimeException(e);
         }
