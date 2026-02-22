@@ -23,6 +23,7 @@ import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
+import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
@@ -68,6 +69,7 @@ public class ClientProxy extends CommonProxy {
         ClientCommandHandler.instance.registerCommand(new CommandResourcePack());
         FMLCommonHandler.instance().bus().register(new ResourcePackUpdateEventHandler());
         UniversiumShader.init();
+        ConfigurationManager.applyConfigEntries();
     }
 
     @Override
