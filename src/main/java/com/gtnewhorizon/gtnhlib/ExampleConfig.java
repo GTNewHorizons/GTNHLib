@@ -1,8 +1,12 @@
 package com.gtnewhorizon.gtnhlib;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.EnumChatFormatting;
 
@@ -16,7 +20,7 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 
 @Config(modid = GTNHLib.MODID, category = "example", filename = "gtnhlib-example")
-@Config.Entry(ExampleConfig.redCategory.class)
+@Config.Entry(ExampleConfig.sortedCategory.class)
 public class ExampleConfig {
 
     @Config.Comment("The text should be green")
@@ -46,6 +50,30 @@ public class ExampleConfig {
         @Config.Comment("The boolean text should be yellow")
         @Config.Entry(yellowBoolean.class)
         public boolean yellowBoolean = true;
+    }
+
+    public static class sortedCategory extends GuiConfigEntries.CategoryEntry {
+
+        public sortedCategory(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
+            super(owningScreen, owningEntryList, configElement);
+            this.btnSelectCategory.displayString = EnumChatFormatting.RED + this.btnSelectCategory.displayString;
+        }
+
+        protected GuiScreen buildChildScreen() {
+
+            List<IConfigElement> children = new ArrayList<>(this.configElement.getChildElements());
+
+            children.sort(Comparator.comparing(IConfigElement::getName, String.CASE_INSENSITIVE_ORDER));
+
+            return new GuiConfig(
+                    this.owningScreen,
+                    children,
+                    this.owningScreen.modID,
+                    owningScreen.allRequireWorldRestart || this.configElement.requiresWorldRestart(),
+                    owningScreen.allRequireMcRestart || this.configElement.requiresMcRestart(),
+                    this.owningScreen.title,
+                    ((this.owningScreen.titleLine2 == null ? "" : this.owningScreen.titleLine2) + " > " + this.name));
+        }
     }
 
     public static class ModIDEntry extends GuiConfigEntries.SelectValueEntry {
