@@ -391,6 +391,11 @@ public class ConfigurationManager {
             return proxy;
         }
 
+        ConfigNode rootNode = configNodeMap.get(configClass);
+        ConfigNode node = rootNode.children.getOrDefault(element.getName().toLowerCase(), rootNode);
+        Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
+        int order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
+
         return new IConfigElementProxy(element, () -> {
             try {
                 processConfigInternal(configClass, category, rawConfig, null);
@@ -399,7 +404,7 @@ public class ConfigurationManager {
                     | ConfigException e) {
                 e.printStackTrace();
             }
-        });
+        }, node, order);
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
