@@ -20,41 +20,55 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 
 @Config(modid = GTNHLib.MODID, category = "example", filename = "gtnhlib-example")
-@Config.Entry(ExampleConfig.sortedCategory.class)
+@Config.Order(0)
+@Config.Entry(ExampleConfig.SortedCategory.class)
 public class ExampleConfig {
 
     @Config.Comment("The text should be green")
-    @Config.Entry(greenString.class)
+    @Config.Entry(GreenString.class)
     public static String greenField = "I should be Green";
 
     @Config.Entry(ModIDEntry.class)
     public static String selectionList = "Mod ID";
 
     @Config.Comment("This category button should have RED text.")
-    @Config.Entry(redCategory.class)
+    @Config.Entry(RedCategory.class)
     public static testCategory redCategory = new testCategory();
 
     public static class testCategory {
 
         @Config.Comment("This category button should have RED text.")
-        @Config.Entry(redCategory.class)
+        @Config.Entry(RedCategory.class)
         public testCategory2 redCategory = new testCategory2();
 
         public static class testCategory2 {
 
             @Config.Comment("The boolean text should be yellow")
-            @Config.Entry(yellowBoolean.class)
+            @Config.Entry(YellowBoolean.class)
             public boolean yellowBoolean = true;
+
+            @Config.Order(0)
+            public boolean enable;
+
+            @Config.Order(2)
+            public int speed;
+
+            @Config.Order(1)
+            public int size;
+
+            public int noOrder;
+
         }
 
         @Config.Comment("The boolean text should be yellow")
-        @Config.Entry(yellowBoolean.class)
+        @Config.Entry(YellowBoolean.class)
+        @Config.Order(0)
         public boolean yellowBoolean = true;
     }
 
-    public static class sortedCategory extends GuiConfigEntries.CategoryEntry {
+    public static class SortedCategory extends GuiConfigEntries.CategoryEntry {
 
-        public sortedCategory(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
+        public SortedCategory(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
             super(owningScreen, owningEntryList, configElement);
             this.btnSelectCategory.displayString = EnumChatFormatting.RED + this.btnSelectCategory.displayString;
         }
@@ -94,29 +108,29 @@ public class ExampleConfig {
         }
     }
 
-    public static class greenString extends GuiConfigEntries.StringEntry {
+    public static class GreenString extends GuiConfigEntries.StringEntry {
 
-        public greenString(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
+        public GreenString(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
             super(owningScreen, owningEntryList, configElement);
             textFieldValue.setTextColor(65280);
         }
     }
 
-    public static class redCategory extends GuiConfigEntries.CategoryEntry {
+    public static class RedCategory extends GuiConfigEntries.CategoryEntry {
 
-        public redCategory(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
+        public RedCategory(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
             super(owningScreen, owningEntryList, configElement);
             this.btnSelectCategory.displayString = EnumChatFormatting.RED + this.btnSelectCategory.displayString;
         }
     }
 
     // Mimic BooleanEntry because it has a private constructor
-    public static class yellowBoolean extends GuiConfigEntries.ButtonEntry {
+    public static class YellowBoolean extends GuiConfigEntries.ButtonEntry {
 
         protected final boolean beforeValue;
         protected boolean currentValue;
 
-        public yellowBoolean(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
+        public YellowBoolean(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
             super(owningScreen, owningEntryList, configElement);
             this.beforeValue = Boolean.valueOf(configElement.get().toString());
             this.currentValue = beforeValue;
