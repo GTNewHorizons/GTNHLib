@@ -52,6 +52,7 @@ public class ConfigurationManager {
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
     private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
+    private static final Map<Class<?>, ConfigNode> configNodeMap = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
     private final static Path configDir;
@@ -89,6 +90,8 @@ public class ConfigurationManager {
 
         configToCategoryClassMap.computeIfAbsent(rawConfig, (ignored) -> new HashMap<>())
                 .computeIfAbsent(category, (ignored) -> new HashSet<>()).add(configClass);
+
+        configNodeMap.put(configClass, new ConfigNode(configClass));
 
         try {
             processConfigInternal(configClass, category, rawConfig, null);
@@ -591,5 +594,22 @@ public class ConfigurationManager {
             }
         }
         return true;
+    }
+
+    public static class ConfigNode {
+
+        final Map<String, Integer> fieldOrder = new HashMap<>();
+        final Map<String, ConfigNode> children = new HashMap<>();
+
+        public ConfigNode(Class<?> configClass) {
+            for (Field field : configClass.getDeclaredFields()) {
+                String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
+                Config.Order ann = field.getAnnotation(Config.Order.class);
+                if (ann != null && fieldName != null) fieldOrder.put(fieldName, ann.value());
+                if (ConfigurationManager.isFieldSubCategory(field)) {
+                    children.put(fieldName, new ConfigNode(field.getType()));
+                }
+            }
+        }
     }
 }
