@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizon.gtnhlib.api.IModelProvider;
+import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
@@ -55,7 +55,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// Override this if you want programmatic model selection
     @SuppressWarnings("unused")
     public BakedModel getModel(@Nullable IBlockAccess world, Block block, int meta, int x, int y, int z) {
-        if (block instanceof IModelProvider selector) return selector.getModel(world, block, meta, x, y, z);
+        if (block instanceof IBlockModelProvider selector) return selector.getModel(world, block, meta, x, y, z);
         return ModelRegistry.getBakedModel(new BlockState(block, meta));
     }
 
