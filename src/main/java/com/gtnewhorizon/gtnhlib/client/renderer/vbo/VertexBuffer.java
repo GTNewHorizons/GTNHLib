@@ -5,27 +5,19 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
-import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
-import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public class VertexBuffer implements IVertexBuffer, AutoCloseable {
-
-    private static final VaoFunctions vao = GLCaps.VAO;
 
     protected int id;
     protected int vertexCount;
     protected final VertexFormat format;
     protected final int drawMode;
-    private int vaoId;
-    private boolean vaoDirty;
 
     public VertexBuffer(VertexFormat format, int drawMode) {
         this.id = GL15.glGenBuffers();
         this.format = format;
         this.drawMode = drawMode;
-        this.vaoId = vao != null ? vao.glGenVertexArrays() : -1;
-        this.vaoDirty = true;
     }
 
     public VertexBuffer(VertexFormat format, int drawMode, ByteBuffer buffer, int vertexCount) {
@@ -57,7 +49,6 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
         this.bindVBO();
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, type);
         this.unbindVBO();
-        this.vaoDirty = true;
     }
 
     @Override
@@ -115,35 +106,18 @@ public class VertexBuffer implements IVertexBuffer, AutoCloseable {
             GL15.glDeleteBuffers(this.id);
             id = -1;
         }
-        if (vaoId >= 0) {
-            vao.glDeleteVertexArrays(vaoId);
-            vaoId = -1;
-        }
     }
 
     @Override
     public void setupState() {
-        if (vaoId >= 0) {
-            vao.glBindVertexArray(vaoId);
-            if (vaoDirty) {
-                bindVBO();
-                format.setupBufferState(0L);
-                vaoDirty = false;
-            }
-        } else {
-            bindVBO();
-            format.setupBufferState(0L);
-        }
+        bindVBO();
+        format.setupBufferState(0L);
     }
 
     @Override
     public void cleanupState() {
-        if (vaoId >= 0) {
-            vao.glBindVertexArray(0);
-        } else {
-            format.clearBufferState();
-            unbindVBO();
-        }
+        format.clearBufferState();
+        unbindVBO();
     }
 
     @Override
