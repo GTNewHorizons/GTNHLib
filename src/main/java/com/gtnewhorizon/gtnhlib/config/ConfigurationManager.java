@@ -52,7 +52,7 @@ public class ConfigurationManager {
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
     private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
-    private static final Map<Class<?>, ConfigNode> configNodeMap = new HashMap<>();
+    private static final Map<Class<?>, ConfigNode> configNode = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
     private final static Path configDir;
@@ -91,7 +91,7 @@ public class ConfigurationManager {
         configToCategoryClassMap.computeIfAbsent(rawConfig, (ignored) -> new HashMap<>())
                 .computeIfAbsent(category, (ignored) -> new HashSet<>()).add(configClass);
 
-        configNodeMap.put(configClass, new ConfigNode(configClass));
+        configNode.put(configClass, new ConfigNode(configClass));
 
         try {
             processConfigInternal(configClass, category, rawConfig, null);
@@ -391,7 +391,7 @@ public class ConfigurationManager {
             return proxy;
         }
 
-        ConfigNode rootNode = configNodeMap.get(configClass);
+        ConfigNode rootNode = configNode.get(configClass);
         ConfigNode node = rootNode.children.getOrDefault(element.getName().toLowerCase(), rootNode);
         Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
         int order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
