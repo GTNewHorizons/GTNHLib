@@ -33,6 +33,8 @@ public class ExampleConfig {
 
     @Config.Comment("This category button should have RED text.")
     @Config.Entry(RedCategory.class)
+    @Config.Order(0)
+    // the ordering happens right after SortedCategory so it will be on top
     public static testCategory redCategory = new testCategory();
 
     public static class testCategory {
