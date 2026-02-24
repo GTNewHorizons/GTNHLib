@@ -51,6 +51,7 @@ public class ConfigurationManager {
     private static final Boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
+    private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
     private final static Path configDir;
@@ -271,12 +272,15 @@ public class ConfigurationManager {
             val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
             cat.setLanguageKey(langKey);
         }
+
         cat.setRequiresMcRestart(requiresMcRestart);
         cat.setRequiresWorldRestart(requiresWorldRestart);
         observedCategories.computeIfAbsent(rawConfig, k -> new HashSet<>()).add(cat.getQualifiedName());
 
         Optional.ofNullable(configClass.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
                 .map((lines) -> String.join("\n", lines)).ifPresent(cat::setComment);
+
+        configEntries.put(cat, configClass);
     }
 
     /**
@@ -474,6 +478,11 @@ public class ConfigurationManager {
                 && fieldClass.getSuperclass().equals(Object.class);
     }
 
+    public static Configuration getConfig(Class<?> configClass) {
+        val cfg = configClass.getAnnotation(Config.class);
+        return configs.get(getConfigKey(cfg));
+    }
+
     private static String getConfigKey(Config cfg) {
         return cfg.modid() + "|" + cfg.configSubDirectory() + "|" + cfg.filename();
     }
@@ -498,6 +507,28 @@ public class ConfigurationManager {
         }
     }
 
+    public static void applyConfigEntries() {
+        for (Map.Entry<ConfigCategory, Class<?>> entry : configEntries.entrySet()) {
+            ConfigCategory cat = entry.getKey();
+            Class<?> configClass = entry.getValue();
+
+            for (val field : configClass.getDeclaredFields()) {
+                val fieldName = ConfigFieldParser.getFieldName(field);
+                Config.Entry fieldEntry = field.getAnnotation(Config.Entry.class);
+                if (fieldEntry != null && fieldEntry.value() != null) {
+                    if (cat.get(fieldName) != null) {
+                        cat.get(fieldName).setConfigEntryClass(fieldEntry.value());
+                    }
+                }
+            }
+
+            Config.Entry classEntry = getClassOrBaseAnnotation(configClass, Config.Entry.class);
+            if (classEntry != null && classEntry.value() != null) {
+                cat.setConfigEntryClass(classEntry.value());
+            }
+        }
+    }
+
     private static void writeLangKeysToFile() {
         for (Map.Entry<String, List<String>> entry : generatedLangKeys.entrySet()) {
             val langFile = new File("generated-lang-keys", entry.getKey() + ".txt");
@@ -516,6 +547,12 @@ public class ConfigurationManager {
     private static void cullDeadCategories() {
         for (val entry : observedCategories.entrySet()) {
             val config = entry.getKey();
+
+            if (!isCategoryCullingEnabled(config)) {
+                LOGGER.info("Skipping category culling for config {}", config);
+                continue;
+            }
+
             val observedCategoryNames = entry.getValue();
 
             if (config.getCategoryNames().size() == observedCategoryNames.size()) {
@@ -539,5 +576,20 @@ public class ConfigurationManager {
             config.save();
         }
         observedCategories.clear();
+    }
+
+    private static boolean isCategoryCullingEnabled(Configuration config) {
+        Map<String, Set<Class<?>>> map = configToCategoryClassMap.get(config);
+        if (map == null) return true;
+
+        for (Set<Class<?>> classes : map.values()) {
+            for (Class<?> clazz : classes) {
+                Config cfg = clazz.getAnnotation(Config.class);
+                if (cfg != null && !cfg.categoryCulling()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
