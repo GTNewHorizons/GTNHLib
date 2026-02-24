@@ -43,30 +43,21 @@ public class TessellatorTransformerWrapper implements RfbClassTransformer {
     public boolean shouldTransformClass(@NotNull ExtensibleClassLoader classLoader,
             @NotNull RfbClassTransformer.Context context, @Nullable Manifest manifest, @NotNull String className,
             @NotNull ClassNodeHandle classNode) {
-        // Only transform the Tessellator class itself
-        if (!"net.minecraft.client.renderer.Tessellator".equals(className)) {
-            return false;
-        }
         if (!classNode.isPresent()) {
             return false;
         }
-        if (!classNode.isOriginal()) {
-            // If a class is already a transformed ClassNode, conservatively continue processing.
-            return true;
-        }
-        return inner.shouldRfbTransform(classNode.getOriginalBytes());
+        // Only transform the Tessellator class itself
+        return "net.minecraft.client.renderer.Tessellator".equals(className);
     }
 
     @Override
-    public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
-            @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
-        // Double-check we're only transforming Tessellator
-        if (!"net.minecraft.client.renderer.Tessellator".equals(className)) {
-            return;
-        }
+    public boolean transformClass(@NotNull ExtensibleClassLoader classLoader,
+            @NotNull RfbClassTransformer.Context context, @Nullable Manifest manifest, @NotNull String className,
+            @NotNull ClassNodeHandle classNode) {
         final boolean changed = inner.transformClassNode(classNode.getNode());
         if (changed) {
             classNode.computeFrames();
         }
+        return changed;
     }
 }

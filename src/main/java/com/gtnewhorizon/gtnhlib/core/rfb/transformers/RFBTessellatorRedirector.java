@@ -57,12 +57,14 @@ public class RFBTessellatorRedirector implements RfbClassTransformer {
     }
 
     @Override
-    public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
-            @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
+    public boolean transformClass(@NotNull ExtensibleClassLoader classLoader,
+            @NotNull RfbClassTransformer.Context context, @Nullable Manifest manifest, @NotNull String className,
+            @NotNull ClassNodeHandle classNode) {
         final boolean changed = inner.transformClassNode(className, classNode.getNode());
         if (changed) {
             classNode.computeMaxs();
             GTNHLibClassDump.dumpRFBClass(className, classNode, this);
         }
+        return changed;
     }
 }
