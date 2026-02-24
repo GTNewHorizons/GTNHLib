@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import cpw.mods.fml.client.config.GuiConfigEntries;
+
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -31,6 +33,20 @@ public @interface Config {
      * The name of the configuration file. Defaults to the modid. The file extension (.cfg) is added automatically.
      */
     String filename() default "";
+
+    /**
+     * Controls automatic removal of unused configuration categories.
+     *
+     * <p>
+     * When enabled, categories that are not observed during config processing will be removed from the configuration
+     * file. This helps clean up stale categories from older versions.
+     * </p>
+     *
+     * <p>
+     * Disable this if your mod uses dynamically created or externally managed categories that should be preserved.
+     * </p>
+     */
+    boolean categoryCulling() default true;
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ ElementType.FIELD, ElementType.TYPE })
@@ -236,9 +252,21 @@ public @interface Config {
 
         /**
          * Can be used to overwrite the sync behavior for fields in classes annotated with {@link Sync}.
-         * 
+         *
          * @return Whether the field should be synced. Defaults to true.
          */
         boolean value() default true;
     }
+
+    /**
+     * Use this annotation to specify a custom IConfigEntry class for a field or category. This allows for custom GUI
+     * rendering (colors, buttons, special inputs) in the Mod Config Menu.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.FIELD, ElementType.TYPE })
+    @interface Entry {
+
+        Class<? extends GuiConfigEntries.IConfigEntry> value();
+    }
+
 }
