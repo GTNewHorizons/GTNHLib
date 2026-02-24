@@ -13,7 +13,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 
@@ -71,7 +70,6 @@ public final class InventoryChangeScanner {
         if (!state.pendingScan) return;
         state.pendingScan = false;
 
-        GTNHLib.info("Scanning player inventory");
         state.current.clear();
         collectSnapshot(player, state.current);
 
