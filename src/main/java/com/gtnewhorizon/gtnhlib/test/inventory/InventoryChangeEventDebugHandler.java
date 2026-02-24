@@ -56,15 +56,15 @@ public final class InventoryChangeEventDebugHandler {
                 changes.size(),
                 totalDelta);
 
-        player.addChatMessage(
-                new ChatComponentText(
-                        CHAT_PREFIX + "side="
-                                + side
-                                + " direction="
-                                + direction
-                                + " keys="
-                                + changes.size()
-                                + " totalDelta="
-                                + totalDelta));
+        for (Object2IntMap.Entry<InventoryKey> entry : changes.object2IntEntrySet()) {
+            player.addChatMessage(
+                    new ChatComponentText(
+                            CHAT_PREFIX + "side="
+                                    + side
+                                    + " direction="
+                                    + direction
+                                    + " - "
+                                    + entry.getKey().toStack(entry.getIntValue())));
+        }
     }
 }
