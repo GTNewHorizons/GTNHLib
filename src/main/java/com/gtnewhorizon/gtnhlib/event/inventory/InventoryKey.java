@@ -39,7 +39,7 @@ public final class InventoryKey {
             return null;
         }
 
-        int meta = ItemUtil.getStackMeta(stack);
+        int meta = stack.isItemStackDamageable() ? 0 : ItemUtil.getStackMeta(stack);
         long packedItemMeta = packItemMeta(itemId, meta);
 
         if (!strictNBT) {
