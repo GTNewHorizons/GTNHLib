@@ -63,6 +63,11 @@ public interface ModelQuadView extends ModelPrimitiveView {
     int getColorIndex();
 
     /**
+     * @return Whether this quad is transparent.
+     */
+    boolean isTransparent();
+
+    /**
      * Not to be confused with ambient occlusion AKA smooth lighting When true, allows this quad to multiply its
      * brightness based on the direction it's facing. When this is false, each face derives its brightness directly from
      * the light value it's facing without multiplying it.

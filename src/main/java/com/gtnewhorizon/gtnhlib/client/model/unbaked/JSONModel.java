@@ -48,14 +48,14 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 public class JSONModel implements UnbakedModel {
 
     @Nullable
-    private final ModelLoc parentId;
+    protected final ModelLoc parentId;
     @Nullable
-    private JSONModel parent;
-    private final boolean useAO;
-    private final Map<Position, ModelDisplay> display;
+    protected JSONModel parent;
+    protected final boolean useAO;
+    protected final Map<Position, ModelDisplay> display;
     @NotNull
-    private final Object2ObjectMap<String, String> textures;
-    private List<ModelDeserializer.ModelElement> elements;
+    protected final Object2ObjectMap<String, String> textures;
+    protected List<ModelDeserializer.ModelElement> elements;
 
     protected static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
@@ -320,7 +320,7 @@ public class JSONModel implements UnbakedModel {
         }
     }
 
-    private IIcon getParticle() {
+    protected IIcon getParticle() {
         String key = "particle";
         if (!textures.containsKey(key) && !textures.isEmpty()) {
             key = textures.keySet().iterator().next();
