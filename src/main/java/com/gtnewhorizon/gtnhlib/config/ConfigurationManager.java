@@ -124,7 +124,7 @@ public class ConfigurationManager {
     private static void save(Class<?> configClass, Object instance, Configuration rawConfig, String category)
             throws IllegalAccessException, ConfigException {
         for (val field : configClass.getDeclaredFields()) {
-            if (field.getAnnotation(Config.Ignore.class) != null) {
+            if (shouldSkipField(field)) {
                 continue;
             }
 
@@ -193,7 +193,7 @@ public class ConfigurationManager {
 
         List<String> observedValues = new ArrayList<>();
         for (val field : configClass.getDeclaredFields()) {
-            if (field.isAnnotationPresent(Config.Ignore.class)) {
+            if (shouldSkipField(field)) {
                 continue;
             }
 
@@ -367,6 +367,9 @@ public class ConfigurationManager {
             Configuration rawConfig, boolean categorized) {
         List<IConfigElement> elements = new ArrayList<>();
         for (val field : configClass.getDeclaredFields()) {
+            if (shouldSkipField(field)) {
+                continue;
+            }
             if (isFieldSubCategory(field)) {
                 val name = ConfigFieldParser.getFieldName(field).toLowerCase();
                 elements.add(
@@ -479,11 +482,15 @@ public class ConfigurationManager {
     }
 
     private static boolean isFieldSubCategory(@Nullable Field field) {
-        if (field == null) return false;
+        if (shouldSkipField(field)) return false;
 
         Class<?> fieldClass = field.getType();
         return !ConfigFieldParser.canParse(field) && fieldClass.getSuperclass() != null
                 && fieldClass.getSuperclass().equals(Object.class);
+    }
+
+    private static boolean shouldSkipField(@Nullable Field field) {
+        return field == null || field.isSynthetic() || field.isAnnotationPresent(Config.Ignore.class);
     }
 
     public static Configuration getConfig(Class<?> configClass) {
@@ -521,6 +528,9 @@ public class ConfigurationManager {
             Class<?> configClass = entry.getValue();
 
             for (val field : configClass.getDeclaredFields()) {
+                if (shouldSkipField(field)) {
+                    continue;
+                }
                 val fieldName = ConfigFieldParser.getFieldName(field);
                 Config.Entry fieldEntry = field.getAnnotation(Config.Entry.class);
                 if (fieldEntry != null && fieldEntry.value() != null) {
@@ -608,6 +618,9 @@ public class ConfigurationManager {
 
         public ConfigNode(Class<?> configClass) {
             for (Field field : configClass.getDeclaredFields()) {
+                if (shouldSkipField(field)) {
+                    continue;
+                }
                 String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
                 Config.Order ann = field.getAnnotation(Config.Order.class);
                 if (ann != null && fieldName != null) fieldOrder.put(fieldName, ann.value());
