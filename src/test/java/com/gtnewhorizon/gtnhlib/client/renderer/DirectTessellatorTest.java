@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.minecraft.client.renderer.Tessellator;
 
+import org.joml.Matrix4f;
 import org.junit.jupiter.api.*;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
@@ -21,6 +22,7 @@ public class DirectTessellatorTest {
     void setup() {
         initialBuffer = ByteBuffer.allocateDirect(1024); // initial direct buffer
         tess = new DirectTessellator(initialBuffer);
+        Tessellator.instance.isDrawing = false;
     }
 
     @Test
@@ -246,5 +248,114 @@ public class DirectTessellatorTest {
         tess.startDrawing(0);
         tess.setColorRGBA(255, 255, 255, 255);
         assertFalse(tess.hasColor);
+    }
+
+    @Test
+    void testInterceptDrawWithTranslation() {
+        Tessellator vanilla = Tessellator.instance;
+        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
+        ct.setDrawCallback(t -> false);
+
+        ct.vertexTransform = new Matrix4f().translation(10, 20, 30);
+
+        vanilla.startDrawing(0);
+        vanilla.addVertex(1, 2, 3);
+        vanilla.addVertex(4, 5, 6);
+
+        ct.interceptDraw(vanilla);
+
+        assertEquals(2, ct.vertexCount);
+
+        long ptr = ct.startPtr;
+        int stride = ct.getVertexFormat().getVertexSize();
+
+        assertEquals(11f, memGetFloat(ptr), 0.0001f);
+        assertEquals(22f, memGetFloat(ptr + 4), 0.0001f);
+        assertEquals(33f, memGetFloat(ptr + 8), 0.0001f);
+
+        ptr += stride;
+        assertEquals(14f, memGetFloat(ptr), 0.0001f);
+        assertEquals(25f, memGetFloat(ptr + 4), 0.0001f);
+        assertEquals(36f, memGetFloat(ptr + 8), 0.0001f);
+    }
+
+    @Test
+    void testInterceptDrawWithRotation() {
+        Tessellator vanilla = Tessellator.instance;
+        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
+        ct.setDrawCallback(t -> false);
+
+        // 90-degree rotation around Y axis: (x,y,z) -> (z, y, -x)
+        ct.vertexTransform = new Matrix4f().rotationY((float) (Math.PI / 2));
+
+        vanilla.startDrawing(0);
+        vanilla.addVertex(1, 0, 0);
+
+        ct.interceptDraw(vanilla);
+
+        long ptr = ct.startPtr;
+        assertEquals(0f, memGetFloat(ptr), 0.001f); // z component of (1,0,0) rotated
+        assertEquals(0f, memGetFloat(ptr + 4), 0.001f);
+        assertEquals(-1f, memGetFloat(ptr + 8), 0.001f);
+    }
+
+    @Test
+    void testInterceptDrawWithTransformAndNormals() {
+        Tessellator vanilla = Tessellator.instance;
+        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
+        ct.setDrawCallback(t -> false);
+
+        // 90-degree rotation around Z axis: normal (1,0,0) -> (0,1,0)
+        ct.vertexTransform = new Matrix4f().rotationZ((float) (Math.PI / 2));
+
+        vanilla.startDrawing(0);
+        vanilla.setNormal(1, 0, 0);
+        vanilla.addVertex(0, 0, 0);
+
+        ct.interceptDraw(vanilla);
+
+        assertTrue(ct.getVertexFormat().hasNormals());
+
+        // Find normal bytes after position (12 bytes)
+        // Format is POSITION_NORMAL: pos(12) + normal(4)
+        long ptr = ct.startPtr + 12;
+        byte nx = memGetByte(ptr);
+        byte ny = memGetByte(ptr + 1);
+        byte nz = memGetByte(ptr + 2);
+
+        // After 90-deg Z rotation: (1,0,0) -> (0,1,0)
+        assertEquals(0, nx, 2); // allow +-2 for rounding
+        assertEquals(127, ny, 2);
+        assertEquals(0, nz, 2);
+    }
+
+    @Test
+    void testInterceptDrawNullTransformUnchanged() {
+        Tessellator vanilla = Tessellator.instance;
+        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
+        ct.setDrawCallback(t -> false);
+
+        // vertexTransform is null by default
+        assertNull(ct.vertexTransform);
+
+        vanilla.startDrawing(0);
+        vanilla.addVertex(1, 2, 3);
+        vanilla.addVertex(4, 5, 6);
+
+        ct.interceptDraw(vanilla);
+
+        assertEquals(2, ct.vertexCount);
+
+        long ptr = ct.startPtr;
+
+        assertEquals(1f, memGetFloat(ptr), 0.0001f);
+        assertEquals(2f, memGetFloat(ptr + 4), 0.0001f);
+        assertEquals(3f, memGetFloat(ptr + 8), 0.0001f);
+
+        ptr += ct.getVertexFormat().getVertexSize();
+
+        assertEquals(4f, memGetFloat(ptr), 0.0001f);
+        assertEquals(5f, memGetFloat(ptr + 4), 0.0001f);
+        assertEquals(6f, memGetFloat(ptr + 8), 0.0001f);
     }
 }
