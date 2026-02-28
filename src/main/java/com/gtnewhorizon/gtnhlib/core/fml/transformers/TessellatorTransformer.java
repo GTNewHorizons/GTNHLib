@@ -18,23 +18,13 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
-
 /**
  * Transformer the Tessellator and inject draw() interception.
  */
 public class TessellatorTransformer implements IClassTransformer {
 
-    private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
-
-    private static final ClassConstantPoolParser cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
-
     public static List<String> getTransformerExclusions() {
         return Collections.unmodifiableList(new ArrayList<>());
-    }
-
-    public boolean shouldRfbTransform(byte[] basicClass) {
-        return cstPoolParser.find(basicClass, false);
     }
 
     @Override
