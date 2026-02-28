@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
 import com.google.common.annotations.Beta;
+import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.IVertexAttributeWriter;
 
 import lombok.Getter;
@@ -50,23 +51,23 @@ public class VertexFormatElement {
 
     public enum Usage {
 
-        POSITION("Position", (size, type, stride, pointer, index) -> {
+        POSITION("Position", 0, false, (size, type, stride, pointer, index) -> {
             GL11.glVertexPointer(size, type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
         }, index -> GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY)),
-        NORMAL("Normal", (size, type, stride, pointer, index) -> {
+        NORMAL("Normal", 4, true, (size, type, stride, pointer, index) -> {
             GL11.glNormalPointer(type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
         }, index -> GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY)),
-        COLOR("Vertex Color", (size, type, stride, pointer, index) -> {
+        COLOR("Vertex Color", 1, true, (size, type, stride, pointer, index) -> {
             GL11.glColorPointer(size, type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
         }, index -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY)),
-        PRIMARY_UV("UV 0", (size, type, stride, pointer, index) -> {
+        PRIMARY_UV("UV 0", 2, false, (size, type, stride, pointer, index) -> {
             GL11.glTexCoordPointer(size, type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
         }, index -> GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY)),
-        SECONDARY_UV("UV 1-31", (size, type, stride, pointer, index) -> {
+        SECONDARY_UV("UV 1-31", 3, false, (size, type, stride, pointer, index) -> {
             GL13.glClientActiveTexture(GL13.GL_TEXTURE0 + index);
             GL11.glTexCoordPointer(size, type, stride, pointer);
             GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
@@ -76,29 +77,48 @@ public class VertexFormatElement {
             GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
             GL13.glClientActiveTexture(GL13.GL_TEXTURE0);
         }),
-        PADDING("Padding", (size, type, stride, pointer, index) -> {}, index -> {}),
-        GENERIC("Generic", (size, type, stride, pointer, index) -> {
+        PADDING("Padding", -1, false, (size, type, stride, pointer, index) -> {}, index -> {}),
+        GENERIC("Generic", -1, false, (size, type, stride, pointer, index) -> {
             GL20.glEnableVertexAttribArray(index);
             GL20.glVertexAttribPointer(index, size, type, false, stride, pointer);
         }, GL20::glDisableVertexAttribArray);
 
         @Getter
         private final String name;
+        @Getter
+        private final int attributeLocation;
+        @Getter
+        private final boolean normalized;
         private final SetupState setupState;
         private final IntConsumer clearState;
 
-        Usage(String name, SetupState setupState, IntConsumer clearState) {
+        Usage(String name, int attributeLocation, boolean normalized, SetupState setupState, IntConsumer clearState) {
             this.name = name;
+            this.attributeLocation = attributeLocation;
+            this.normalized = normalized;
             this.setupState = setupState;
             this.clearState = clearState;
         }
 
         private void setupBufferState(int size, int type, int stride, long pointer, int index) {
-            this.setupState.setupBufferState(size, type, stride, pointer, index);
+            if (GLCaps.isCoreProfile()) {
+                if (this == PADDING) return;
+                final int location = attributeLocation >= 0 ? attributeLocation : index;
+                GL20.glVertexAttribPointer(location, size, type, normalized, stride, pointer);
+                GL20.glEnableVertexAttribArray(location);
+            } else {
+                this.setupState.setupBufferState(size, type, stride, pointer, index);
+            }
         }
 
         public void clearBufferState(int index) {
-            this.clearState.accept(index);
+            if (GLCaps.isCoreProfile()) {
+                if (this == PADDING) return;
+                final int location = attributeLocation >= 0 ? attributeLocation : index;
+                GL20.glDisableVertexAttribArray(location);
+            } else {
+                this.clearState.accept(index);
+            }
         }
 
         interface SetupState {

@@ -60,7 +60,8 @@ public class BaseVAO implements IVertexArrayObject {
     }
 
     protected void setupVAOStates() {
-        vbo.setupState();
+        vbo.bind();
+        vbo.getVertexFormat().setupBufferState(0L);
         vbo.unbind();
     }
 
