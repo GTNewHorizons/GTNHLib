@@ -9,11 +9,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.renderer.Tessellator;
 
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.*;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 public class DirectTessellatorTest {
+
+    private static class TransformingTessellator extends DirectTessellator {
+
+        Matrix4fc vertexTransform;
+        private final Vector3f scratch = new Vector3f();
+
+        TransformingTessellator(ByteBuffer initial) {
+            super(initial);
+        }
+
+        @Override
+        protected long writeVertexData(VertexFormat format, int[] rawBuffer, int rawBufferIndex) {
+            if (vertexTransform != null) {
+                return format.writeToBuffer0(writePtr, rawBuffer, rawBufferIndex, vertexTransform, scratch);
+            }
+            return super.writeVertexData(format, rawBuffer, rawBufferIndex);
+        }
+    }
 
     private DirectTessellator tess;
     private ByteBuffer initialBuffer;
@@ -253,8 +274,7 @@ public class DirectTessellatorTest {
     @Test
     void testInterceptDrawWithTranslation() {
         Tessellator vanilla = Tessellator.instance;
-        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
-        ct.setDrawCallback(t -> false);
+        final TransformingTessellator ct = new TransformingTessellator(initialBuffer);
 
         ct.vertexTransform = new Matrix4f().translation(10, 20, 30);
 
@@ -282,8 +302,7 @@ public class DirectTessellatorTest {
     @Test
     void testInterceptDrawWithRotation() {
         Tessellator vanilla = Tessellator.instance;
-        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
-        ct.setDrawCallback(t -> false);
+        final TransformingTessellator ct = new TransformingTessellator(initialBuffer);
 
         // 90-degree rotation around Y axis: (x,y,z) -> (z, y, -x)
         ct.vertexTransform = new Matrix4f().rotationY((float) (Math.PI / 2));
@@ -302,8 +321,7 @@ public class DirectTessellatorTest {
     @Test
     void testInterceptDrawWithTransformAndNormals() {
         Tessellator vanilla = Tessellator.instance;
-        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
-        ct.setDrawCallback(t -> false);
+        final TransformingTessellator ct = new TransformingTessellator(initialBuffer);
 
         // 90-degree rotation around Z axis: normal (1,0,0) -> (0,1,0)
         ct.vertexTransform = new Matrix4f().rotationZ((float) (Math.PI / 2));
@@ -332,8 +350,7 @@ public class DirectTessellatorTest {
     @Test
     void testInterceptDrawNullTransformUnchanged() {
         Tessellator vanilla = Tessellator.instance;
-        final CallbackTessellator ct = new CallbackTessellator(initialBuffer);
-        ct.setDrawCallback(t -> false);
+        final TransformingTessellator ct = new TransformingTessellator(initialBuffer);
 
         // vertexTransform is null by default
         assertNull(ct.vertexTransform);

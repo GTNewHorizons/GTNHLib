@@ -10,8 +10,6 @@ import org.joml.Vector3f;
 
 public final class PositionVertexAttributeWriter implements IVertexAttributeWriter {
 
-    private static final ThreadLocal<Vector3f> SCRATCH = ThreadLocal.withInitial(Vector3f::new);
-
     @Override
     public int writeAttribute(long pointer, int[] data, int index) {
         memPutInt(pointer, data[index | X_INDEX]);
@@ -21,8 +19,7 @@ public final class PositionVertexAttributeWriter implements IVertexAttributeWrit
     }
 
     @Override
-    public int writeAttributeTransformed(long pointer, int[] data, int index, Matrix4fc m) {
-        Vector3f v = SCRATCH.get();
+    public int writeAttributeTransformed(long pointer, int[] data, int index, Matrix4fc m, Vector3f v) {
         v.set(
                 Float.intBitsToFloat(data[index | X_INDEX]),
                 Float.intBitsToFloat(data[index | Y_INDEX]),

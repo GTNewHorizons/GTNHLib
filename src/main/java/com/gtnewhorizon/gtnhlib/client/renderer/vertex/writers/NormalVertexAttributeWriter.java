@@ -10,8 +10,6 @@ import org.joml.Vector3f;
 
 public final class NormalVertexAttributeWriter implements IVertexAttributeWriter {
 
-    private static final ThreadLocal<Vector3f> SCRATCH = ThreadLocal.withInitial(Vector3f::new);
-
     @Override
     public int writeAttribute(long pointer, int[] data, int index) {
         memPutInt(pointer, data[index | NORMAL_INDEX]);
@@ -19,9 +17,8 @@ public final class NormalVertexAttributeWriter implements IVertexAttributeWriter
     }
 
     @Override
-    public int writeAttributeTransformed(long pointer, int[] data, int index, Matrix4fc m) {
+    public int writeAttributeTransformed(long pointer, int[] data, int index, Matrix4fc m, Vector3f n) {
         int packed = data[index | NORMAL_INDEX];
-        Vector3f n = SCRATCH.get();
         n.set((byte) (packed) / 127f, (byte) (packed >> 8) / 127f, (byte) (packed >> 16) / 127f);
         n.mulDirection(m).normalize();
 

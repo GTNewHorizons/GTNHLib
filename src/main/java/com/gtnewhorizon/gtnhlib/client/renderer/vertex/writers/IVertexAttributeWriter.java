@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers;
 import net.minecraft.client.renderer.Tessellator;
 
 import org.joml.Matrix4fc;
+import org.joml.Vector3f;
 
 public interface IVertexAttributeWriter {
 
@@ -13,7 +14,7 @@ public interface IVertexAttributeWriter {
     // Populate the Tessellator using the buffer's contents
     int readAttribute(long pointer, Tessellator tessellator);
 
-    default int writeAttributeTransformed(long pointer, int[] data, int index, Matrix4fc transform) {
+    default int writeAttributeTransformed(long pointer, int[] data, int index, Matrix4fc transform, Vector3f scratch) {
         return writeAttribute(pointer, data, index);
     }
 }

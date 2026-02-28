@@ -10,6 +10,7 @@ import java.util.List;
 import net.minecraft.client.renderer.Tessellator;
 
 import org.joml.Matrix4fc;
+import org.joml.Vector3f;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
@@ -160,13 +161,14 @@ public class VertexFormat {
         return pointer;
     }
 
-    public final long writeToBuffer0(long pointer, int[] data, int rawVertexCount, Matrix4fc transform) {
+    public final long writeToBuffer0(long pointer, int[] data, int rawVertexCount, Matrix4fc transform,
+            Vector3f scratch) {
         final List<VertexFormatElement> list = this.getElements();
         final int listSize = list.size();
 
         for (int index = 0; index < rawVertexCount; index += 8) {
             for (int i = 0; i < listSize; i++) {
-                pointer += list.get(i).writer.writeAttributeTransformed(pointer, data, index, transform);
+                pointer += list.get(i).writer.writeAttributeTransformed(pointer, data, index, transform, scratch);
             }
         }
         return pointer;

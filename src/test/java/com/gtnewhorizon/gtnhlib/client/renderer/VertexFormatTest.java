@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.ByteBuffer;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
@@ -43,7 +44,7 @@ public class VertexFormatTest {
 
         ByteBuffer buf = ByteBuffer.allocateDirect(256);
         long ptr = memAddress0(buf);
-        long end = fmt.writeToBuffer0(ptr, raw, 16, transform);
+        long end = fmt.writeToBuffer0(ptr, raw, 16, transform, new Vector3f());
 
         int stride = fmt.getVertexSize();
         assertEquals(ptr + 2 * stride, end);

@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.shader.TesselatorVertexState;
 
-import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.annotations.Beta;
@@ -37,13 +36,6 @@ public class DirectTessellator extends Tessellator {
     protected long startPtr;
     protected long writePtr;
     protected long endPtr;
-
-    /**
-     * When non-null, {@link #interceptDraw} transforms positions by the full 4x4 matrix and normals by the upper 3x3
-     * during the write pass. Subclasses set this before calling {@code super.interceptDraw()} to apply per-draw
-     * transforms (e.g. particle modelview deltas). Defaults to null (no transform).
-     */
-    protected Matrix4fc vertexTransform;
 
     public DirectTessellator(ByteBuffer initial) {
         this(initial, false);
@@ -84,14 +76,13 @@ public class DirectTessellator extends Tessellator {
 
         ensureCapacity(tessellator.vertexCount * format.getVertexSize());
 
-        if (vertexTransform != null) {
-            writePtr = format
-                    .writeToBuffer0(writePtr, tessellator.rawBuffer, tessellator.rawBufferIndex, vertexTransform);
-        } else {
-            writePtr = format.writeToBuffer0(writePtr, tessellator.rawBuffer, tessellator.rawBufferIndex);
-        }
+        writePtr = writeVertexData(format, tessellator.rawBuffer, tessellator.rawBufferIndex);
 
         return draw();
+    }
+
+    protected long writeVertexData(VertexFormat format, int[] rawBuffer, int rawBufferIndex) {
+        return format.writeToBuffer0(writePtr, rawBuffer, rawBufferIndex);
     }
 
     /**
