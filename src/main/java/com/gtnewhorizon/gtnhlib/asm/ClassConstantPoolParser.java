@@ -32,7 +32,7 @@ import java.util.Arrays;
 // This class might be loaded by different class loaders,
 // it should not reference any code from the main mod.
 // See {@link com.gtnewhorizon.gtnhlib.core.shared.package-info}
-public class ClassConstantPoolParser {
+public final class ClassConstantPoolParser {
 
     enum ConstantTypes {
 
@@ -69,7 +69,7 @@ public class ClassConstantPoolParser {
         //spotless:on
 
         static ConstantTypes toType(byte code) {
-            var ret = MAP[Byte.toUnsignedInt(code)];
+            ConstantTypes ret = MAP[Byte.toUnsignedInt(code)];
             if (ret == INVALID) throw new RuntimeException("Invalid constant type: " + code);
             return ret;
         }
@@ -84,6 +84,10 @@ public class ClassConstantPoolParser {
         }
     }
 
+    /// the strings to search should not be resized
+    /// during runtime to avoid becoming less performant
+    /// than using ASM directly
+    @Deprecated
     public void addString(String string) {
         BYTES_TO_SEARCH = Arrays.copyOf(BYTES_TO_SEARCH, BYTES_TO_SEARCH.length + 1);
         BYTES_TO_SEARCH[BYTES_TO_SEARCH.length - 1] = string.getBytes(StandardCharsets.UTF_8);
@@ -110,8 +114,8 @@ public class ClassConstantPoolParser {
         }
 
         // checks the class version
-        final var maxSupported = 69; // Java 25
-        var major = readShort(6, basicClass);
+        final int maxSupported = 69; // Java 25
+        short major = readShort(6, basicClass);
         if (major > maxSupported || (major == maxSupported && readShort(4, basicClass) > 0)) {
             return false;
         }
