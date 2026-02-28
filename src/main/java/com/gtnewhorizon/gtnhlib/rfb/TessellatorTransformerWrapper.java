@@ -51,7 +51,7 @@ public class TessellatorTransformerWrapper implements RfbClassTransformer {
     }
 
     @Override
-    public boolean transformClass(@NotNull ExtensibleClassLoader classLoader,
+    public boolean transformClassIfNeeded(@NotNull ExtensibleClassLoader classLoader,
             @NotNull RfbClassTransformer.Context context, @Nullable Manifest manifest, @NotNull String className,
             @NotNull ClassNodeHandle classNode) {
         final boolean changed = inner.transformClassNode(classNode.getNode());
@@ -59,5 +59,11 @@ public class TessellatorTransformerWrapper implements RfbClassTransformer {
             classNode.computeFrames();
         }
         return changed;
+    }
+
+    @Override
+    public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
+            @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
+        transformClassIfNeeded(classLoader, context, manifest, className, classNode);
     }
 }
