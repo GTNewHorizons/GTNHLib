@@ -9,6 +9,8 @@ import org.objectweb.asm.tree.MethodNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
 
+import java.util.ListIterator;
+
 public final class TessellatorRedirector {
 
     private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
@@ -27,7 +29,7 @@ public final class TessellatorRedirector {
     }
 
     public boolean shouldTransform(byte[] basicClass) {
-        return cstPoolParser.find(basicClass, true);
+        return cstPoolParser.find(basicClass);
     }
 
     /**
@@ -39,9 +41,10 @@ public final class TessellatorRedirector {
         }
         boolean changed = false;
         for (MethodNode mn : cn.methods) {
-            for (AbstractInsnNode node : mn.instructions.toArray()) {
-                if (node.getOpcode() == Opcodes.GETSTATIC && node instanceof FieldInsnNode fNode) {
-                    if (TessellatorClass.equals(fNode.owner) && fNode.name.equals(Tessellator$instance)) {
+            ListIterator<AbstractInsnNode> iter = mn.instructions.iterator();
+            while (iter.hasNext()) {
+                if (iter.next() instanceof FieldInsnNode node && node.getOpcode() == Opcodes.GETSTATIC) {
+                    if (TessellatorClass.equals(node.owner) && node.name.equals(Tessellator$instance)) {
                         mn.instructions.set(
                                 node,
                                 new MethodInsnNode(
