@@ -68,6 +68,14 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
         return new ObjectImmutableList<>(data);
     }
 
+    private List<T> readOrLocked() {
+        final ObjectArrayList<T> locked = lockedMutable;
+        if (locked != null && writeLock.isHeldByCurrentThread()) {
+            return locked;
+        }
+        return read();
+    }
+
     /**
      * @deprecated Basically useless as it could be modified after being checked, iterate over a stored reference from
      *             {@link CasList#read()} instead.
@@ -75,17 +83,17 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @Override
     @Deprecated
     public int size() {
-        return read().size();
+        return readOrLocked().size();
     }
 
     @Override
     public boolean isEmpty() {
-        return read().isEmpty();
+        return readOrLocked().isEmpty();
     }
 
     @Override
     public boolean contains(Object o) {
-        return read().contains(o);
+        return readOrLocked().contains(o);
     }
 
     /**
@@ -95,19 +103,19 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @NotNull
     @Override
     public Iterator<T> iterator() {
-        return read().iterator();
+        return readOrLocked().iterator();
     }
 
     @NotNull
     @Override
     public Object @NotNull [] toArray() {
-        return read().toArray();
+        return readOrLocked().toArray();
     }
 
     @NotNull
     @Override
     public <T1> T1 @NotNull [] toArray(@NotNull T1 @NotNull [] a) {
-        return read().toArray(a);
+        return readOrLocked().toArray(a);
     }
 
     @Override
@@ -123,7 +131,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
 
     @Override
     public boolean containsAll(@NotNull Collection<?> c) {
-        return read().containsAll(c);
+        return readOrLocked().containsAll(c);
     }
 
     @Override
@@ -166,7 +174,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @Override
     @Deprecated
     public T get(int index) {
-        return read().get(index);
+        return readOrLocked().get(index);
     }
 
     /**
@@ -209,7 +217,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @Override
     @Deprecated
     public int indexOf(Object o) {
-        return read().indexOf(o);
+        return readOrLocked().indexOf(o);
     }
 
     /**
@@ -219,7 +227,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @Override
     @Deprecated
     public int lastIndexOf(Object o) {
-        return read().lastIndexOf(o);
+        return readOrLocked().lastIndexOf(o);
     }
 
     /**
@@ -229,7 +237,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @NotNull
     @Override
     public ListIterator<T> listIterator() {
-        return read().listIterator();
+        return readOrLocked().listIterator();
     }
 
     /**
@@ -239,7 +247,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @NotNull
     @Override
     public ListIterator<T> listIterator(int index) {
-        return read().listIterator(index);
+        return readOrLocked().listIterator(index);
     }
 
     /**
@@ -250,7 +258,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
     @Override
     @Deprecated
     public ObjectList<T> subList(int fromIndex, int toIndex) {
-        return read().subList(fromIndex, toIndex);
+        return (ObjectList<T>) readOrLocked().subList(fromIndex, toIndex);
     }
 
     @Override
@@ -275,7 +283,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
      */
     @Override
     public Spliterator<T> spliterator() {
-        return read().spliterator();
+        return readOrLocked().spliterator();
     }
 
     @Override
@@ -289,7 +297,7 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
      */
     @Override
     public Stream<T> stream() {
-        return read().stream();
+        return readOrLocked().stream();
     }
 
     /**
@@ -298,17 +306,17 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
      */
     @Override
     public Stream<T> parallelStream() {
-        return read().parallelStream();
+        return readOrLocked().parallelStream();
     }
 
     @Override
     public void forEach(Consumer<? super T> action) {
-        read().forEach(action);
+        readOrLocked().forEach(action);
     }
 
     @Override
     public int hashCode() {
-        return read().hashCode();
+        return readOrLocked().hashCode();
     }
 
     @Override
@@ -316,13 +324,13 @@ public class CasList<T> extends CasAdapter<ObjectImmutableList<T>, ObjectArrayLi
         if (!(obj instanceof List)) {
             return false;
         }
-        final ObjectImmutableList<T> myList = read();
+        final List<T> myList = readOrLocked();
         final List<?> otherList = (obj instanceof CasList) ? ((CasList<?>) obj).read() : (List<?>) obj;
         return myList.equals(otherList);
     }
 
     @Override
     public String toString() {
-        return read().toString();
+        return readOrLocked().toString();
     }
 }
