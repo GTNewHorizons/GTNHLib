@@ -111,7 +111,13 @@ public abstract class CasAdapter<ImmutableView, MutableView> {
             final ImmutableView oldVal = reference.get();
             final MutableView mutVal = mutableCopyOf(oldVal);
             Objects.requireNonNull(mutVal);
-            final R retVal = mutator.apply(mutVal);
+            lockedMutable = mutVal;
+            final R retVal;
+            try {
+                retVal = mutator.apply(mutVal);
+            } finally {
+                lockedMutable = null;
+            }
             final ImmutableView newVal = immutableCopyOf(mutVal);
             Objects.requireNonNull(newVal);
             reference.set(newVal);

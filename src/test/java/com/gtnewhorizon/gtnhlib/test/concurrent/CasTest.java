@@ -320,6 +320,32 @@ public class CasTest {
     }
 
     @Test
+    void nestedMutateLosesData() {
+        final CasMap<String, String> map = new CasMap<>();
+        map.put("key", "initial");
+        map.mutate(m -> {
+            map.put("key", "inner");
+            return null;
+        });
+        Assertions.assertEquals("inner", map.get("key"));
+    }
+
+    @Test
+    void spuriousUnlockDoesNotCorruptState() {
+        final CasMap<String, String> map = new CasMap<>();
+        try {
+            map.unlock();
+        } catch (IllegalMonitorStateException e) {}
+        map.lock();
+        try {
+            map.put("a", "b");
+        } finally {
+            map.unlock();
+        }
+        Assertions.assertEquals("b", map.get("a"));
+    }
+
+    @Test
     void mutateUsesWriteLock() {
         // Verify that mutate() and overwrite() don't deadlock with each other (both use writeLock)
         final CasMap<String, String> map = new CasMap<>(new String[] { "a" }, new String[] { "1" });
