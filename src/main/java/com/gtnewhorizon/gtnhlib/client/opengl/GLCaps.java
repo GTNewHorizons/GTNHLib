@@ -32,6 +32,7 @@ public final class GLCaps {
         ContextCapabilities caps = GLContext.getCapabilities();
         bufferStorage = caps.OpenGL44 || caps.GL_ARB_buffer_storage;
         texStorage = caps.OpenGL42 || caps.GL_ARB_texture_storage;
+
         if (caps.OpenGL30 || caps.GL_ARB_framebuffer_object) {
             FBO = new FBOGL3();
         } else if (caps.GL_EXT_framebuffer_object) {
