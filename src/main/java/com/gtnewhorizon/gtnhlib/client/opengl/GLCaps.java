@@ -2,9 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.opengl;
 
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTFramebufferObject;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GLContext;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VaoFunctions;
@@ -13,7 +11,6 @@ public final class GLCaps {
 
     private static final boolean bufferStorage;
     private static final boolean texStorage;
-    private static final boolean coreProfile;
 
     // To replace the obfuscated OpenGlHelper method names
     public static final FBOFunctions FBO;
@@ -31,22 +28,10 @@ public final class GLCaps {
         return FBO != null;
     }
 
-    public static boolean isCoreProfile() {
-        return coreProfile;
-    }
-
     static {
         ContextCapabilities caps = GLContext.getCapabilities();
         bufferStorage = caps.OpenGL44 || caps.GL_ARB_buffer_storage;
         texStorage = caps.OpenGL42 || caps.GL_ARB_texture_storage;
-        if (caps.OpenGL32) {
-            final int mask = GL11.glGetInteger(GL32.GL_CONTEXT_PROFILE_MASK);
-            coreProfile = (mask & GL32.GL_CONTEXT_CORE_PROFILE_BIT) != 0;
-        } else if (caps.OpenGL31) {
-            coreProfile = !caps.GL_ARB_compatibility;
-        } else {
-            coreProfile = false;
-        }
 
         if (caps.OpenGL30 || caps.GL_ARB_framebuffer_object) {
             FBO = new FBOGL3();

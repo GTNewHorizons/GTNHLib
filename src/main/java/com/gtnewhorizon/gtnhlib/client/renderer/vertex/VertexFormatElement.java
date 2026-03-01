@@ -8,7 +8,6 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 
 import com.google.common.annotations.Beta;
-import com.gtnewhorizon.gtnhlib.client.opengl.GLCaps;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.writers.IVertexAttributeWriter;
 
 import lombok.Getter;
@@ -101,24 +100,11 @@ public class VertexFormatElement {
         }
 
         private void setupBufferState(int size, int type, int stride, long pointer, int index) {
-            if (GLCaps.isCoreProfile()) {
-                if (this == PADDING) return;
-                final int location = attributeLocation >= 0 ? attributeLocation : index;
-                GL20.glVertexAttribPointer(location, size, type, normalized, stride, pointer);
-                GL20.glEnableVertexAttribArray(location);
-            } else {
-                this.setupState.setupBufferState(size, type, stride, pointer, index);
-            }
+            this.setupState.setupBufferState(size, type, stride, pointer, index);
         }
 
         public void clearBufferState(int index) {
-            if (GLCaps.isCoreProfile()) {
-                if (this == PADDING) return;
-                final int location = attributeLocation >= 0 ? attributeLocation : index;
-                GL20.glDisableVertexAttribArray(location);
-            } else {
-                this.clearState.accept(index);
-            }
+            this.clearState.accept(index);
         }
 
         interface SetupState {
