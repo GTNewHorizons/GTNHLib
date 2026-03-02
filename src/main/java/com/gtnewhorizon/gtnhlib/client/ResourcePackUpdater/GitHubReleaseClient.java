@@ -7,6 +7,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +46,34 @@ final class GitHubReleaseClient {
         return Optional.empty();
     }
 
+    static LatestReleasePair findLatestReleasePair(String owner, String repo) throws IOException {
+        List<ReleaseInfo> releases = fetchReleases(owner, repo);
+        ReleaseInfo latestStable = null;
+        ReleaseInfo latestPrerelease = null;
+
+        for (ReleaseInfo release : releases) {
+            if (release.draft) {
+                continue;
+            }
+            if (release.prerelease) {
+                if (latestPrerelease == null) {
+                    latestPrerelease = release;
+                }
+            } else if (latestStable == null) {
+                latestStable = release;
+            }
+            if (latestStable != null && latestPrerelease != null) {
+                break;
+            }
+        }
+
+        return new LatestReleasePair(
+                latestStable == null ? null : latestStable.htmlUrl,
+                latestPrerelease == null ? null : latestPrerelease.htmlUrl);
+    }
+
     private static List<ReleaseInfo> fetchReleases(String owner, String repo) throws IOException {
-        String url = "https://api.github.com/repos/" + owner + "/" + repo + "/releases?per_page=20";
+        String url = "https://api.github.com/repos/" + owner + "/" + repo + "/releases?per_page=10";
         JsonElement element = readJson(url);
         if (!element.isJsonArray()) {
             throw new IOException("Unexpected releases response");
@@ -61,6 +89,10 @@ final class GitHubReleaseClient {
             if (htmlUrl == null) {
                 continue;
             }
+            String publishedAt = readOptionalString(releaseObj, "published_at");
+            String createdAt = readOptionalString(releaseObj, "created_at");
+            boolean prerelease = readOptionalBoolean(releaseObj, "prerelease", false);
+            boolean draft = readOptionalBoolean(releaseObj, "draft", false);
             List<ReleaseAsset> assets = new ArrayList<>();
             if (releaseObj.has("assets") && releaseObj.get("assets").isJsonArray()) {
                 for (JsonElement assetElement : releaseObj.getAsJsonArray("assets")) {
@@ -75,8 +107,21 @@ final class GitHubReleaseClient {
                     }
                 }
             }
-            releases.add(new ReleaseInfo(htmlUrl, assets));
+            releases.add(new ReleaseInfo(htmlUrl, assets, publishedAt, createdAt, prerelease, draft));
         }
+
+        Collections.sort(releases, new Comparator<ReleaseInfo>() {
+
+            @Override
+            public int compare(ReleaseInfo a, ReleaseInfo b) {
+                int byPublished = compareDesc(a.publishedAt, b.publishedAt);
+                if (byPublished != 0) {
+                    return byPublished;
+                }
+                return compareDesc(a.createdAt, b.createdAt);
+            }
+        });
+
         return releases;
     }
 
@@ -132,6 +177,26 @@ final class GitHubReleaseClient {
         return obj.get(field).getAsInt();
     }
 
+    private static boolean readOptionalBoolean(JsonObject obj, String field, boolean def) {
+        if (!obj.has(field) || obj.get(field).isJsonNull()) {
+            return def;
+        }
+        return obj.get(field).getAsBoolean();
+    }
+
+    private static int compareDesc(String a, String b) {
+        if (a == null && b == null) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        return b.compareTo(a);
+    }
+
     private static boolean matchesLine(String field, String targetLine) {
         if (field == null || targetLine == null) {
             return false;
@@ -145,14 +210,34 @@ final class GitHubReleaseClient {
         return false;
     }
 
+    static final class LatestReleasePair {
+
+        final String latestReleaseUrl;
+        final String latestPrereleaseUrl;
+
+        LatestReleasePair(String latestReleaseUrl, String latestPrereleaseUrl) {
+            this.latestReleaseUrl = latestReleaseUrl;
+            this.latestPrereleaseUrl = latestPrereleaseUrl;
+        }
+    }
+
     private static final class ReleaseInfo {
 
         final String htmlUrl;
         final List<ReleaseAsset> assets;
+        final String publishedAt;
+        final String createdAt;
+        final boolean prerelease;
+        final boolean draft;
 
-        ReleaseInfo(String htmlUrl, List<ReleaseAsset> assets) {
+        ReleaseInfo(String htmlUrl, List<ReleaseAsset> assets, String publishedAt, String createdAt, boolean prerelease,
+                boolean draft) {
             this.htmlUrl = htmlUrl;
             this.assets = assets;
+            this.publishedAt = publishedAt;
+            this.createdAt = createdAt;
+            this.prerelease = prerelease;
+            this.draft = draft;
         }
 
         ReleaseAsset findAsset(String name) {
