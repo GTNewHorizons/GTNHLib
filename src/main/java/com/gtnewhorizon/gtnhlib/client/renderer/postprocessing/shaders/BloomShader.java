@@ -9,6 +9,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
@@ -53,21 +55,7 @@ public class BloomShader extends PostProcessingRenderer {
         float height = mc.displayHeight;
         List<CustomFramebuffer> framebufferList = new ArrayList<>();
 
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice gd = ge.getDefaultScreenDevice();
-        DisplayMode dm = gd.getDisplayMode();
-
-        int screenWidth = dm.getWidth();
-        int screenHeight = dm.getHeight();
-
-        multiplier = 0.5f;
-        if (width < screenWidth || height < screenHeight) {
-            float widthMultiplier = width / screenWidth;
-            float heightMultiplier = height / screenHeight;
-
-            float avg = (float) Math.sqrt((widthMultiplier + heightMultiplier) / 2);
-            multiplier *= avg;
-        }
+        setupMultiplier(width, height);
 
         while (framebufferList.size() < 8 && width + height > 5) {
             final CustomFramebuffer framebuffer;
@@ -88,6 +76,37 @@ public class BloomShader extends PostProcessingRenderer {
             height /= 2;
         }
         framebuffers = framebufferList.toArray(new CustomFramebuffer[0]);
+    }
+
+    /**
+     * Sets up the bloom multiplier. This is used to not overly saturate the bloom effect when the screen is windowed.
+     * <p>
+     * May fail on macOS, but the exception will get caught.
+     */
+    private void setupMultiplier(float width, float height) {
+        multiplier = 0.5f;
+
+        try {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice gd = ge.getDefaultScreenDevice();
+            DisplayMode dm = gd.getDisplayMode();
+
+            final int screenWidth = dm.getWidth();
+            final int screenHeight = dm.getHeight();
+
+            if (width < screenWidth || height < screenHeight) {
+                float widthMultiplier = width / screenWidth;
+                float heightMultiplier = height / screenHeight;
+
+                float avg = (float) Math.sqrt((widthMultiplier + heightMultiplier) / 2);
+                multiplier *= avg;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            final Logger log = LogManager.getLogger("GTNH BloomShader");
+            log.warn(
+                    "Failed to setup the multiplier uniform. Don't worry - this won't have much of an impact on the visuals.");
+        }
     }
 
     public static BloomShader getInstance() {
