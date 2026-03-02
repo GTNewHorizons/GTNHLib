@@ -77,10 +77,11 @@ public class AutoShaderUpdater {
             Path fragmentPath = getShaderPath(domain, fragShaderFilename);
             Path parent = vertexPath.getParent();
             if (!Files.exists(vertexPath)) {
-                throw new RuntimeException("Vertex shader " + vertShaderFilename + " not found!");
+                throw new RuntimeException("Vertex shader " + vertShaderFilename + " not found! Path: " + vertexPath);
             }
             if (!Files.exists(fragmentPath)) {
-                throw new RuntimeException("Fragment shader " + fragShaderFilename + " not found!");
+                throw new RuntimeException(
+                        "Fragment shader " + fragShaderFilename + " not found! Path: " + fragmentPath);
             }
             if (!watchedPaths.contains(parent)) {
                 parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
@@ -102,7 +103,7 @@ public class AutoShaderUpdater {
     }
 
     public static Path getShaderPath(String domain, String path) {
-        return Paths.get(new File("../src/main/resources/assets/" + domain + "/" + path).getAbsolutePath());
+        return Paths.get(new File("../../src/main/resources/assets/" + domain + "/" + path).getAbsolutePath());
     }
 
     private void startWatchServiceListener() {

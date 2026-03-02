@@ -9,7 +9,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -30,7 +29,6 @@ import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 
 public final class PileOfQuads implements BakedModel {
 
-    public static final PileOfQuads BLANK = new PileOfQuads(new HashMap<>(), new HashMap<>(), null);
     private final SidedQuadStore sidedQuadStore;
     private final Map<Position, Position.ModelDisplay> display;
     private final IIcon particle;

@@ -10,7 +10,6 @@ import static net.minecraftforge.client.IItemRenderer.ItemRendererHelper.ENTITY_
 import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -23,6 +22,7 @@ import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 import org.spongepowered.asm.mixin.Mixin;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
@@ -97,7 +97,7 @@ public class MixinModelFHC {
         if (blend) {
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glEnable(GL11.GL_BLEND);
-            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+            GL14.glBlendFuncSeparate(770, 771, 1, 0);
         }
 
         for (int j = 0; j < count; j++) {

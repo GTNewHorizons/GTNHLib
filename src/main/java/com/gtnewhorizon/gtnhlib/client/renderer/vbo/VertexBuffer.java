@@ -1,14 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vbo;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
-public class VertexBuffer implements AutoCloseable {
+public class VertexBuffer implements IVertexBuffer, AutoCloseable {
 
     protected int id;
     protected int vertexCount;
@@ -16,16 +15,22 @@ public class VertexBuffer implements AutoCloseable {
     protected final int drawMode;
 
     public VertexBuffer(VertexFormat format, int drawMode) {
-        if (format == null) throw new IllegalStateException("No format specified for VBO");
         this.id = GL15.glGenBuffers();
         this.format = format;
         this.drawMode = drawMode;
     }
 
+    public VertexBuffer(VertexFormat format, int drawMode, ByteBuffer buffer, int vertexCount) {
+        this(format, drawMode);
+        allocate(buffer, vertexCount);
+    }
+
+    @Override
     public void bind() {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.id);
     }
 
+    @Override
     public void unbind() {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
@@ -39,21 +44,32 @@ public class VertexBuffer implements AutoCloseable {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
 
-    public void upload(ByteBuffer buffer, int vertexCount) {
-        upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
-    }
-
     public void upload(ByteBuffer buffer, int vertexCount, int type) {
-        if (this.id == -1) return;
         this.vertexCount = vertexCount;
         this.bindVBO();
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, type);
         this.unbindVBO();
     }
 
+    @Override
+    public void allocate(ByteBuffer buffer, int vertexCount) {
+        upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
+    }
+
+    @Override
+    public void update(ByteBuffer buffer, long offset) {
+        this.bindVBO();
+        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, offset, buffer);
+        this.unbindVBO();
+    }
+
     public VertexBuffer upload(ByteBuffer buffer) {
-        upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_STATIC_DRAW);
+        upload(buffer, format.getVertexCount(buffer), GL15.GL_STATIC_DRAW);
         return this;
+    }
+
+    public void upload(ByteBuffer buffer, int vertexCount) {
+        upload(buffer, vertexCount, GL15.GL_STATIC_DRAW);
     }
 
     /**
@@ -64,7 +80,7 @@ public class VertexBuffer implements AutoCloseable {
     }
 
     public void uploadDynamic(ByteBuffer buffer) {
-        upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_DYNAMIC_DRAW);
+        upload(buffer, format.getVertexCount(buffer), GL15.GL_DYNAMIC_DRAW);
     }
 
     /**
@@ -76,71 +92,66 @@ public class VertexBuffer implements AutoCloseable {
     }
 
     public void uploadStream(ByteBuffer buffer) {
-        upload(buffer, buffer.remaining() / format.getVertexSize(), GL15.GL_STREAM_DRAW);
+        upload(buffer, format.getVertexCount(buffer), GL15.GL_STREAM_DRAW);
     }
 
-    public void close() {
-        if (this.id >= 0) {
+    @Deprecated // For clarity, use delete() instead
+    public final void close() {
+        this.delete();
+    }
+
+    @Override
+    public void delete() {
+        if (id > 0) {
             GL15.glDeleteBuffers(this.id);
-            this.id = -1;
+            id = -1;
         }
     }
 
-    public final void delete() {
-        this.close();
-    }
-
-    public void draw(FloatBuffer floatBuffer) {
-        GL11.glPushMatrix();
-        GL11.glLoadIdentity();
-        GL11.glMultMatrix(floatBuffer);
-        draw();
-        GL11.glPopMatrix();
-    }
-
-    public final void draw() {
-        GL11.glDrawArrays(drawMode, 0, this.vertexCount);
-    }
-
-    /**
-     * Draw a range of vertices from this buffer.
-     * 
-     * @param first First vertex index to draw
-     * @param count Number of vertices to draw
-     */
-    public void draw(int first, int count) {
-        GL11.glDrawArrays(drawMode, first, count);
-    }
-
+    @Override
     public void setupState() {
         bindVBO();
         format.setupBufferState(0L);
     }
 
+    @Override
     public void cleanupState() {
         format.clearBufferState();
         unbindVBO();
     }
 
-    public void render() {
-        setupState();
-        draw();
-        cleanupState();
+    @Override
+    public final void draw() {
+        GL11.glDrawArrays(this.drawMode, 0, this.vertexCount);
     }
 
-    public VertexFormat getVertexFormat() {
+    @Override
+    public final void draw(int first, int count) {
+        GL11.glDrawArrays(this.drawMode, first, count);
+    }
+
+    @Override
+    public final void draw(int drawMode, int first, int count) {
+        GL11.glDrawArrays(drawMode, first, count);
+    }
+
+    @Override
+    public final VertexFormat getVertexFormat() {
         return format;
     }
 
-    public int getDrawMode() {
+    @Override
+    public final int getId() {
+        return id;
+    }
+
+    @Override
+    public final int getDrawMode() {
         return drawMode;
     }
 
-    public int getVertexCount() {
+    @Override
+    public final int getVertexCount() {
         return vertexCount;
-    }
-
-    public int getId() {
-        return id;
     }
 }

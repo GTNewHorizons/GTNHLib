@@ -8,6 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
 
 import it.unimi.dsi.fastutil.ints.IntIterators;
@@ -102,5 +103,48 @@ public class InventoryItemSink implements ItemSink {
         } else {
             return Math.min(invStackLimit, existingMaxStack);
         }
+    }
+
+    @Override
+    public @Nullable InventoryIterator simulatedSinkIterator() {
+        return new StandardInventoryIterator(inv, side, getSlots(), allowedSlots) {
+
+            @Override
+            protected boolean canAccess(ItemStack stack, int slot) {
+                return canInsert(stack, slot);
+            }
+
+            @Override
+            protected int getSlotStackLimit(int slot, ItemStack stack) {
+                return InventoryItemSink.this.getSlotStackLimit(slot, stack);
+            }
+
+            @Override
+            protected void setInventorySlotContents(int slot, ItemStack stack) {}
+
+            @Override
+            protected void markDirty() {}
+
+            @Override
+            protected boolean canExtract(ItemStack stack, int slot) {
+                return false;
+            }
+
+            @Override
+            public ItemStack extract(int amount, boolean forced) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public ImmutableItemStack previous() {
+                GTNHLib.LOG.warn("This simulated sink iterator doesn't support backward traversal");
+                return null;
+            }
+
+            @Override
+            public boolean rewind() {
+                return false;
+            }
+        };
     }
 }

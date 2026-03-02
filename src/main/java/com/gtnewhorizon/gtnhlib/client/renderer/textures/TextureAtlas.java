@@ -1,0 +1,167 @@
+package com.gtnewhorizon.gtnhlib.client.renderer.textures;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.FloatBuffer;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL20;
+
+/**
+ * An implementation of a texture atlas that does not change its image. <br>
+ * Unlike Minecraft's texture atlas, it does not upload the image data every animation update, but instead changes the
+ * UV coordinates, resulting in better performance. <br>
+ * Note: The widths of the textures need to be uniform.
+ */
+public final class TextureAtlas {
+
+    private final int texture;
+    private final SpriteAnimationMetadata[] animationMetadata;
+    private final float heightUnit;
+    private FloatBuffer uvBuffer;
+
+    private int lastTextureUpdate;
+
+    public static TextureAtlas createTextureAtlas(String domain, String location, int amount) {
+        ResourceLocation[] resources = new ResourceLocation[amount];
+        for (int i = 0; i < amount; i++) {
+            resources[i] = new ResourceLocation(domain, location + i + ".png");
+        }
+        return new TextureAtlas(resources);
+    }
+
+    public TextureAtlas(ResourceLocation... resources) {
+        final int amount = resources.length;
+        this.animationMetadata = new SpriteAnimationMetadata[amount];
+        final IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
+        final BufferedImage[] images = new BufferedImage[amount];
+        int maxHeight = 0;
+        for (int i = 0; i < amount; i++) {
+            ResourceLocation resourceLocation = resources[i];
+            try {
+                IResource resource = resourceManager.getResource(resourceLocation);
+                BufferedImage image = TextureLoader.getBufferedImage(resource);
+
+                images[i] = image;
+                animationMetadata[i] = new SpriteAnimationMetadata(resource, image);
+
+                if (image.getHeight() > maxHeight) {
+                    maxHeight = image.getHeight();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        final int width = images[0].getWidth();
+        uvBuffer = BufferUtils.createFloatBuffer(amount * 2);
+
+        heightUnit = 1f / (maxHeight / (float) width);
+
+        final int atlasWidth = amount * width;
+        final int atlasHeight = maxHeight;
+
+        texture = TextureLoader.createBindTextureAtlas(GL11.GL_RGBA, GL12.GL_BGRA, atlasWidth, atlasHeight, images);
+    }
+
+    public int getTexture() {
+        return texture;
+    }
+
+    public void bindTexture() {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+    }
+
+    public boolean needsAnimationUpdate() {
+        return Minecraft.getMinecraft().thePlayer.ticksExisted != lastTextureUpdate;
+    }
+
+    public int getRowCount() {
+        return animationMetadata.length;
+    }
+
+    /**
+     * Depending on the prior call, this will either return a UV-buffer or only a V-buffer.
+     */
+    public FloatBuffer getBuffer() {
+        return uvBuffer;
+    }
+
+    /**
+     * Updates the animation and returns the FloatBuffer with the V-Texcoords. This method should only be called if
+     * {@link #needsAnimationUpdate()} returns {@code true}, else the animation will be sped up. <br>
+     * The main benefit of having a buffer with only the V-texture coordinates is that it takes up half the memory and
+     * results in fewer memory read operations inside of shaders. If you know the width of the Texture Atlas inside the
+     * shader, you can easily calculate them.
+     */
+    public FloatBuffer updateVBuffer() {
+        lastTextureUpdate = Minecraft.getMinecraft().thePlayer.ticksExisted;
+        FloatBuffer uvs = uvBuffer;
+        uvs.clear();
+
+        for (SpriteAnimationMetadata metadata : animationMetadata) {
+            metadata.updateAnimation();
+            final float v = metadata.index * heightUnit;
+            uvs.put(v);
+            uvs.put(v + heightUnit);
+        }
+        uvs.flip();
+        return uvs;
+    }
+
+    /**
+     * Updates the animation and returns the FloatBuffer with the UV coordinates. This method should only be called if
+     * {@link #needsAnimationUpdate()} returns {@code true}, else the animation will be sped up.
+     */
+    public FloatBuffer updateUVBuffer() {
+        if (uvBuffer.capacity() < animationMetadata.length * 4) {
+            uvBuffer = BufferUtils.createFloatBuffer(animationMetadata.length * 4);
+        }
+
+        lastTextureUpdate = Minecraft.getMinecraft().thePlayer.ticksExisted;
+
+        FloatBuffer uvs = uvBuffer;
+        uvs.clear();
+
+        final float widthUnit = 1f / getRowCount();
+
+        float u = 0;
+        for (final SpriteAnimationMetadata metadata : animationMetadata) {
+            metadata.updateAnimation();
+            final float v = metadata.index * heightUnit;
+            uvs.put(u);
+            uvs.put(v);
+            uvs.put((u = u + widthUnit));
+            uvs.put(v + heightUnit);
+        }
+        uvs.flip();
+        return uvs;
+    }
+
+    /**
+     * Uploads the tex V coordinates to a given uniform. It will only perform the upload if
+     * {@link #needsAnimationUpdate()} returns {@code true}.
+     */
+    public void uploadVBuffer(int location) {
+        if (needsAnimationUpdate()) {
+            GL20.glUniform2(location, updateVBuffer());
+        }
+    }
+
+    /**
+     * Uploads the tex UV coordinates to a given uniform. It will only perform the upload if
+     * {@link #needsAnimationUpdate()} returns {@code true}.
+     */
+    public void uploadUVBuffer(int location) {
+        if (needsAnimationUpdate()) {
+            GL20.glUniform2(location, updateUVBuffer());
+        }
+    }
+
+}

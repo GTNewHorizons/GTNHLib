@@ -2,24 +2,31 @@ package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
 import static com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager.VAO;
 
+import java.nio.ByteBuffer;
+
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.VertexBuffer;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
-public class VertexArrayBuffer extends VertexBuffer {
+@Deprecated
+public final class VertexArrayBuffer extends VertexBuffer {
 
-    protected int vaoID = -1;
+    private int vaoID = -1;
 
     /**
      * This constructor is protected in order to prevent the usage of VAO's if they are incompatible. <br>
      * Use VAOManager.createVAO() instead
      */
-    protected VertexArrayBuffer(VertexFormat format, int drawMode) {
+    VertexArrayBuffer(VertexFormat format, int drawMode) {
         super(format, drawMode);
     }
 
+    VertexArrayBuffer(VertexFormat format, int drawMode, ByteBuffer buffer, int vertexCount) {
+        super(format, drawMode, buffer, vertexCount);
+    }
+
     @Override
-    public void close() {
-        super.close();
+    public void delete() {
+        super.delete();
         if (vaoID >= 0) {
             VAO.glDeleteVertexArrays(vaoID);
             vaoID = -1;
@@ -27,7 +34,7 @@ public class VertexArrayBuffer extends VertexBuffer {
     }
 
     @Override
-    public final void bind() {
+    public void bind() {
         if (vaoID == -1) {
             this.vaoID = VAO.glGenVertexArrays();
             VAO.glBindVertexArray(vaoID);
@@ -40,17 +47,17 @@ public class VertexArrayBuffer extends VertexBuffer {
     }
 
     @Override
-    public final void unbind() {
+    public void unbind() {
         VAO.glBindVertexArray(0);
     }
 
     @Override
-    public final void setupState() {
+    public void setupState() {
         bind();
     }
 
     @Override
-    public final void cleanupState() {
+    public void cleanupState() {
         unbind();
     }
 

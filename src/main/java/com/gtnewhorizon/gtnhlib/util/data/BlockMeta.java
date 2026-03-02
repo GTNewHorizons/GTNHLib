@@ -27,6 +27,10 @@ public class BlockMeta implements ImmutableBlockMeta {
         this(block, 0);
     }
 
+    public BlockMeta(ImmutableBlockMeta bm) {
+        this(bm.getBlock(), bm.getBlockMeta());
+    }
+
     @Override
     @Nonnull
     public Block getBlock() {

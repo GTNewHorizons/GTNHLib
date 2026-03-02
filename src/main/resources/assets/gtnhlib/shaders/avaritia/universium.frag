@@ -1,0 +1,166 @@
+#version 120
+
+#define M_PI 3.1415926535897932384626433832795
+
+const int cosmiccount = 10;
+const int cosmicoutof = 101;
+const float uSize = 1.0 / float(cosmiccount);
+
+uniform sampler2D texture0;
+uniform sampler2D cosmicTexture;
+uniform vec3 lightlevel;
+
+uniform float time;
+
+uniform float yaw;
+uniform float pitch;
+uniform float externalScale;
+
+uniform float lightmix;
+uniform float opacity;
+
+uniform vec3 starColorMultiplier;
+uniform vec3 starColorBase;
+
+uniform vec3 bgColor;
+
+uniform vec2 cosmicuvs[cosmiccount];
+
+
+varying vec3 position;
+
+float rand2d(vec2 x) {
+    return fract(sin(mod(dot(x, vec2(12.9898, 78.233)), 3.14)) * 43758.5453);
+}
+
+mat3 rotationMatrix(vec3 axis, float angle) {
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return mat3(
+    oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
+    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
+    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c
+    );
+}
+
+void main() {
+    vec3 light = gl_Color.rgb * lightlevel;
+    vec4 mask = texture2D(texture0, gl_TexCoord[0].xy);
+
+    float oneOverExternalScale = 1.0/externalScale;
+
+    int uvtiles = 16;
+
+    // background color
+    vec3 col = bgColor;
+
+    // get ray from camera to fragment
+    vec3 dir = normalize(-position);
+
+    // rotate the ray to show the right bit of the sphere for the angle
+    float sb = sin(pitch);
+    float cb = cos(pitch);
+    dir = normalize(vec3(dir.x, dir.y * cb - dir.z * sb, dir.y * sb + dir.z * cb));
+
+    float sa = sin(-yaw);
+    float ca = cos(-yaw);
+    dir = normalize(vec3(dir.z * sa + dir.x * ca, dir.y, dir.z * ca - dir.x * sa));
+
+    vec3 ray;
+
+    // draw the layers
+    for (int i=0; i<16; i++) {
+        int mult = 16-i;
+
+        // get semi-random stuff
+        int j = i + 7;
+        float rand1 = (j * j * 4321 + j * 8) * 2.0;
+        int k = j + 1;
+        float rand2 = (k * k * k * 239 + k * 37) * 3.6;
+        float rand3 = rand1 * 347.4 + rand2 * 63.4;
+
+        // random rotation matrix by random rotation around random axis
+        vec3 axis = normalize(vec3(sin(rand1), sin(rand2) , cos(rand3)));
+
+        // apply
+        ray = dir * rotationMatrix(axis, mod(rand3, 2*M_PI));
+
+        // calcuate the UVs from the final ray
+        float rawu = 0.5 + (atan(ray.z,ray.x)/(2*M_PI));
+        float rawv = 0.5 + (asin(ray.y)/M_PI);
+
+        // get UV scaled for layers and offset by time;
+        float scale = mult*0.5 + 2.75;
+        float u = rawu * scale * externalScale;
+        //float v = (rawv + time * 0.00006) * scale * 0.6;
+        float v = (rawv + time * 0.0002 * oneOverExternalScale) * scale * 0.6 * externalScale;
+
+        vec2 tex = vec2( u, v );
+
+        // tile position of the current uv
+        int tu = int(mod(floor(u*uvtiles),uvtiles));
+        int tv = int(mod(floor(v*uvtiles),uvtiles));
+
+        // get pseudorandom variants
+        int symbol = int(rand2d(vec2(tu, tv + i * 10.0)) * cosmicoutof);
+        int rotation = int(mod(pow(tu,float(tv)) + tu + 3 + tv*i, 8));
+        bool flip = false;
+        if (rotation >= 4) {
+            rotation -= 4;
+            flip = true;
+        }
+
+        // if it's an icon, then add the colour!
+        if (symbol >= 0 && symbol < cosmiccount) {
+
+            // get uv within the tile
+            float ru = clamp(mod(u,1.0)*uvtiles - tu, 0.0, 1.0);
+            float rv = clamp(mod(v,1.0)*uvtiles - tv, 0.0, 1.0);
+
+            if (flip) {
+                ru = 1.0 - ru;
+            }
+
+            float oru = ru;
+            float orv = rv;
+
+            // rotate uvs if necessary
+            if (rotation == 1) {
+                oru = 1.0-rv;
+                orv = ru;
+            } else if (rotation == 2) {
+                oru = 1.0-ru;
+                orv = 1.0-rv;
+            } else if (rotation == 3) {
+                oru = rv;
+                orv = 1.0-ru;
+            }
+
+            // get the iicon uvs for the tile
+            float umin = float(symbol) * uSize;
+            vec2 v = cosmicuvs[symbol];
+            float vmin = v.x;
+            float vmax = v.y;
+
+            // interpolate based on tile uvs
+            vec2 tileuv = vec2(umin + uSize * oru, vmin * (1.0-orv) + vmax * orv);
+            vec4 tcol = texture2D(cosmicTexture, tileuv);
+
+            // set the alpha, blending out at the bunched ends
+            float a = tcol.r * (0.5 + (1.0/mult)) * (1.0-smoothstep(0.15, 0.48, abs(rawv-0.5)));
+
+            // get fancy colours
+            vec3 starColor = vec3(mod(rand1, 29.0)/29.0, mod(rand2, 35.0)/35.0, mod(rand1, 17.0)/17.0) * starColorMultiplier + starColorBase;
+
+            col = col + (starColor * a);
+        }
+    }
+
+    // apply lighting
+    vec3 shade = light * (lightmix) + vec3(1.0-lightmix,1.0-lightmix,1.0-lightmix);
+
+    gl_FragColor = vec4(col * shade, mask.a * opacity);
+}

@@ -24,6 +24,10 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static boolean autoTextureLoading;
 
+    @Config.Comment("Ensures that blocks always return a valid icon for JSON model blocks, by overriding the block icon functions and passing the particle icon.")
+    @Config.DefaultBoolean(true)
+    public static boolean modelIconWrapperMixin;
+
     @Config.Comment("Enables various mixins that allow blocks to dynamically change their sound.")
     @Config.DefaultBoolean(true)
     @Config.RequiresMcRestart
@@ -33,9 +37,17 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(true)
     public static boolean enableTranslucentItemRenders;
 
+    @Config.Comment("Enable client-side resource pack update checking for active packs")
+    @Config.DefaultBoolean(true)
+    public static boolean enableResourcePackUpdateCheck;
+
     @Config.Comment("If you're not a dev, you don't need this")
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart
     public static boolean enableTestBlocks;
 
+    @Config.Comment("If you're not a dev, you don't need this")
+    @Config.DefaultBoolean(false)
+    @Config.RequiresMcRestart
+    public static boolean enableTestItems;
 }
