@@ -318,6 +318,13 @@ public class JSONModel implements UnbakedModel {
             }
             this.textures.putAll(tmp);
         }
+
+        if (this.parent != null && this.parent.display != null) {
+
+            for (Map.Entry<Position, ModelDisplay> e : this.parent.display.entrySet()) {
+                this.display.putIfAbsent(e.getKey(), e.getValue());
+            }
+        }
     }
 
     private IIcon getParticle() {

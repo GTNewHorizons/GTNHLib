@@ -1,19 +1,19 @@
 {
   "multipart": [
     {
-      "when": { "meta": 0 },
+      "when": { "facing": "north" },
       "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 270 }
     },
     {
-      "when": { "meta": 1 },
+      "when": { "facing": "south" },
       "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 90 }
     },
     {
-      "when": { "meta": 2 },
+      "when": { "facing": "west" },
       "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 0 }
     },
     {
-      "when": { "meta": 3 },
+      "when": { "facing": "east" },
       "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 180 }
     }
   ]

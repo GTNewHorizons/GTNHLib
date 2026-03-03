@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
 import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
-import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
 
 import java.util.List;
 
@@ -19,8 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
@@ -31,7 +30,6 @@ import cpw.mods.fml.common.FMLContainerHolder;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -67,20 +65,18 @@ public class ModelRegistry {
             s -> loadAndResolveJSONModel((ResourceLoc.ModelLoc) s),
             false);
 
-    private static final String[] DEFAULT_STATE_KEYS = new String[] { "meta" };
-
     private static BakedModel bakeModel(BlockState state) {
-        final var block = state.block();
-        final var meta = state.meta();
+        final Block block = state.getBlock();
+        final StateModelMap smm = getStateModelMap(block);
 
-        final var smm = getStateModelMap(block);
-        final var properties = unmodifiable(
-                new Object2ObjectArrayMap<String, String>(DEFAULT_STATE_KEYS, new String[] { Integer.toString(meta) }));
+        final String variant = smm.selectVariant(state);
+        if (variant == null) return MISSING_MODEL.bake();
+
+        final var dough = smm.getModel(variant);
 
         // Caching this would be a little pointless, since an UnbakedModel here would map directly to the BakedModel
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
         // will be cached, however.
-        final var dough = smm.selectModel(properties);
         if (dough == null) return MISSING_MODEL.bake();
 
         return dough.bake();
@@ -88,7 +84,7 @@ public class ModelRegistry {
 
     /// Getter for {@link BakedModel}s. We don't want to publicly expose the cache, modders can't be trusted with it :P
     public static BakedModel getBakedModel(BlockState state) {
-        return BLOCKSTATE_MODEL_CACHE.get(state);
+        return BLOCKSTATE_MODEL_CACHE.get(state.clone());
     }
 
     /// Getter for {@link JSONModel}s. See {@link ModelRegistry#getBakedModel(BlockState)}
