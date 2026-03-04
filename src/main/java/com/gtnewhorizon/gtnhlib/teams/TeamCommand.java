@@ -31,18 +31,11 @@ public class TeamCommand {
             sendUsage(ctx.getSource());
             return Command.SINGLE_SUCCESS;
         }).then(
-                literal("create").then(
-                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).executes(
-                                ctx -> executeCreate(
+                literal("rename").then(
+                        argument(ARG_NEW_NAME, StringArgumentType.greedyString()).executes(
+                                ctx -> executeRename(
                                         ctx.getSource(),
-                                        StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
-
-                .then(
-                        literal("rename").then(
-                                argument(ARG_NEW_NAME, StringArgumentType.greedyString()).executes(
-                                        ctx -> executeRename(
-                                                ctx.getSource(),
-                                                StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
+                                        StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
 
                 .then(
                         literal("invite")
@@ -135,25 +128,6 @@ public class TeamCommand {
                                                                                 StringArgumentType.getString(
                                                                                         ctx,
                                                                                         ARG_TEAM_NAME)))))));
-    }
-
-    private static int executeCreate(ICommandSender sender, String name) {
-        EntityPlayer player = asPlayer(sender);
-        if (player == null) return Command.SINGLE_SUCCESS;
-
-        if (!TeamManager.isTeamNameValid(name)) {
-            return error(sender, "gtnhlib.chat.teams.error.name_in_use");
-        }
-
-        Team team = new Team(name);
-        team.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
-        team.addOwner(player.getUniqueID());
-        TeamManager.TEAMS.add(team);
-        TeamWorldSavedData.markForSaving();
-
-        ChatComponentText nameComponent = new ChatComponentText(name);
-        nameComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        return success(sender, "gtnhlib.chat.teams.message.created_team", nameComponent);
     }
 
     private static int executeRename(ICommandSender sender, String newName) {
