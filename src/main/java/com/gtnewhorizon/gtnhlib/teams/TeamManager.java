@@ -52,46 +52,13 @@ public class TeamManager {
         return null;
     }
 
-    public static void addPendingMergeRequest(Team source, Team target) {
-        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
-        if (mergeRequests == null) mergeRequests = new HashSet<>();
-        mergeRequests.add(source);
-        PENDING_MERGE_REQUESTS.put(target, mergeRequests);
-    }
-
-    public static Set<Team> getPendingMergeRequests(Team target) {
-        return PENDING_MERGE_REQUESTS.get(target);
-    }
-
-    public static void removePendingMergeRequest(Team source, Team target) {
-        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
-        if (mergeRequests == null) return;
-        mergeRequests.remove(source);
-        PENDING_MERGE_REQUESTS.put(target, mergeRequests);
-    }
-
-    public static boolean hasPendingMergeRequest(Team source, Team target) {
-        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
-        if (mergeRequests == null) return false;
-        return mergeRequests.contains(source);
-    }
-
-    public static void mergeTeams(Team surviving, Team consumed) {
-        for (UUID uuid : consumed.getMembers()) surviving.addMember(uuid);
-
-        for (String dataKey : TeamDataRegistry.getRegisteredKeys()) {
-            surviving.getData(dataKey).mergeTeams(consumed.getData(dataKey));
-        }
-        TEAMS.remove(consumed);
-        TeamWorldSavedData.markForSaving();
-    }
-
+    /**
+     * Returns the player's current team, creating a solo team for them if they are not in one.
+     */
     public static Team getOrCreateTeam(String playerName, UUID playerUuid) {
-        for (Team team : TEAMS) {
-            if (team.isTeamMember(playerUuid)) {
-                return team;
-            }
-        }
+        Team existing = getTeamByPlayer(playerUuid);
+        if (existing != null) return existing;
+
         Team team = new Team(playerName + "'s Team");
         team.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
         team.addOwner(playerUuid);
@@ -100,11 +67,29 @@ public class TeamManager {
         return team;
     }
 
+    /**
+     * Merges the consumed team into the surviving team. All members of the consumed team become members of the
+     * surviving team. {@link ITeamData#mergeData(ITeamData)} is called on all registered data types. The consumed team
+     * is disbanded afterward.
+     */
+    public static void mergeTeams(Team surviving, Team consumed) {
+        for (UUID uuid : consumed.getMembers()) surviving.addMember(uuid);
+
+        for (String dataKey : TeamDataRegistry.getRegisteredKeys()) {
+            ITeamData survivingData = surviving.getData(dataKey);
+            ITeamData consumedData = consumed.getData(dataKey);
+            if (survivingData != null && consumedData != null) {
+                survivingData.mergeData(consumedData);
+            }
+        }
+
+        TEAMS.remove(consumed);
+        PENDING_MERGE_REQUESTS.remove(consumed);
+        TeamWorldSavedData.markForSaving();
+    }
+
     public static void addPendingInvite(UUID uuid, Team team) {
-        Set<Team> invites = PENDING_INVITES.get(uuid);
-        if (invites == null) invites = new HashSet<>();
-        invites.add(team);
-        PENDING_INVITES.put(uuid, invites);
+        PENDING_INVITES.computeIfAbsent(uuid, k -> new HashSet<>()).add(team);
     }
 
     public static Set<Team> getPendingInvites(UUID uuid) {
@@ -120,6 +105,26 @@ public class TeamManager {
 
     public static void removeAllPendingInvites(UUID uuid) {
         PENDING_INVITES.remove(uuid);
+    }
+
+    public static void addPendingMergeRequest(Team source, Team target) {
+        PENDING_MERGE_REQUESTS.computeIfAbsent(target, k -> new HashSet<>()).add(source);
+    }
+
+    public static Set<Team> getPendingMergeRequests(Team target) {
+        return PENDING_MERGE_REQUESTS.get(target);
+    }
+
+    public static void removePendingMergeRequest(Team source, Team target) {
+        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
+        if (mergeRequests == null) return;
+        mergeRequests.remove(source);
+        if (mergeRequests.isEmpty()) PENDING_MERGE_REQUESTS.remove(target);
+    }
+
+    public static boolean hasPendingMergeRequest(Team source, Team target) {
+        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
+        return mergeRequests != null && mergeRequests.contains(source);
     }
 
     /**
@@ -144,5 +149,7 @@ public class TeamManager {
 
     public static void clear() {
         TEAMS.clear();
+        PENDING_INVITES.clear();
+        PENDING_MERGE_REQUESTS.clear();
     }
 }
