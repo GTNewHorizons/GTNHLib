@@ -194,6 +194,10 @@ public class TeamCommand {
         Team team = TeamManager.getTeam(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
 
+        if (team.isTeamOwner(player.getUniqueID()) && team.getOwners().size() == 1 && team.getMembers().size() > 1) {
+            return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
+        }
+
         team.removeMember(player.getUniqueID());
 
         if (team.getMembers().isEmpty()) {
@@ -235,7 +239,8 @@ public class TeamCommand {
 
         UUID targetUuid = resolveTeamMemberUuid(team, targetName);
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
-        if (targetUuid.equals(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.demote_self");
+        if (targetUuid.equals(player.getUniqueID()) && team.getOwners().size() == 1)
+            return error(sender, "gtnhlib.chat.teams.error.last_owner_demote");
         if (!team.isTeamOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
 
         team.removeOwner(targetUuid);
