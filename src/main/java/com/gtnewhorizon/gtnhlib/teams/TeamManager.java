@@ -1,12 +1,15 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class TeamManager {
 
     protected static final List<Team> TEAMS = new ArrayList<>();
+    protected static final Map<UUID, Team> PENDING_INVITES = new HashMap<>();
 
     public static boolean isTeamNameValid(String name) {
         if (name == null || name.isEmpty()) return false;
@@ -27,7 +30,16 @@ public class TeamManager {
         return false;
     }
 
-    public static Team getTeam(String playerName, UUID playerUuid) {
+    public static Team getTeam(UUID playerUuid) {
+        for (Team team : TEAMS) {
+            if (team.isTeamMember(playerUuid)) {
+                return team;
+            }
+        }
+        return null;
+    }
+
+    public static Team getOrCreateTeam(String playerName, UUID playerUuid) {
         for (Team team : TEAMS) {
             if (team.isTeamMember(playerUuid)) {
                 return team;
@@ -39,6 +51,18 @@ public class TeamManager {
         TEAMS.add(team);
         TeamWorldSavedData.markForSaving();
         return team;
+    }
+
+    public static void addPendingInvite(UUID uuid, Team team) {
+        PENDING_INVITES.put(uuid, team);
+    }
+
+    public static Team getPendingInvite(UUID uuid) {
+        return PENDING_INVITES.get(uuid);
+    }
+
+    public static void removePendingInvite(UUID uuid) {
+        PENDING_INVITES.remove(uuid);
     }
 
     /**

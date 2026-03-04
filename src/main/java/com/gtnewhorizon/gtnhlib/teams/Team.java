@@ -48,6 +48,11 @@ public class Team {
         TeamWorldSavedData.markForSaving();
     }
 
+    public void removeOwner(UUID uuid) {
+        owners.remove(uuid);
+        TeamWorldSavedData.markForSaving();
+    }
+
     public List<UUID> getMembers() {
         return ObjectLists.unmodifiable(members);
     }

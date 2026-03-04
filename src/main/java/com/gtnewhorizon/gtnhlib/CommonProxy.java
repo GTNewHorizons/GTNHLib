@@ -103,11 +103,11 @@ public class CommonProxy {
 
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         BrigadierApi.init();
+        TeamCommand.register();
     }
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new BlockStateCommand());
-        event.registerServerCommand(new TeamCommand());
     }
 
     public void serverStarted(FMLServerStartedEvent event) {}
