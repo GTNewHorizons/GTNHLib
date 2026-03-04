@@ -2,14 +2,16 @@ package com.gtnewhorizon.gtnhlib.teams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class TeamManager {
 
     protected static final List<Team> TEAMS = new ArrayList<>();
-    protected static final Map<UUID, Team> PENDING_INVITES = new HashMap<>();
+    protected static final Map<UUID, Set<Team>> PENDING_INVITES = new HashMap<>();
 
     public static boolean isTeamNameValid(String name) {
         if (name == null || name.isEmpty()) return false;
@@ -54,14 +56,24 @@ public class TeamManager {
     }
 
     public static void addPendingInvite(UUID uuid, Team team) {
-        PENDING_INVITES.put(uuid, team);
+        Set<Team> invites = PENDING_INVITES.get(uuid);
+        if (invites == null) invites = new HashSet<>();
+        invites.add(team);
+        PENDING_INVITES.put(uuid, invites);
     }
 
-    public static Team getPendingInvite(UUID uuid) {
+    public static Set<Team> getPendingInvites(UUID uuid) {
         return PENDING_INVITES.get(uuid);
     }
 
-    public static void removePendingInvite(UUID uuid) {
+    public static void removePendingInvite(UUID uuid, Team team) {
+        Set<Team> invites = PENDING_INVITES.get(uuid);
+        if (invites == null) return;
+        invites.remove(team);
+        if (invites.isEmpty()) PENDING_INVITES.remove(uuid);
+    }
+
+    public static void removeAllPendingInvites(UUID uuid) {
         PENDING_INVITES.remove(uuid);
     }
 

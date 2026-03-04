@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -53,9 +54,19 @@ public class TeamCommand {
                                                 ctx.getSource(),
                                                 StringArgumentType.getString(ctx, ARG_PLAYER)))))
 
-                .then(literal("accept").executes(ctx -> executeAccept(ctx.getSource())))
+                .then(
+                        literal("accept").executes(ctx -> executeAccept(ctx.getSource(), "")).then(
+                                argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).executes(
+                                        ctx -> executeAccept(
+                                                ctx.getSource(),
+                                                StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
 
-                .then(literal("deny").executes(ctx -> executeDeny(ctx.getSource())))
+                .then(
+                        literal("deny").executes(ctx -> executeDeny(ctx.getSource(), "")).then(
+                                argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).executes(
+                                        ctx -> executeDeny(
+                                                ctx.getSource(),
+                                                StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
 
                 .then(literal("leave").executes(ctx -> executeLeave(ctx.getSource())))
 
@@ -159,34 +170,65 @@ public class TeamCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int executeAccept(ICommandSender sender) {
+    private static int executeAccept(ICommandSender sender, String teamName) {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         if (TeamManager.isInTeam(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.already_in_team");
 
-        Team team = TeamManager.getPendingInvite(player.getUniqueID());
-        if (team == null) return error(sender, "gtnhlib.chat.teams.error.no_invite");
+        Set<Team> teams = TeamManager.getPendingInvites(player.getUniqueID());
+        if (teams == null || teams.isEmpty()) return error(sender, "gtnhlib.chat.teams.error.no_invite");
 
-        team.addMember(player.getUniqueID());
-        TeamManager.removePendingInvite(player.getUniqueID());
+        Team specificTeam = null;
+        // Only one invite, just join that one
+        if (teams.size() == 1) {
+            specificTeam = teams.iterator().next();
+        } else if (teamName.isEmpty()) {
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
+        } else {
+            for (Team team : teams) {
+                if (team.getTeamName().equals(teamName)) {
+                    specificTeam = team;
+                    break;
+                }
+            }
+            if (specificTeam == null) return error(sender, "gtnhlib.chat.teams.error.no_invite_specific", teamName);
+        }
 
-        ChatComponentText teamComponent = new ChatComponentText(team.getTeamName());
+        specificTeam.addMember(player.getUniqueID());
+        TeamManager.removeAllPendingInvites(player.getUniqueID());
+
+        ChatComponentText teamComponent = new ChatComponentText(specificTeam.getTeamName());
         teamComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
         return success(sender, "gtnhlib.chat.teams.message.joined_team", teamComponent);
     }
 
-    private static int executeDeny(ICommandSender sender) {
+    private static int executeDeny(ICommandSender sender, String teamName) {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
-        Team team = TeamManager.getPendingInvite(player.getUniqueID());
-        if (team == null) return error(sender, "gtnhlib.chat.teams.error.no_invite");
+        Set<Team> teams = TeamManager.getPendingInvites(player.getUniqueID());
+        if (teams == null || teams.isEmpty()) return error(sender, "gtnhlib.chat.teams.error.no_invite");
 
-        TeamManager.removePendingInvite(player.getUniqueID());
+        Team specificTeam = null;
+        if (teams.size() == 1) {
+            specificTeam = teams.iterator().next();
+        } else if (teamName.isEmpty()) {
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
+        } else {
+            for (Team team : teams) {
+                if (team.getTeamName().equals(teamName)) {
+                    specificTeam = team;
+                    break;
+                }
+            }
+            if (specificTeam == null) return error(sender, "gtnhlib.chat.teams.error.no_invite_specific", teamName);
+        }
 
-        ChatComponentText teamComponent = new ChatComponentText(team.getTeamName());
+        TeamManager.removePendingInvite(player.getUniqueID(), specificTeam);
+
+        ChatComponentText teamComponent = new ChatComponentText(specificTeam.getTeamName());
         teamComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
         return success(sender, "gtnhlib.chat.teams.message.declined_invite", teamComponent);
     }
