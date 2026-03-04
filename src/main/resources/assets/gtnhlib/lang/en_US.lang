@@ -121,6 +121,7 @@ gtnhlib.chat.teams.error.not_in_team=You are not in a team.
 gtnhlib.chat.teams.error.not_online=Player "%s" is not online.
 gtnhlib.chat.teams.error.no_invite=You have no pending team invite.
 gtnhlib.chat.teams.error.other_not_in_team=%s is not in your team.
+gtnhlib.chat.teams.error.other_already_in_team=%s is already in a team.
 gtnhlib.chat.teams.error.not_owner_rename=Only team owners can rename the team.
 gtnhlib.chat.teams.error.not_owner_invite=Only team owners can invite players.
 gtnhlib.chat.teams.error.not_owner_promote=Only team owners can promote members.

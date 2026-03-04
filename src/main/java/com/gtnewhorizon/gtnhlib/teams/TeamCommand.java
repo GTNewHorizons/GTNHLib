@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,6 +14,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 public class TeamCommand {
 
@@ -126,7 +129,8 @@ public class TeamCommand {
 
         EntityPlayer target = player.worldObj.getPlayerEntityByName(targetName);
         if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_online", targetName);
-        if (TeamManager.isInTeam(target.getUniqueID())) return error(sender, targetName + " is already in a team.");
+        if (TeamManager.isInTeam(target.getUniqueID()))
+            return error(sender, "gtnhlib.chat.teams.error.other_already_in_team", targetName);
 
         TeamManager.addPendingInvite(target.getUniqueID(), team);
 
@@ -278,8 +282,8 @@ public class TeamCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestTeamMembers(
-            ICommandSender sender, com.mojang.brigadier.suggestion.SuggestionsBuilder builder) {
+    private static CompletableFuture<Suggestions> suggestTeamMembers(ICommandSender sender,
+            SuggestionsBuilder builder) {
 
         if (!(sender instanceof EntityPlayer player)) return builder.buildFuture();
         Team team = TeamManager.getTeam(player.getUniqueID());
