@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -19,24 +17,23 @@ import lombok.Getter;
 
 public class MonopartState implements StateModelMap {
 
-    private final List<StateMatch> variants = new ArrayList<>();
-    private final Object2ObjectMap<String, ObjectList<Weighted<JSONVariant>>> models = new Object2ObjectOpenHashMap<>();
+    private final Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants;
 
     MonopartState(Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants) {
-        variants.forEach((match, model) -> {
-            this.variants.add(match);
-            this.models.put(match.variantName, model);
-        });
+        this.variants = variants;
     }
 
     @Override
     public UnbakedModel getModel(BlockState state) {
-        Map<String, String> props = state.toMap();
-        for (StateMatch match : variants) {
-            if (match.matches(props)) {
-                return new MonopartDough(models.get(match.variantName));
-            }
+        Map<String, String> properties = state.toMap();
+
+        final var iter = Object2ObjectMaps.fastIterator(variants);
+        while (iter.hasNext()) {
+            final var e = iter.next();
+            final var match = e.getKey();
+            if (match.matches(properties)) return new MonopartDough(e.getValue());
         }
+
         return null;
     }
 
