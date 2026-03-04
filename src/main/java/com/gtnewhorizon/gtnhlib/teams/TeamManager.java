@@ -12,6 +12,8 @@ public class TeamManager {
 
     protected static final List<Team> TEAMS = new ArrayList<>();
     protected static final Map<UUID, Set<Team>> PENDING_INVITES = new HashMap<>();
+    // keyed by target team, value is the set of source teams requesting to merge into it
+    protected static final Map<Team, Set<Team>> PENDING_MERGE_REQUESTS = new HashMap<>();
 
     public static boolean isTeamNameValid(String name) {
         if (name == null || name.isEmpty()) return false;
@@ -32,13 +34,56 @@ public class TeamManager {
         return false;
     }
 
-    public static Team getTeam(UUID playerUuid) {
+    public static Team getTeamByPlayer(UUID playerUuid) {
         for (Team team : TEAMS) {
             if (team.isTeamMember(playerUuid)) {
                 return team;
             }
         }
         return null;
+    }
+
+    public static Team getTeamByName(String teamName) {
+        for (Team team : TEAMS) {
+            if (team.getTeamName().equals(teamName)) {
+                return team;
+            }
+        }
+        return null;
+    }
+
+    public static void addPendingMergeRequest(Team source, Team target) {
+        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
+        if (mergeRequests == null) mergeRequests = new HashSet<>();
+        mergeRequests.add(source);
+        PENDING_MERGE_REQUESTS.put(target, mergeRequests);
+    }
+
+    public static Set<Team> getPendingMergeRequests(Team target) {
+        return PENDING_MERGE_REQUESTS.get(target);
+    }
+
+    public static void removePendingMergeRequest(Team source, Team target) {
+        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
+        if (mergeRequests == null) return;
+        mergeRequests.remove(source);
+        PENDING_MERGE_REQUESTS.put(target, mergeRequests);
+    }
+
+    public static boolean hasPendingMergeRequest(Team source, Team target) {
+        Set<Team> mergeRequests = PENDING_MERGE_REQUESTS.get(target);
+        if (mergeRequests == null) return false;
+        return mergeRequests.contains(source);
+    }
+
+    public static void mergeTeams(Team surviving, Team consumed) {
+        for (UUID uuid : consumed.getMembers()) surviving.addMember(uuid);
+
+        for (String dataKey : TeamDataRegistry.getRegisteredKeys()) {
+            surviving.getData(dataKey).mergeTeams(consumed.getData(dataKey));
+        }
+        TEAMS.remove(consumed);
+        TeamWorldSavedData.markForSaving();
     }
 
     public static Team getOrCreateTeam(String playerName, UUID playerUuid) {

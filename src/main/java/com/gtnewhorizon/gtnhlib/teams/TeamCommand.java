@@ -88,7 +88,47 @@ public class TeamCommand {
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, ARG_PLAYER)))))
 
-                .then(literal("info").executes(ctx -> executeInfo(ctx.getSource()))));
+                .then(literal("info").executes(ctx -> executeInfo(ctx.getSource())))
+
+                .then(
+                        literal("merge")
+                                .then(
+                                        literal("request").then(
+                                                argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).suggests(
+                                                        (ctx, builder) -> suggestOtherTeams(ctx.getSource(), builder))
+                                                        .executes(
+                                                                ctx -> executeMergeRequest(
+                                                                        ctx.getSource(),
+                                                                        StringArgumentType
+                                                                                .getString(ctx, ARG_TEAM_NAME)))))
+                                .then(
+                                        literal("accept").executes(ctx -> executeMergeAccept(ctx.getSource(), ""))
+                                                .then(
+                                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString())
+                                                                .suggests(
+                                                                        (ctx, builder) -> suggestPendingMerges(
+                                                                                ctx.getSource(),
+                                                                                builder))
+                                                                .executes(
+                                                                        ctx -> executeMergeAccept(
+                                                                                ctx.getSource(),
+                                                                                StringArgumentType.getString(
+                                                                                        ctx,
+                                                                                        ARG_TEAM_NAME)))))
+                                .then(
+                                        literal("deny").executes(ctx -> executeMergeDeny(ctx.getSource(), ""))
+                                                .then(
+                                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString())
+                                                                .suggests(
+                                                                        (ctx, builder) -> suggestPendingMerges(
+                                                                                ctx.getSource(),
+                                                                                builder))
+                                                                .executes(
+                                                                        ctx -> executeMergeDeny(
+                                                                                ctx.getSource(),
+                                                                                StringArgumentType.getString(
+                                                                                        ctx,
+                                                                                        ARG_TEAM_NAME)))))));
     }
 
     private static int executeCreate(ICommandSender sender, String name) {
@@ -117,7 +157,7 @@ public class TeamCommand {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
-        Team team = TeamManager.getTeam(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
         if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_rename");
 
@@ -134,7 +174,7 @@ public class TeamCommand {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
-        Team team = TeamManager.getTeam(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
         if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_invite");
 
@@ -187,12 +227,7 @@ public class TeamCommand {
         } else if (teamName.isEmpty()) {
             return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
         } else {
-            for (Team team : teams) {
-                if (team.getTeamName().equals(teamName)) {
-                    specificTeam = team;
-                    break;
-                }
-            }
+            specificTeam = TeamManager.getTeamByName(teamName);
             if (specificTeam == null) return error(sender, "gtnhlib.chat.teams.error.no_invite_specific", teamName);
         }
 
@@ -217,12 +252,7 @@ public class TeamCommand {
         } else if (teamName.isEmpty()) {
             return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
         } else {
-            for (Team team : teams) {
-                if (team.getTeamName().equals(teamName)) {
-                    specificTeam = team;
-                    break;
-                }
-            }
+            specificTeam = TeamManager.getTeamByName(teamName);
             if (specificTeam == null) return error(sender, "gtnhlib.chat.teams.error.no_invite_specific", teamName);
         }
 
@@ -237,7 +267,7 @@ public class TeamCommand {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
-        Team team = TeamManager.getTeam(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
 
         if (team.isTeamOwner(player.getUniqueID()) && team.getOwners().size() == 1 && team.getMembers().size() > 1) {
@@ -260,7 +290,7 @@ public class TeamCommand {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
-        Team team = TeamManager.getTeam(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
         if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_promote");
 
@@ -279,7 +309,7 @@ public class TeamCommand {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
-        Team team = TeamManager.getTeam(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
         if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_demote");
 
@@ -300,7 +330,7 @@ public class TeamCommand {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
-        Team team = TeamManager.getTeam(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
 
         sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + "=== " + team.getTeamName() + " ==="));
@@ -324,17 +354,165 @@ public class TeamCommand {
         return Command.SINGLE_SUCCESS;
     }
 
+    private static int executeMergeRequest(ICommandSender sender, String targetTeamName) {
+        EntityPlayer player = asPlayer(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+
+        Team source = TeamManager.getTeamByPlayer(player.getUniqueID());
+        if (source == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
+        if (!source.isTeamOwner(player.getUniqueID()))
+            return error(sender, "gtnhlib.chat.teams.error.not_owner_merge_request");
+
+        Team target = TeamManager.getTeamByName(targetTeamName);
+        if (target == null) return error(sender, "gtnhlib.chat.teams.error.team_not_found", targetTeamName);
+        if (target == source) return error(sender, "gtnhlib.chat.teams.error.merge_self");
+
+        if (TeamManager.hasPendingMergeRequest(source, target))
+            return error(sender, "gtnhlib.chat.teams.error.merge_already_requested", targetTeamName);
+
+        TeamManager.addPendingMergeRequest(source, target);
+
+        ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
+        sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentText targetComponent = new ChatComponentText(target.getTeamName());
+        targetComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        success(sender, "gtnhlib.chat.teams.message.merge_request_sent", targetComponent);
+
+        // Notify all online owners of the target team
+        ChatComponentText acceptComponent = new ChatComponentText("/gtnhteam merge accept " + source.getTeamName());
+        acceptComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentText denyComponent = new ChatComponentText("/gtnhteam merge deny " + source.getTeamName());
+        denyComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentTranslation notification = new ChatComponentTranslation(
+                "gtnhlib.chat.teams.message.merge_request_received",
+                sourceComponent,
+                acceptComponent,
+                denyComponent);
+        notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
+
+        for (UUID ownerUuid : target.getOwners()) {
+            EntityPlayer owner = sender.getEntityWorld().func_152378_a(ownerUuid); // getPlayerByUUID
+            if (owner != null) owner.addChatMessage(notification);
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeMergeAccept(ICommandSender sender, String sourceTeamName) {
+        EntityPlayer player = asPlayer(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+
+        Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
+        if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
+        if (!target.isTeamOwner(player.getUniqueID()))
+            return error(sender, "gtnhlib.chat.teams.error.not_owner_merge_response");
+
+        Set<Team> pendingMerges = TeamManager.getPendingMergeRequests(target);
+        if (pendingMerges == null || pendingMerges.isEmpty())
+            return error(sender, "gtnhlib.chat.teams.error.no_merge_request");
+
+        Team source = null;
+        if (pendingMerges.size() == 1) {
+            source = pendingMerges.iterator().next();
+        } else if (sourceTeamName.isEmpty()) {
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge");
+        } else {
+            source = TeamManager.getTeamByName(sourceTeamName);
+            if (source == null || !pendingMerges.contains(source))
+                return error(sender, "gtnhlib.chat.teams.error.no_merge_request_specific", sourceTeamName);
+        }
+
+        ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
+        sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentText targetComponent = new ChatComponentText(target.getTeamName());
+        targetComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+
+        // Capture member list before merge for notification purposes
+        java.util.List<UUID> allMembers = new java.util.ArrayList<>(source.getMembers());
+        allMembers.addAll(target.getMembers());
+
+        TeamManager.removePendingMergeRequest(target, source);
+        TeamManager.mergeTeams(target, source);
+
+        // Notify all online members of both teams
+        ChatComponentTranslation notification = new ChatComponentTranslation(
+                "gtnhlib.chat.teams.message.merge_complete",
+                sourceComponent,
+                targetComponent);
+        notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
+
+        for (UUID memberUuid : allMembers) {
+            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            if (member != null) member.addChatMessage(notification);
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeMergeDeny(ICommandSender sender, String sourceTeamName) {
+        EntityPlayer player = asPlayer(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+
+        Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
+        if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
+        if (!target.isTeamOwner(player.getUniqueID()))
+            return error(sender, "gtnhlib.chat.teams.error.not_owner_merge_response");
+
+        Set<Team> pendingMerges = TeamManager.getPendingMergeRequests(target);
+        if (pendingMerges == null || pendingMerges.isEmpty())
+            return error(sender, "gtnhlib.chat.teams.error.no_merge_request");
+
+        Team source = null;
+        if (pendingMerges.size() == 1) {
+            source = pendingMerges.iterator().next();
+        } else if (sourceTeamName.isEmpty()) {
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge");
+        } else {
+            source = TeamManager.getTeamByName(sourceTeamName);
+            if (source == null || !pendingMerges.contains(source))
+                return error(sender, "gtnhlib.chat.teams.error.no_merge_request_specific", sourceTeamName);
+        }
+
+        TeamManager.removePendingMergeRequest(source, target);
+
+        ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
+        sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        return success(sender, "gtnhlib.chat.teams.message.merge_denied", sourceComponent);
+    }
+
     private static CompletableFuture<Suggestions> suggestTeamMembers(ICommandSender sender,
             SuggestionsBuilder builder) {
-
         if (!(sender instanceof EntityPlayer player)) return builder.buildFuture();
-        Team team = TeamManager.getTeam(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return builder.buildFuture();
 
         for (UUID memberUuid : team.getMembers()) {
             EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
             if (member != null) builder.suggest(member.getCommandSenderName());
         }
+        return builder.buildFuture();
+    }
+
+    private static CompletableFuture<Suggestions> suggestOtherTeams(ICommandSender sender, SuggestionsBuilder builder) {
+        if (!(sender instanceof EntityPlayer player)) return builder.buildFuture();
+        Team ownTeam = TeamManager.getTeamByPlayer(player.getUniqueID());
+
+        for (Team team : TeamManager.TEAMS) {
+            if (team != ownTeam) builder.suggest(team.getTeamName());
+        }
+        return builder.buildFuture();
+    }
+
+    private static CompletableFuture<Suggestions> suggestPendingMerges(ICommandSender sender,
+            SuggestionsBuilder builder) {
+        if (!(sender instanceof EntityPlayer player)) return builder.buildFuture();
+        Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
+        if (target == null) return builder.buildFuture();
+
+        Set<Team> pending = TeamManager.getPendingMergeRequests(target);
+        if (pending == null) return builder.buildFuture();
+
+        for (Team source : pending) builder.suggest(source.getTeamName());
         return builder.buildFuture();
     }
 
