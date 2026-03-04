@@ -12,8 +12,11 @@ import net.minecraft.world.storage.MapStorage;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.world.WorldEvent;
 
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
+@EventBusSubscriber
 public class TeamWorldSavedData extends WorldSavedData {
 
     public static TeamWorldSavedData INSTANCE;
@@ -38,7 +41,7 @@ public class TeamWorldSavedData extends WorldSavedData {
     }
 
     @SubscribeEvent
-    public void onWorldLoad(WorldEvent.Load event) {
+    public static void onWorldLoad(WorldEvent.Load event) {
         if (!event.world.isRemote && event.world.provider.dimensionId == 0) {
             loadInstance(event.world);
         }
