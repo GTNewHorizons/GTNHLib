@@ -22,7 +22,7 @@ public final class TessellatorRedirector {
     }
 
     public String[] getTransformerExclusions() {
-        return new String[] { "org.lwjgl", "com.gtnewhorizons.angelica.glsm.", "com.gtnewhorizons.angelica.transform",
+        return new String[] { "org.lwjgl", "com.gtnewhorizons.angelica.glsm.", "com.gtnewhorizons.angelica.loading",
                 "me.eigenraven.lwjgl3ify", "com.gtnewhorizon.gtnhlib", "net.minecraft.client.renderer.Tessellator" };
     }
 
