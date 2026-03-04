@@ -9,6 +9,7 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED_FI
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 
 import java.util.Random;
+import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -31,6 +32,7 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
@@ -432,6 +434,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         public BlockState blockState;
         public ModelQuadFacing quadFacing;
         public Random random;
+        public Supplier<ModelQuadViewMutable> quadPool;
 
         public void reset() {
             this.world = null;
@@ -439,6 +442,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             this.blockState = null;
             this.quadFacing = null;
             this.random = null;
+            this.quadPool = null;
         }
 
         @Override
@@ -475,6 +479,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         public Random getRandom() {
             return random;
         }
+
+        @Override
+        public @Nullable Supplier<ModelQuadViewMutable> getQuadPool() {
+            return quadPool;
+        }
     }
 
     private static class ItemContext implements BakedModelQuadContext.Item {
@@ -483,6 +492,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         public BlockState blockState;
         public ModelQuadFacing quadFacing;
         public Random random;
+        public Supplier<ModelQuadViewMutable> quadPool;
 
         public void reset() {
             stack = null;
@@ -490,6 +500,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             blockState = null;
             quadFacing = null;
             random = null;
+            this.quadPool = null;
         }
 
         @Override
@@ -510,6 +521,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         @Override
         public Random getRandom() {
             return random;
+        }
+
+        @Override
+        public @Nullable Supplier<ModelQuadViewMutable> getQuadPool() {
+            return quadPool;
         }
     }
 }

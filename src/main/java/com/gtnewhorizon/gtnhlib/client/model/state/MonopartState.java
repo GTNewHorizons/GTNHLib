@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -32,19 +30,14 @@ public class MonopartState implements StateModelMap {
     }
 
     @Override
-    public @Nullable String selectVariant(BlockState state) {
+    public UnbakedModel getModel(BlockState state) {
         Map<String, String> props = state.toMap();
-
         for (StateMatch match : variants) {
-            if (match.matches(props)) return match.variantName;
+            if (match.matches(props)) {
+                return new MonopartDough(models.get(match.variantName));
+            }
         }
-
         return null;
-    }
-
-    @Override
-    public UnbakedModel getModel(String variantName) {
-        return new MonopartDough(models.get(variantName));
     }
 
     static class StateMatch {
@@ -78,7 +71,7 @@ public class MonopartState implements StateModelMap {
             }
         }
 
-        public boolean matches(Map<String, String> properties) {
+        boolean matches(Map<String, String> properties) {
             if (matchAll) return true;
 
             final var iter = Object2ObjectMaps.fastIterator(states);

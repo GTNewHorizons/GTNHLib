@@ -93,9 +93,7 @@ public class CommonProxy {
                 @Override
                 public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
                     TileEntity te = world.getTileEntity(x, y, z);
-                    GTNHLib.LOG.info("TE at {},{},{} = {}", x, y, z, te);
                     if (te instanceof TileTestTintMul tile) {
-                        GTNHLib.LOG.info("Facing = {}", tile.getFacing());
                         return tile.getFacing();
                     }
                     return ForgeDirection.NORTH;

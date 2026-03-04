@@ -26,12 +26,7 @@ public class MultipartState implements StateModelMap, UnbakedModel {
     }
 
     @Override
-    public String selectVariant(BlockState state) {
-        return "";
-    }
-
-    @Override
-    public UnbakedModel getModel(String variantName) {
+    public UnbakedModel getModel(BlockState state) {
         return this;
     }
 

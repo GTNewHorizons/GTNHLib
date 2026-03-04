@@ -69,14 +69,10 @@ public class ModelRegistry {
         final Block block = state.getBlock();
         final StateModelMap smm = getStateModelMap(block);
 
-        final String variant = smm.selectVariant(state);
-        if (variant == null) return MISSING_MODEL.bake();
-
-        final var dough = smm.getModel(variant);
-
         // Caching this would be a little pointless, since an UnbakedModel here would map directly to the BakedModel
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
         // will be cached, however.
+        final var dough = smm.getModel(state);
         if (dough == null) return MISSING_MODEL.bake();
 
         return dough.bake();
