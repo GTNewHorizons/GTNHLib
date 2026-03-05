@@ -17,12 +17,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
+import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
@@ -53,6 +55,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// Override this if you want programmatic model selection
     @SuppressWarnings("unused")
     public BakedModel getModel(@Nullable IBlockAccess world, Block block, int meta, int x, int y, int z) {
+        if (block instanceof IBlockModelProvider selector) return selector.getModel(world, block, meta, x, y, z);
         return ModelRegistry.getBakedModel(new BlockState(block, meta));
     }
 
@@ -89,6 +92,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             // iterates over the quads and dumps em into the tesselator, nothing special
             rendered = true;
             for (final var quad : quads) {
+                if (quad.isTransparent() && ForgeHooksClient.getWorldRenderPass() == 0) continue;
                 int quadColor = color;
 
                 // If true use tintIndex color
