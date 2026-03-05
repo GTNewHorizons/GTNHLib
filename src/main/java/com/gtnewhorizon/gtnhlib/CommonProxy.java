@@ -27,6 +27,7 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
+import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
@@ -104,6 +105,7 @@ public class CommonProxy {
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         BrigadierApi.init();
         TeamCommand.register();
+        TeamAdminCommand.register();
     }
 
     public void serverStarting(FMLServerStartingEvent event) {

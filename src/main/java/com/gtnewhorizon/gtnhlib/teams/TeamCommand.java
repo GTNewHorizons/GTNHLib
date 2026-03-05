@@ -1,5 +1,16 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_NEW_NAME;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_PLAYER;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.argument;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.colorChatComponent;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.error;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.formatUuidList;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.literal;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.resolveTeamMemberUuid;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.success;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,25 +19,17 @@ import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.common.UsernameCache;
 
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 public class TeamCommand {
-
-    private static final String ARG_TEAM_NAME = "teamName";
-    private static final String ARG_NEW_NAME = "newName";
-    private static final String ARG_PLAYER = "player";
 
     public static void register() {
         BrigadierApi.getCommandDispatcher().register(literal("gtnhteam").executes(ctx -> {
@@ -129,7 +132,8 @@ public class TeamCommand {
                                                                                 ctx.getSource(),
                                                                                 StringArgumentType.getString(
                                                                                         ctx,
-                                                                                        ARG_TEAM_NAME)))))));
+                                                                                        ARG_TEAM_NAME))))))
+                .then(literal("help").executes(ctx -> executeHelp(ctx.getSource()))));
     }
 
     private static int executeRename(ICommandSender sender, String newName) {
@@ -144,9 +148,10 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.name_in_use");
         }
 
-        ChatComponentText nameComponent = new ChatComponentText(newName);
-        nameComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        return success(sender, "gtnhlib.chat.teams.message.renamed_team", nameComponent);
+        return success(
+                sender,
+                "gtnhlib.chat.teams.message.renamed_team",
+                colorChatComponent(EnumChatFormatting.GOLD, newName));
     }
 
     private static int executeInvite(ICommandSender sender, String targetName) {
@@ -167,25 +172,17 @@ public class TeamCommand {
 
         TeamManager.addPendingInvite(target.getUniqueID(), team);
 
-        ChatComponentText nameComponent = new ChatComponentText(targetName);
-        nameComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        success(sender, "gtnhlib.chat.teams.message.sent_invite", nameComponent);
-
-        ChatComponentText sentComponent = new ChatComponentText(player.getCommandSenderName());
-        sentComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        ChatComponentText teamComponent = new ChatComponentText(team.getTeamName());
-        teamComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        ChatComponentText acceptComponent = new ChatComponentText("/gtnhteam accept " + team.getTeamName());
-        acceptComponent.getChatStyle().setColor(EnumChatFormatting.YELLOW);
-        ChatComponentText denyComponent = new ChatComponentText("/gtnhteam deny " + team.getTeamName());
-        denyComponent.getChatStyle().setColor(EnumChatFormatting.YELLOW);
+        success(
+                sender,
+                "gtnhlib.chat.teams.message.sent_invite",
+                colorChatComponent(EnumChatFormatting.GOLD, targetName));
 
         ChatComponentTranslation notification = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.message.received_invite",
-                sentComponent,
-                teamComponent,
-                acceptComponent,
-                denyComponent);
+                colorChatComponent(EnumChatFormatting.GOLD, player.getCommandSenderName()),
+                colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()),
+                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam accept " + team.getTeamName()),
+                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam deny " + team.getTeamName()));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
         target.addChatMessage(notification);
 
@@ -228,9 +225,10 @@ public class TeamCommand {
         TeamManager.removeAllPendingInvites(player.getUniqueID());
         TeamWorldSavedData.markForSaving();
 
-        ChatComponentText teamComponent = new ChatComponentText(invitedTeam.getTeamName());
-        teamComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        return success(sender, "gtnhlib.chat.teams.message.joined_team", teamComponent);
+        return success(
+                sender,
+                "gtnhlib.chat.teams.message.joined_team",
+                colorChatComponent(EnumChatFormatting.GOLD, invitedTeam.getTeamName()));
     }
 
     private static int executeDeny(ICommandSender sender, String teamName) {
@@ -253,9 +251,10 @@ public class TeamCommand {
 
         TeamManager.removePendingInvite(player.getUniqueID(), specificTeam);
 
-        ChatComponentText teamComponent = new ChatComponentText(specificTeam.getTeamName());
-        teamComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        return success(sender, "gtnhlib.chat.teams.message.declined_invite", teamComponent);
+        return success(
+                sender,
+                "gtnhlib.chat.teams.message.declined_invite",
+                colorChatComponent(EnumChatFormatting.GOLD, specificTeam.getTeamName()));
     }
 
     private static int executeLeave(ICommandSender sender) {
@@ -272,8 +271,7 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
         }
 
-        ChatComponentText teamComponent = new ChatComponentText(team.getTeamName());
-        teamComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        String teamName = team.getTeamName();
 
         team.removeMember(player.getUniqueID());
         if (team.getMembers().isEmpty()) {
@@ -284,7 +282,10 @@ public class TeamCommand {
         // Create a new solo team for the player
         TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
 
-        return success(sender, "gtnhlib.chat.teams.message.left_team", teamComponent);
+        return success(
+                sender,
+                "gtnhlib.chat.teams.message.left_team",
+                colorChatComponent(EnumChatFormatting.GOLD, teamName));
     }
 
     private static int executePromote(ICommandSender sender, String targetName) {
@@ -299,8 +300,7 @@ public class TeamCommand {
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
         if (team.isTeamOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", targetName);
 
-        ChatComponentText nameComponent = new ChatComponentText(targetName);
-        nameComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentText nameComponent = colorChatComponent(EnumChatFormatting.GOLD, targetName);
         if (team.isTeamOfficer(targetUuid)) {
             team.addOwner(targetUuid);
             return success(sender, "gtnhlib.chat.teams.message.promoted_to_owner", nameComponent);
@@ -324,8 +324,7 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_demote");
         if (!team.isTeamOfficer(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
 
-        ChatComponentText nameComponent = new ChatComponentText(targetName);
-        nameComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentText nameComponent = colorChatComponent(EnumChatFormatting.GOLD, targetName);
         if (team.isTeamOwner(targetUuid)) {
             team.removeOwner(targetUuid);
             return success(sender, "gtnhlib.chat.teams.message.demoted_to_officer", nameComponent);
@@ -344,28 +343,21 @@ public class TeamCommand {
 
         sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + "=== " + team.getTeamName() + " ==="));
 
-        ChatComponentText ownersComponent = new ChatComponentText(formatUuidList(team.getOwners(), player.worldObj));
-        ownersComponent.getChatStyle().setColor(EnumChatFormatting.WHITE);
         ChatComponentTranslation ownersTrans = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.info.owners",
-                ownersComponent);
+                colorChatComponent(EnumChatFormatting.WHITE, formatUuidList(team.getOwners(), player.worldObj)));
         ownersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(ownersTrans);
 
-        ChatComponentText officersComponent = new ChatComponentText(
-                formatUuidList(team.getOfficers(), player.worldObj));
-        officersComponent.getChatStyle().setColor(EnumChatFormatting.WHITE);
         ChatComponentTranslation officersTrans = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.info.officers",
-                officersComponent);
+                colorChatComponent(EnumChatFormatting.WHITE, formatUuidList(team.getOfficers(), player.worldObj)));
         officersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(officersTrans);
 
-        ChatComponentText membersComponent = new ChatComponentText(formatUuidList(team.getMembers(), player.worldObj));
-        membersComponent.getChatStyle().setColor(EnumChatFormatting.WHITE);
         ChatComponentTranslation membersTrans = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.info.members",
-                membersComponent);
+                colorChatComponent(EnumChatFormatting.WHITE, formatUuidList(team.getMembers(), player.worldObj)));
         membersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(membersTrans);
 
@@ -390,22 +382,17 @@ public class TeamCommand {
 
         TeamManager.addPendingMergeRequest(source, target);
 
-        ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
-        sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        ChatComponentText targetComponent = new ChatComponentText(target.getTeamName());
-        targetComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentText sourceComponent = colorChatComponent(EnumChatFormatting.GOLD, source.getTeamName());
+        ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
+
         success(sender, "gtnhlib.chat.teams.message.merge_request_sent", targetComponent);
 
         // Notify all online owners of the target team
-        ChatComponentText acceptComponent = new ChatComponentText("/gtnhteam merge accept " + source.getTeamName());
-        acceptComponent.getChatStyle().setColor(EnumChatFormatting.YELLOW);
-        ChatComponentText denyComponent = new ChatComponentText("/gtnhteam merge deny " + source.getTeamName());
-        denyComponent.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         ChatComponentTranslation notification = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.message.merge_request_received",
                 sourceComponent,
-                acceptComponent,
-                denyComponent);
+                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam merge accept " + source.getTeamName()),
+                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam merge deny " + source.getTeamName()));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID ownerUuid : target.getOwners()) {
@@ -440,10 +427,8 @@ public class TeamCommand {
                 return error(sender, "gtnhlib.chat.teams.error.no_merge_request_specific", sourceTeamName);
         }
 
-        ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
-        sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        ChatComponentText targetComponent = new ChatComponentText(target.getTeamName());
-        targetComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
+        ChatComponentText sourceComponent = colorChatComponent(EnumChatFormatting.GOLD, source.getTeamName());
+        ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
 
         // Capture member list before merge for notification purposes
         List<UUID> allMembers = new ArrayList<>(source.getMembers());
@@ -495,6 +480,22 @@ public class TeamCommand {
         ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
         sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
         return success(sender, "gtnhlib.chat.teams.message.merge_denied", sourceComponent);
+    }
+
+    private static int executeHelp(ICommandSender sender) {
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.3"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.4"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.5"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.6"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.7"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.8"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.9"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.10"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.11"));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.12"));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static CompletableFuture<Suggestions> suggestTeamMembers(ICommandSender sender,
@@ -555,54 +556,5 @@ public class TeamCommand {
             return null;
         }
         return player;
-    }
-
-    private static int success(ICommandSender sender, String transKey, Object... args) {
-        ChatComponentTranslation msg = new ChatComponentTranslation(transKey, args);
-        msg.getChatStyle().setColor(EnumChatFormatting.GREEN);
-        sender.addChatMessage(msg);
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int error(ICommandSender sender, String transKey, Object... args) {
-        ChatComponentTranslation msg = new ChatComponentTranslation(transKey, args);
-        msg.getChatStyle().setColor(EnumChatFormatting.RED);
-        sender.addChatMessage(msg);
-        return 0;
-    }
-
-    private static UUID resolveTeamMemberUuid(Team team, String name) {
-        EntityPlayer online = MinecraftServer.getServer().getConfigurationManager().func_152612_a(name);
-        if (online != null && team.isTeamMember(online.getUniqueID())) return online.getUniqueID();
-
-        for (UUID uuid : team.getMembers()) {
-            String cachedName = UsernameCache.getLastKnownUsername(uuid);
-            if (cachedName != null && cachedName.equalsIgnoreCase(name)) return uuid;
-        }
-        return null;
-    }
-
-    private static String formatUuidList(java.util.List<UUID> uuids, net.minecraft.world.World world) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < uuids.size(); i++) {
-            EntityPlayer p = world.func_152378_a(uuids.get(i)); // getPlayerByUUID
-            if (p != null) {
-                sb.append(p.getCommandSenderName());
-            } else {
-                String cachedName = UsernameCache.getLastKnownUsername(uuids.get(i));
-                sb.append(cachedName == null ? uuids.get(i) : cachedName);
-            }
-            if (i < uuids.size() - 1) sb.append(", ");
-        }
-        return sb.toString();
-    }
-
-    private static LiteralArgumentBuilder<ICommandSender> literal(String name) {
-        return LiteralArgumentBuilder.literal(name);
-    }
-
-    private static <T> RequiredArgumentBuilder<ICommandSender, T> argument(String name,
-            com.mojang.brigadier.arguments.ArgumentType<T> type) {
-        return RequiredArgumentBuilder.argument(name, type);
     }
 }
