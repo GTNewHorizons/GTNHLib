@@ -62,17 +62,22 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
         return Collections.unmodifiableMap(new Object2ObjectOpenHashMap<>(data));
     }
 
+    private Map<K, V> readOrLocked() {
+        final Object2ObjectOpenHashMap<K, V> locked = lockedMutable;
+        if (locked != null && writeLock.isHeldByCurrentThread()) {
+            return locked;
+        }
+        return read();
+    }
+
     @Override
     public V getOrDefault(Object key, V defaultValue) {
-        return read().getOrDefault(key, defaultValue);
+        return readOrLocked().getOrDefault(key, defaultValue);
     }
 
     @Override
     public void forEach(BiConsumer<? super K, ? super V> action) {
-        mutate(m -> {
-            m.forEach(action);
-            return null;
-        });
+        readOrLocked().forEach(action);
     }
 
     @Override
@@ -86,7 +91,7 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
     @Nullable
     @Override
     public V putIfAbsent(K key, V value) {
-        final V oldValue = read().get(key);
+        final V oldValue = readOrLocked().get(key);
         if (oldValue != null) {
             return oldValue;
         }
@@ -96,7 +101,7 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
     @Override
     public boolean remove(Object key, Object value) {
         @SuppressWarnings("SuspiciousMethodCalls")
-        final V presentValue = read().get(key);
+        final V presentValue = readOrLocked().get(key);
         if (!Objects.equals(value, presentValue)) {
             return false;
         }
@@ -105,7 +110,7 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
 
     @Override
     public boolean replace(K key, V oldValue, V newValue) {
-        final V presentValue = read().get(key);
+        final V presentValue = readOrLocked().get(key);
         if (!Objects.equals(oldValue, presentValue)) {
             return false;
         }
@@ -120,7 +125,7 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
 
     @Override
     public V computeIfAbsent(K key, @NotNull Function<? super K, ? extends V> mappingFunction) {
-        final V oldValue = read().get(key);
+        final V oldValue = readOrLocked().get(key);
         if (oldValue != null) {
             return oldValue;
         }
@@ -129,7 +134,7 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
 
     @Override
     public V computeIfPresent(K key, @NotNull BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        final V oldValue = read().get(key);
+        final V oldValue = readOrLocked().get(key);
         if (oldValue == null) {
             return null;
         }
@@ -148,27 +153,27 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
 
     @Override
     public int size() {
-        return read().size();
+        return readOrLocked().size();
     }
 
     @Override
     public boolean isEmpty() {
-        return read().isEmpty();
+        return readOrLocked().isEmpty();
     }
 
     @Override
     public boolean containsKey(Object key) {
-        return read().containsKey(key);
+        return readOrLocked().containsKey(key);
     }
 
     @Override
     public boolean containsValue(Object value) {
-        return read().containsValue(value);
+        return readOrLocked().containsValue(value);
     }
 
     @Override
     public V get(Object key) {
-        return read().get(key);
+        return readOrLocked().get(key);
     }
 
     @Nullable
@@ -201,24 +206,24 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
     @NotNull
     @Override
     public Set<K> keySet() {
-        return read().keySet();
+        return readOrLocked().keySet();
     }
 
     @NotNull
     @Override
     public Collection<V> values() {
-        return read().values();
+        return readOrLocked().values();
     }
 
     @NotNull
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return read().entrySet();
+        return readOrLocked().entrySet();
     }
 
     @Override
     public int hashCode() {
-        return read().hashCode();
+        return readOrLocked().hashCode();
     }
 
     @Override
@@ -226,13 +231,13 @@ public class CasMap<K, V> extends CasAdapter<Map<K, V>, Object2ObjectOpenHashMap
         if (!(obj instanceof Map)) {
             return false;
         }
-        final Map<K, V> myMap = read();
+        final Map<K, V> myMap = readOrLocked();
         final Map<?, ?> otherMap = (obj instanceof CasMap) ? ((CasMap<?, ?>) obj).read() : (Map<?, ?>) obj;
         return myMap.equals(otherMap);
     }
 
     @Override
     public String toString() {
-        return read().toString();
+        return readOrLocked().toString();
     }
 }
