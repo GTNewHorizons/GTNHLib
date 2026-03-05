@@ -153,10 +153,13 @@ public class TeamCommand {
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_invite");
+        if (!team.isTeamOfficer(player.getUniqueID()))
+            return error(sender, "gtnhlib.chat.teams.error.not_officer_invite");
 
         EntityPlayer target = player.worldObj.getPlayerEntityByName(targetName);
         if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_online", targetName);
+        if (team.isTeamMember(target.getUniqueID()))
+            return error(sender, "gtnhlib.chat.teams.error.invite_teammate", targetName);
         if (target.getUniqueID().equals(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.invite_self");
 
@@ -294,11 +297,15 @@ public class TeamCommand {
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
         if (team.isTeamOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", targetName);
 
-        team.addOwner(targetUuid);
-
         ChatComponentText nameComponent = new ChatComponentText(targetName);
         nameComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        return success(sender, "gtnhlib.chat.teams.message.promoted", nameComponent);
+        if (team.isTeamOfficer(targetUuid)) {
+            team.addOwner(targetUuid);
+            return success(sender, "gtnhlib.chat.teams.message.promoted_to_owner", nameComponent);
+        } else {
+            team.addOfficer(targetUuid);
+            return success(sender, "gtnhlib.chat.teams.message.promoted_to_officer", nameComponent);
+        }
     }
 
     private static int executeDemote(ICommandSender sender, String targetName) {
@@ -313,13 +320,17 @@ public class TeamCommand {
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
         if (targetUuid.equals(player.getUniqueID()) && team.getOwners().size() == 1)
             return error(sender, "gtnhlib.chat.teams.error.last_owner_demote");
-        if (!team.isTeamOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
-
-        team.removeOwner(targetUuid);
+        if (!team.isTeamOfficer(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
 
         ChatComponentText nameComponent = new ChatComponentText(targetName);
         nameComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        return success(sender, "gtnhlib.chat.teams.message.demoted", nameComponent);
+        if (team.isTeamOwner(targetUuid)) {
+            team.removeOwner(targetUuid);
+            return success(sender, "gtnhlib.chat.teams.message.demoted_to_officer", nameComponent);
+        } else {
+            team.removeOfficer(targetUuid);
+            return success(sender, "gtnhlib.chat.teams.message.demoted_to_member", nameComponent);
+        }
     }
 
     private static int executeInfo(ICommandSender sender) {
@@ -338,6 +349,15 @@ public class TeamCommand {
                 ownersComponent);
         ownersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(ownersTrans);
+
+        ChatComponentText officersComponent = new ChatComponentText(
+                formatUuidList(team.getOfficers(), player.worldObj));
+        officersComponent.getChatStyle().setColor(EnumChatFormatting.WHITE);
+        ChatComponentTranslation officersTrans = new ChatComponentTranslation(
+                "gtnhlib.chat.teams.info.officers",
+                officersComponent);
+        officersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
+        sender.addChatMessage(officersTrans);
 
         ChatComponentText membersComponent = new ChatComponentText(formatUuidList(team.getMembers(), player.worldObj));
         membersComponent.getChatStyle().setColor(EnumChatFormatting.WHITE);

@@ -81,6 +81,12 @@ public class TeamWorldSavedData extends WorldSavedData {
                 team.addOwner(UUID.fromString(ownersList.getStringTagAt(j)));
             }
 
+            // Officers
+            NBTTagList officersList = teamTag.getTagList("Officers", Constants.NBT.TAG_STRING);
+            for (int j = 0; j < officersList.tagCount(); j++) {
+                team.addOfficer(UUID.fromString(ownersList.getStringTagAt(j)));
+            }
+
             // Members
             NBTTagList membersList = teamTag.getTagList("Members", Constants.NBT.TAG_STRING);
             for (int j = 0; j < membersList.tagCount(); j++) {
@@ -104,7 +110,7 @@ public class TeamWorldSavedData extends WorldSavedData {
     public void writeToNBT(NBTTagCompound NBT) {
         NBTTagList teamList = new NBTTagList();
         for (Team team : TeamManager.TEAMS) {
-            if (team.getMembers().isEmpty() && team.getOwners().isEmpty()) continue;
+            if (team.getMembers().isEmpty()) continue;
 
             NBTTagCompound teamTag = new NBTTagCompound();
             teamTag.setString("TeamName", team.getTeamName());
@@ -115,6 +121,13 @@ public class TeamWorldSavedData extends WorldSavedData {
                 ownersList.appendTag(new NBTTagString(owner.toString()));
             }
             teamTag.setTag("Owners", ownersList);
+
+            // Officers
+            NBTTagList officersList = new NBTTagList();
+            for (UUID officer : team.getOfficers()) {
+                officersList.appendTag(new NBTTagString(officer.toString()));
+            }
+            teamTag.setTag("Officers", ownersList);
 
             // Members
             NBTTagList membersList = new NBTTagList();

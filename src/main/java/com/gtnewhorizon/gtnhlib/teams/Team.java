@@ -17,6 +17,7 @@ public class Team {
     @Getter
     private String teamName;
     private final ObjectList<UUID> owners = new ObjectArrayList<>();
+    private final ObjectList<UUID> officers = new ObjectArrayList<>();
     private final ObjectList<UUID> members = new ObjectArrayList<>();
     private final Map<String, ITeamData> teamData = new HashMap<>();
 
@@ -37,14 +38,44 @@ public class Team {
         return members.contains(player);
     }
 
+    public boolean isTeamOfficer(UUID player) {
+        return officers.contains(player);
+    }
+
+    public boolean isTeamOwner(UUID player) {
+        return owners.contains(player);
+    }
+
     public void addMember(UUID uuid) {
+        if (!members.contains(uuid)) members.add(uuid);
+        TeamWorldSavedData.markForSaving();
+    }
+
+    public void addOfficer(UUID uuid) {
+        if (!officers.contains(uuid)) officers.add(uuid);
+        // officers are also always members
+        if (!members.contains(uuid)) members.add(uuid);
+        TeamWorldSavedData.markForSaving();
+    }
+
+    public void addOwner(UUID uuid) {
+        if (!owners.contains(uuid)) owners.add(uuid);
+        // owners are also always members and officers
+        if (!officers.contains(uuid)) officers.add(uuid);
         if (!members.contains(uuid)) members.add(uuid);
         TeamWorldSavedData.markForSaving();
     }
 
     public void removeMember(UUID uuid) {
         members.remove(uuid);
+        officers.remove(uuid);
         owners.remove(uuid);
+        TeamWorldSavedData.markForSaving();
+    }
+
+    public void removeOfficer(UUID uuid) {
+        owners.remove(uuid);
+        officers.remove(uuid);
         TeamWorldSavedData.markForSaving();
     }
 
@@ -57,15 +88,8 @@ public class Team {
         return ObjectLists.unmodifiable(members);
     }
 
-    public boolean isTeamOwner(UUID player) {
-        return owners.contains(player);
-    }
-
-    public void addOwner(UUID uuid) {
-        if (!owners.contains(uuid)) owners.add(uuid);
-        // owners are also always members
-        if (!members.contains(uuid)) members.add(uuid);
-        TeamWorldSavedData.markForSaving();
+    public List<UUID> getOfficers() {
+        return officers;
     }
 
     public List<UUID> getOwners() {
