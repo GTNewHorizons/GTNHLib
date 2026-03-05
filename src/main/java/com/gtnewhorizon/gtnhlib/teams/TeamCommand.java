@@ -8,9 +8,11 @@ import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.UsernameCache;
 
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.mojang.brigadier.Command;
@@ -569,11 +571,14 @@ public class TeamCommand {
         return 0;
     }
 
-    /** Looks up a UUID for a player name among a team's current members. */
     private static UUID resolveTeamMemberUuid(Team team, String name) {
-        EntityPlayer online = net.minecraft.server.MinecraftServer.getServer().getConfigurationManager()
-                .func_152612_a(name); // getPlayerByUsername
+        EntityPlayer online = MinecraftServer.getServer().getConfigurationManager().func_152612_a(name);
         if (online != null && team.isTeamMember(online.getUniqueID())) return online.getUniqueID();
+
+        for (UUID uuid : team.getMembers()) {
+            String cachedName = UsernameCache.getLastKnownUsername(uuid);
+            if (cachedName != null && cachedName.equalsIgnoreCase(name)) return uuid;
+        }
         return null;
     }
 
@@ -581,10 +586,15 @@ public class TeamCommand {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < uuids.size(); i++) {
             EntityPlayer p = world.func_152378_a(uuids.get(i)); // getPlayerByUUID
-            sb.append(p != null ? p.getCommandSenderName() : uuids.get(i).toString());
+            if (p != null) {
+                sb.append(p.getCommandSenderName());
+            } else {
+                String cachedName = UsernameCache.getLastKnownUsername(uuids.get(i));
+                sb.append(cachedName == null ? uuids.get(i) : cachedName);
+            }
             if (i < uuids.size() - 1) sb.append(", ");
         }
-        return sb.length() == 0 ? "(none)" : sb.toString();
+        return sb.toString();
     }
 
     private static LiteralArgumentBuilder<ICommandSender> literal(String name) {
