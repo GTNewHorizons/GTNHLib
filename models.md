@@ -65,9 +65,107 @@ public class BlockTestTint extends Block implements IBlockColor {
 }
 </pre>
 
+### BlockState Api
+
+Instead of relying on 4-bit metadata, model selection can resolved from full block state data via registered BlockProperty.
+
+This allows:
+- Unlimited logical states (no 16-meta restriction)
+- Model variants based on TileEntity data
+- ItemStack-aware state resolution
+- Dynamic rendering behavior
+
+BlockState resolution works in three steps:
+1. A `BlockProperty` is registered to a block (and optionally its item).
+2. The property provides values from:
+   - World + TileEntity
+   - ItemStack
+3. The JsonModel loader resolves model variants using those property values.
+
+#### 1.Creating a BlockProperty
+
+Example: Direction property backed by TileEntity.
+
+<pre>
+DirectionBlockProperty property = new DirectionBlockProperty() {
+
+    @Override
+    public String getName() {
+        return "facing";
+    }
+
+    @Override
+    public boolean hasTrait(BlockPropertyTrait trait) {
+        return switch (trait) {
+            case SupportsWorld, WorldMutable, StackMutable, SupportsStacks -> true;
+            default -> false;
+        };
+    }
+
+    @Override
+    public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te instanceof TileTestTintMul tile) {
+            return tile.getFacing();
+        }
+        return ForgeDirection.NORTH;
+    }
+
+    @Override
+    public void setValue(World world, int x, int y, int z, ForgeDirection value) {
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te instanceof TileTestTintMul tile) {
+            tile.setFacing(value);
+        }
+    }
+
+    @Override
+    public ForgeDirection getValue(ItemStack stack) {
+        return ForgeDirection.NORTH;
+    }
+};
+</pre>
+
+#### 2.Registering the Property
+
+<pre>
+BlockPropertyRegistry.registerProperty(block, property);
+BlockPropertyRegistry.registerProperty(Item.getItemFromBlock(block), property);
+</pre>
+You must register:
+  - On the block (world state)
+  - On the item (inventory rendering)
+
+#### 3.Defining blockstate JSON
+
+Example:
+<pre>
+{
+  "variants": {
+    "facing=north": { "model": "modid:block/machine_north" },
+    "facing=south": { "model": "modid:block/machine_south" },
+    "facing=west":  { "model": "modid:block/machine_west" },
+    "facing=east":  { "model": "modid:block/machine_east" }
+  }
+}
+</pre>
+
+The loader will:
+- Query property.getValue(...)
+- Build a state string like: facing=north
+- Resolve the correct model variant
+
+#### Supported Traits
+`BlockPropertyTrait` controls where the property works:
+- `SupportsWorld` → usable in world rendering
+- `SupportsStacks` → usable in item rendering
+- `WorldMutable` → value can be changed in world
+- `StackMutable` → value can be changed in ItemStack
+
+Only implement the traits you need.
+
 ### TODO
 - Autoload item textures too.
 - Add smooth shading to ModelISBRH.
 - Add face culling to models.
 - Implement UV locking.
-- Integrate with a proper BlockState API.
