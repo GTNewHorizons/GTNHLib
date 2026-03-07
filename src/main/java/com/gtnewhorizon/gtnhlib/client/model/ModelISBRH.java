@@ -59,7 +59,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     @SuppressWarnings("unused")
     public BakedModel getModel(BakedModelQuadContext context) {
         if (context.getBlockState().getBlock() instanceof IBlockModelProvider selector)
-            return selector.getModel(BakedModelQuadContext context);
+            return selector.getModel(context);
         return ModelRegistry.getBakedModel(context.getBlockState());
     }
 
