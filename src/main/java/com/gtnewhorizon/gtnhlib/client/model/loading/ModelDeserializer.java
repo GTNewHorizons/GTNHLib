@@ -96,12 +96,11 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
 
                 final String name = j.getKey();
                 final Position pos = Position.getByName(name);
-                ret.put(pos, loadADisplay(j.getValue().getAsJsonObject()));
-            }
-        }
 
-        for (Position p : Position.values()) {
-            ret.putIfAbsent(p, ModelDisplay.DEFAULT);
+                if (pos != null) {
+                    ret.put(pos, loadADisplay(j.getValue().getAsJsonObject()));
+                }
+            }
         }
 
         return ret;

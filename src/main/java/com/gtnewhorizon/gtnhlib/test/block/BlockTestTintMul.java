@@ -1,16 +1,19 @@
-package com.gtnewhorizon.gtnhlib.block;
+package com.gtnewhorizon.gtnhlib.test.block;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.jetbrains.annotations.NotNull;
-
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
 
 public class BlockTestTintMul extends Block implements IBlockColor {
@@ -26,15 +29,34 @@ public class BlockTestTintMul extends Block implements IBlockColor {
     }
 
     @Override
-    public int onBlockPlaced(@NotNull World worldIn, int x, int y, int z, int side, float subX, float subY, float subZ,
-            int meta) {
+    public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase player, ItemStack itemIn) {
+        super.onBlockPlacedBy(world, x, y, z, player, itemIn);
+        int heading = MathHelper.floor_double(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+        ForgeDirection facing = getDirectionForHeading(heading);
+        BlockState state = BlockPropertyRegistry.getBlockState(world, x, y, z);
+        state.setPropertyValue("facing", facing);
+        state.place(world, x, y, z);
+        state.close();
+    }
 
-        // Face NORTH if placed up or down
-        final var s = ForgeDirection.getOrientation(side);
-        if (s == ForgeDirection.UP || s == ForgeDirection.DOWN) return 2;
+    private ForgeDirection getDirectionForHeading(int heading) {
+        return switch (heading) {
+            case 0 -> ForgeDirection.NORTH;
+            case 1 -> ForgeDirection.EAST;
+            case 2 -> ForgeDirection.SOUTH;
+            case 3 -> ForgeDirection.WEST;
+            default -> ForgeDirection.NORTH;
+        };
+    }
 
-        // Face the placed side
-        return side - 2;
+    @Override
+    public boolean hasTileEntity(int meta) {
+        return true;
+    }
+
+    @Override
+    public TileEntity createTileEntity(World world, int meta) {
+        return new TileTestTintMul();
     }
 
     @Override
