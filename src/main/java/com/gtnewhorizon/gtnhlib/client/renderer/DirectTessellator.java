@@ -74,11 +74,15 @@ public class DirectTessellator extends Tessellator {
         this.drawMode = tessellator.drawMode;
         this.format = preDefinedFormat != null ? preDefinedFormat : getOptimalVertexFormat();
 
-        ensureCapacity(tessellator.rawBufferIndex);
+        ensureCapacity(tessellator.vertexCount * format.getVertexSize());
 
-        writePtr = format.writeToBuffer0(writePtr, tessellator.rawBuffer, tessellator.rawBufferIndex);
+        writePtr = writeVertexData(format, tessellator.rawBuffer, tessellator.rawBufferIndex);
 
         return draw();
+    }
+
+    protected long writeVertexData(VertexFormat format, int[] rawBuffer, int rawBufferIndex) {
+        return format.writeToBuffer0(writePtr, rawBuffer, rawBufferIndex);
     }
 
     /**
@@ -285,7 +289,7 @@ public class DirectTessellator extends Tessellator {
         ebo.upload(vertexCount);
     }
 
-    protected ByteBuffer getWriteBuffer() {
+    public ByteBuffer getWriteBuffer() {
         ByteBuffer buffer = isResized() ? memByteBuffer(startPtr, bufferCapacity()) : this.baseBuffer;
         buffer.limit(bufferLimit());
         return buffer;
