@@ -55,7 +55,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public ModelISBRH() {}
 
-    /// Override this if you want programmatic model selection
+    /// For programmatic model selection, see {@link IBlockModelProvider}
     @SuppressWarnings("unused")
     public BakedModel getModel(BakedModelQuadContext context) {
         if (context.getBlockState().getBlock() instanceof IBlockModelProvider selector)
