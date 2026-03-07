@@ -12,6 +12,8 @@ import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
+import cpw.mods.fml.client.registry.RenderingRegistry;
+
 @Mixin(EntityDiggingFX.class)
 public class MixinEntityDiggingFX_IconWrapper {
 
@@ -20,7 +22,7 @@ public class MixinEntityDiggingFX_IconWrapper {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getIcon(II)Lnet/minecraft/util/IIcon;"))
     private IIcon nhlib$useWorldIcon(Block block, int side, int meta, Operation<IIcon> original, World world, double x,
             double y, double z, double mx, double my, double mz, Block passedBlock, int passedMeta, int passedSide) {
-        if (block.getRenderType() == ModelISBRH.JSON_ISBRH_ID) {
+        if (RenderingRegistry.instance().blockRenderers.get(block.getRenderType()) instanceof ModelISBRH) {
             int bx = (int) Math.floor(x);
             int by = (int) Math.floor(y);
             int bz = (int) Math.floor(z);

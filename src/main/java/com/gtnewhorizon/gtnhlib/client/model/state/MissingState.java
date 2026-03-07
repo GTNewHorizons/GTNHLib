@@ -8,7 +8,7 @@ public class MissingState implements StateModelMap {
     public static final MissingState MISSING_STATE_MAP = new MissingState();
 
     @Override
-    public UnbakedModel getModel(BlockState state) {
+    public UnbakedModel selectModel(BlockState state) {
         return null;
     }
 }

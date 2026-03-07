@@ -72,7 +72,7 @@ public class ModelRegistry {
         // Caching this would be a little pointless, since an UnbakedModel here would map directly to the BakedModel
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
         // will be cached, however.
-        final var dough = smm.getModel(state);
+        final var dough = smm.selectModel(state);
         if (dough == null) return MISSING_MODEL.bake();
 
         return dough.bake();

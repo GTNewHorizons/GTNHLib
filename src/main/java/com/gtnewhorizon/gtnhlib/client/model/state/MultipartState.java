@@ -26,7 +26,7 @@ public class MultipartState implements StateModelMap, UnbakedModel {
     }
 
     @Override
-    public UnbakedModel getModel(BlockState state) {
+    public UnbakedModel selectModel(BlockState state) {
         return this;
     }
 

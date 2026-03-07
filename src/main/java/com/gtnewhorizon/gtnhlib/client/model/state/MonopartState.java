@@ -20,11 +20,11 @@ public class MonopartState implements StateModelMap {
     private final Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants;
 
     MonopartState(Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants) {
-        this.variants = variants;
+        this.variants = Object2ObjectMaps.unmodifiable(variants);
     }
 
     @Override
-    public UnbakedModel getModel(BlockState state) {
+    public UnbakedModel selectModel(BlockState state) {
         Map<String, String> properties = state.toMap();
 
         final var iter = Object2ObjectMaps.fastIterator(variants);
