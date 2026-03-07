@@ -1,20 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.model.baked;
 
 import java.util.List;
-import java.util.Random;
-import java.util.function.Supplier;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.IIcon;
-import net.minecraft.world.IBlockAccess;
 
-import org.jetbrains.annotations.Nullable;
-
+import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -27,19 +20,18 @@ public final class MonopartModel implements BakedModel {
     }
 
     @Override
-    public List<ModelQuadView> getQuads(@Nullable IBlockAccess world, int x, int y, int z, Block block, int meta,
-            ModelQuadFacing dir, Random random, int color, @Nullable Supplier<ModelQuadViewMutable> quadPool) {
-        return Weighted.selectOne(models, random).getQuads(world, x, y, z, block, meta, dir, random, color, quadPool);
+    public List<ModelQuadView> getQuads(BakedModelQuadContext context) {
+        return Weighted.selectOne(models, context.getRandom()).getQuads(context);
     }
 
     @Override
-    public Position.ModelDisplay getDisplay(Position pos, int meta, Random random) {
-        return Weighted.selectOne(models, random).getDisplay(pos, meta, random);
+    public Position.ModelDisplay getDisplay(Position pos, BakedModelQuadContext context) {
+        return Weighted.selectOne(models, context.getRandom()).getDisplay(pos, context);
     }
 
     @Override
-    public IIcon getParticle(int meta, Random random) {
-        return Weighted.selectOne(models, random).getParticle(meta, random);
+    public IIcon getParticle(BakedModelQuadContext context) {
+        return Weighted.selectOne(models, context.getRandom()).getParticle(context);
     }
 
     public ObjectArrayList<Weighted<BakedModel>> models() {
