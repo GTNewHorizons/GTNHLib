@@ -24,104 +24,106 @@ import net.minecraftforge.client.MinecraftForgeClient;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 
 @Mixin(value = ForgeHooksClient.class, remap = false)
 public class MixinModelFHC {
 
-    @WrapMethod(method = "renderInventoryItem")
-    private static boolean nhlib$renderModeledInventoryItem(RenderBlocks renderBlocks, TextureManager engine,
-            ItemStack item, boolean inColor, float zLevel, float x, float y, Operation<Boolean> original) {
+    @Inject(method = "renderInventoryItem", cancellable = true, at = @At("HEAD"))
+    private static void renderModeledInventoryItem(RenderBlocks renderBlocks, TextureManager engine, ItemStack item,
+            boolean inColor, float zLevel, float x, float y, CallbackInfoReturnable<Boolean> cir) {
         IItemRenderer customRenderer = MinecraftForgeClient.getItemRenderer(item, INVENTORY);
-        if (!(customRenderer instanceof ModelISBRH modelISBRH)) {
-            return original.call(renderBlocks, engine, item, inColor, zLevel, x, y);
-        }
-        engine.bindTexture(
-                item.getItemSpriteNumber() == 0 ? TextureMap.locationBlocksTexture : TextureMap.locationItemsTexture);
+        if (customRenderer instanceof ModelISBRH modelISBRH) {
+            engine.bindTexture(
+                    item.getItemSpriteNumber() == 0 ? TextureMap.locationBlocksTexture
+                            : TextureMap.locationItemsTexture);
 
-        GL11.glPushMatrix();
-        GL11.glTranslatef(x, y, -3.0F + zLevel);
-        GL11.glScalef(16f, 16f, 16f);
-        GL11.glScalef(1.0F, 1.0F, -1F);
-        GL11.glTranslatef(0.5F, 0.5F, 0.5F);
-        GL11.glRotatef(-90f, 0.0f, 1.0f, 0.0f);
-        GL11.glRotatef(-180f, 1.0f, 0.0f, 0.0f);
-        GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
-
-        if (inColor) {
-            int color = item.getItem().getColorFromItemStack(item, 0);
-            float r = (float) (color >> 16 & 0xff) / 255F;
-            float g = (float) (color >> 8 & 0xff) / 255F;
-            float b = (float) (color & 0xff) / 255F;
-            GL11.glColor4f(r, g, b, 1.0F);
-        }
-
-        renderBlocks.useInventoryTint = inColor;
-        modelISBRH.renderItem(INVENTORY, item, renderBlocks);
-        renderBlocks.useInventoryTint = true;
-        GL11.glPopMatrix();
-
-        return true;
-    }
-
-    @WrapMethod(method = "renderEntityItem")
-    private static boolean nhlib$renderModeledEntityItem(EntityItem entity, ItemStack item, float bobing,
-            float rotation, Random random, TextureManager engine, RenderBlocks renderBlocks, int count,
-            Operation<Boolean> original) {
-        IItemRenderer customRenderer = MinecraftForgeClient.getItemRenderer(item, ENTITY);
-        if (!(customRenderer instanceof ModelISBRH modelISBRH)) {
-            return original.call(entity, item, bobing, rotation, random, engine, renderBlocks, count);
-        }
-
-        if (modelISBRH.shouldUseRenderHelper(ENTITY, item, ENTITY_ROTATION)) {
-            GL11.glRotatef(rotation, 0.0F, 1.0F, 0.0F);
-        }
-        if (!modelISBRH.shouldUseRenderHelper(ENTITY, item, ENTITY_BOBBING)) {
-            GL11.glTranslatef(0.0F, -bobing, 0.0F);
-        }
-
-        engine.bindTexture(
-                item.getItemSpriteNumber() == 0 ? TextureMap.locationBlocksTexture : TextureMap.locationItemsTexture);
-        Block block = Block.getBlockFromItem(item.getItem());
-        boolean blend = block != null && block.getRenderBlockPass() > 0;
-
-        if (RenderItem.renderInFrame) {
-            GL11.glScalef(1.25F, 1.25F, 1.25F);
-            GL11.glTranslatef(0.0F, 0.05F, 0.0F);
-            GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
-        }
-
-        if (blend) {
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-            GL11.glEnable(GL11.GL_BLEND);
-            GL14.glBlendFuncSeparate(770, 771, 1, 0);
-        }
-
-        for (int j = 0; j < count; j++) {
             GL11.glPushMatrix();
-            if (j > 0) {
-                GL11.glTranslatef(
-                        ((random.nextFloat() * 2.0F - 1.0F) * 0.2F),
-                        ((random.nextFloat() * 2.0F - 1.0F) * 0.2F),
-                        ((random.nextFloat() * 2.0F - 1.0F) * 0.2F));
-            }
-            GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
-            modelISBRH.renderItem(ENTITY, item, renderBlocks, entity);
-            GL11.glPopMatrix();
-        }
+            GL11.glTranslatef(x, y, -3.0F + zLevel);
+            GL11.glScalef(16f, 16f, 16f);
+            GL11.glScalef(1.0F, 1.0F, -1F);
+            GL11.glTranslatef(0.5F, 0.5F, 0.5F);
+            GL11.glRotatef(-90f, 0.0f, 1.0f, 0.0f);
+            GL11.glRotatef(-180f, 1.0f, 0.0f, 0.0f);
+            GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
 
-        if (blend) {
-            GL11.glDisable(GL11.GL_BLEND);
+            if (inColor) {
+                int color = item.getItem().getColorFromItemStack(item, 0);
+                float r = (float) (color >> 16 & 0xff) / 255F;
+                float g = (float) (color >> 8 & 0xff) / 255F;
+                float b = (float) (color & 0xff) / 255F;
+                GL11.glColor4f(r, g, b, 1.0F);
+            }
+
+            renderBlocks.useInventoryTint = inColor;
+            modelISBRH.renderItem(INVENTORY, item, renderBlocks);
+            renderBlocks.useInventoryTint = true;
+            GL11.glPopMatrix();
+
+            cir.setReturnValue(true);
         }
-        return true;
     }
 
-    @WrapMethod(method = "renderEquippedItem")
-    private static void nhlib$renderModeledEquippedItem(IItemRenderer.ItemRenderType type, IItemRenderer customRenderer,
-            RenderBlocks renderBlocks, EntityLivingBase entity, ItemStack item, Operation<Void> original) {
+    @Inject(method = "renderEntityItem", cancellable = true, at = @At("HEAD"))
+    private static void renderModeledEntityItem(EntityItem entity, ItemStack item, float bobing, float rotation,
+            Random random, TextureManager engine, RenderBlocks renderBlocks, int count,
+            CallbackInfoReturnable<Boolean> cir) {
+        IItemRenderer customRenderer = MinecraftForgeClient.getItemRenderer(item, ENTITY);
+        if (customRenderer instanceof ModelISBRH modelISBRH) {
+
+            if (modelISBRH.shouldUseRenderHelper(ENTITY, item, ENTITY_ROTATION)) {
+                GL11.glRotatef(rotation, 0.0F, 1.0F, 0.0F);
+            }
+            if (!modelISBRH.shouldUseRenderHelper(ENTITY, item, ENTITY_BOBBING)) {
+                GL11.glTranslatef(0.0F, -bobing, 0.0F);
+            }
+
+            engine.bindTexture(
+                    item.getItemSpriteNumber() == 0 ? TextureMap.locationBlocksTexture
+                            : TextureMap.locationItemsTexture);
+            Block block = Block.getBlockFromItem(item.getItem());
+            boolean blend = block != null && block.getRenderBlockPass() > 0;
+
+            if (RenderItem.renderInFrame) {
+                GL11.glScalef(1.25F, 1.25F, 1.25F);
+                GL11.glTranslatef(0.0F, 0.05F, 0.0F);
+                GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
+            }
+
+            if (blend) {
+                GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+                GL11.glEnable(GL11.GL_BLEND);
+                GL14.glBlendFuncSeparate(770, 771, 1, 0);
+            }
+
+            for (int j = 0; j < count; j++) {
+                GL11.glPushMatrix();
+                if (j > 0) {
+                    GL11.glTranslatef(
+                            ((random.nextFloat() * 2.0F - 1.0F) * 0.2F),
+                            ((random.nextFloat() * 2.0F - 1.0F) * 0.2F),
+                            ((random.nextFloat() * 2.0F - 1.0F) * 0.2F));
+                }
+                GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
+                modelISBRH.renderItem(ENTITY, item, renderBlocks, entity);
+                GL11.glPopMatrix();
+            }
+
+            if (blend) {
+                GL11.glDisable(GL11.GL_BLEND);
+            }
+            cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "renderEquippedItem", cancellable = true, at = @At("HEAD"))
+    private static void renderModeledEquippedItem(IItemRenderer.ItemRenderType type, IItemRenderer customRenderer,
+            RenderBlocks renderBlocks, EntityLivingBase entity, ItemStack item, CallbackInfo ci) {
         if (customRenderer instanceof ModelISBRH modelISBRH) {
             if (type == EQUIPPED) {
                 GL11.glPushMatrix();
@@ -137,6 +139,7 @@ public class MixinModelFHC {
                 modelISBRH.renderItem(type, item, renderBlocks, entity);
 
                 GL11.glPopMatrix();
+                ci.cancel();
                 return;
             }
 
@@ -153,11 +156,9 @@ public class MixinModelFHC {
                 modelISBRH.renderItem(type, item, renderBlocks, entity);
 
                 GL11.glPopMatrix();
-                return;
+                ci.cancel();
             }
         }
-
-        original.call(type, customRenderer, renderBlocks, entity, item);
     }
 
 }
