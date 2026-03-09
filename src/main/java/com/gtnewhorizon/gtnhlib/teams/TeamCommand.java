@@ -148,10 +148,15 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.name_in_use");
         }
 
-        return success(
-                sender,
-                "gtnhlib.chat.teams.message.renamed_team",
-                colorChatComponent(EnumChatFormatting.GOLD, newName));
+        for (UUID memberUuid : team.getMembers()) {
+            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            if (member != null) success(
+                    member,
+                    "gtnhlib.chat.teams.message.renamed_team",
+                    colorChatComponent(EnumChatFormatting.GOLD, newName));
+        }
+
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeInvite(ICommandSender sender, String targetName) {
@@ -215,9 +220,27 @@ public class TeamCommand {
                 return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
             }
             currentTeam.removeMember(player.getUniqueID());
+
+            for (UUID memberUuid : currentTeam.getMembers()) {
+                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                if (member != null) success(
+                        member,
+                        "gtnhlib.chat.teams.message.other_left_team",
+                        colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+            }
+
             if (currentTeam.getMembers().isEmpty()) {
                 TeamManager.mergeTeams(invitedTeam, currentTeam);
             }
+        }
+
+        // Done before player is added to team so that they are not notified of their own join
+        for (UUID memberUuid : invitedTeam.getMembers()) {
+            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            if (member != null) success(
+                    member,
+                    "gtnhlib.chat.teams.message.other_joined_team",
+                    colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
         }
 
         invitedTeam.addMember(player.getUniqueID());
@@ -278,6 +301,14 @@ public class TeamCommand {
             TeamWorldSavedData.markForSaving();
         }
 
+        for (UUID memberUuid : team.getMembers()) {
+            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            if (member != null) success(
+                    member,
+                    "gtnhlib.chat.teams.message.other_left_team",
+                    colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+        }
+
         // Create a new solo team for the player
         TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
 
@@ -299,14 +330,26 @@ public class TeamCommand {
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
         if (team.isOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", targetName);
 
-        ChatComponentText nameComponent = colorChatComponent(EnumChatFormatting.GOLD, targetName);
         if (team.isOfficer(targetUuid)) {
             team.addOwner(targetUuid);
-            return success(sender, "gtnhlib.chat.teams.message.promoted_to_owner", nameComponent);
+            for (UUID memberUuid : team.getMembers()) {
+                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                if (member != null) success(
+                        member,
+                        "gtnhlib.chat.teams.message.promoted_to_owner",
+                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
+            }
         } else {
             team.addOfficer(targetUuid);
-            return success(sender, "gtnhlib.chat.teams.message.promoted_to_officer", nameComponent);
+            for (UUID memberUuid : team.getMembers()) {
+                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                if (member != null) success(
+                        member,
+                        "gtnhlib.chat.teams.message.promoted_to_officer",
+                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
+            }
         }
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeDemote(ICommandSender sender, String targetName) {
@@ -323,14 +366,26 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_demote");
         if (!team.isOfficer(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
 
-        ChatComponentText nameComponent = colorChatComponent(EnumChatFormatting.GOLD, targetName);
         if (team.isOwner(targetUuid)) {
             team.removeOwner(targetUuid);
-            return success(sender, "gtnhlib.chat.teams.message.demoted_to_officer", nameComponent);
+            for (UUID memberUuid : team.getMembers()) {
+                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                if (member != null) success(
+                        member,
+                        "gtnhlib.chat.teams.message.demoted_to_officer",
+                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
+            }
         } else {
             team.removeOfficer(targetUuid);
-            return success(sender, "gtnhlib.chat.teams.message.demoted_to_member", nameComponent);
+            for (UUID memberUuid : team.getMembers()) {
+                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                if (member != null) success(
+                        member,
+                        "gtnhlib.chat.teams.message.demoted_to_member",
+                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
+            }
         }
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeInfo(ICommandSender sender) {
