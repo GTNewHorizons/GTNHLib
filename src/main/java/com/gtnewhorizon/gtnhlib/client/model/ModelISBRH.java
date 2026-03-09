@@ -17,17 +17,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
+import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
-import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -48,12 +50,17 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     private final Random RAND = new Random();
 
+    private final WorldContext worldContext = new WorldContext();
+    private final ItemContext itemContext = new ItemContext();
+
     public ModelISBRH() {}
 
-    /// Override this if you want programmatic model selection
+    /// For programmatic model selection, see {@link IBlockModelProvider}
     @SuppressWarnings("unused")
-    public BakedModel getModel(@Nullable IBlockAccess world, Block block, int meta, int x, int y, int z) {
-        return ModelRegistry.getBakedModel(new BlockState(block, meta));
+    public BakedModel getModel(BakedModelQuadContext context) {
+        if (context.getBlockState().getBlock() instanceof IBlockModelProvider selector)
+            return selector.getModel(context);
+        return ModelRegistry.getBakedModel(context.getBlockState());
     }
 
     @Override
@@ -67,13 +74,22 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
-        final var model = getModel(world, block, meta, x, y, z);
+
+        worldContext.world = world;
+        worldContext.x = x;
+        worldContext.y = y;
+        worldContext.z = z;
+        worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
+        worldContext.random = random;
+
+        final BakedModel model = getModel(worldContext);
 
         int color = model.getColor(world, x, y, z, block, meta, random);
 
         var rendered = false;
         for (var dir : VALUES) {
-            final var quads = model.getQuads(world, x, y, z, block, meta, dir, random, color, null);
+            worldContext.quadFacing = dir;
+            final var quads = model.getQuads(worldContext);
             if (quads.isEmpty()) continue;
             if (dir.isDirection() && !renderer.renderAllFaces
                     && !shouldSideBeRendered(
@@ -89,6 +105,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             // iterates over the quads and dumps em into the tesselator, nothing special
             rendered = true;
             for (final var quad : quads) {
+                if (quad.isTransparent() && ForgeHooksClient.getWorldRenderPass() == 0) continue;
                 int quadColor = color;
 
                 // If true use tintIndex color
@@ -108,7 +125,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 renderQuad(quad, x, y, z, tesselator, renderer.overrideBlockTexture);
             }
         }
-
+        worldContext.reset();
         return rendered;
     }
 
@@ -222,7 +239,11 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         int meta = stack.getItemDamage();
 
         final Tessellator tesselator = TessellatorManager.get();
-        final BakedModel model = getModel(null, block, meta, 0, 0, 0);
+        itemContext.stack = stack;
+        itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
+        itemContext.random = RAND;
+
+        final BakedModel model = getModel(itemContext);
 
         GL11.glPushMatrix();
         GL11.glEnable(GL11.GL_BLEND);
@@ -233,11 +254,10 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
 
         for (ModelQuadFacing dir : VALUES) {
+            itemContext.quadFacing = dir;
 
-            final var quads = model.getQuads(null, 0, 0, 0, block, meta, dir, RAND, color, null);
-            if (quads.isEmpty()) {
-                continue;
-            }
+            final var quads = model.getQuads(itemContext);
+            if (quads.isEmpty()) continue;
 
             for (ModelQuadView quad : quads) {
                 int quadColor = color;
@@ -258,12 +278,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         // Apply ItemBlock BlockBench Display
-        applyItemDisplay(model, meta, type);
+        applyItemDisplay(model, type);
 
         tesselator.draw();
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopMatrix();
+        itemContext.reset();
     }
 
     /**
@@ -279,7 +300,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     private static final Vector3f translated = new Vector3f(0f, 0f, 0f);
     private static final Vector3f scaled = new Vector3f(1f, 1f, 1f);
 
-    private void applyItemDisplay(BakedModel model, int meta, ItemRenderType type) {
+    private void applyItemDisplay(BakedModel model, ItemRenderType type) {
 
         Position pos = switch (type) {
             case EQUIPPED -> Position.THIRDPERSON_RIGHTHAND;
@@ -293,7 +314,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         float py = 0.5f;
         float pz = 0.5f;
 
-        Position.ModelDisplay display = model.getDisplay(pos, meta, RAND);
+        Position.ModelDisplay display = model.getDisplay(pos, itemContext);
 
         Vector3f r = display.rotation();
         Vector3f t = display.translation();
@@ -398,7 +419,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     }
 
     public IIcon getParticleIcon(Block block, @Nullable IBlockAccess world, int x, int y, int z, int meta) {
-        final var model = getModel(world, block, meta, x, y, z);
-        return model.getParticle(meta, RAND);
+        worldContext.world = world;
+        worldContext.x = x;
+        worldContext.y = y;
+        worldContext.z = z;
+        worldContext.random = RAND;
+        worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
+        final var model = getModel(worldContext);
+        return model.getParticle(worldContext);
     }
 }

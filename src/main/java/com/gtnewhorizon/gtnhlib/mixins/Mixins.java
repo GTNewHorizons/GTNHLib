@@ -33,7 +33,8 @@ public enum Mixins implements IMixins {
                     .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
     MODEL_ICON_WRAPPER(new MixinBuilder(
             "Ensures that blocks always return a valid icon for JSON model blocks, by using the particle icon.")
-                    .addClientMixins("models.MixinBlock_IconWrapper").setPhase(Phase.EARLY)
+                    .addClientMixins("models.MixinBlock_IconWrapper")
+                    .addClientMixins("models.MixinEntityDiggingFX_IconWrapper").setPhase(Phase.EARLY)
                     .setApplyIf(() -> GTNHLibConfig.modelIconWrapperMixin)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),

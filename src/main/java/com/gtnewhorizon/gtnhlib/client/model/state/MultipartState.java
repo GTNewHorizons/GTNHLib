@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.ApiStatus;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -25,7 +26,7 @@ public class MultipartState implements StateModelMap, UnbakedModel {
     }
 
     @Override
-    public UnbakedModel selectModel(Map<String, String> properties) {
+    public UnbakedModel selectModel(BlockState state) {
         return this;
     }
 
