@@ -74,7 +74,7 @@ public abstract class TeamCommandsUtils {
 
     static ChatComponentText colorChatComponent(EnumChatFormatting format, String string) {
         ChatComponentText newComponent = new ChatComponentText(string);
-        newComponent.getChatStyle().setColor(EnumChatFormatting.YELLOW);
+        newComponent.getChatStyle().setColor(format);
         return newComponent;
     }
 }
