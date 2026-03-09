@@ -95,13 +95,15 @@ public class ClientProxy extends CommonProxy {
 
         // Applied Item Render for Block Use ModelISBRH
         for (Object obj : Block.blockRegistry) {
-            Block block = (Block) obj;
-            if (block.getRenderType() == ModelISBRH.JSON_ISBRH_ID) {
-                Item item = Item.getItemFromBlock(block);
-                if (item != null) {
-                    MinecraftForgeClient.registerItemRenderer(item, ModelISBRH.INSTANCE);
+            try {
+                Block block = (Block) obj;
+                if (block.getRenderType() == ModelISBRH.JSON_ISBRH_ID) {
+                    Item item = Item.getItemFromBlock(block);
+                    if (item != null) {
+                        MinecraftForgeClient.registerItemRenderer(item, ModelISBRH.INSTANCE);
+                    }
                 }
-            }
+            } catch (Exception ignored) {} // Some blocks may throw an Exception here, we can simply ignore it.
         }
     }
 
