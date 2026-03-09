@@ -1,6 +1,8 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import net.minecraft.command.ICommandSender;
@@ -48,19 +50,18 @@ public abstract class TeamCommandsUtils {
         return null;
     }
 
-    static String formatUuidList(List<UUID> uuids, World world) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < uuids.size(); i++) {
-            EntityPlayer p = world.func_152378_a(uuids.get(i)); // getPlayerByUUID
+    static String formatUuidList(Set<UUID> uuids, World world) {
+        List<String> names = new ArrayList<>();
+        for (UUID uuid : uuids) {
+            EntityPlayer p = world.func_152378_a(uuid); // getPlayerByUUID
             if (p != null) {
-                sb.append(p.getCommandSenderName());
+                names.add(p.getCommandSenderName());
             } else {
-                String cachedName = UsernameCache.getLastKnownUsername(uuids.get(i));
-                sb.append(cachedName == null ? uuids.get(i) : cachedName);
+                String cachedName = UsernameCache.getLastKnownUsername(uuid);
+                names.add(cachedName == null ? uuid.toString() : cachedName);
             }
-            if (i < uuids.size() - 1) sb.append(", ");
         }
-        return sb.toString();
+        return String.join(", ", names);
     }
 
     static LiteralArgumentBuilder<ICommandSender> literal(String name) {

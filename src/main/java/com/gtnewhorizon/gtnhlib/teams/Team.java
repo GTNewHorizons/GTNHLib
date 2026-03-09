@@ -7,18 +7,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectSets;
 import lombok.Getter;
 
 public class Team {
 
     @Getter
     private String teamName;
-    private final ObjectList<UUID> owners = new ObjectArrayList<>();
-    private final ObjectList<UUID> officers = new ObjectArrayList<>();
-    private final ObjectList<UUID> members = new ObjectArrayList<>();
+    private final ObjectSet<UUID> owners = new ObjectOpenHashSet<>();
+    private final ObjectSet<UUID> officers = new ObjectOpenHashSet<>();
+    private final ObjectSet<UUID> members = new ObjectOpenHashSet<>();
     private final Map<String, ITeamData> teamData = new HashMap<>();
 
     public Team(String teamName) {
@@ -47,22 +47,21 @@ public class Team {
     }
 
     public void addMember(UUID uuid) {
-        if (!members.contains(uuid)) members.add(uuid);
-        TeamWorldSavedData.markForSaving();
+        if (members.add(uuid)) TeamWorldSavedData.markForSaving();
     }
 
     public void addOfficer(UUID uuid) {
-        if (!officers.contains(uuid)) officers.add(uuid);
+        if (!officers.add(uuid)) return;
         // officers are also always members
-        if (!members.contains(uuid)) members.add(uuid);
+        members.add(uuid);
         TeamWorldSavedData.markForSaving();
     }
 
     public void addOwner(UUID uuid) {
-        if (!owners.contains(uuid)) owners.add(uuid);
+        if (!owners.add(uuid)) return;
         // owners are also always members and officers
-        if (!officers.contains(uuid)) officers.add(uuid);
-        if (!members.contains(uuid)) members.add(uuid);
+        officers.add(uuid);
+        members.add(uuid);
         TeamWorldSavedData.markForSaving();
     }
 
@@ -84,16 +83,16 @@ public class Team {
         TeamWorldSavedData.markForSaving();
     }
 
-    public List<UUID> getMembers() {
-        return ObjectLists.unmodifiable(members);
+    public Set<UUID> getMembers() {
+        return ObjectSets.unmodifiable(members);
     }
 
-    public List<UUID> getOfficers() {
-        return officers;
+    public Set<UUID> getOfficers() {
+        return ObjectSets.unmodifiable(officers);
     }
 
-    public List<UUID> getOwners() {
-        return owners;
+    public Set<UUID> getOwners() {
+        return ObjectSets.unmodifiable(owners);
     }
 
     public void initializeData(String... keys) {
