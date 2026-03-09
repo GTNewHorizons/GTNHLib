@@ -27,7 +27,7 @@ public class TeamManager {
 
     public static boolean isInTeam(UUID playerUuid) {
         for (Team team : TEAMS) {
-            if (team.isTeamMember(playerUuid)) {
+            if (team.isMember(playerUuid)) {
                 return true;
             }
         }
@@ -36,7 +36,7 @@ public class TeamManager {
 
     public static Team getTeamByPlayer(UUID playerUuid) {
         for (Team team : TEAMS) {
-            if (team.isTeamMember(playerUuid)) {
+            if (team.isMember(playerUuid)) {
                 return team;
             }
         }

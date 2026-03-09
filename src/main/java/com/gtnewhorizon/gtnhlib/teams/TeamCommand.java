@@ -142,7 +142,7 @@ public class TeamCommand {
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_rename");
+        if (!team.isOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_rename");
 
         if (!team.renameTeam(newName)) {
             return error(sender, "gtnhlib.chat.teams.error.name_in_use");
@@ -160,12 +160,12 @@ public class TeamCommand {
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!team.isTeamOfficer(player.getUniqueID()))
+        if (!team.isOfficer(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.not_officer_invite");
 
         EntityPlayer target = player.worldObj.getPlayerEntityByName(targetName);
         if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_online", targetName);
-        if (team.isTeamMember(target.getUniqueID()))
+        if (team.isMember(target.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.invite_teammate", targetName);
         if (target.getUniqueID().equals(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.invite_self");
@@ -211,7 +211,7 @@ public class TeamCommand {
         Team currentTeam = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (currentTeam != null) {
             // Don't allow joining if player is sole owner of their team AND there are other members
-            if (currentTeam.isTeamOwner(player.getUniqueID()) && currentTeam.getOwners().size() == 1
+            if (currentTeam.isOwner(player.getUniqueID()) && currentTeam.getOwners().size() == 1
                     && currentTeam.getMembers().size() > 1) {
                 return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
             }
@@ -267,7 +267,7 @@ public class TeamCommand {
         if (team.getMembers().size() == 1) {
             return error(sender, "gtnhlib.chat.teams.error.last_member_leave");
         }
-        if (team.isTeamOwner(player.getUniqueID()) && team.getOwners().size() == 1) {
+        if (team.isOwner(player.getUniqueID()) && team.getOwners().size() == 1) {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
         }
 
@@ -294,14 +294,14 @@ public class TeamCommand {
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_promote");
+        if (!team.isOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_promote");
 
         UUID targetUuid = resolveTeamMemberUuid(team, targetName);
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
-        if (team.isTeamOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", targetName);
+        if (team.isOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", targetName);
 
         ChatComponentText nameComponent = colorChatComponent(EnumChatFormatting.GOLD, targetName);
-        if (team.isTeamOfficer(targetUuid)) {
+        if (team.isOfficer(targetUuid)) {
             team.addOwner(targetUuid);
             return success(sender, "gtnhlib.chat.teams.message.promoted_to_owner", nameComponent);
         } else {
@@ -316,16 +316,16 @@ public class TeamCommand {
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!team.isTeamOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_demote");
+        if (!team.isOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_demote");
 
         UUID targetUuid = resolveTeamMemberUuid(team, targetName);
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
         if (targetUuid.equals(player.getUniqueID()) && team.getOwners().size() == 1)
             return error(sender, "gtnhlib.chat.teams.error.last_owner_demote");
-        if (!team.isTeamOfficer(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
+        if (!team.isOfficer(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
 
         ChatComponentText nameComponent = colorChatComponent(EnumChatFormatting.GOLD, targetName);
-        if (team.isTeamOwner(targetUuid)) {
+        if (team.isOwner(targetUuid)) {
             team.removeOwner(targetUuid);
             return success(sender, "gtnhlib.chat.teams.message.demoted_to_officer", nameComponent);
         } else {
@@ -370,7 +370,7 @@ public class TeamCommand {
 
         Team source = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (source == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!source.isTeamOwner(player.getUniqueID()))
+        if (!source.isOwner(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.not_owner_merge_request");
 
         Team target = TeamManager.getTeamByName(targetTeamName);
@@ -409,7 +409,7 @@ public class TeamCommand {
 
         Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!target.isTeamOwner(player.getUniqueID()))
+        if (!target.isOwner(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.not_owner_merge_response");
 
         Set<Team> pendingMerges = TeamManager.getPendingMergeRequests(target);
@@ -457,7 +457,7 @@ public class TeamCommand {
 
         Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!target.isTeamOwner(player.getUniqueID()))
+        if (!target.isOwner(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.not_owner_merge_response");
 
         Set<Team> pendingMerges = TeamManager.getPendingMergeRequests(target);

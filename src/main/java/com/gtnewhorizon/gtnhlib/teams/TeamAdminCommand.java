@@ -100,13 +100,13 @@ public class TeamAdminCommand {
         if (team == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", teamName);
 
         UUID uuid = resolveTeamMemberUuid(team, playerName);
-        if (uuid == null || !team.isTeamMember(uuid))
+        if (uuid == null || !team.isMember(uuid))
             return error(sender, "gtnhlib.chat.teams.admin.error.player_not_in_team", playerName, teamName);
-        if (team.isTeamOwner(uuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", playerName);
+        if (team.isOwner(uuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", playerName);
 
         ChatComponentText playerComp = colorChatComponent(EnumChatFormatting.GOLD, playerName);
         ChatComponentText teamComp = colorChatComponent(EnumChatFormatting.GOLD, teamName);
-        if (team.isTeamOfficer(uuid)) {
+        if (team.isOfficer(uuid)) {
             team.addOwner(uuid);
             return success(sender, "gtnhlib.chat.teams.admin.message.promoted_to_owner", playerComp, teamComp);
         } else {
@@ -120,15 +120,15 @@ public class TeamAdminCommand {
         if (team == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", teamName);
 
         UUID uuid = resolveTeamMemberUuid(team, playerName);
-        if (uuid == null || !team.isTeamMember(uuid))
+        if (uuid == null || !team.isMember(uuid))
             return error(sender, "gtnhlib.chat.teams.admin.error.player_not_in_team", playerName, teamName);
-        if (!team.isTeamOfficer(uuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", playerName);
-        if (team.isTeamOwner(uuid) && team.getOwners().size() == 1)
+        if (!team.isOfficer(uuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", playerName);
+        if (team.isOwner(uuid) && team.getOwners().size() == 1)
             return error(sender, "gtnhlib.chat.teams.admin.error.demote_last_owner", playerName, teamName);
 
         ChatComponentText playerComp = colorChatComponent(EnumChatFormatting.GOLD, playerName);
         ChatComponentText teamComp = colorChatComponent(EnumChatFormatting.GOLD, teamName);
-        if (team.isTeamOwner(uuid)) {
+        if (team.isOwner(uuid)) {
             team.removeOwner(uuid);
             return success(sender, "gtnhlib.chat.teams.admin.message.demoted_to_officer", playerComp, teamComp);
         } else {

@@ -34,15 +34,15 @@ public class Team {
         return false;
     }
 
-    public boolean isTeamMember(UUID player) {
+    public boolean isMember(UUID player) {
         return members.contains(player);
     }
 
-    public boolean isTeamOfficer(UUID player) {
+    public boolean isOfficer(UUID player) {
         return officers.contains(player);
     }
 
-    public boolean isTeamOwner(UUID player) {
+    public boolean isOwner(UUID player) {
         return owners.contains(player);
     }
 

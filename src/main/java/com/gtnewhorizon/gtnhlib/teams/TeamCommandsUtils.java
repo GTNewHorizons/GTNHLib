@@ -41,7 +41,7 @@ public abstract class TeamCommandsUtils {
 
     static UUID resolveTeamMemberUuid(Team team, String name) {
         EntityPlayer online = MinecraftServer.getServer().getConfigurationManager().func_152612_a(name);
-        if (online != null && team.isTeamMember(online.getUniqueID())) return online.getUniqueID();
+        if (online != null && team.isMember(online.getUniqueID())) return online.getUniqueID();
 
         for (UUID uuid : team.getMembers()) {
             String cachedName = UsernameCache.getLastKnownUsername(uuid);
