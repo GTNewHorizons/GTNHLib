@@ -21,7 +21,7 @@ public class Team {
     private final ObjectSet<UUID> members = new ObjectOpenHashSet<>();
     private final Map<String, ITeamData> teamData = new HashMap<>();
 
-    public Team(String teamName) {
+    Team(String teamName) {
         this.teamName = teamName;
     }
 
@@ -95,7 +95,7 @@ public class Team {
         return ObjectSets.unmodifiable(owners);
     }
 
-    public void initializeData(String... keys) {
+    void initializeData(String... keys) {
         for (String key : keys) {
             if (!teamData.containsKey(key)) {
                 ITeamData data = TeamDataRegistry.construct(key);

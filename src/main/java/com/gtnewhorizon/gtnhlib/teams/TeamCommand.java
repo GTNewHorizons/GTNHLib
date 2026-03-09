@@ -160,8 +160,7 @@ public class TeamCommand {
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
-        if (!team.isOfficer(player.getUniqueID()))
-            return error(sender, "gtnhlib.chat.teams.error.not_officer_invite");
+        if (!team.isOfficer(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_officer_invite");
 
         EntityPlayer target = player.worldObj.getPlayerEntityByName(targetName);
         if (target == null) return error(sender, "gtnhlib.chat.teams.error.not_online", targetName);
