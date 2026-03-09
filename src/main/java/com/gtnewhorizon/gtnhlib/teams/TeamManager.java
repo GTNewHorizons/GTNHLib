@@ -25,15 +25,6 @@ public class TeamManager {
         return true;
     }
 
-    public static boolean isInTeam(UUID playerUuid) {
-        for (Team team : TEAMS) {
-            if (team.isMember(playerUuid)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static Team getTeamByPlayer(UUID playerUuid) {
         for (Team team : TEAMS) {
             if (team.isMember(playerUuid)) {
