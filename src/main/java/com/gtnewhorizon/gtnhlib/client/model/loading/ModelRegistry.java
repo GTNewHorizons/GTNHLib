@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
 import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 
@@ -142,7 +141,7 @@ public class ModelRegistry {
                 return;
             }
 
-            if (autoTextureLoading) detectAndLoadTextures(manager);
+            detectAndLoadTextures(manager);
         }
 
         private void detectAndLoadTextures(GlobalResourceManager manager) {
