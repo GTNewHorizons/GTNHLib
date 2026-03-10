@@ -5,6 +5,7 @@ import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.zip.ZipFile;
@@ -16,9 +17,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelResourcePack;
+import com.gtnewhorizon.gtnhlib.client.model.loading.RPInfo;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
-
-import it.unimi.dsi.fastutil.objects.ObjectLists;
 
 @SuppressWarnings("UnusedMixin")
 @Mixin(FileResourcePack.class)
@@ -32,21 +32,25 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
     }
 
     @Override
-    public List<String> nhlib$getReferencedTextures(Function<Reader, JSONModel> jsonParser) {
+    public RPInfo nhlib$gatherModelInfo(Function<Reader, JSONModel> jsonParser) {
+        List<String> textures;
+        final var models = new ArrayList<String>();
+
         try {
             var zip = getResourcePackZipFile();
-            final var jsons = zip.stream().filter(ze -> {
+            var jsons = zip.stream().filter(ze -> {
                 final var name = ze.getName();
                 final var parts = name.split("/");
 
-                // Make sure it's long enough (assets/<domain>/<subdomain>/something.json), make sure the subdomain is
-                // "models", make sure it's a file, and make sure it's a JSON
+                // If it's a blockstate file, record the block and move on
                 if (parts.length < 4) return false;
-                if (!parts[2].equals("models")) return false;
                 if (ze.isDirectory()) return false;
-                return name.endsWith(".json");
+                if (!name.endsWith(".json")) return false;
+                if (parts[2].equals("blockstates")) { // file is assets/<domain>/blockstates/someblock.json
+                    models.add(parts[3].split("\\.")[0]);
+                    return false;
+                } else return parts[2].equals("models"); // file is assets/<domain>/models/someblock.json
             }).map(ze -> {
-
                 try {
                     return zip.getInputStream(ze);
                 } catch (IOException e) {
@@ -54,13 +58,14 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
                 }
             });
 
-            return nhlib$getReferencedTextures(jsons, jsonParser);
+            textures = nhlib$getReferencedTextures(jsons, jsonParser);
         } catch (Exception e) {
 
             MODEL_LOGGER.warn("Failed to walk resource pack {}", this);
             MODEL_LOGGER.warn(e);
+            textures = List.of();
         }
 
-        return ObjectLists.emptyList();
+        return new RPInfo(textures, models);
     }
 }
