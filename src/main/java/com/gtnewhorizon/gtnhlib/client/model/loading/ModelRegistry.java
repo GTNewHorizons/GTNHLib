@@ -166,8 +166,8 @@ public class ModelRegistry {
                         && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
                     continue;
 
-                final var texture = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
-                texturesToLoad.addAll(texture);
+                final var info = mrp.nhlib$gatherModelInfo(reader -> GSON.fromJson(reader, JSONModel.class));
+                texturesToLoad.addAll(info.textureNames());
             }
 
             EventHandler.texturesToLoad = texturesToLoad;
