@@ -23,6 +23,6 @@ public interface ModelResourcePack {
                 // Ignore texture variables
                 return !v.startsWith("#");
             });
-        }).collect(Collectors.toUnmodifiableList());
+        }).collect(Collectors.toList());
     }
 }

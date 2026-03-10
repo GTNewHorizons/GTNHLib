@@ -2,10 +2,12 @@ package com.gtnewhorizon.gtnhlib.mixins.early.models;
 
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
 
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.zip.ZipFile;
@@ -63,7 +65,7 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
 
             MODEL_LOGGER.warn("Failed to walk resource pack {}", this);
             MODEL_LOGGER.warn(e);
-            textures = List.of();
+            textures = ObjectLists.emptyList();
         }
 
         return new RPInfo(textures, models);
