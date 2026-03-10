@@ -27,11 +27,13 @@ import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 
 import cpw.mods.fml.common.FMLContainerHolder;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.jetbrains.annotations.NotNull;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
@@ -141,14 +143,15 @@ public class ModelRegistry {
                 return;
             }
 
-            detectAndLoadTextures(manager);
+            loadModelInfo(manager);
         }
 
-        private void detectAndLoadTextures(GlobalResourceManager manager) {
+        private boolean infoMixinFailed = false;
+
+        private void loadModelInfo(GlobalResourceManager manager) {
             // Scan resource packs for model files
             final var domains = manager.nhlib$getDomainResourceManagers();
             final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
-
             for (var entry : domains.entrySet()) {
                 var files = entry.getValue();
                 if (files instanceof FallbackResourceManager) {
@@ -156,6 +159,8 @@ public class ModelRegistry {
                 }
             }
 
+            // Gather the list of modeled blocks and their textures
+            final var modeledBlocks = new ObjectOpenHashSet<String>();
             final var texturesToLoad = new ObjectArrayList<String>();
             for (var pack : resourcePacks) {
                 if (!(pack instanceof ModelResourcePack mrp)) continue;
@@ -166,8 +171,22 @@ public class ModelRegistry {
                     continue;
 
                 final var info = mrp.nhlib$gatherModelInfo(reader -> GSON.fromJson(reader, JSONModel.class));
+                modeledBlocks.addAll(info.modeledBlocks());
                 texturesToLoad.addAll(info.textureNames());
             }
+
+            GameData.getBlockRegistry().registryObjects.forEach((s, b) -> {
+                if (!(s instanceof String name)) return;
+                if (!(b instanceof BlockModelInfo block)) {
+                    if (!infoMixinFailed) {
+                        MODEL_LOGGER.error("Block registry contained a non-block or the info mixin failed!");
+                        MODEL_LOGGER.error("Either you won't notice anything, or all JSON models will stop loading...");
+                        infoMixinFailed = true;
+                    }
+                    return;
+                }
+                block.nhlib$setModeled(modeledBlocks.contains(modeledBlocks.contains(name)));
+            });
 
             EventHandler.texturesToLoad = texturesToLoad;
         }
@@ -175,7 +194,7 @@ public class ModelRegistry {
 
     public static class EventHandler {
 
-        private static List<String> texturesToLoad = ObjectLists.emptyList();
+        private static @NotNull List<String> texturesToLoad = ObjectLists.emptyList();
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
@@ -183,6 +202,7 @@ public class ModelRegistry {
             for (var texture : texturesToLoad) {
                 event.map.registerIcon(texture.replaceFirst("^minecraft:", ""));
             }
+            texturesToLoad = ObjectLists.emptyList(); // don't need it anymore
         }
     }
 }
