@@ -13,6 +13,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 
+import com.gtnewhorizon.gtnhlib.client.ResourcePackDarkModeFix.DarkModeFixResourceListener;
 import com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater.ResourcePackUpdateEventHandler;
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
@@ -90,6 +91,9 @@ public class ClientProxy extends CommonProxy {
 
         // Internal model loader handlers
         final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
+        DarkModeFixResourceListener darkModeFixListener = new DarkModeFixResourceListener();
+        resourceManager.registerReloadListener(darkModeFixListener);
+        darkModeFixListener.onResourceManagerReload(resourceManager);
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
 
