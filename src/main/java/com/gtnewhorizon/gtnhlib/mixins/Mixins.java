@@ -22,6 +22,8 @@ public enum Mixins implements IMixins {
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
+    DARKMODE_FONT_RENDERER(new MixinBuilder("DarkModeFix font color adjustment")
+            .addClientMixins("MixinFontRendererDarkModeFix").setPhase(Phase.EARLY)),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(
             new MixinBuilder("Automatically load model textures")
