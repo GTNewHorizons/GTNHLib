@@ -46,7 +46,8 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[] { "com.gtnewhorizon.gtnhlib.core.fml.transformers.EventBusSubTransformer" };
+        return new String[] { "com.gtnewhorizon.gtnhlib.core.fml.transformers.EventBusSubTransformer",
+                "com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer" };
     }
 
     @Override

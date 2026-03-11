@@ -23,17 +23,12 @@ public enum Mixins implements IMixins {
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
-    MODEL_TEXTURE_LOADING( // TODO: Remove config
-            new MixinBuilder("Automatically load models, textures, and metadata.").addClientMixins(
-                    "models.FRMAccessor",
-                    "models.MixinBlock_ModelInfo",
-                    "models.MixinFileResourcePack",
-                    "models.MixinFolderResourcePack",
-                    "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
-    MODEL_ICON_WRAPPER(new MixinBuilder(
-            "Ensures that blocks always return a valid icon for JSON model blocks, by using the particle icon.")
-                    .addClientMixins("models.MixinBlock_IconWrapper", "models.MixinEntityDiggingFX_IconWrapper")
-                    .setPhase(Phase.EARLY).setApplyIf(() -> true)),
+    MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load models, textures, and metadata.").addClientMixins(
+            "models.FRMAccessor",
+            "models.MixinBlock_ModelInfo",
+            "models.MixinFileResourcePack",
+            "models.MixinFolderResourcePack",
+            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
