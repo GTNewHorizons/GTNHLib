@@ -15,8 +15,7 @@ public class StdLCG extends Random {
     /// Don't ask me why stdlib scrambles the seed, because I don't know.
     public StdLCG(long seed) {
         // this default constructor performs an atomic op on a global variable
-        super(0);
-        this.seed = scramble(seed);
+        super(seed);
     }
 
     public StdLCG() {
@@ -25,6 +24,14 @@ public class StdLCG extends Random {
 
     public static long scramble(long seed) {
         return (seed ^ multiplier) & mask;
+    }
+
+    /// To conform to stdlib, this still makes a super call. That means this is synchronized, and should be avoided
+    /// unless you *really* need to reset {@link Random#haveNextNextGaussian}.
+    @Override
+    public void setSeed(long seed) {
+        super.setSeed(seed);
+        this.seed = scramble(seed);
     }
 
     /// Unlike {@link #setSeed(long)}, this doesn't reset {@link Random#haveNextNextGaussian}, because that field is
