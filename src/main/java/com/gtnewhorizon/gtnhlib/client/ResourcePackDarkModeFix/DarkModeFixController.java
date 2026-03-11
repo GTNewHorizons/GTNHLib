@@ -31,6 +31,7 @@ public class DarkModeFixController {
 
     public static void setInContainerGui(boolean value) {
         inContainerGui = value;
+        GTNHLib.LOG.info("[DarkModeFix] setInContainerGui({})", value);
     }
 
     private static void log(String message, Object... args) {

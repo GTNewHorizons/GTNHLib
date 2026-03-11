@@ -30,11 +30,6 @@ public class DarkModeFixTransformer implements IClassTransformer {
     private static final String DARKMODE_CONTROLLER = "com/gtnewhorizon/gtnhlib/client/ResourcePackDarkModeFix/DarkModeFixController";
     private static final String COLOR_PROCESSOR = "com/gtnewhorizon/gtnhlib/client/ResourcePackDarkModeFix/DarkModeFixColorProcessor";
 
-    private static final String[] DRAW_SCREEN_NAMES = { "drawScreen", "func_73863_a" };
-    private static final String[] FOREGROUND_NAMES = { "drawGuiContainerForegroundLayer", "func_146979_b" };
-    private static final String[] RENDER_STRING_AT_POS_NAMES = { "renderStringAtPos", "func_78255_a" };
-    private static final String[] RENDER_STRING_NAMES = { "renderString", "func_78258_a" };
-
     private static final ClassConstantPoolParser FONT_METHOD_MATCHER = new ClassConstantPoolParser(
             "renderStringAtPos",
             "func_78255_a");
@@ -95,12 +90,8 @@ public class DarkModeFixTransformer implements IClassTransformer {
 
     private boolean transformGuiContainer(ClassNode cn) {
         for (MethodNode mn : cn.methods) {
-            if (!matches(mn.name, DRAW_SCREEN_NAMES) || !"(IIF)V".equals(mn.desc)) {
-                continue;
-            }
 
-            MethodInsnNode target = findForegroundCall(mn);
-            if (target == null) {
+            if (!"(IIF)V".equals(mn.desc)) {
                 continue;
             }
 
@@ -109,15 +100,14 @@ public class DarkModeFixTransformer implements IClassTransformer {
             LabelNode handler = new LabelNode();
             LabelNode after = new LabelNode();
 
-            // Set inContainerGui = true right before drawGuiContainerForegroundLayer.
             InsnList before = new InsnList();
             before.add(start);
             before.add(new InsnNode(Opcodes.ICONST_1));
             before.add(
                     new MethodInsnNode(Opcodes.INVOKESTATIC, DARKMODE_CONTROLLER, "setInContainerGui", "(Z)V", false));
-            mn.instructions.insertBefore(target, before);
 
-            // Reset the flag in normal flow and in the exception handler (try/finally style).
+            mn.instructions.insert(before);
+
             InsnList afterCall = new InsnList();
             afterCall.add(end);
             afterCall.add(new InsnNode(Opcodes.ICONST_0));
@@ -130,55 +120,79 @@ public class DarkModeFixTransformer implements IClassTransformer {
                     new MethodInsnNode(Opcodes.INVOKESTATIC, DARKMODE_CONTROLLER, "setInContainerGui", "(Z)V", false));
             afterCall.add(new InsnNode(Opcodes.ATHROW));
             afterCall.add(after);
-            mn.instructions.insert(target, afterCall);
+
+            mn.instructions.add(afterCall);
 
             mn.tryCatchBlocks.add(new TryCatchBlockNode(start, end, handler, null));
+
             return true;
         }
+
         return false;
     }
 
-    private MethodInsnNode findForegroundCall(MethodNode mn) {
+    private MethodInsnNode findForegroundCall(MethodNode mn, String ownerName) {
+        String guiContainerOwner = GUI_CONTAINER.replace('.', '/');
+
         for (AbstractInsnNode insn = mn.instructions.getFirst(); insn != null; insn = insn.getNext()) {
             if (!(insn instanceof MethodInsnNode)) {
                 continue;
             }
+
             MethodInsnNode method = (MethodInsnNode) insn;
-            if (matches(method.name, FOREGROUND_NAMES) && "(II)V".equals(method.desc)) {
+
+            if (method.getOpcode() != Opcodes.INVOKEVIRTUAL) {
+                continue;
+            }
+
+            if (!"(II)V".equals(method.desc)) {
+                continue;
+            }
+
+            if (ownerName.equals(method.owner) || guiContainerOwner.equals(method.owner)) {
                 return method;
             }
         }
+
         return null;
     }
 
     private boolean transformFontRenderer(ClassNode cn) {
+        boolean changed = false;
+
         for (MethodNode mn : cn.methods) {
-            if (!matches(mn.name, RENDER_STRING_NAMES) || !"(Ljava/lang/String;IIIZ)I".equals(mn.desc)) {
+            if (!"(Ljava/lang/String;IIIZ)I".equals(mn.desc)) {
                 continue;
             }
 
-            // Adjust the incoming color parameter before alpha/shadow handling and GL color math.
-            InsnList inject = new InsnList();
-            inject.add(new VarInsnNode(Opcodes.ILOAD, 4));
-            inject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, COLOR_PROCESSOR, "adjustColorOpaque", "(I)I", false));
-            inject.add(new VarInsnNode(Opcodes.ISTORE, 4));
             AbstractInsnNode first = mn.instructions.getFirst();
             if (first == null) {
                 continue;
             }
+
+            InsnList inject = new InsnList();
+            inject.add(new VarInsnNode(Opcodes.ILOAD, 4));
+            inject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, COLOR_PROCESSOR, "adjustColorOpaque", "(I)I", false));
+            inject.add(new VarInsnNode(Opcodes.ISTORE, 4));
             mn.instructions.insertBefore(first, inject);
-            // Also adjust color codes applied inside renderStringAtPos (safe local-variable rewrite).
-            transformRenderStringAtPosColorCode(cn);
-            return true;
+
+            changed = true;
+            break;
         }
-        LOGGER.warn("FontRenderer renderString method not found in {}", cn.name);
-        return false;
+
+        if (!changed) {
+            LOGGER.warn("FontRenderer renderString-like method not found in {}", cn.name);
+            return false;
+        }
+
+        transformRenderStringAtPosColorCode(cn);
+        return true;
     }
 
     private void transformRenderStringAtPosColorCode(ClassNode cn) { // TODO Check variable index or surrounding
                                                                      // instructions
         for (MethodNode mn : cn.methods) {
-            if (!matches(mn.name, RENDER_STRING_AT_POS_NAMES)) {
+            if (!"(Ljava/lang/String;Z)V".equals(mn.desc)) {
                 continue;
             }
             boolean changed = false;
@@ -203,15 +217,6 @@ public class DarkModeFixTransformer implements IClassTransformer {
                 return;
             }
         }
-    }
-
-    private boolean matches(String name, String[] options) {
-        for (String option : options) {
-            if (option.equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean endsWithFontRenderer(String name) {
