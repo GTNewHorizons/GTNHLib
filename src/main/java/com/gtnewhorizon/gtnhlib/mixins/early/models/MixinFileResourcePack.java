@@ -49,7 +49,7 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
                 if (ze.isDirectory()) return false;
                 if (!name.endsWith(".json")) return false;
                 if (parts[2].equals("blockstates")) { // file is assets/<domain>/blockstates/someblock.json
-                    models.add(parts[3].split("\\.")[0]);
+                    models.add(parts[1] + ":" + parts[3].split("\\.")[0]);
                     return false;
                 } else return parts[2].equals("models"); // file is assets/<domain>/models/someblock.json
             }).map(ze -> {

@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
@@ -418,13 +419,34 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
     }
 
-    public IIcon getParticleIcon(Block block, @Nullable IBlockAccess world, int x, int y, int z, int meta) {
+    /// Mirrors the default {@link Block#getIcon(IBlockAccess, int, int, int, int)}, with the exception that the block
+    /// is also re-fetched. This is because the blockstate construction does world access anyway, overriding just the
+    /// block is annoying and seems less correct.
+    ///
+    /// Used in {@link com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer
+    @SuppressWarnings("unused")
+    public @NotNull IIcon getParticleIcon(@Nullable IBlockAccess world, int x, int y, int z) {
         worldContext.world = world;
         worldContext.x = x;
         worldContext.y = y;
         worldContext.z = z;
         worldContext.random = RAND;
         worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
+        final var model = getModel(worldContext);
+        return model.getParticle(worldContext);
+    }
+
+    /// An alternate to {@link #getParticleIcon(IBlockAccess, int, int, int)}, which takes just a block and metadata.
+    ///
+    /// Used in {@link com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer}
+    @SuppressWarnings("unused")
+    public @NotNull IIcon getParticleIcon(Block block, int meta) {
+        worldContext.world = null;
+        worldContext.x = 0;
+        worldContext.y = 0;
+        worldContext.z = 0;
+        worldContext.random = RAND;
+        worldContext.blockState = BlockPropertyRegistry.getBlockState(block, meta);
         final var model = getModel(worldContext);
         return model.getParticle(worldContext);
     }

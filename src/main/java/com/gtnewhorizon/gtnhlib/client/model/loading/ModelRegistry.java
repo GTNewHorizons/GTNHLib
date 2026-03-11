@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 
+import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -14,6 +15,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -33,7 +35,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import org.jetbrains.annotations.NotNull;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
@@ -175,6 +176,7 @@ public class ModelRegistry {
                 texturesToLoad.addAll(info.textureNames());
             }
 
+            MODEL_LOGGER.info("Modeled blocks: {}", Arrays.toString(modeledBlocks.toArray()));
             GameData.getBlockRegistry().registryObjects.forEach((s, b) -> {
                 if (!(s instanceof String name)) return;
                 if (!(b instanceof BlockModelInfo block)) {
@@ -185,7 +187,7 @@ public class ModelRegistry {
                     }
                     return;
                 }
-                block.nhlib$setModeled(modeledBlocks.contains(modeledBlocks.contains(name)));
+                block.nhlib$setModeled(modeledBlocks.contains(name));
             });
 
             EventHandler.texturesToLoad = texturesToLoad;

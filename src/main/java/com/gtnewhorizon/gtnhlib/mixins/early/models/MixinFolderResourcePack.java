@@ -51,7 +51,7 @@ public abstract class MixinFolderResourcePack extends AbstractResourcePack imple
                 if (!filename.endsWith(".json")) return false;
                 final var subdomain = path.getName(1).toString();
                 if (subdomain.equals("blockstates")) {
-                    models.add(filename);
+                    models.add(path.getName(0) + ":" + filename.split("\\.")[0]);
                     return false;
                 } else return subdomain.equals("models");
             }).map(p -> {
