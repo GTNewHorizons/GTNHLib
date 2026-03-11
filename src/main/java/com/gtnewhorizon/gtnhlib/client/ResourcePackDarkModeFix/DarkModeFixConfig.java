@@ -2,7 +2,6 @@ package com.gtnewhorizon.gtnhlib.client.ResourcePackDarkModeFix;
 
 public class DarkModeFixConfig {
 
-    public final boolean enabled;
     public final float darkThreshold;
     public final float minBrightness;
     public final float maxBrightness;
@@ -10,15 +9,15 @@ public class DarkModeFixConfig {
     public final int minGrayColor;
     public final int maxGrayColor;
 
-    public DarkModeFixConfig(boolean enabled, float darkThreshold, float minBrightness, float maxBrightness) {
+    public DarkModeFixConfig(float darkThreshold, float minBrightness, float maxBrightness) {
         validateBrightness("darkThreshold", darkThreshold);
         validateBrightness("minBrightness", minBrightness);
         validateBrightness("maxBrightness", maxBrightness);
+
         if (minBrightness > maxBrightness) {
             throw new IllegalArgumentException("minBrightness must be <= maxBrightness");
         }
 
-        this.enabled = enabled;
         this.darkThreshold = darkThreshold;
         this.minBrightness = minBrightness;
         this.maxBrightness = maxBrightness;

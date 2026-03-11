@@ -29,15 +29,14 @@ public class DarkModeFixResourceListener implements IResourceManagerReloadListen
     public void onResourceManagerReload(IResourceManager resourceManager) {
         DarkModeFixController.clearColorCache();
         List<IResourcePack> packs = getEnabledPacks();
-        GTNHLib.LOG.info("DarkModeFix scan starting (packs: {})", packs.size());
+        GTNHLib.LOG.debug("[DarkModeFix] Scan starting (packs: {})", packs.size());
 
         for (int i = packs.size() - 1; i >= 0; i--) {
             IResourcePack pack = packs.get(i);
             try {
                 Optional<DarkModeFixConfig> config = readConfig(pack);
                 if (config.isPresent()) {
-                    GTNHLib.LOG
-                            .info("[GTNHLib] DarkModeFix metadata detected in resource pack: {}", pack.getPackName());
+                    GTNHLib.LOG.info("[DarkModeFix] Metadata detected in resource pack: {}", pack.getPackName());
                     DarkModeFixController.enable(config.get());
                     return;
                 }
@@ -48,7 +47,7 @@ public class DarkModeFixResourceListener implements IResourceManagerReloadListen
 
         // No pack contained metadata
         DarkModeFixController.disable();
-        GTNHLib.LOG.info("DarkModeFix disabled (no metadata found)");
+        GTNHLib.LOG.info("[DarkModeFix] Disabled (no metadata found)");
     }
 
     private static List<IResourcePack> getEnabledPacks() {
@@ -67,7 +66,7 @@ public class DarkModeFixResourceListener implements IResourceManagerReloadListen
     private static Optional<DarkModeFixConfig> readConfig(IResourcePack pack) {
         try (InputStream stream = openPackMcmeta(pack)) {
             if (stream == null) {
-                GTNHLib.LOG.warn("Unable to open pack.mcmeta for pack {}", pack.getPackName());
+                GTNHLib.LOG.debug("Unable to open pack.mcmeta for pack {}", pack.getPackName());
                 return Optional.empty();
             }
             JsonElement rootElement = new JsonParser().parse(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -91,25 +90,26 @@ public class DarkModeFixResourceListener implements IResourceManagerReloadListen
             float darkThreshold = readRequiredFloat(meta, "dark_threshold", pack.getPackName());
             float minBrightness = readRequiredFloat(meta, "min_brightness", pack.getPackName());
             float maxBrightness = readRequiredFloat(meta, "max_brightness", pack.getPackName());
-            return Optional.of(new DarkModeFixConfig(true, darkThreshold, minBrightness, maxBrightness));
+            return Optional.of(new DarkModeFixConfig(darkThreshold, minBrightness, maxBrightness));
         } catch (IOException e) {
+            GTNHLib.LOG.debug("[DarkModeFix] Failed reading pack.mcmeta for pack {}", pack.getPackName(), e);
             return Optional.empty();
         }
     }
 
     private static InputStream openPackMcmeta(IResourcePack pack) throws IOException {
-        Method method = findGetInputStreamByName(pack.getClass());
+        Method method = findPackMcmetaInputStreamMethod(pack.getClass());
         if (method == null) {
             return null;
         }
         try {
             return (InputStream) method.invoke(pack, "pack.mcmeta");
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             return null;
         }
     }
 
-    private static Method findGetInputStreamByName(Class<?> type) {
+    private static Method findPackMcmetaInputStreamMethod(Class<?> type) {
         Class<?> current = type;
         while (current != null) {
             for (String name : INPUT_STREAM_METHODS) {
