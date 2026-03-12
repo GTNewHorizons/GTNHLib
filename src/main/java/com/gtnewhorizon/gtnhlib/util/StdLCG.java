@@ -11,6 +11,8 @@ public class StdLCG extends Random {
     protected static final long multiplier = 0x5DEECE66DL;
     protected static final long increment = 11;
     protected long seed;
+    protected boolean haveNextNextGaussian = false;
+    protected double nextNextGaussian = 0.0;
 
     /// Don't ask me why stdlib scrambles the seed, because I don't know.
     public StdLCG(long seed) {
@@ -26,25 +28,38 @@ public class StdLCG extends Random {
         return (seed ^ multiplier) & mask;
     }
 
-    /// To conform to stdlib, this still makes a super call. That means this is synchronized, and should be avoided
-    /// unless you *really* need to reset {@link Random#haveNextNextGaussian}.
     @Override
     public void setSeed(long seed) {
-        super.setSeed(seed);
         this.seed = scramble(seed);
-    }
-
-    /// Unlike {@link #setSeed(long)}, this doesn't reset {@link Random#haveNextNextGaussian}, because that field is
-    /// private. Use this method if you don't care about the {@link #nextGaussian()} methods and want to avoid
-    /// synchronizing on seed setting.
-    public StdLCG setSeedLCG(long seed) {
-        this.seed = scramble(seed);
-        return this;
+        haveNextNextGaussian = false;
     }
 
     @Override
     protected int next(int bits) {
         seed = (seed * multiplier + increment) & mask;
         return (int) (seed >>> 48 - bits);
+    }
+
+    /// A reimplementation of Knuth's algorithm, except I read the 2nd edition instead of the 3rd. It's probably close
+    /// enough.
+    @Override
+    public double nextGaussian() {
+        if (haveNextNextGaussian) {
+            haveNextNextGaussian = false;
+            return nextNextGaussian;
+        }
+
+        double s, v1, v2;
+        do {
+            v1 = 2 * nextDouble() - 1;
+            v2 = 2 * nextDouble() - 1;
+            s = v1 * v1 + v2 * v2;
+            // Knuth doesn't say to return if s==0, but stdlib does. We need to match stdlib, so another clause it is.
+        } while (s >= 1 || s == 0);
+
+        final var tmpRoot = StrictMath.sqrt(-2 * StrictMath.log(s) / s);
+        nextNextGaussian = v2 * tmpRoot;
+        haveNextNextGaussian = true;
+        return v1 * tmpRoot;
     }
 }
