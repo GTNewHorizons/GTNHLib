@@ -84,7 +84,7 @@ public class TeamWorldSavedData extends WorldSavedData {
             // Officers
             NBTTagList officersList = teamTag.getTagList("Officers", Constants.NBT.TAG_STRING);
             for (int j = 0; j < officersList.tagCount(); j++) {
-                team.addOfficer(UUID.fromString(ownersList.getStringTagAt(j)));
+                team.addOfficer(UUID.fromString(officersList.getStringTagAt(j)));
             }
 
             // Members
@@ -127,7 +127,7 @@ public class TeamWorldSavedData extends WorldSavedData {
             for (UUID officer : team.getOfficers()) {
                 officersList.appendTag(new NBTTagString(officer.toString()));
             }
-            teamTag.setTag("Officers", ownersList);
+            teamTag.setTag("Officers", officersList);
 
             // Members
             NBTTagList membersList = new NBTTagList();
