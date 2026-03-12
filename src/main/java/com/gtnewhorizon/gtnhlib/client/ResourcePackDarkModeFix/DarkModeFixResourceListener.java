@@ -36,12 +36,12 @@ public class DarkModeFixResourceListener implements IResourceManagerReloadListen
             try {
                 Optional<DarkModeFixConfig> config = readConfig(pack);
                 if (config.isPresent()) {
-                    GTNHLib.LOG.info("[DarkModeFix] Metadata detected in resource pack: {}", pack.getPackName());
+                    GTNHLib.LOG.info("[DarkModeFix] Enabled from resource pack: {}", pack.getPackName());
                     DarkModeFixController.enable(config.get());
                     return;
                 }
             } catch (RuntimeException e) {
-                GTNHLib.LOG.warn("Invalid DarkModeFix metadata in pack {}: {}", pack.getPackName(), e.getMessage());
+                GTNHLib.LOG.warn("[DarkModeFix] Invalid metadata in pack {}: {}", pack.getPackName(), e.getMessage());
             }
         }
 
@@ -66,7 +66,7 @@ public class DarkModeFixResourceListener implements IResourceManagerReloadListen
     private static Optional<DarkModeFixConfig> readConfig(IResourcePack pack) {
         try (InputStream stream = openPackMcmeta(pack)) {
             if (stream == null) {
-                GTNHLib.LOG.debug("Unable to open pack.mcmeta for pack {}", pack.getPackName());
+                GTNHLib.LOG.debug("[DarkModeFix] Unable to open pack.mcmeta for pack {}", pack.getPackName());
                 return Optional.empty();
             }
             JsonElement rootElement = new JsonParser().parse(new InputStreamReader(stream, StandardCharsets.UTF_8));

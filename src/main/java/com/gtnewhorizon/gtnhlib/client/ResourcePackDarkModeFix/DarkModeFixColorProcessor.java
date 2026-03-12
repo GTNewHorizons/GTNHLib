@@ -1,14 +1,10 @@
 package com.gtnewhorizon.gtnhlib.client.ResourcePackDarkModeFix;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
-
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public final class DarkModeFixColorProcessor {
 
     private static final Int2IntOpenHashMap COLOR_CACHE = new Int2IntOpenHashMap();
-    private static int debugHitsRemaining = 20;
-    private static int debugAdjustRemaining = 20;
 
     static {
         COLOR_CACHE.defaultReturnValue(Integer.MIN_VALUE);
@@ -16,18 +12,10 @@ public final class DarkModeFixColorProcessor {
 
     private DarkModeFixColorProcessor() {}
 
-    public static int adjustColor(int color) {
-        return adjustColorInternal(color, false);
-    }
-
     public static int adjustColorOpaque(int color) {
         if ((color & 0xFF000000) == 0) {
             color |= 0xFF000000;
         }
-        return adjustColorInternal(color, true);
-    }
-
-    private static int adjustColorInternal(int color, boolean allowZeroAlpha) {
         if (!DarkModeFixController.enabled || !DarkModeFixController.inContainerGui) {
             return color;
         }
@@ -37,19 +25,8 @@ public final class DarkModeFixColorProcessor {
             return color;
         }
 
-        if (debugHitsRemaining > 0) {
-            debugHitsRemaining--;
-            GTNHLib.LOG.info(
-                    "[DarkModeFix] hit: color=0x{}, allowZeroAlpha={}, threshold={}, min={}, max={}",
-                    Integer.toHexString(color),
-                    allowZeroAlpha,
-                    config.darkThreshold,
-                    config.minBrightness,
-                    config.maxBrightness);
-        }
-
         int alpha = (color >> 24) & 255;
-        if (alpha == 0 && !allowZeroAlpha) {
+        if (alpha == 0) {
             return color;
         }
 
@@ -63,26 +40,12 @@ public final class DarkModeFixColorProcessor {
         if (rgb == 0x000000) {
             int adjusted = (alpha << 24) | config.minGrayColor;
             COLOR_CACHE.put(color, adjusted);
-            if (debugAdjustRemaining > 0) {
-                debugAdjustRemaining--;
-                GTNHLib.LOG.info(
-                        "[DarkModeFix] adjusted black: in=0x{}, out=0x{}",
-                        Integer.toHexString(color),
-                        Integer.toHexString(adjusted));
-            }
             return adjusted;
         }
 
         if (rgb == 0xFFFFFF) {
             int adjusted = (alpha << 24) | config.maxGrayColor;
             COLOR_CACHE.put(color, adjusted);
-            if (debugAdjustRemaining > 0) {
-                debugAdjustRemaining--;
-                GTNHLib.LOG.info(
-                        "[DarkModeFix] adjusted white: in=0x{}, out=0x{}",
-                        Integer.toHexString(color),
-                        Integer.toHexString(adjusted));
-            }
             return adjusted;
         }
 
@@ -123,23 +86,11 @@ public final class DarkModeFixColorProcessor {
         }
 
         COLOR_CACHE.put(color, adjusted);
-
-        if (debugAdjustRemaining > 0) {
-            debugAdjustRemaining--;
-            GTNHLib.LOG.info(
-                    "[DarkModeFix] adjusted: in=0x{}, out=0x{}, brightness={}",
-                    Integer.toHexString(color),
-                    Integer.toHexString(adjusted),
-                    brightness);
-        }
-
         return adjusted;
     }
 
     public static void clearCache() {
         COLOR_CACHE.clear();
-        debugHitsRemaining = 20;
-        debugAdjustRemaining = 20;
     }
 
     private static float clamp01(float value) {
