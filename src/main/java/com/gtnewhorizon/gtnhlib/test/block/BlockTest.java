@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.test.block;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
@@ -11,14 +12,31 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
+import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty.AbstractDirectionBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
 public class BlockTest extends Block {
 
-    private final DirectionBlockProperty.AbstractDirectionBlockProperty FACING_PROP = (DirectionBlockProperty.AbstractDirectionBlockProperty) DirectionBlockProperty
+    private final AbstractDirectionBlockProperty FACING_PROP = (AbstractDirectionBlockProperty) DirectionBlockProperty
             .facing();
+    private final AbstractDirectionBlockProperty ITEM_FACING_PROP = new AbstractDirectionBlockProperty("facing") {
+        @Override
+        public boolean hasTrait(BlockPropertyTrait trait) {
+            return trait == BlockPropertyTrait.SupportsStacks || trait == BlockPropertyTrait.OnlyNeedsMeta;
+        }
+
+        @Override
+        public int getMeta(ForgeDirection value, int existing) {
+            return 0;
+        }
+
+        @Override
+        public ForgeDirection getValue(int meta) {
+            return ForgeDirection.EAST;
+        }
+    };
 
     public BlockTest() {
         super(Material.wood);
@@ -29,7 +47,7 @@ public class BlockTest extends Block {
         GameRegistry.registerBlock(testBlock, "model_test");
 
         BlockPropertyRegistry.registerProperty(testBlock, testBlock.FACING_PROP);
-        BlockPropertyRegistry.registerProperty(Item.getItemFromBlock(testBlock), testBlock.FACING_PROP);
+        BlockPropertyRegistry.registerProperty(Item.getItemFromBlock(testBlock), testBlock.ITEM_FACING_PROP);
     }
 
     @Override
