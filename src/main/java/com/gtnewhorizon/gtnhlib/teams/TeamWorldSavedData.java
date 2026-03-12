@@ -143,6 +143,7 @@ public class TeamWorldSavedData extends WorldSavedData {
                 entry.getValue().writeToNBT(entryTag);
                 dataTag.setTag(entry.getKey(), entryTag);
             }
+            teamTag.setTag("TeamData", dataTag);
 
             teamList.appendTag(teamTag);
         }
