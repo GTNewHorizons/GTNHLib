@@ -7,7 +7,6 @@ import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.ARETURN;
 import static org.objectweb.asm.Opcodes.GETFIELD;
 import static org.objectweb.asm.Opcodes.GETSTATIC;
-import static org.objectweb.asm.Opcodes.ICONST_0;
 import static org.objectweb.asm.Opcodes.IFEQ;
 import static org.objectweb.asm.Opcodes.ILOAD;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
@@ -17,8 +16,6 @@ import java.util.HashSet;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
@@ -42,7 +39,7 @@ public class BlockIconTransformer implements IClassTransformer {
     private static final String ISBRH_CLASS = "com/gtnewhorizon/gtnhlib/client/model/ModelISBRH";
     private static final String ISBRH_DESC = "L" + ISBRH_CLASS + ";";
     private static final String NEW_WORLD_DESC = "(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraft/util/IIcon;";
-    private static final String NEW_META_DESC = "(L" + BLOCK_CLASS + ";I)Lnet/minecraft/util/IIcon;";
+    private static final String MISSINGNO_DESC = "()Lnet/minecraft/util/IIcon;";
 
     private static final String GI_WORLD = "getIcon(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;";
     private static final String GI_SIDE_META = "getIcon(II)Lnet/minecraft/util/IIcon;";
@@ -58,11 +55,8 @@ public class BlockIconTransformer implements IClassTransformer {
 
     private final ObjectOpenHashSet<String> blockFamily = new ObjectOpenHashSet<>();
 
-    private static final Logger LOGGER = LogManager.getLogger("GTNHLib|Models");
-
     public BlockIconTransformer() {
         blockFamily.add(BLOCK_CLASS);
-        LOGGER.info("Initialized model xformer!");
     }
 
     /// This is what our hook is doing. It assumes that the
@@ -105,7 +99,6 @@ public class BlockIconTransformer implements IClassTransformer {
     private boolean hookMethod(ClassNode cn, MethodNode mn) {
         final var signature = mn.name + mn.desc;
         if (!GETICON_SIGS.contains(signature)) return false;
-        LOGGER.warn("HIT! method {}", signature);
 
         final var injectedHook = new InsnList();
         final var endLabel = new LabelNode();
@@ -124,18 +117,8 @@ public class BlockIconTransformer implements IClassTransformer {
                 injectedHook
                         .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getParticleIcon", NEW_WORLD_DESC, false));
             }
-            case GI_SIDE_META, OBF_SIDE_META -> {
-                injectedHook.add(new VarInsnNode(ALOAD, 0));
-                injectedHook.add(new VarInsnNode(ILOAD, 2));
-                injectedHook
-                        .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getParticleIcon", NEW_META_DESC, false));
-            }
-            case GI_SIDE -> {
-                injectedHook.add(new VarInsnNode(ALOAD, 0));
-                injectedHook.add(new InsnNode(ICONST_0));
-                injectedHook
-                        .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getParticleIcon", NEW_META_DESC, false));
-            }
+            case GI_SIDE_META, OBF_SIDE_META, GI_SIDE -> injectedHook
+                    .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getMissingIcon", MISSINGNO_DESC, false));
             default -> throw new RuntimeException("Attempted to hook non-icon method!");
         }
 
