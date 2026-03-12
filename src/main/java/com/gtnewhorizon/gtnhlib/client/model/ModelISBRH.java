@@ -11,6 +11,7 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
@@ -436,18 +437,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         return model.getParticle(worldContext);
     }
 
-    /// An alternate to {@link #getParticleIcon(IBlockAccess, int, int, int)}, which takes just a block and metadata.
-    ///
     /// Used in {@link com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer}
     @SuppressWarnings("unused")
-    public @NotNull IIcon getParticleIcon(Block block, int meta) {
-        worldContext.world = null;
-        worldContext.x = 0;
-        worldContext.y = 0;
-        worldContext.z = 0;
-        worldContext.random = RAND;
-        worldContext.blockState = BlockPropertyRegistry.getBlockState(block, meta);
-        final var model = getModel(worldContext);
-        return model.getParticle(worldContext);
+    public @NotNull IIcon getMissingIcon() {
+        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");
     }
 }

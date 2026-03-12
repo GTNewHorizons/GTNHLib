@@ -2,11 +2,12 @@ package com.gtnewhorizon.gtnhlib.test.block;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 
-import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
+
+import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
 
 public class BlockTestTint extends Block implements IBlockColor {
 

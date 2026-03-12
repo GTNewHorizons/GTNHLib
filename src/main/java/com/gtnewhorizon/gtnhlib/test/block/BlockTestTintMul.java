@@ -57,11 +57,6 @@ public class BlockTestTintMul extends Block implements IBlockColor {
             }
 
             @Override
-            public ForgeDirection getValue(Block block, int meta) {
-                return ForgeDirection.NORTH;
-            }
-
-            @Override
             public void setValue(World world, int x, int y, int z, ForgeDirection value) {
                 TileEntity te = world.getTileEntity(x, y, z);
                 if (te instanceof TileTestTintMul tile) {
