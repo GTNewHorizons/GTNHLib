@@ -3,7 +3,7 @@ package com.gtnewhorizon.gtnhlib.util;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 
-public interface IBiIterator<E> extends ListIterator<E> {
+public interface BiIterator<E> extends ListIterator<E> {
 
     @Override
     default void add(E e) {}
