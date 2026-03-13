@@ -1,9 +1,5 @@
-package com.gtnewhorizon.gtnhlib.core.fml.transformers;
+package com.gtnewhorizon.gtnhlib.core.shared.transformers;
 
-import net.minecraft.launchwrapper.IClassTransformer;
-
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
@@ -14,36 +10,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
-
-/**
- * Transformer the Tessellator and inject draw() interception.
- */
-public class TessellatorTransformer implements IClassTransformer {
-
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (basicClass == null) return null;
-
-        // Only transform the Tessellator class itself
-        if (!transformedName.equals("net.minecraft.client.renderer.Tessellator")) {
-            return basicClass;
-        }
-
-        final ClassReader cr = new ClassReader(basicClass);
-        final ClassNode cn = new ClassNode();
-        cr.accept(cn, 0);
-        final boolean changed = transformClassNode(cn);
-        if (changed) {
-            // Use COMPUTE_FRAMES since we're modifying control flow with jumps
-            final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-            cn.accept(cw);
-            final byte[] transformedBytes = cw.toByteArray();
-            GTNHLibClassDump.dumpClass(transformedName, basicClass, transformedBytes, this);
-            return transformedBytes;
-        }
-        return basicClass;
-    }
+public final class TessellatorTransformer implements Opcodes {
 
     /**
      * Injects intercept check at the start of Tessellator.draw() to handle display list compilation.
@@ -59,26 +26,26 @@ public class TessellatorTransformer implements IClassTransformer {
                 LabelNode skipLabel = new LabelNode();
 
                 // if (TessellatorManager.shouldInterceptDraw(this))
-                inject.add(new VarInsnNode(Opcodes.ALOAD, 0)); // this
+                inject.add(new VarInsnNode(ALOAD, 0)); // this
                 inject.add(
                         new MethodInsnNode(
-                                Opcodes.INVOKESTATIC,
+                                INVOKESTATIC,
                                 "com/gtnewhorizon/gtnhlib/client/renderer/TessellatorManager",
                                 "shouldInterceptDraw",
                                 "(Lnet/minecraft/client/renderer/Tessellator;)Z",
                                 false));
-                inject.add(new JumpInsnNode(Opcodes.IFEQ, skipLabel)); // if false, skip
+                inject.add(new JumpInsnNode(IFEQ, skipLabel)); // if false, skip
 
                 // return TessellatorManager.interceptDraw(this);
-                inject.add(new VarInsnNode(Opcodes.ALOAD, 0)); // this
+                inject.add(new VarInsnNode(ALOAD, 0)); // this
                 inject.add(
                         new MethodInsnNode(
-                                Opcodes.INVOKESTATIC,
+                                INVOKESTATIC,
                                 "com/gtnewhorizon/gtnhlib/client/renderer/TessellatorManager",
                                 "interceptDraw",
                                 "(Lnet/minecraft/client/renderer/Tessellator;)I",
                                 false));
-                inject.add(new InsnNode(Opcodes.IRETURN));
+                inject.add(new InsnNode(IRETURN));
                 inject.add(skipLabel);
 
                 // Insert at the start of the method
