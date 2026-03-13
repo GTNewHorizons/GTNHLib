@@ -33,4 +33,12 @@ public interface BiIterator<E> extends ListIterator<E> {
         while (hasPrevious()) action.accept(previous());
     }
 
+    default void forEachRemainingUntil(long count, Consumer<? super E> action) {
+        while (hasNext() && count-- > 0) action.accept(next());
+    }
+
+    default void forEachPreviousUntil(long count, Consumer<? super E> action) {
+        while (hasPrevious() && count-- > 0) action.accept(previous());
+    }
+
 }
