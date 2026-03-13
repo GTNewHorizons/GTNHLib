@@ -6,45 +6,54 @@ import org.intellij.lang.annotations.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.core.fml.transformers.TessellatorTransformer;
 import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
+import com.gtnewhorizon.gtnhlib.core.shared.transformers.TessellatorRedirector;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
 
-/** RFB wrapper for {@link TessellatorTransformer} */
-public class TessellatorTransformerWrapper implements RfbClassTransformer {
+/** RfbClassTransformer wrapper for {@link TessellatorRedirector} */
+public class RFBTessellatorRedirectorWrapper implements RfbClassTransformer {
 
-    public final TessellatorTransformer inner = new TessellatorTransformer();
+    private final TessellatorRedirector inner;
+
+    public RFBTessellatorRedirectorWrapper(boolean isObf) {
+        inner = new TessellatorRedirector(isObf);
+    }
 
     @Pattern("[a-z0-9-]+")
     @Override
     public @NotNull String id() {
-        return "tessellator";
+        return "redirector";
     }
 
     @Override
     public @NotNull String @Nullable [] sortAfter() {
-        // Must run after mixins to ensure Tessellator class is fully prepared
-        return new String[] { "mixin:mixin" };
+        return new String[] { "*", "mixin:mixin" };
     }
 
     @Override
     public @NotNull String @Nullable [] sortBefore() {
-        // Must run before the redirector that modifies calls TO Tessellator
-        return new String[] { "redirector" };
+        return new String[] { "lwjgl3ify:redirect" };
     }
 
     @Override
     public @NotNull String @Nullable [] additionalExclusions() {
-        return new String[0];
+        return inner.getTransformerExclusions();
     }
 
     @Override
     public boolean shouldTransformClass(@NotNull ExtensibleClassLoader classLoader,
             @NotNull RfbClassTransformer.Context context, @Nullable Manifest manifest, @NotNull String className,
             @NotNull ClassNodeHandle classNode) {
-        return classNode.isPresent() && "net.minecraft.client.renderer.Tessellator".equals(className);
+        if (!classNode.isPresent()) {
+            return false;
+        }
+        if (!classNode.isOriginal()) {
+            // If a class is already a transformed ClassNode, conservatively continue processing.
+            return true;
+        }
+        return inner.shouldTransform(classNode.getOriginalBytes());
     }
 
     @Override
@@ -52,7 +61,7 @@ public class TessellatorTransformerWrapper implements RfbClassTransformer {
             @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
         final boolean changed = inner.transformClassNode(classNode.getNode());
         if (changed) {
-            classNode.computeFrames();
+            classNode.computeMaxs();
             GTNHLibClassDump.dumpRFBClass(className, classNode, this);
         }
     }

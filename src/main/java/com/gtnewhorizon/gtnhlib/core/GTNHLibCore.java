@@ -66,7 +66,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
             boolean isGTNHLibRFBLoaded = (boolean) Launch.blackboard
                     .getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE);
             if (!isGTNHLibRFBLoaded) {
-                // If rfb isn't loaded we need to register the TessellatorRedirectorTransformer
+                // If rfb isn't loaded we need to register the FMLTessellatorRedirectorWrapper
                 // transformer, however this transformer needs to run late in the transformer
                 // chain, after mixins but before LWJGl3ify. If we were to register it normally
                 // in getASMTransformerClass() it would be sorted at index 0 which we do not want.
