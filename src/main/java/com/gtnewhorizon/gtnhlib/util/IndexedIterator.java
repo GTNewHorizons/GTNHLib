@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.util;
 
-public abstract class IIndexedIterator<E> extends IBiIterator<E> {
+public abstract class IndexedIterator<E> extends BiIterator<E> {
 
     long getStartIndex();
 
