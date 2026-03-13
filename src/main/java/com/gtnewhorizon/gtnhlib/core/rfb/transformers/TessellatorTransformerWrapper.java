@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.rfb;
+package com.gtnewhorizon.gtnhlib.core.rfb.transformers;
 
 import java.util.jar.Manifest;
 
@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.TessellatorTransformer;
+import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
 import com.gtnewhorizons.retrofuturabootstrap.api.ClassNodeHandle;
 import com.gtnewhorizons.retrofuturabootstrap.api.ExtensibleClassLoader;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
@@ -36,37 +37,23 @@ public class TessellatorTransformerWrapper implements RfbClassTransformer {
 
     @Override
     public @NotNull String @Nullable [] additionalExclusions() {
-        return TessellatorTransformer.getTransformerExclusions().toArray(new String[0]);
+        return new String[0];
     }
 
     @Override
     public boolean shouldTransformClass(@NotNull ExtensibleClassLoader classLoader,
             @NotNull RfbClassTransformer.Context context, @Nullable Manifest manifest, @NotNull String className,
             @NotNull ClassNodeHandle classNode) {
-        // Only transform the Tessellator class itself
-        if (!"net.minecraft.client.renderer.Tessellator".equals(className)) {
-            return false;
-        }
-        if (!classNode.isPresent()) {
-            return false;
-        }
-        if (!classNode.isOriginal()) {
-            // If a class is already a transformed ClassNode, conservatively continue processing.
-            return true;
-        }
-        return inner.shouldRfbTransform(classNode.getOriginalBytes());
+        return classNode.isPresent() && "net.minecraft.client.renderer.Tessellator".equals(className);
     }
 
     @Override
     public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
             @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
-        // Double-check we're only transforming Tessellator
-        if (!"net.minecraft.client.renderer.Tessellator".equals(className)) {
-            return;
-        }
         final boolean changed = inner.transformClassNode(classNode.getNode());
         if (changed) {
             classNode.computeFrames();
+            GTNHLibClassDump.dumpRFBClass(className, classNode, this);
         }
     }
 }

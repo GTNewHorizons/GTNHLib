@@ -1,9 +1,5 @@
 package com.gtnewhorizon.gtnhlib.core.fml.transformers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import net.minecraft.launchwrapper.IClassTransformer;
 
 import org.objectweb.asm.ClassReader;
@@ -18,24 +14,12 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import com.gtnewhorizon.gtnhlib.asm.ClassConstantPoolParser;
+import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
 
 /**
  * Transformer the Tessellator and inject draw() interception.
  */
 public class TessellatorTransformer implements IClassTransformer {
-
-    private static final String TessellatorClass = "net/minecraft/client/renderer/Tessellator";
-
-    private static final ClassConstantPoolParser cstPoolParser = new ClassConstantPoolParser(TessellatorClass);
-
-    public static List<String> getTransformerExclusions() {
-        return Collections.unmodifiableList(new ArrayList<>());
-    }
-
-    public boolean shouldRfbTransform(byte[] basicClass) {
-        return cstPoolParser.find(basicClass, false);
-    }
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
@@ -54,19 +38,11 @@ public class TessellatorTransformer implements IClassTransformer {
             // Use COMPUTE_FRAMES since we're modifying control flow with jumps
             final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
             cn.accept(cw);
-            return cw.toByteArray();
+            final byte[] transformedBytes = cw.toByteArray();
+            GTNHLibClassDump.dumpClass(transformedName, basicClass, transformedBytes, this);
+            return transformedBytes;
         }
         return basicClass;
-    }
-
-    /**
-     * @return Was the class changed?
-     */
-    public boolean transformClassNode(ClassNode cn) {
-        if (cn == null) {
-            return false;
-        }
-        return transformTessellatorDraw(cn);
     }
 
     /**
@@ -75,10 +51,10 @@ public class TessellatorTransformer implements IClassTransformer {
      * @param cn The Tessellator ClassNode
      * @return true if the class was modified
      */
-    private boolean transformTessellatorDraw(ClassNode cn) {
+    public boolean transformClassNode(ClassNode cn) {
         for (MethodNode mn : cn.methods) {
             // Handle both deobfuscated and obfuscated names
-            if (mn.name.equals("draw") || mn.name.equals("func_78381_a")) {
+            if (mn.desc.equals("()I") && (mn.name.equals("draw") || mn.name.equals("func_78381_a"))) {
                 InsnList inject = new InsnList();
                 LabelNode skipLabel = new LabelNode();
 
