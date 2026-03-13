@@ -8,8 +8,6 @@ import net.minecraft.launchwrapper.Launch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.launch.GlobalProperties;
-import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
@@ -76,7 +74,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
                 // chain, after mixins but before LWJGl3ify. If we were to register it normally
                 // in getASMTransformerClass() it would be sorted at index 0 which we do not want.
                 // So we instead register it inside an ITweaker that gets run by mixins.
-                List<String> tweaks = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
+                final List<String> tweaks = (List<String>) Launch.blackboard.get("TweakClasses");
                 if (tweaks != null) {
                     tweaks.add("com.gtnewhorizon.gtnhlib.core.fml.tweakers.LateTransformerRegistrationTweaker");
                 }
