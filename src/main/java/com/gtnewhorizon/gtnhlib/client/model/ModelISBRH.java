@@ -45,9 +45,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public static final ModelISBRH INSTANCE = new ModelISBRH();
 
-    /**
-     * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
-     */
+    /// Any blocks using a JSON model should return this for [Block#getRenderType()].
     public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
     private final Random RAND = new Random();
@@ -289,11 +287,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         itemContext.reset();
     }
 
-    /**
-     * TODO: We need to find a good way to make it so the bound fields are not accounted for but I still want to use
-     * {@link Block#shouldSideBeRendered}. This is so blocks can define custom culling behavior when needed, but the
-     * bound fields are not relevant here because JSON models don't listen to them.
-     */
+    /// TODO: We need to find a good way to make it so the bound fields are not accounted for but I still want to use
+    /// [Block#shouldSideBeRendered]. This is so blocks can define custom culling behavior when needed, but the
+    /// bound fields are not relevant here because JSON models don't listen to them.
     protected boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side, Block block) {
         return block.shouldSideBeRendered(world, x, y, z, side);
     }
@@ -424,7 +420,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// is also re-fetched. This is because the blockstate construction does world access anyway, overriding just the
     /// block is annoying and seems less correct.
     ///
-    /// Used in {@link com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer
+    /// Used in [BlockIconTransformer]
     @SuppressWarnings("unused")
     public @NotNull IIcon getParticleIcon(@Nullable IBlockAccess world, int x, int y, int z) {
         worldContext.world = world;
@@ -437,7 +433,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         return model.getParticle(worldContext);
     }
 
-    /// Used in {@link com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer}
+    /// Used in [BlockIconTransformer]
     @SuppressWarnings("unused")
     public @NotNull IIcon getMissingIcon() {
         return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");

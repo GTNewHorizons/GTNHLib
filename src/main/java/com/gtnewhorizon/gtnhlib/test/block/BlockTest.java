@@ -2,7 +2,6 @@ package com.gtnewhorizon.gtnhlib.test.block;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
@@ -11,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty.AbstractDirectionBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
@@ -22,6 +22,7 @@ public class BlockTest extends Block {
     private final AbstractDirectionBlockProperty FACING_PROP = (AbstractDirectionBlockProperty) DirectionBlockProperty
             .facing();
     private final AbstractDirectionBlockProperty ITEM_FACING_PROP = new AbstractDirectionBlockProperty("facing") {
+
         @Override
         public boolean hasTrait(BlockPropertyTrait trait) {
             return trait == BlockPropertyTrait.SupportsStacks || trait == BlockPropertyTrait.OnlyNeedsMeta;
