@@ -13,6 +13,10 @@ public class CubeIterator extends Abstract3DIterator {
         super(range);
     }
 
+    CubeIterator(int range, int x, int y, int z) {
+        super(range, x, y , z);
+    }
+
     // maybe i could put this in next() and make it an Iterator<Boolean>?
     public boolean hasNext() {
         return -n < range || -l < range || -m < range;
