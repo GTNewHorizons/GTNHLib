@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.test.block;
 
 import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 
+import com.gtnewhorizon.gtnhlib.util.MathUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
@@ -35,18 +36,9 @@ public class BlockTest extends Block {
         return false;
     }
 
-    /// I think this does the [Math#floorMod(int, int)] thing to floats. I'm sure it's implemented *somewhere*, but I
-    /// don't know where.
-    public static float mod(float a, float b) {
-        if (a < 0) {
-            return b - (-a % b);
-        }
-        return a % b;
-    }
-
     @Override
     public void onBlockPlacedBy(World worldIn, int x, int y, int z, EntityLivingBase placer, ItemStack itemIn) {
-        int direction = Math.round(mod(placer.rotationYaw, 360) / 360 * 4);
+        int direction = Math.round(MathUtil.mod(placer.rotationYaw, 360) / 360 * 4);
         var dir = switch (direction) {
             case 1 -> ForgeDirection.EAST;
             case 2 -> ForgeDirection.SOUTH;
