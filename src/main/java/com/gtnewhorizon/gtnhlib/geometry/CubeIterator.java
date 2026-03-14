@@ -7,7 +7,7 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     CubeIterator(int range, int x, int y, int z) {
-        super(range, x, y , z);
+        super(range, x, y, z);
     }
 
     public boolean hasNext() {
