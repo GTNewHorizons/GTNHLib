@@ -26,6 +26,7 @@ public enum Mixins implements IMixins {
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load models, textures, and metadata.").addClientMixins(
             "models.FRMAccessor",
             "models.MixinBlock_ModelInfo",
+            "models.MixinEffectRenderer_FixParticleIcons",
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
