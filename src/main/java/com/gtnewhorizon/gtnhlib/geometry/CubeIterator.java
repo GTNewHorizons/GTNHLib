@@ -2,13 +2,6 @@ package com.gtnewhorizon.gtnhlib.geometry;
 
 public class CubeIterator extends Abstract3DIterator {
 
-    // public int range = 0;
-
-    // wow, it's just like electron orbitals. and the spin is the sign. how beautiful
-    // public int n = 0;
-    // public int l = 0;
-    // public int m = 0;
-
     CubeIterator(int range) {
         super(range);
     }
@@ -17,7 +10,6 @@ public class CubeIterator extends Abstract3DIterator {
         super(range, x, y , z);
     }
 
-    // maybe i could put this in next() and make it an Iterator<Boolean>?
     public boolean hasNext() {
         return -n < range || -l < range || -m < range;
     }
@@ -28,7 +20,6 @@ public class CubeIterator extends Abstract3DIterator {
 
     @Override
     public void __next() {
-        // this shit looks like the decompile of an obfuscated assembly but i assure you it is hand written
         m = -m;
         if (m < 0) return;
         l = -l;
@@ -81,9 +72,7 @@ public class CubeIterator extends Abstract3DIterator {
         l ^= n;
         n ^= l;
         return;
-    } // i have just found out that Java has a `when` statement, but primitive pattern matching is preview
-      // and the syntax sucks (case boolean b when a>6)
-      // i genuinely would rather have written this bytecode by bytecode but here we are
+    }
 
     /*
      * @Override //Not implemented yet (just the sign reversing part is, so far) public void __previous() { m = -m; if
