@@ -113,9 +113,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                     quadColor = BlockColor.getColor(block, world, x, y, z, meta, quad.getColorIndex());
                 }
 
-                final float r = (quadColor & 255) / 255f;
+                final float r = (quadColor >> 16 & 255) / 255f;
                 final float g = (quadColor >> 8 & 255) / 255f;
-                final float b = (quadColor >> 16 & 255) / 255f;
+                final float b = (quadColor >> 255) / 255f;
 
                 final int lm = getLightMap(block, quad, quad.getLightFace(), world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
