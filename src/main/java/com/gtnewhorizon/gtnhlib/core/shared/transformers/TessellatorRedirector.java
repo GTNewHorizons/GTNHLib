@@ -33,10 +33,7 @@ public final class TessellatorRedirector {
     /**
      * @return Was the class changed?
      */
-    public boolean transformClassNode(String className, ClassNode cn) {
-        if (cn == null) {
-            return false;
-        }
+    public boolean transformClassNode(ClassNode cn) {
         boolean changed = false;
         for (MethodNode mn : cn.methods) {
             for (AbstractInsnNode node : mn.instructions.toArray()) {

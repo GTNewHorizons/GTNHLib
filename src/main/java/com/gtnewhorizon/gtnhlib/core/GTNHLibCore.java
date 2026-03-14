@@ -6,9 +6,6 @@ import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
 
-import org.spongepowered.asm.launch.GlobalProperties;
-import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
-
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -66,12 +63,12 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
             boolean isGTNHLibRFBLoaded = (boolean) Launch.blackboard
                     .getOrDefault("gtnhlib.rfbPluginLoaded", Boolean.FALSE);
             if (!isGTNHLibRFBLoaded) {
-                // If rfb isn't loaded we need to register the TessellatorRedirectorTransformer
+                // If rfb isn't loaded we need to register the FMLTessellatorRedirectorWrapper
                 // transformer, however this transformer needs to run late in the transformer
                 // chain, after mixins but before LWJGl3ify. If we were to register it normally
                 // in getASMTransformerClass() it would be sorted at index 0 which we do not want.
                 // So we instead register it inside an ITweaker that gets run by mixins.
-                List<String> tweaks = GlobalProperties.get(MixinServiceLaunchWrapper.BLACKBOARD_KEY_TWEAKCLASSES);
+                final List<String> tweaks = (List<String>) Launch.blackboard.get("TweakClasses");
                 if (tweaks != null) {
                     tweaks.add("com.gtnewhorizon.gtnhlib.core.fml.tweakers.LateTransformerRegistrationTweaker");
                 }
