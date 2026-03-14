@@ -12,8 +12,19 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
 
     public int range;
 
+    public int startX;
+    public int startY;
+    public int startZ;
+
     public Abstract3DIterator(int range) {
         this.range = range;
+    }
+
+    public Abstract3DIterator(int range, int x, int y, int z) {
+        this.range = range;
+        startX = x;
+        startY = y;
+        startZ = z;
     }
 
     public abstract void __next();
@@ -33,12 +44,12 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
 
     public final int[] nextCoordTriple() {
         __next();
-        return new int[] { n, l, m };
+        return new int[] { startX + n, startY + l, startZ + m };
     }
 
     public final BlockPos nextBlockPos() {
         __next();
-        return new BlockPos(n, l, m);
+        return new BlockPos(startX + n, startY + l, startZ + m);
     }
 
     /*
