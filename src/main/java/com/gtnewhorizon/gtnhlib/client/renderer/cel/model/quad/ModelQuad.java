@@ -31,7 +31,6 @@ public class ModelQuad implements ModelQuadViewMutable {
 
     private Object sprite;
     private int colorIdx;
-    private boolean transparent = false;
     private ModelQuadFacing direction;
 
     private boolean hasAmbientOcclusion = true;
@@ -99,11 +98,6 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
-    public void setTransparent() {
-        this.transparent = true;
-    }
-
-    @Override
     public boolean setDirectionalShading(boolean dirShading) {
         return this.dirShading = dirShading;
     }
@@ -144,11 +138,6 @@ public class ModelQuad implements ModelQuadViewMutable {
     @Override
     public int getColorIndex() {
         return this.colorIdx;
-    }
-
-    @Override
-    public boolean isTransparent() {
-        return this.transparent;
     }
 
     @Override
@@ -322,7 +311,6 @@ public class ModelQuad implements ModelQuadViewMutable {
             this.normal = sourceQuad.normal;
             this.sprite = sourceQuad.sprite;
             this.colorIdx = sourceQuad.colorIdx;
-            this.transparent = sourceQuad.transparent;
             this.direction = sourceQuad.direction;
             this.hasAmbientOcclusion = sourceQuad.hasAmbientOcclusion;
             this.shaderBlockId = sourceQuad.shaderBlockId;
@@ -344,7 +332,6 @@ public class ModelQuad implements ModelQuadViewMutable {
             this.normal = source.getComputedFaceNormal();
             this.sprite = source.celeritas$getSprite();
             this.colorIdx = source.getColorIndex();
-            this.transparent = source.isTransparent();
             this.direction = source.getLightFace();
             this.hasAmbientOcclusion = source.hasAmbientOcclusion();
             this.shaderBlockId = source.getShaderBlockId();
