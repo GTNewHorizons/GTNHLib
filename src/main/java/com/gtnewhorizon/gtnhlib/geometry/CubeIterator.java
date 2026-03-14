@@ -9,9 +9,9 @@ public class CubeIterator extends Abstract3DIterator {
     // public int l = 0;
     // public int m = 0;
 
-    // CubeIterator(int range) {
-    //     this.range = range;
-    // }
+    CubeIterator(int range) {
+        super(range);
+    }
 
     // maybe i could put this in next() and make it an Iterator<Boolean>?
     public boolean hasNext() {
@@ -81,59 +81,11 @@ public class CubeIterator extends Abstract3DIterator {
       // and the syntax sucks (case boolean b when a>6)
       // i genuinely would rather have written this bytecode by bytecode but here we are
 
-    /*@Override //Not implemented yet (just the sign reversing part is, so far)
-    public void __previous() {
-        m = -m;
-        if (m > 0) return;
-        l = -l;
-        if (l > 0) return;
-        n = -n;
-        if (n > 0) return;
-        if (l >= n || m > n) {
-            if (m >= l) {
-                if (n <= l) {
-                    if (m > n) {
-                        n ^= m;
-                        m ^= n;
-                        n ^= m;
-                        if (l > m) {
-                            ++m;
-                            return;
-                        }
-                        m = 0;
-                        ++l;
-                        return;
-                    }
-                    l = 0;
-                    m = 0;
-                    ++n;
-                    return;
-                }
-                n ^= l;
-                l ^= n;
-                n ^= l;
-                return;
-            }
-            if (n < m) {
-                n ^= m;
-                m ^= n;
-                n ^= m;
-                return;
-            }
-            m ^= l;
-            l ^= m;
-            m ^= l;
-            return;
-        }
-        if (l > m) {
-            m ^= l;
-            l ^= m;
-            m ^= l;
-            return;
-        }
-        n ^= l;
-        l ^= n;
-        n ^= l;
-        return;
-    }*/
+    /*
+     * @Override //Not implemented yet (just the sign reversing part is, so far) public void __previous() { m = -m; if
+     * (m > 0) return; l = -l; if (l > 0) return; n = -n; if (n > 0) return; if (l >= n || m > n) { if (m >= l) { if (n
+     * <= l) { if (m > n) { n ^= m; m ^= n; n ^= m; if (l > m) { ++m; return; } m = 0; ++l; return; } l = 0; m = 0; ++n;
+     * return; } n ^= l; l ^= n; n ^= l; return; } if (n < m) { n ^= m; m ^= n; n ^= m; return; } m ^= l; l ^= m; m ^=
+     * l; return; } if (l > m) { m ^= l; l ^= m; m ^= l; return; } n ^= l; l ^= n; n ^= l; return; }
+     */
 }
