@@ -6,6 +6,8 @@ import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.launch.GlobalProperties;
 import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
 
@@ -25,6 +27,8 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
+    /// Lifted here so we can safely use it in Mixins. This class should be loaded by the time Mixins fire.
+    public static final Logger MODEL_LOGGER = LogManager.getLogger("GTNHLib|Models");
     private static Boolean isObf;
 
     public GTNHLibCore() {

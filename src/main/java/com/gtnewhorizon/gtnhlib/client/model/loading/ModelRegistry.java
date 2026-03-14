@@ -2,8 +2,8 @@ package com.gtnewhorizon.gtnhlib.client.model.loading;
 
 import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
-import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -13,8 +13,6 @@ import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraftforge.client.event.TextureStitchEvent;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
@@ -41,7 +39,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 /// beyond excessively complex models being loaded multiple times... add a counter if I'm wrong.
 public class ModelRegistry {
 
-    public static final Logger MODEL_LOGGER = LogManager.getLogger(ModelRegistry.class);
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
             .registerTypeAdapter(JSONModel.class, new ModelDeserializer()).create();
 
@@ -176,7 +173,6 @@ public class ModelRegistry {
                 texturesToLoad.addAll(info.textureNames());
             }
 
-            MODEL_LOGGER.info("Modeled blocks: {}", Arrays.toString(modeledBlocks.toArray()));
             GameData.getBlockRegistry().registryObjects.forEach((s, b) -> {
                 if (!(s instanceof String name)) return;
                 if (!(b instanceof BlockModelInfo block)) {

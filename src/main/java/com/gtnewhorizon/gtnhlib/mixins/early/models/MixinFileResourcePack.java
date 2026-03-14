@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.mixins.early.models;
 
-import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
 import java.io.File;
 import java.io.IOException;
