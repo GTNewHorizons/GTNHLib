@@ -4,7 +4,12 @@ import java.lang.reflect.Method;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.jetbrains.annotations.Nullable;
 
+/**
+* An Iterator that works two ways, supports reversing, and need not have a {@link java.util.Collection} attached.
+* 
+*/
 public interface BiIterator<E> extends ListIterator<E> {
 
     /**
@@ -26,11 +31,82 @@ public interface BiIterator<E> extends ListIterator<E> {
     *
     * @return returns this (the class) for chaining.
     */
-    BiIterator<E> reversed();
+    default BiIterator<E> reversed() {
+        reverse();
+        return this;
+    }
+
+    E __next();
+
+    E __previous();
+
+    boolean __hasNext();
+
+    boolean __hasPrevious();
+
+    default E next() {
+        return isReversed() ? __previous() : __next();
+    }
+
+    default E previous() {
+        return isReversed() ? __next() : __previous();
+    }
+
+    default boolean hasNext() {
+        return isReversed() ? __hasPrevious() : __hasNext();
+    }
+
+    default boolean hasPrevious() {
+        return isReversed() ? __hasNext() : __hasPrevious();
+    }
+
+    @Nullable("If hasNext() returns false")
+    default E nextIfHasNext() {
+        return isReversed() ? __hasPrevious() ? __previous() : null : __hasNext() ? __next() : null;
+    }
+
+    @Nullable("If hasPrevious() returns false")
+    default E previousIfHasPrevious() {
+        return isReversed() ? __hasNext() ? __next() : null : __hasPrevious() ? __previous() : null;
+    }
+
+    default E nextIfHasNextOrLast() {
+        return isReversed() ? __hasPrevious() ? __previous() : __peekNext() : __hasNext() ? __next() : __peekPrevious();
+    }
+
+    default E previousIfHasPreviousOrLast() {
+        return isReversed() ? __hasNext() ? __next() : __peekPrevious() : __hasPrevious() ? __previous() : __peekNext();
+    }
+
+    @Nullable("If both hasNext() and hasPrevious() return false")
+    default E nextIfHasNextOrLastIfHasLast() {
+        return isReversed() ? __hasPrevious() ? __previous() : __hasNext() ? __peekNext() : null : __hasNext() ? __next() : __hasPrevious() ? __peekPrevious() : null;
+    }
+
+    @Nullable("If both hasNext() and hasPrevious() return false")
+    default E previousIfHasPreviousOrLastIfHasLast() {
+        return isReversed() ? __hasNext() ? __next() : __hasPrevious() ? __peekPrevious() : null : __hasPrevious() ? __previous() : __hasNext() ? __peekNext() : null;
+    }
+
+    default E __peekPrevious() {
+        E ret = __previous();
+        __next();
+        return ret;
+    }
+
+    default E peekPrevious() {
+        return isReversed() ? __peekNext() : __peekPrevious();
+    }
+
+    default E __peekNext() {
+        E ret = __next();
+        __previous();
+        return ret;
+    }
 
     /**
     * Does nothing unless defined by implementing class.
-    * This is here to not force classes that just want {@link java.util.Iterator#previous()} and {@link java.util.Iterator#next()} to use it.
+    * This is here to not force classes that just want {@link #previous()} and {@link #next()} to use it.
     * @see java.util.ListIterator#add(E)
     *
     * @param e the object to add to an underlying collection at the cursor position, if implemented
@@ -40,7 +116,7 @@ public interface BiIterator<E> extends ListIterator<E> {
 
     /**
     * Does nothing unless defined by implementing class.
-    * This is here to not force classes that just want {@link java.util.Iterator#previous()} and {@link java.util.Iterator#next()} to use it.
+    * This is here to not force classes that just want {@link #previous()} and {@link #next()} to use it.
     * @see java.util.ListIterator#set(E)
     *
     * @param e the object to set in an underlying collection at the cursor position, if implemented
@@ -50,7 +126,7 @@ public interface BiIterator<E> extends ListIterator<E> {
 
     /**
     * Does nothing unless defined by implementing class.
-    * This is here to not force classes that just want {@link java.util.Iterator#previous()} and {@link java.util.Iterator#next()} to use it.
+    * This is here to not force classes that just want {@link #previous()} and {@link #next()} to use it.
     * @see java.util.ListIterator#remove()
     */
     @Override
@@ -83,6 +159,18 @@ public interface BiIterator<E> extends ListIterator<E> {
     }
 
     /**
+    * Overridden to support reversing.&nbsp;Use {@link #forEachNext(java.util.function.Consumer)} instead.
+    * This is just here for compatability's sake; "Next" is used instead of "Remaining" in other methods.
+    * @see #forEachNext(java.util.function.consumer)
+    *
+    * @param action the consumer that is run on all future elements, in order
+    */
+    @Override
+    default void forEachRemaining(Consumer<? super E> action) {
+        forEachNext(action);
+    }
+
+    /**
      * Same functionality as {@link java.util.Iterator#forEachRemaining(java.util.function.Consumer)}, but supports reversing and chaining.
      *
      * @param action the consumer that is run on all future elements, in order
@@ -90,7 +178,7 @@ public interface BiIterator<E> extends ListIterator<E> {
      */
     @Override
     default BiIterator<E> forEachNext(Consumer<? super E> action) {
-        if (isReversed()) while (hasPrevious()) action.accept(previous());
+        if (isReversed()) while (__hasPrevious()) action.accept(__previous());
         else ListIterator.super.forEachRemaining(action);
         return this;
     }
@@ -102,26 +190,23 @@ public interface BiIterator<E> extends ListIterator<E> {
      * @return the instantiating class, for chaining
      */
     default BiIterator<E> forEachPrevious(Consumer<? super E> action) {
-        if (isReversed()) while (hasNext()) action.accept(next());
-        else while (hasPrevious()) action.accept(previous());
+        if (isReversed()) while (__hasNext()) action.accept(__next());
+        else while (__hasPrevious()) action.accept(__previous());
         return this;
     } // Probably COULD have implemented isReversed() with reflection jank. Didn't.
     // in Python, functions are variables so it's a lot easier.
 
     // goddamn java doesn't support private internal default methods
     /**
-    * Internal method call for the reversing implementation.&nbsp;Do not use.
+    * Internal method call for the reversing implementation.&nbsp;Use only in implementing class.
+    * Ignores {@link #isReversed()}
     * @see #forEachNextUntil(long, java.util.function.Consumer)
-    * @hidden
     *
-    * @param flag whether {@link #isReversed()} should be ignored
+    * <!-- @param flag whether {@link #isReversed()} and `count`'s sign should be ignored -->
     */
-    default void __forEachNextUntil(long count, Consumer<? super E> action, boolean flag) {
-        if (flag) {
-            if (isReversed()) count = -count;
-            if (count < 0) __forEachPreviousUntil(-count, action, false);
-        }
-        else while (hasNext() && count-- > 0) action.accept(next());
+    default void __forEachNextUntil(long count, Consumer<? super E> action) {
+        if (count < 0) __forEachPreviousUntil(-count, action);
+        else while (__hasNext() && count-- > 0) action.accept(__next());
     }
 
     /**
@@ -133,23 +218,20 @@ public interface BiIterator<E> extends ListIterator<E> {
      * @return the instantiating class, for chaining
      */
     default BiIterator<E> forEachNextUntil(long count, Consumer<? super E> action) {
-        __forEachNextUntil(count, action, true);
+        __forEachNextUntil(isReversed() ? -count : count, action);
         return this;
     }
 
     /**
-    * Internal method call for the reversing implementation.&nbsp;Do not use.
+    * Internal method call for the reversing implementation.&nbsp;Use only in implementing class.
+    * Ignores {@link #isReversed()}
     * @see #forEachPreviousUntil(long, java.util.function.Consumer)
-    * @hidden
     *
-    * @param flag whether {@link #isReversed()} should be ignored
+    * <!-- @param flag whether {@link #isReversed()} and `count`'s sign should be ignored -->
     */
-    default void __forEachPreviousUntil(long count, Consumer<? super E> action, boolean flag) {
-        if (flag) {
-            if (isReversed()) count = -count;
-            if (count < 0) __forEachNextUntil(-count, action, false);
-        }
-        else while (hasPrevious() && count-- > 0) action.accept(previous());
+    default void __forEachPreviousUntil(long count, Consumer<? super E> action) {
+        if (count < 0) __forEachNextUntil(-count, action);
+        else while (__hasPrevious() && count-- > 0) action.accept(__previous());
     }
 
     /**
@@ -161,7 +243,7 @@ public interface BiIterator<E> extends ListIterator<E> {
      * @return the instantiating class, for chaining
      */
     default BiIterator<E> forEachPreviousUntil(long count, Consumer<? super E> action) {
-        __forEachPreviousUntil(count, action, true);
+        __forEachPreviousUntil(isReversed() ? -count : count, action);
         return this;
     }
 
@@ -173,8 +255,8 @@ public interface BiIterator<E> extends ListIterator<E> {
     * @return the instantiating class, for chaining
     */
     default BiIterator<E> forEachNextUntil(Function<? super E, Boolean> action) {
-        if (isReversed()) while (hasPrevious() && action.apply(previous()));
-        else while (hasNext() && action.accept(next()));
+        if (isReversed()) while (__hasPrevious() && action.apply(__previous()));
+        else while (__hasNext() && action.accept(__next()));
         return this;
     }
 
@@ -186,79 +268,70 @@ public interface BiIterator<E> extends ListIterator<E> {
     * @return the instantiating class, for chaining
     */
     default BiIterator<E> forEachPreviousUntil(Function<? super E, Boolean> action) {
-        if (isReversed()) while (hasNext() && action.apply(next()));
-        else while (hasPrevious() && action.accept(previous()));
+        if (isReversed()) while (__hasNext() && action.apply(__next()));
+        else while (__hasPrevious() && action.accept(__previous()));
         return this;
     }
 
     /**
-    * Internal method call for the reversing implementation.&nbsp;Do not use.
+    * Internal method call for the reversing implementation.&nbsp;Use only in implementing class.
+    * Ignores {@link #isReversed()}
     * @see #forEachNextUntil(long, java.util.function.Function)
-    * @hidden
     *
-    * @param flag whether {@link #isReversed()} should be ignored
+    * <!-- @param flag whether {@link #isReversed()} and `count`'s sign should be ignored -->
     */
-    default void __forEachNextUntil(long count, Function<? super E, Boolean> action, boolean flag) {
-        if (flag) {
-            if (isReversed()) count = -count;
-            if (count < 0) __forEachPreviousUntil(-count, action, false);
-        }
-        else while (hasNext() && count-- > 0 && action.accept(next()));
+    default void __forEachNextUntil(long count, Function<? super E, Boolean> action) {
+        if (count < 0) __forEachPreviousUntil(-count, action);
+        else while (__hasNext() && count-- > 0 && action.accept(__next()));
     }
 
     default BiIterator<E> forEachNextUntil(long count, Function<? super E, Boolean> action) {
-        __forEachNextUntil(count, action, true);
+        __forEachNextUntil(isReversed() ? -count : count, action);
         return this;
     }
 
     /**
-    * Internal method call for the reversing implementation.&nbsp;Do not use.
+    * Internal method call for the reversing implementation.&nbsp;Use only in implementing class.
+    * Ignores {@link #isReversed()}
     * @see #forEachPreviousUntil(long, java.util.function.Function)
-    * @hidden
     *
-    * @param flag whether {@link #isReversed()} should be ignored
+    * <!-- @param flag whether {@link #isReversed()} and `count`'s sign should be ignored -->
     */
 
-    default void __forEachPreviousUntil(long count, Function<? super E, Boolean> action, boolean flag) {
-        if (flag) {
-            if (isReversed()) count = -count;
-            if (count < 0) __forEachNextUntil(-count, action);
-        }
-        else while (hasPrevious() && count-- > 0 && action.accept(previous()));
+    default void __forEachPreviousUntil(long count, Function<? super E, Boolean> action) {
+        if (count < 0) __forEachNextUntil(-count, action);
+        else while (__hasPrevious() && count-- > 0 && action.accept(__previous()));
     }
 
     default BiIterator<E> forEachPreviousUntil(long count, Function<? super E, Boolean> action) {
-        __forEachPreviousUntil(count, action, true);
+        __forEachPreviousUntil(isReversed() ? -count : count, action);
         return this;
     }
 
     /**
-    * Internal method call for the reversing implementation.&nbsp;Do not use.
+    * Internal method call for the reversing implementation.&nbsp;Use only in implementing class.
+    * Ignores {@link #isReversed()}
     * @see #forEachNextUntil_checkless(long, java.util.function.Consumer)
-    * @hidden
     *
-    * @param flag whether {@link #isReversed()} should be ignored
+    * <!-- @param flag whether {@link #isReversed()} and `count`'s sign should be ignored -->
     */
 
-    default void __forEachNextUntil_checkless(long count, Consumer<? super E> action, boolean flag) {
-        if (flag) {
-            if (isReversed()) count = -count;
-            if (count < 0) __forEachPreviousUntil_checkless(-count, action, false);
-        }
-        else while (count-- > 0) action.accept(next());
+    default void __forEachNextUntil_checkless(long count, Consumer<? super E> action) {
+        if (count < 0) __forEachPreviousUntil_checkless(-count, action);
+        else while (count-- > 0) action.accept(__next());
     }
 
     default BiIterator<E> forEachNextUntil_checkless(long count, Consumer<? super E> action) {
-        __forEachNextUntil_checkless(count, action, true);
+        __forEachNextUntil_checkless(isReversed() ? -count : count, action);
         return this;
     }
 
     /**
-    * Internal method call for the reversing implementation.&nbsp;Do not use.
+    * Internal method call for the reversing implementation.&nbsp;Use only in implementing class.
+    * Ignores {@link #isReversed()}
     * @see #forEachPreviousUntil_checkless(long, java.util.function.Consumer)
-    * @hidden
     *
-    * @param flag whether {@link #isReversed()} should be ignored
+    * <!-- @param flag whether {@link #isReversed()} and `count`'s sign should be ignored -->
     */
 
     default void __forEachPreviousUntil_checkless(long count, Consumer<? super E> action, boolean flag) {
@@ -266,95 +339,131 @@ public interface BiIterator<E> extends ListIterator<E> {
             if (isReversed()) count = -count;
             if (count < 0) __forEachNextUntil_checkless(-count, action, false);
         }
-        else while (count-- > 0) action.accept(previous());
+        else while (count-- > 0) action.accept(__previous());
     }
 
     default BiIterator<E> forEachPreviousUntil_checkless(long count, Consumer<? super E> action) {
-        __forEachPreviousUntil_checkless(count, action, true);
+        __forEachPreviousUntil_checkless(isReversed() ? -count : count, action);
         return this;
     }
 
-    default void forEachNextUntil_checkless(Function<? super E, Boolean> action) {
-        while (action.accept(next()));
+    default BiIterator<E> forEachNextUntil_checkless(Function<? super E, Boolean> action) {
+        if (isReversed()) while (action.accept(__previous()));
+        else while (action.accept(__next()));
+        return this;
     }
 
-    default void forEachPreviousUntil_checkless(Function<? super E, Boolean> action) {
-        while (action.accept(previous()));
+    default BiIterator<E> forEachPreviousUntil_checkless(Function<? super E, Boolean> action) {
+        if (isReversed()) while (action.accept(__next()));
+        else while (action.accept(__previous()));
+        return this;
     }
 
-    default void forEachNextUntil_checkless(long count, Function<? super E, Boolean> action) {
-        if (count < 0) forEachPreviousUntil(-count, action);
-        else while (count-- > 0 && action.accept(next()));
+    default void __forEachNextUntil_checkless(long count, Function<? super E, Boolean> action) {
+        if (count < 0) __forEachPreviousUntil_checkless(-count, action);
+        else while (count-- > 0 && action.accept(__next()));
     }
 
-    default void forEachPreviousUntil_checkless(long count, Function<? super E, Boolean> action) {
-        if (count < 0) forEachNextUntil(-count, action);
-        else while (count-- > 0 && action.accept(previous()));
+    default BiIterator<E> forEachNextUntil_checkless(long count, Function<? super E, Boolean> action) {
+        __forEachNextUntil_checkless(isReversed() ? -count : count, action);
+        return this;
     }
 
+    default void __forEachPreviousUntil_checkless(long count, Function<? super E, Boolean> action) {
+        if (count < 0) __forEachNextUntil_checkless(-count, action);
+        else while (count-- > 0 && action.accept(__previous()));
+    }
+
+    default BiIterator<E> forEachPreviousUntil_checkless(long count, Function<? super E, Boolean> action) {
+        __forEachPreviousUntil_checkless(isReversed() ? -count : count, action);
+        return this;
+    }
+
+    @Nullable("If 0 is passed")
     default E next(long count) {
-        if (count < 0) return previous(-count);
+        if (isReversed()) count = -count;
         E cur = null;
-        for (;;) {
+        if (count < 0) for (;;) {
+            if (count++ >= 0) return cur;
+            cur = __previous();
+        } else for (;;) {
             if (count-- <= 0) return cur;
-            cur = next();
+            cur = __next();
         }
     }
 
+    @Nullable("If 0 is passed")
     default E previous(long count) {
-        if (count < 0) return next(-count);
+        if (isReversed()) count = -count;
         E cur = null;
-        for (;;) {
+        if (count < 0) for (;;) {
+            if (count++ >= 0) return cur;
+            cur = __next();
+        } else for (;;) {
             if (count-- <= 0) return cur;
-            cur = previous();
+            cur = __previous();
         }
     }
 
     default E nextRemaining(long count) {
-        if (count < 0) return previousRemaining(-count);
+        if (count < 0) count = -count;
         E cur = null;
-        for (;;) {
-            if (count-- <= 0 || !hasNext()) return cur;
-            cur = next();
+        if (count < 0) for (;;) {
+            if (count++ >= 0 || !__hasNext()) return cur;
+            cur = __previous();
+        } else for (;;) {
+            if (count-- <= 0 || !__hasPrevious()) return cur;
+            cur = __next();
         }
     }
 
     default E previousRemaining(long count) {
-        if (count < 0) return nextRemaining(-count);
+        if (count < 0) count = -count;
         E cur = null;
-        for (;;) {
-            if (count-- <= 0 || !hasPrevious()) return cur;
-            cur = previous();
+        if (count < 0) for (;;) {
+            if (count++ >= 0 || !__hasNext()) return cur;
+            cur = __next();
+        } else for (;;) {
+            if (count-- <= 0 || !__hasPrevious()) return cur;
+            cur = __previous();
         }
+    }
+
+    default E[] __allNext() {
+        //int len = 32;
+        int leng = 32;//len;
+        E[] arr = new E[leng];
+        E[] arr2;
+        int i = 0;
+        hackyGoto: {
+            for (byte step = 1;;++step) {
+                while (i<leng) {
+                    if (!__hasNext()) break hackyGoto;
+                    arr[++i] = __next();
+                }
+                if (step>108) break;
+                //if (step%4==0) len *= 2;
+                arr2 = arr;
+                leng = step != 108 ? (32<<step/4)+step%4*(8<<step/4) /*len+step%4*len/4*/ : Integer.MAX_VALUE - 8;
+                arr = new E[leng];
+                System.arrayCopy(arr2,0,arr,0,leng);
+            }
+            return arr;
+        }
+        arr2 = new E[i];
+        System.arrayCopy(arr,0,arr2,0,i);
+        return arr2;
     }
 
     default E[] allNext() {
-        //int len = 32;
-        int leng = 32;//len;
-        E[] arr = new E[leng];
-        E[] arr2;
-        int i = 0;
-        hackyGoto: {
-            for (byte step = 1;;++step) {
-                while (i<leng) {
-                    if (!hasNext()) break hackyGoto;
-                    arr[++i] = next();
-                }
-                if (step>108) break;
-                //if (step%4==0) len *= 2;
-                arr2 = arr;
-                leng = step != 108 ? (32<<step/4)+step%4*(8<<step/4) /*len+step%4*len/4*/ : Integer.MAX_VALUE - 8;
-                arr = new E[leng];
-                System.arrayCopy(arr2,0,arr,0,leng);
-            }
-            return arr;
-        }
-        arr2 = new E[i];
-        System.arrayCopy(arr,0,arr2,0,i);
-        return arr2;
+        return isReversed() ? __allPrevious() : __allNext();
     }
 
     default E[] allPrevious() {
+        return isReversed() ? __allNext() : __allPrevious();
+    }
+
+    default E[] __allPrevious() {
         //int len = 32;
         int leng = 32;//len;
         E[] arr = new E[leng];
@@ -363,8 +472,8 @@ public interface BiIterator<E> extends ListIterator<E> {
         hackyGoto: {
             for (byte step = 1;;++step) {
                 while (i<leng) {
-                    if (!hasPrevious()) break hackyGoto;
-                    arr[++i] = previous();
+                    if (!__hasPrevious()) break hackyGoto;
+                    arr[++i] = __previous();
                 }
                 if (step>108) break;
                 //if (step%4==0) len *= 2;
@@ -380,46 +489,80 @@ public interface BiIterator<E> extends ListIterator<E> {
         return arr2;
     }
 
+    default void checkArrayValid(long length) {
+        if (length > Integer.MAX_VALUE - 8) throw new ArrayIndexOutOfBoundsException(String.format("Standard java array size maximum is Integer.MAX_VALUE - 8 (Given %d)",length));
+
     default E[] allNext(long count) {
-        if (count < 0) return allPrevious(-count);
-        if (count > Integer.MAX_VALUE - 8) throw new ArrayIndexOutOfBoundsException(String.format("Standard java array size maximum is Integer.MAX_VALUE - 8 (Given %d)",count));
-        E[] arr = new E[count];
-        for (int i = 0;;) {
-            if (i == count) return arr;
-            E[i++] = next();
+        if (isReversed()) count = -count;
+        if (count < 0) {
+            checkArrayValid(-count);
+            E[] arr = new E[-count];
+            for (int i = 0;;) {
+                E[-i--] = __previous();
+                if (i == count) return arr;
+            }
+        } else {
+            checkArrayValid(count);
+            E[] arr = new E[count];
+            for (int i = 0;;) {
+                if (i == count) return arr;
+                E[i++] = __next();
+            }
         }
     }
 
     default E[] allPrevious(long count) {
-        if (count < 0) return allNext(-count);
-        if (count > Integer.MAX_VALUE - 8) throw new ArrayIndexOutOfBoundsException(String.format("Standard java array size maximum is Integer.MAX_VALUE - 8 (Given %d)",count));
-        E[] arr = new E[count];
-        for (int i = 0;;) {
-            if (i == count) return arr;
-            E[i++] = previous();
+        if (isReversed()) count = -count;
+        if (count < 0) {
+            checkArrayValid(-count);//if (count <= Integer.MIN_VALUE + 8) throw new ArrayIndexOutOfBoundsException(String.format("Standard java array size maximum is Integer.MAX_VALUE - 8 (Given %d)",-count));
+            E[] arr = new E[-count];
+            for (int i = 0;;) {
+                E[-i--] = __next();
+                if (i == count) return arr;
+            }
+        } else {
+            checkArrayValid(count);//if (count > Integer.MAX_VALUE - 8) throw new ArrayIndexOutOfBoundsException(String.format("Standard java array size maximum is Integer.MAX_VALUE - 8 (Given %d)",count));
+            E[] arr = new E[count];
+            for (int i = 0;;) {
+                if (i == count) return arr;
+                E[i++] = __previous();
+            }
         }
     }
 
     default E[] allNextRemaining(long count) {
-        if (count < 0) return allPreviousRemaining(-count);
-        E[] arr = new E[count];
+        if (isReversed()) count = -count;
+        E[] arr;
         int i = 0;
-        while (hasNext()) {
-            if (i == count) return arr;
-            arr[i++] = next();
+        if (count < 0) {
+            checkArrayValid
+            arr = E[-count];
+            while (__hasPrevious()) {
+                arr[-i--] = __previous();
+                if (i == count) return arr;
+            }} else {
+            arr = E[count];
+            while (__hasNext()) {
+                if (i == count) return arr;
+                arr[i++] = __next();
+            }
         }
+        i = Math.abs(i);
         E[] arr2 = new E[i];
         System.arrayCopy(arr, 0, arr2, 0, i);
         return arr2;
     }
 
     default E[] allPreviousRemaining(long count) {
-        if (count < 0) return allNextRemaining(-count);
-        E[] arr = new E[count];
+        if (isReversed()) count = -count;
+        E[] arr = E[Math.abs(count)];
         int i = 0;
-        while (hasPrevious()) {
+        if (count < 0) while (__hasNext()) {
+            arr[i++] = __next();
+            if (-i == count) return arr;
+        } else while (__hasPrevious()) {
             if (i == count) return arr;
-            arr[i++] = next();
+            arr[i++] = __previous();
         }
         E[] arr2 = new E[i];
         System.arrayCopy(arr, 0, arr2, 0, i);
@@ -430,7 +573,7 @@ public interface BiIterator<E> extends ListIterator<E> {
         int len = arr.length;
         for (int i = 0;;) {
             if (i == len) return arr;
-            arr[i++] = next();
+            arr[i++] = __next();
         }
     }
 
@@ -438,7 +581,7 @@ public interface BiIterator<E> extends ListIterator<E> {
         int len = arr.length;
         for (int i = 0;;) {
             if (i == len) return arr;
-            arr[i++] = previous();
+            arr[i++] = __previous();
         }
     }
 
@@ -446,9 +589,9 @@ public interface BiIterator<E> extends ListIterator<E> {
         if (count < 0) return allPreviousRemaining(-count);
         E[] arr = new E[count];
         int i = 0;
-        while (hasNext()) {
+        while (__hasNext()) {
             if (i == count) return arr;
-            arr[i++] = next();
+            arr[i++] = __next();
         }
         E[] arr2 = new E[i];
         System.arrayCopy(arr, 0, arr2, 0, i);
@@ -459,9 +602,9 @@ public interface BiIterator<E> extends ListIterator<E> {
         if (count < 0) return allNextRemaining(-count);
         E[] arr = new E[count];
         int i = 0;
-        while (hasPrevious()) {
+        while (__hasPrevious()) {
             if (i == count) return arr;
-            arr[i++] = next();
+            arr[i++] = __next();
         }
         E[] arr2 = new E[i];
         System.arrayCopy(arr, 0, arr2, 0, i);
