@@ -115,7 +115,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 final float r = (quadColor >> 16 & 255) / 255f;
                 final float g = (quadColor >> 8 & 255) / 255f;
-                final float b = (quadColor >> 255) / 255f;
+                final float b = (quadColor & 255) / 255f;
 
                 final int lm = getLightMap(block, quad, quad.getLightFace(), world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
@@ -269,7 +269,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 final float r = (quadColor >> 16 & 255) / 255f;
                 final float g = (quadColor >> 8 & 255) / 255f;
-                final float b = (quadColor >> 255) / 255f;
+                final float b = (quadColor & 255) / 255f;
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
