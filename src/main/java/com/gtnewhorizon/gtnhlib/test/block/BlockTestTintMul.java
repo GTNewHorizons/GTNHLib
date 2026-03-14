@@ -8,7 +8,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -18,6 +17,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
+import com.gtnewhorizon.gtnhlib.util.DirectionUtil;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -81,23 +81,10 @@ public class BlockTestTintMul extends Block implements IBlockColor {
 
     @Override
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase player, ItemStack itemIn) {
-        super.onBlockPlacedBy(world, x, y, z, player, itemIn);
-        int heading = MathHelper.floor_double(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-        ForgeDirection facing = getDirectionForHeading(heading);
         BlockState state = BlockPropertyRegistry.getBlockState(world, x, y, z);
-        state.setPropertyValue("facing", facing);
+        state.setPropertyValue("facing", DirectionUtil.yawToDirection(player.rotationYaw));
         state.place(world, x, y, z);
         state.close();
-    }
-
-    private ForgeDirection getDirectionForHeading(int heading) {
-        return switch (heading) {
-            case 0 -> ForgeDirection.NORTH;
-            case 1 -> ForgeDirection.EAST;
-            case 2 -> ForgeDirection.SOUTH;
-            case 3 -> ForgeDirection.WEST;
-            default -> ForgeDirection.NORTH;
-        };
     }
 
     @Override
