@@ -18,6 +18,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class BlockTest extends Block {
 
+    /// This default blockstate
     private final AbstractDirectionBlockProperty FACING_PROP = (AbstractDirectionBlockProperty) DirectionBlockProperty
             .facing();
 
@@ -28,7 +29,12 @@ public class BlockTest extends Block {
     public static void register() {
         final var testBlock = new BlockTest();
         GameRegistry.registerBlock(testBlock, "model_test");
-        BlockPropertyRegistry.registerPropertyWithDefault(testBlock, testBlock.FACING_PROP, ForgeDirection.EAST);
+
+        /// This method allows you to adapt any property to itemstacks, with some default value. This is mostly relevant
+        /// for modeled blocks, as they may require some state to match *any* of their models. If you're defining a
+        /// custom blockstate, it's better to add an ItemStack default yourself - see [BlockTestTintMul] for an example
+        /// of that.
+        BlockPropertyRegistry.registerBlockItemProperty(testBlock, testBlock.FACING_PROP, ForgeDirection.EAST);
     }
 
     @Override
