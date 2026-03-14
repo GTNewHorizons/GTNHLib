@@ -5,12 +5,10 @@ import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty.AbstractDirectionBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
@@ -21,23 +19,6 @@ public class BlockTest extends Block {
 
     private final AbstractDirectionBlockProperty FACING_PROP = (AbstractDirectionBlockProperty) DirectionBlockProperty
             .facing();
-    private final AbstractDirectionBlockProperty ITEM_FACING_PROP = new AbstractDirectionBlockProperty("facing") {
-
-        @Override
-        public boolean hasTrait(BlockPropertyTrait trait) {
-            return trait == BlockPropertyTrait.SupportsStacks || trait == BlockPropertyTrait.OnlyNeedsMeta;
-        }
-
-        @Override
-        public int getMeta(ForgeDirection value, int existing) {
-            return 0;
-        }
-
-        @Override
-        public ForgeDirection getValue(int meta) {
-            return ForgeDirection.EAST;
-        }
-    };
 
     public BlockTest() {
         super(Material.wood);
@@ -46,9 +27,7 @@ public class BlockTest extends Block {
     public static void register() {
         final var testBlock = new BlockTest();
         GameRegistry.registerBlock(testBlock, "model_test");
-
-        BlockPropertyRegistry.registerProperty(testBlock, testBlock.FACING_PROP);
-        BlockPropertyRegistry.registerProperty(Item.getItemFromBlock(testBlock), testBlock.ITEM_FACING_PROP);
+        BlockPropertyRegistry.registerPropertyWithDefault(testBlock, testBlock.FACING_PROP, ForgeDirection.EAST);
     }
 
     @Override
@@ -56,6 +35,8 @@ public class BlockTest extends Block {
         return false;
     }
 
+    /// I think this does the [Math#floorMod(int, int)] thing to floats. I'm sure it's implemented *somewhere*, but I
+    /// don't know where.
     public static float mod(float a, float b) {
         if (a < 0) {
             return b - (-a % b);
@@ -73,6 +54,8 @@ public class BlockTest extends Block {
             default -> ForgeDirection.NORTH;
         };
 
+        /// This is a shortcut that works because this block only has a single meta property. See [BlockTestTintMul] for
+        /// an example with non-meta blockstate.
         worldIn.setBlockMetadataWithNotify(x, y, z, FACING_PROP.getMeta(dir, 0), 2);
     }
 
