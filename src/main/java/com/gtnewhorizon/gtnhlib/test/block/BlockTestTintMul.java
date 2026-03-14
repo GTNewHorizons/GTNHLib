@@ -5,7 +5,6 @@ import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
@@ -32,6 +31,8 @@ public class BlockTestTintMul extends Block implements IBlockColor {
         final var tintMulTestBlock = new BlockTestTintMul();
         GameRegistry.registerBlock(tintMulTestBlock, "model_test_tint_mul");
         GameRegistry.registerTileEntity(TileTestTintMul.class, "tile_test_tint_mul");
+
+        // Here's an example of a custom, TE-based property
         final var property = new DirectionBlockProperty() {
 
             @Override
@@ -39,6 +40,7 @@ public class BlockTestTintMul extends Block implements IBlockColor {
                 return "facing";
             }
 
+            /// This DOES support stacks, otherwise the item wouldn't have a facing, and thus wouldn't have a model.
             @Override
             public boolean hasTrait(BlockPropertyTrait trait) {
                 return switch (trait) {
@@ -50,28 +52,24 @@ public class BlockTestTintMul extends Block implements IBlockColor {
             @Override
             public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
                 TileEntity te = world.getTileEntity(x, y, z);
-                if (te instanceof TileTestTintMul tile) {
-                    return tile.getFacing();
-                }
+                if (te instanceof TileTestTintMul tile) return tile.getFacing();
                 return ForgeDirection.NORTH;
             }
 
             @Override
             public void setValue(World world, int x, int y, int z, ForgeDirection value) {
                 TileEntity te = world.getTileEntity(x, y, z);
-                if (te instanceof TileTestTintMul tile) {
-                    tile.setFacing(value);
-                }
+                if (te instanceof TileTestTintMul tile) tile.setFacing(value);
             }
 
+            /// This needs to be implemented for the stack support to work.
             @Override
             public ForgeDirection getValue(ItemStack stack) {
                 return ForgeDirection.NORTH;
             }
         };
 
-        BlockPropertyRegistry.registerProperty(tintMulTestBlock, property);
-        BlockPropertyRegistry.registerProperty(Item.getItemFromBlock(tintMulTestBlock), property);
+        BlockPropertyRegistry.registerBlockItemProperty(tintMulTestBlock, property);
     }
 
     @Override
@@ -104,22 +102,15 @@ public class BlockTestTintMul extends Block implements IBlockColor {
 
     @Override
     public int colorMultiplier(IBlockAccess world, int x, int y, int z, int tintIndex) {
-        switch (tintIndex) {
-            case 0:
-                return 0xFF0000; // red
-            case 1:
-                return 0x00FF00; // green
-            case 2:
-                return 0x0000FF; // blue
-            case 3:
-                return 0xFFFF00; // yellow
-            case 4:
-                return 0xFF00FF; // purple
-            case 5:
-                return 0x00FFFF; // cyan
-            default:
-                return 0xFFFFFF;// white
-        }
+        return switch (tintIndex) {
+            case 0 -> 0xFF0000; // red
+            case 1 -> 0x00FF00; // green
+            case 2 -> 0x0000FF; // blue
+            case 3 -> 0xFFFF00; // yellow
+            case 4 -> 0xFF00FF; // purple
+            case 5 -> 0x00FFFF; // cyan
+            default -> 0xFFFFFF;// white
+        };
     }
 
     @Override
