@@ -55,6 +55,7 @@ public class CubeIterator extends Abstract3DIterator {
      */
     @Override
     protected void __next() {
+        int g;
         m = -m;
         if (m < 0) return;
         l = -l;
@@ -65,9 +66,9 @@ public class CubeIterator extends Abstract3DIterator {
             if (m >= l) {
                 if (n <= l) {
                     if (m > n) {
-                        n ^= m;
-                        m ^= n;
-                        n ^= m;
+                        g = m;
+                        m = n;
+                        n = g;
                         if (l > m) {
                             ++m;
                             return;
@@ -81,31 +82,31 @@ public class CubeIterator extends Abstract3DIterator {
                     ++n;
                     return;
                 }
-                n ^= l;
-                l ^= n;
-                n ^= l;
+                g = l;
+                l = n;
+                n = g;
                 return;
             }
             if (n < m) {
-                n ^= m;
-                m ^= n;
-                n ^= m;
+                g = m;
+                m = n;
+                n = g;
                 return;
             }
-            m ^= l;
-            l ^= m;
-            m ^= l;
+            g = l;
+            l = m;
+            m = g;
             return;
         }
         if (l > m) {
-            m ^= l;
-            l ^= m;
-            m ^= l;
+            g = l;
+            l = m;
+            m = g;
             return;
         }
-        n ^= l;
-        l ^= n;
-        n ^= l;
+        g = l;
+        l = n;
+        n = g;
         return;
     }
 
