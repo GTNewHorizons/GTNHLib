@@ -5,50 +5,49 @@ import java.util./* List */Iterator;
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 
 /**
- * An iterator through positions in 3D space, typically starting at relative <0,0,0> and going outward.
- * To use, call {@link #next()} and then take the iterator's n, l, and m fields, using them as arbitrary
- * coordinates. Offset coordinates can be optionally supplied; n is treated as x, l as y, and m as z in
- * methods that use those. One reason n, l, and m are not internally x, y, and z is to highlight that
- * their ordering is arbitrary; swap or invert them if you like. I initially named them n, l, and m as
- * they increase similarly to the three electronic quantum numbers (you can think of the sign of n or l
- * as the spin). In {@link com.gtnewhorizon.gtnhlib.blockpos.CubeIterator}, from which this was adapted,
- * aside from the symmetry transformations, m is bounded by l and l is bounded by n, similarly to electron
- * orbitals, in order to get unique non-ordered {n,l,m} sets.
+ * An iterator through positions in 3D space, typically starting at relative <0,0,0> and going outward. To use, call
+ * {@link #next()} and then take the iterator's n, l, and m fields, using them as arbitrary coordinates. Offset
+ * coordinates can be optionally supplied; n is treated as x, l as y, and m as z in methods that use those. One reason
+ * n, l, and m are not internally x, y, and z is to highlight that their ordering is arbitrary; swap or invert them if
+ * you like. I initially named them n, l, and m as they increase similarly to the three electronic quantum numbers (you
+ * can think of the sign of n or l as the spin). In {@link com.gtnewhorizon.gtnhlib.blockpos.CubeIterator}, from which
+ * this was adapted, aside from the symmetry transformations, m is bounded by l and l is bounded by n, similarly to
+ * electron orbitals, in order to get unique non-ordered {n,l,m} sets.
  *
  * @author __felix__
  */
 public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
 
     /**
-     * One of the three coordinates ran through by an iterator. Default is X.
-     * Can be X, Y, or Z, depending on what arbitrary order you would like to prioritize
-     * (Invert them if you would like to change the priority of neg vs positive directions)
-     * <br>Inspired by the principal quantum number; it limits the values of l and m.
+     * One of the three coordinates ran through by an iterator. Default is X. Can be X, Y, or Z, depending on what
+     * arbitrary order you would like to prioritize (Invert them if you would like to change the priority of neg vs
+     * positive directions) <br>
+     * Inspired by the principal quantum number; it limits the values of l and m.
      */
     public int n;
     /**
-     * One of the three coordinates ran through by an iterator. Default is Y.
-     * Can be X, Y, or Z, depending on what arbitrary order you would like to prioritize
-     * (Invert them if you would like to change the priority of neg vs positive directions)
-     * <br>Inspired by the azimuthal quantum number; it limits the value of m and can only go up to n.
+     * One of the three coordinates ran through by an iterator. Default is Y. Can be X, Y, or Z, depending on what
+     * arbitrary order you would like to prioritize (Invert them if you would like to change the priority of neg vs
+     * positive directions) <br>
+     * Inspired by the azimuthal quantum number; it limits the value of m and can only go up to n.
      */
     public int l;
     /**
-     * One of the three coordinates ran through by an iterator. Default is Z.
-     * Can be X, Y, or Z, depending on what arbitrary order you would like to prioritize
-     * (Invert them if you would like to change the priority of neg vs positive directions)
-     * <br>Inspired by the magnetic quantum number; it can only go up to l.
+     * One of the three coordinates ran through by an iterator. Default is Z. Can be X, Y, or Z, depending on what
+     * arbitrary order you would like to prioritize (Invert them if you would like to change the priority of neg vs
+     * positive directions) <br>
+     * Inspired by the magnetic quantum number; it can only go up to l.
      */
     public int m;
 
     /**
-    * The maximum distance or radius that the iterator can go through, used in {@link #hasNext()}.
-    */
+     * The maximum distance or radius that the iterator can go through, used in {@link #hasNext()}.
+     */
     public int range;
 
     /**
-     * Whether the iterator is not specifically at the last value before it exceeds {@link #range}.
-     * Does NOT have to be truthful for values *beyond* that last value (and isn't in current impl).
+     * Whether the iterator is not specifically at the last value before it exceeds {@link #range}. Does NOT have to be
+     * truthful for values *beyond* that last value (and isn't in current impl).
      *
      * @return Whether the iterator is at the last value before it exceeds the provided range
      */
@@ -70,8 +69,8 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
     public int startZ;
 
     /**
-     * Initializes the iterator with only the max range. If you don't want a max range, put whatever here and
-     * ignore {@link #hasNext()}.
+     * Initializes the iterator with only the max range. If you don't want a max range, put whatever here and ignore
+     * {@link #hasNext()}.
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
      */
@@ -80,15 +79,14 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
     }
 
     /**
-     * Initializes the iterator with the max range and starting XYZ values. If you don't want a max range, put
-     * whatever here and ignore {@link #hasNext()}. The XYZ values are not factored into {@link #n}, {@link #l},
-     * or {@link #m}; those are only starting offsets. They are used in {@link #nextCoordTriple()} and
-     * {@link #nextBlockPos()}.
+     * Initializes the iterator with the max range and starting XYZ values. If you don't want a max range, put whatever
+     * here and ignore {@link #hasNext()}. The XYZ values are not factored into {@link #n}, {@link #l}, or {@link #m};
+     * those are only starting offsets. They are used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}.
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
-     * @param x the x offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
-     * @param x the y offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
-     * @param x the z offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
+     * @param x     the x offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
+     * @param x     the y offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
+     * @param x     the z offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
      */
     public Abstract3DIterator(int range, int x, int y, int z) {
         this.range = range;
@@ -98,8 +96,9 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
     }
 
     /**
-     * The INTERNAL implementation of {@link #next()}.&nbsp;Override this when making a subclass.
-     * (Unless you want to have to spam `return null` everywhere...)
+     * The INTERNAL implementation of {@link #next()}.&nbsp;Override this when making a subclass. (Unless you want to
+     * have to spam `return null` everywhere...)
+     * 
      * @see #next()
      */
     protected abstract void __next();
@@ -107,8 +106,8 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
     // protected abstract void __previous();
 
     /**
-     * Progresses the iterator ({@link n}, {@link l}, {@link m} values), but does not directly return them.
-     * This is intended so that you don't have to spin up an entire object if you don't want to
+     * Progresses the iterator ({@link n}, {@link l}, {@link m} values), but does not directly return them. This is
+     * intended so that you don't have to spin up an entire object if you don't want to
      *
      * @return returns null just to comply with Iterator<E>
      */
@@ -124,10 +123,9 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      */
 
     /**
-     * Returns the next coords as an array, using the default of x for n, etc., offset by the optional start values.
-     * The start values don't have to be set for this to be used (they default to 0). Using the fields directly or
-     * their getters is better than spinning up an array in most cases. Also note that this method *progresses* the
-     * iterator.
+     * Returns the next coords as an array, using the default of x for n, etc., offset by the optional start values. The
+     * start values don't have to be set for this to be used (they default to 0). Using the fields directly or their
+     * getters is better than spinning up an array in most cases. Also note that this method *progresses* the iterator.
      *
      * @return an array containing the next xyz coordinates, offset if offsets were provided in init
      */
@@ -139,8 +137,8 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
     /**
      * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, using the default of x for n,
      * etc., offset by the optional start values. The start values don't have to be set for this to be used (they
-     * default to 0). Using the fields directly or their getters is usually better than this.
-     * Also note that this method progresses the iterator.
+     * default to 0). Using the fields directly or their getters is usually better than this. Also note that this method
+     * progresses the iterator.
      *
      * @return a BlockPos of the next xyz coordinates, offset if offsets were provided in init
      */
@@ -307,17 +305,19 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
     }
 
     /**
-     * Progresses the iterator and gives the coordinates of n, l, and m, together, truncated to signed 21 bit.
-     * For when you know the values of n, l, and m are going to be small, and don't want to spam arrays, since
-     * each iteration with {@link #nextCoordTriple()} makes a whole new array.
-     * Output format is 0 + sign of m + last 20 bits of m + sign of l + last 20 bits of l + etc. for n
+     * Progresses the iterator and gives the coordinates of n, l, and m, together, truncated to signed 21 bit. For when
+     * you know the values of n, l, and m are going to be small, and don't want to spam arrays, since each iteration
+     * with {@link #nextCoordTriple()} makes a whole new array. Output format is 0 + sign of m + last 20 bits of m +
+     * sign of l + last 20 bits of l + etc. for n
      *
      * @return n, l, and m, truncated with sign as s21 ints, added together with offsets, fitting into a long
      */
     public final long nextAs21Bit() {
         __next();
         return (long) (n & 0x000FFFFF | (n & -0x80000000) >> 11) | (long) (l & 0x000FFFFF) << 21
-            | (long) (l & -0x80000000) << 10 | (long) (m & 0x000FFFFF) << 42 | (long) (m & -0x80000000) << 31;
+                | (long) (l & -0x80000000) << 10
+                | (long) (m & 0x000FFFFF) << 42
+                | (long) (m & -0x80000000) << 31;
     }
 
 }
