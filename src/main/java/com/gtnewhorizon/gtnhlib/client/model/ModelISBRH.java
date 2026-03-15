@@ -30,11 +30,13 @@ import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
+import com.gtnewhorizon.gtnhlib.client.model.loading.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -46,7 +48,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     public static final ModelISBRH INSTANCE = new ModelISBRH();
 
     /// Any blocks using a JSON model may return this for [Block#getRenderType()]. However, models are primarily
-    /// identified via the presence of a blockstate -> model map for the block.
+    /// identified via the presence of a blockstate -> model map for the block. If you don't have such a file, you can
+    /// implement {@link BlockModelInfo} instead, and simply always return true.
     public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
     private final Random RAND = new Random();
@@ -421,8 +424,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// is also re-fetched. This is because the blockstate construction does world access anyway, overriding just the
     /// block is annoying and seems less correct.
     ///
-    /// Used in [BlockIconTransformer]
-    @SuppressWarnings("unused")
+    /// Used in {@link BlockIconTransformer}
     public @NotNull IIcon getParticleIcon(@Nullable IBlockAccess world, int x, int y, int z) {
         worldContext.world = world;
         worldContext.x = x;
@@ -434,7 +436,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         return model.getParticle(worldContext);
     }
 
-    /// Used in [BlockIconTransformer]
+    /// Used in {@link BlockIconTransformer}
     @SuppressWarnings("unused")
     public @NotNull IIcon getMissingIcon() {
         return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");

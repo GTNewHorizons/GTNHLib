@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
+import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.loading.BlockModelInfo;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -27,7 +28,8 @@ public class MixinEffectRenderer_FixParticleIcons {
     private EntityDiggingFX nhlib$fixBreakIcon(EntityDiggingFX original, @Local(argsOnly = true) Block block,
             @Local(ordinal = 0, argsOnly = true) int x, @Local(ordinal = 1, argsOnly = true) int y,
             @Local(ordinal = 2, argsOnly = true) int z) {
-        if (((BlockModelInfo) block).nhlib$isModeled()) original.setParticleIcon(block.getIcon(worldObj, x, y, z, 0));
+        if (((BlockModelInfo) block).nhlib$isModeled())
+            original.setParticleIcon(ModelISBRH.INSTANCE.getParticleIcon(worldObj, x, y, z));
         return original;
     }
 
@@ -39,7 +41,8 @@ public class MixinEffectRenderer_FixParticleIcons {
     private EntityDiggingFX nhlib$fixHitIcon(EntityDiggingFX original, @Local(ordinal = 0) Block block,
             @Local(ordinal = 0, argsOnly = true) int x, @Local(ordinal = 1, argsOnly = true) int y,
             @Local(ordinal = 2, argsOnly = true) int z) {
-        if (((BlockModelInfo) block).nhlib$isModeled()) original.setParticleIcon(block.getIcon(worldObj, x, y, z, 0));
+        if (((BlockModelInfo) block).nhlib$isModeled())
+            original.setParticleIcon(ModelISBRH.INSTANCE.getParticleIcon(worldObj, x, y, z));
         return original;
     }
 }
