@@ -52,9 +52,9 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      *
      * @return Whether the iterator is at the last value before it exceeds the provided range
      */
-    boolean hasNext();
+    public boolean hasNext();
 
-    // boolean hasPrevious();
+    // public boolean hasPrevious();
 
     /**
      * The (optional) starting X coordinate, used with {@link #nextCoordTriple()} and {@link #nextBlockPos()}.
@@ -102,9 +102,9 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      * (Unless you want to have to spam `return null` everywhere...)
      * @see #next()
      */
-    public abstract void __next();
+    protected abstract void __next();
 
-    // public abstract void __previous();
+    // protected abstract void __previous();
 
     /**
      * Progresses the iterator ({@link n}, {@link l}, {@link m} values), but does not directly return them.
