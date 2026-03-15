@@ -312,12 +312,12 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      * each iteration with {@link #nextCoordTriple()} makes a whole new array.
      * Output format is 0 + sign of m + last 20 bits of m + sign of l + last 20 bits of l + etc. for n
      *
-     * @return n, l, and m, truncated with sign as s21 ints, anded together with offsets, fitting into a long
+     * @return n, l, and m, truncated with sign as s21 ints, added together with offsets, fitting into a long
      */
     public final long nextAs21Bit() {
         __next();
-        return (long) (n & 0x000FFFFF & (n & -0x80000000) >> 11) & (long) (l & 0x000FFFFF) << 21
-            & (long) (l & -0x80000000) << 10 & (long) (m & 0x000FFFFF) << 42 & (long) (m & -0x80000000) << 31;
+        return (long) (n & 0x000FFFFF | (n & -0x80000000) >> 11) | (long) (l & 0x000FFFFF) << 21
+            | (long) (l & -0x80000000) << 10 | (long) (m & 0x000FFFFF) << 42 | (long) (m & -0x80000000) << 31;
     }
 
 }
