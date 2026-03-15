@@ -52,7 +52,7 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      *
      * @return Whether the iterator is at the last value before it exceeds the provided range
      */
-    public boolean hasNext();
+    public abstract boolean hasNext();
 
     // public boolean hasPrevious();
 
