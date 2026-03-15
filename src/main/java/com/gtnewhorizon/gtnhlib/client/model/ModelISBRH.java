@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
@@ -59,14 +58,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public ModelISBRH() {}
 
-    /// For programmatic model selection, see {@link IBlockModelProvider}
-    @SuppressWarnings("unused")
-    public BakedModel getModel(BakedModelQuadContext context) {
-        if (context.getBlockState().getBlock() instanceof IBlockModelProvider selector)
-            return selector.getModel(context);
-        return ModelRegistry.getBakedModel(context.getBlockState());
-    }
-
     @Override
     public void renderInventoryBlock(Block block, int meta, int modelId, RenderBlocks renderer) {}
 
@@ -86,7 +77,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
         worldContext.random = random;
 
-        final BakedModel model = getModel(worldContext);
+        final BakedModel model = ModelRegistry.getBakedModel(worldContext);
 
         int color = model.getColor(world, x, y, z, block, meta, random);
 
@@ -247,7 +238,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
         itemContext.random = RAND;
 
-        final BakedModel model = getModel(itemContext);
+        final BakedModel model = ModelRegistry.getBakedModel(itemContext);
 
         GL11.glPushMatrix();
         GL11.glEnable(GL11.GL_BLEND);
@@ -432,7 +423,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         worldContext.z = z;
         worldContext.random = RAND;
         worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
-        final var model = getModel(worldContext);
+        final var model = ModelRegistry.getBakedModel(worldContext);
         return model.getParticle(worldContext);
     }
 

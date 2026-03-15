@@ -19,7 +19,9 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
@@ -41,6 +43,32 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
 /// beyond excessively complex models being loaded multiple times... add a counter if I'm wrong.
 public class ModelRegistry {
+
+    /// Obtain a model, diverting to a custom pipeline if it exists. See {@link IBlockModelProvider} if you wish to
+    /// implement said custom pipeline.
+    public static BakedModel getBakedModel(BakedModelQuadContext context) {
+        if (context.getBlockState().getBlock() instanceof IBlockModelProvider selector)
+            return selector.getModel(context);
+        return getBakedModel(context.getBlockState());
+    }
+
+    /// Getter for {@link BakedModel}s, obtained purely from the default path. We don't want to publicly expose the
+    /// cache, modders can't be trusted with it :P
+    public static BakedModel getBakedModel(BlockState state) {
+        return BLOCKSTATE_MODEL_CACHE.get(state.clone());
+    }
+
+    /// Getter for {@link JSONModel}s - again, normal pipeline, but this grabs them pre-bake. See
+    /// {@link ModelRegistry#getBakedModel(BlockState)}
+    public static JSONModel getJSONModel(ResourceLoc.ModelLoc loc) {
+        return JSON_MODEL_CACHE.get(loc);
+    }
+
+    /// Registers the given mod ID for automatic texture loading. The resource pack attached to this mod will be scanned
+    /// for model files, and textures from those files will be automatically loaded.
+    public static void registerModid(String modid) {
+        ReloadListener.PERMITTED_MODIDS.add(modid);
+    }
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
             .registerTypeAdapter(JSONModel.class, new ModelDeserializer()).create();
@@ -78,22 +106,6 @@ public class ModelRegistry {
         if (dough == null) return MISSING_MODEL.bake();
 
         return dough.bake();
-    }
-
-    /// Getter for {@link BakedModel}s. We don't want to publicly expose the cache, modders can't be trusted with it :P
-    public static BakedModel getBakedModel(BlockState state) {
-        return BLOCKSTATE_MODEL_CACHE.get(state.clone());
-    }
-
-    /// Getter for {@link JSONModel}s. See {@link ModelRegistry#getBakedModel(BlockState)}
-    public static JSONModel getJSONModel(ResourceLoc.ModelLoc loc) {
-        return JSON_MODEL_CACHE.get(loc);
-    }
-
-    /// Registers the given mod ID for automatic texture loading. The resource pack attached to this mod will be scanned
-    /// for model files, and textures from those files will be automatically loaded.
-    public static void registerModid(String modid) {
-        ReloadListener.PERMITTED_MODIDS.add(modid);
     }
 
     private static StateModelMap getStateModelMap(Block block) {
