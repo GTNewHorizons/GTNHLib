@@ -5,8 +5,8 @@ import javax.annotation.Nullable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 
-/// Interface for providing color multipliers for blocks and item blocks. Implement this interface to provide custom
-/// coloring logic for a block or its item form.
+/// Interface for providing color multipliers for blocks and item blocks. Implement this interface on your block to
+/// provide custom coloring logic for a block or its item form.
 public interface IBlockColor {
 
     /// Returns the color multiplier for a block in the world at the given position. -1 is 0xFFFFFFFF, or white - i.e.

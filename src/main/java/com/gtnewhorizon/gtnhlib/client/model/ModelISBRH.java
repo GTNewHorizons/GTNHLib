@@ -29,7 +29,7 @@ import org.lwjgl.opengl.GL11;
 import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
+import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -103,14 +103,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 if (quad.isTransparent() && ForgeHooksClient.getWorldRenderPass() == 0) continue;
                 int quadColor = color;
 
-                // If true use tintIndex color
-                if (quad.getColorIndex() != -1) {
-                    quadColor = BlockColor.getColor(block, world, x, y, z, meta, quad.getColorIndex());
+                if (quad.getColorIndex() != -1 && block instanceof IBlockColor colorizer) {
+                    quadColor = colorizer.colorMultiplier(world, x, y, z, meta, quad.getColorIndex());
                 }
 
-                final float r = (quadColor >> 16 & 255) / 255f;
-                final float g = (quadColor >> 8 & 255) / 255f;
-                final float b = (quadColor & 255) / 255f;
+                final float r = (quadColor >> 16 & 0xFF) / 255f;
+                final float g = (quadColor >> 8 & 0xFF) / 255f;
+                final float b = (quadColor & 0xFF) / 255f;
 
                 final int lm = getLightMap(block, quad, quad.getLightFace(), world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
@@ -258,13 +257,13 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 int quadColor = color;
 
                 // If true use tintIndex color
-                if (quad.getColorIndex() != -1) {
-                    quadColor = BlockColor.getColor(block, stack, quad.getColorIndex());
+                if (quad.getColorIndex() != -1 && block instanceof IBlockColor colorizer) {
+                    quadColor = colorizer.colorMultiplier(stack, quad.getColorIndex());
                 }
 
-                final float r = (quadColor >> 16 & 255) / 255f;
-                final float g = (quadColor >> 8 & 255) / 255f;
-                final float b = (quadColor & 255) / 255f;
+                final float r = (quadColor >> 16 & 0xFF) / 255f;
+                final float g = (quadColor >> 8 & 0xFF) / 255f;
+                final float b = (quadColor & 0xFF) / 255f;
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);

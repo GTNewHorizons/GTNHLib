@@ -25,11 +25,9 @@ public interface BakedModel {
         return -1;
     }
 
-    /// Defers to the vanilla color functions, just repacks the color to ABGR as models require.
+    /// Defers to the vanilla color functions.
     static int getDefaultColor(IBlockAccess world, int x, int y, int z, Block block) {
-
-        final int cin = block.colorMultiplier(world, x, y, z);
-        return (0xFF << 24) | ((cin & B_MASK) << 16) | (cin & G_MASK) | ((cin & R_MASK) >>> 16);
+        return block.colorMultiplier(world, x, y, z);
     }
 
     /// If you need to allocate new quads, set this to true. Then, the quads returned by [#getQuads] are recycled,
