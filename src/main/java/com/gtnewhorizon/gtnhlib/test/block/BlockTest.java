@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.test.block;
 
-import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
@@ -49,10 +47,5 @@ public class BlockTest extends Block {
         /// This is a shortcut that works because this block only has a single meta property. See [BlockTestTintMul] for
         /// an example with non-meta blockstate.
         worldIn.setBlockMetadataWithNotify(x, y, z, FACING_PROP.getMeta(dir, 0), 2);
-    }
-
-    @Override
-    public int getRenderType() {
-        return JSON_ISBRH_ID;
     }
 }

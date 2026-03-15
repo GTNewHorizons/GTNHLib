@@ -45,7 +45,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public static final ModelISBRH INSTANCE = new ModelISBRH();
 
-    /// Any blocks using a JSON model should return this for [Block#getRenderType()].
+    /// Any blocks using a JSON model may return this for [Block#getRenderType()]. However, models are primarily
+    /// identified via the presence of a blockstate -> model map for the block.
     public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
     private final Random RAND = new Random();

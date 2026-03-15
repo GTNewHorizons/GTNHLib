@@ -11,6 +11,8 @@ import net.minecraft.client.resources.FallbackResourceManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.item.Item;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.TextureStitchEvent;
 
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
@@ -175,7 +178,8 @@ public class ModelRegistry {
 
             GameData.getBlockRegistry().registryObjects.forEach((s, b) -> {
                 if (!(s instanceof String name)) return;
-                if (!(b instanceof BlockModelInfo block)) {
+                if (!(b instanceof Block block)) return;
+                if (!(b instanceof BlockModelInfo modelInfo)) {
                     if (!infoMixinFailed) {
                         MODEL_LOGGER.error("Block registry contained a non-block or the info mixin failed!");
                         MODEL_LOGGER.error("Either you won't notice anything, or all JSON models will stop loading...");
@@ -183,7 +187,10 @@ public class ModelRegistry {
                     }
                     return;
                 }
-                block.nhlib$setModeled(modeledBlocks.contains(name));
+                final var modeled = modeledBlocks.contains(name);
+                modelInfo.nhlib$setModeled(modeledBlocks.contains(name));
+                if (modeled)
+                    MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(block), ModelISBRH.INSTANCE);
             });
 
             EventHandler.texturesToLoad = texturesToLoad;

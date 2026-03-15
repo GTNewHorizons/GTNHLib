@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.test.block;
 
-import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.ItemStack;
@@ -19,11 +17,6 @@ public class BlockTestTint extends Block implements IBlockColor {
     @Override
     public boolean isOpaqueCube() {
         return false;
-    }
-
-    @Override
-    public int getRenderType() {
-        return JSON_ISBRH_ID;
     }
 
     @Override

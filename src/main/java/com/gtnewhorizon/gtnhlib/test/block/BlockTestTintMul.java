@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.test.block;
 
-import static com.gtnewhorizon.gtnhlib.client.model.ModelISBRH.JSON_ISBRH_ID;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
@@ -93,11 +91,6 @@ public class BlockTestTintMul extends Block implements IBlockColor {
     @Override
     public TileEntity createTileEntity(World world, int meta) {
         return new TileTestTintMul();
-    }
-
-    @Override
-    public int getRenderType() {
-        return JSON_ISBRH_ID;
     }
 
     @Override
