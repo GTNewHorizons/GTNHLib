@@ -4,6 +4,19 @@ import java.util./* List */Iterator;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 
+/**
+ * An iterator through positions in 3D space, typically starting at relative <0,0,0> and going outward.
+ * To use, call {@link #next()} and then take the iterator's n, l, and m fields, using them as arbitrary
+ * coordinates. Offset coordinates can be optionally supplied; n is treated as x, l as y, and m as z in
+ * methods that use those. One reason n, l, and m are not internally x, y, and z is to highlight that
+ * their ordering is arbitrary; swap or invert them if you like. I initially named them n, l, and m as
+ * they increase similarly to the three electronic quantum numbers (you can think of the sign of n or l
+ * as the spin). In {@link com.gtnewhorizon.gtnhlib.blockpos.CubeIterator}, from which this was adapted,
+ * aside from the symmetry transformations, m is bounded by l and l is bounded by n, similarly to electron
+ * orbitals, in order to get unique non-ordered {n,l,m} sets.
+ *
+ * @author __felix__
+ */
 public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
 
     /**
@@ -265,6 +278,32 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      */
     public final void setStartZ(int startZ) {
         this.startZ = startZ;
+    }
+
+    /**
+     * Outputs the current iterator relative position as a string, for debugging.
+     *
+     * @return &quot;&lt;n,l,m&gt;&quot;
+     */
+    public String getCurrentRelativePos() {
+        return String.format("<%d,%d,%d>", n, l, m);
+    }
+
+    /**
+     * Outputs the current iterator absolute position as a string, for debugging.
+     *
+     * @return &quot;&lt;startX+n,startY+l,startZ+m&gt;&quot;
+     */
+    public String getCurrentAbsolutePos() {
+        return String.format("<%d,%d,%d>", startX + n, startY + l, startZ + m);
+    }
+
+    /**
+     * @hidden
+     */
+    @Override
+    public String toString() {
+        return getClass().getName() + "@" + getCurrentRelativePos();
     }
 
     /**
