@@ -30,7 +30,7 @@ public class ModelQuad implements ModelQuadViewMutable {
     private int normal;
 
     private Object sprite;
-    private int colorIdx;
+    private int colorIdx = -1;
     private boolean transparent = false;
     private ModelQuadFacing direction;
 
