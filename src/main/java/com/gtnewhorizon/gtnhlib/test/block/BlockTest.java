@@ -26,6 +26,7 @@ public class BlockTest extends Block {
 
     public static void register() {
         final var testBlock = new BlockTest();
+        testBlock.setBlockName("model_test");
         GameRegistry.registerBlock(testBlock, "model_test");
 
         /// This method allows you to adapt any property to itemstacks, with some default value. This is mostly relevant

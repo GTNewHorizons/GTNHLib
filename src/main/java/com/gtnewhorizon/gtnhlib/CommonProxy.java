@@ -59,7 +59,7 @@ public class CommonProxy {
 
         if (GTNHLibConfig.enableTestBlocks) {
             BlockTest.register();
-            GameRegistry.registerBlock(new BlockTestTint(), "model_test_tint");
+            BlockTestTint.register();
             BlockTestTintMul.register();
         }
 

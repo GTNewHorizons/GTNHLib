@@ -7,11 +7,19 @@ import net.minecraft.world.IBlockAccess;
 
 import com.gtnewhorizon.gtnhlib.client.model.color.IBlockColor;
 
+import cpw.mods.fml.common.registry.GameRegistry;
+
 public class BlockTestTint extends Block implements IBlockColor {
 
     public BlockTestTint() {
         super(Material.wood);
         setHardness(2f);
+    }
+
+    public static void register() {
+        final var block = new BlockTestTint();
+        block.setBlockName("model_test_tint");
+        GameRegistry.registerBlock(block, "model_test_tint");
     }
 
     @Override

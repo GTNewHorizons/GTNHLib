@@ -27,6 +27,7 @@ public class BlockTestTintMul extends Block implements IBlockColor {
 
     public static void register() {
         final var tintMulTestBlock = new BlockTestTintMul();
+        tintMulTestBlock.setBlockName("model_test_tint_mul");
         GameRegistry.registerBlock(tintMulTestBlock, "model_test_tint_mul");
         GameRegistry.registerTileEntity(TileTestTintMul.class, "tile_test_tint_mul");
 
