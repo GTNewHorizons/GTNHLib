@@ -1,25 +1,60 @@
 package com.gtnewhorizon.gtnhlib.geometry;
 
+/**
+ * Abstract3DIterator that works outwards under the L infinity metric, forming a cube.
+ * (distance = max(x, y, z))
+ * <br>Uses the manhattan metric secondarially to order triples in the same shell.
+ * (distance = x+y+z)
+ * <br>Use {com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#getCurrentRelativePos} to debug.
+ *
+ * @author __felix__
+ */
 public class CubeIterator extends Abstract3DIterator {
 
+    /**
+    * Initializes without setting the offsets used by certain methods
+    * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int)
+    */
     CubeIterator(int range) {
         super(range);
     }
 
+    /**
+    * Initializes with setting the offsets used by certain methods
+    * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int,int,int,int)
+    */
     CubeIterator(int range, int x, int y, int z) {
         super(range, x, y, z);
     }
 
+    /**
+     * Returns whether the iterator is specifically at the end position.
+     * Does NOT return false always if progressed past the end position.
+     *
+     * @return whether the iterator is at the end position: n, l, m >= -range
+     */
     public boolean hasNext() {
         return -n < range || -l < range || -m < range;
     }
 
+    /**
+     * Returns whether the iterator is at its start position.
+     *
+     * @return whether n, l, and m are all 0 (meaning the center block)
+     */
     public boolean hasPrevious() {
         return n != 0 && l != 0 && m != 0;
     }
 
+    /**
+     * Internal call for {@link com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#next()}.
+     * Progresses the CubeIterator forward by one step (the changes are in the n, l, and m fields).
+     * First inverts the coords in a binary-counter fashion, then once they are all negative swaps them around until
+     * they are back in descending order, then bumps m up unless it is equal to l, otherwise bumps l up and resets m,
+     * or if all three are equal bumps n and resets the other two. Uses the L infinity distance metric, forming a cube.
+     */
     @Override
-    public void __next() {
+    protected void __next() {
         m = -m;
         if (m < 0) return;
         l = -l;
