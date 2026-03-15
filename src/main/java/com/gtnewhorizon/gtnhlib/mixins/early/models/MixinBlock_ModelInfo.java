@@ -5,13 +5,14 @@ import net.minecraft.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.gtnewhorizon.gtnhlib.client.model.loading.BlockModelInfo;
+import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 
 @Mixin(Block.class)
 public class MixinBlock_ModelInfo implements BlockModelInfo {
 
     /// This is a shadowed field, not a unique one, because we injected it with ASM. See
     /// {@link com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer}
+    @SuppressWarnings("MixinAnnotationTarget")
     @Shadow(remap = false)
     private boolean nhlib$isModeled = false;
 
