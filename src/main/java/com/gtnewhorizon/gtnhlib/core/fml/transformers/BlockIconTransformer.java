@@ -67,12 +67,12 @@ public class BlockIconTransformer implements IClassTransformer {
 
     /// Implements the {@link com.gtnewhorizon.gtnhlib.api.BlockModelInfo} interface on the Block class,
     /// adds the boolean nhlib$isModeled field and adds associated getter/setter for it.
-    /// <p>
+    ///
     /// This is what our hook is injecting for the IBlockAccess variant:
     /// ```java
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getParticleIcon(world, x, y, z);
     /// ```
-    /// <p>
+    ///
     /// This is what our hook is injecting for the side:meta and just side variants:
     /// ```java
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getMissingIcon();
