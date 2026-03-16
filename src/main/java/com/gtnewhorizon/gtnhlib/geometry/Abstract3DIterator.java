@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.geometry;
 
-import java.util./* List */Iterator;
+// import java.util./* List */Iterator;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 
@@ -16,7 +16,7 @@ import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
  *
  * @author __felix__
  */
-public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
+public abstract class Abstract3DIterator { // implements /* List */Iterator<Void> {
 
     /**
      * One of the three coordinates ran through by an iterator. Default is X. Can be X, Y, or Z, depending on what
@@ -98,10 +98,10 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
     /**
      * The INTERNAL implementation of {@link #next()}.&nbsp;Override this when making a subclass. (Unless you want to
      * have to spam `return null` everywhere...)
-     * 
+     * @hidden
      * @see #next()
      */
-    protected abstract void __next();
+    // protected abstract void __next();
 
     // protected abstract void __previous();
 
@@ -109,12 +109,9 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      * Progresses the iterator ({@link n}, {@link l}, {@link m} values), but does not directly return them. This is
      * intended so that you don't have to spin up an entire object if you don't want to
      *
-     * @return returns null just to comply with Iterator<E>
+     * <!-- @return returns null just to comply with Iterator<E> -->
      */
-    public final Void next() {
-        __next();
-        return null;
-    }
+    public abstract void next();
 
     /*
      * public final Void previous() { __previous(); return null; } public final void add(Void v) {} public final void
@@ -130,7 +127,7 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      * @return an array containing the next xyz coordinates, offset if offsets were provided in init
      */
     public final int[] nextCoordTriple() {
-        __next();
+        next();
         return new int[] { startX + n, startY + l, startZ + m };
     }
 
@@ -143,7 +140,7 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      * @return a BlockPos of the next xyz coordinates, offset if offsets were provided in init
      */
     public final BlockPos nextBlockPos() {
-        __next();
+        next();
         return new BlockPos(startX + n, startY + l, startZ + m);
     }
 
@@ -313,7 +310,7 @@ public abstract class Abstract3DIterator implements /* List */Iterator<Void> {
      * @return n, l, and m, truncated with sign as s21 ints, added together with offsets, fitting into a long
      */
     public final long nextAs21Bit() {
-        __next();
+    next();
         return (long) (n & 0x000FFFFF | (n & -0x80000000) >> 11) | (long) (l & 0x000FFFFF) << 21
                 | (long) (l & -0x80000000) << 10
                 | (long) (m & 0x000FFFFF) << 42
