@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.geometry;
 
-// import java.util./* List */Iterator;
-
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 
 /**
@@ -16,27 +14,27 @@ import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
  *
  * @author __felix__
  */
-public abstract class Abstract3DIterator { // implements /* List */Iterator<Void> {
+public abstract class Abstract3DIterator {
 
     /**
      * One of the three coordinates ran through by an iterator. Default is X. Can be X, Y, or Z, depending on what
-     * arbitrary order you would like to prioritize (Invert them if you would like to change the priority of neg vs
-     * positive directions) <br>
-     * Inspired by the principal quantum number; it limits the values of l and m.
+     * arbitrary order you would like to prioritize. This should be the **first to be increased** value in implementing
+     * classes (after symmetry operations). <br>
+     * Inspired by the principal quantum number; it limits the values of l and m in CubeIterator.
      */
     public int n;
     /**
      * One of the three coordinates ran through by an iterator. Default is Y. Can be X, Y, or Z, depending on what
-     * arbitrary order you would like to prioritize (Invert them if you would like to change the priority of neg vs
-     * positive directions) <br>
-     * Inspired by the azimuthal quantum number; it limits the value of m and can only go up to n.
+     * arbitrary order you would like to prioritize. This should be the **second to be increased** value in implementing
+     * classes (after symmetry operations). <br>
+     * Inspired by the azimuthal quantum number; it limits the value of m and can only go up to n in CubeIterator.
      */
     public int l;
     /**
      * One of the three coordinates ran through by an iterator. Default is Z. Can be X, Y, or Z, depending on what
-     * arbitrary order you would like to prioritize (Invert them if you would like to change the priority of neg vs
-     * positive directions) <br>
-     * Inspired by the magnetic quantum number; it can only go up to l.
+     * arbitrary order you would like to prioritize. This should be the **last to be increased** value in implementing
+     * classes (after symmetry operations). <br>
+     * Inspired by the magnetic quantum number; it can only go up to l in CubeIterator.
      */
     public int m;
 
@@ -53,7 +51,7 @@ public abstract class Abstract3DIterator { // implements /* List */Iterator<Void
      */
     public abstract boolean hasNext();
 
-    // public boolean hasPrevious();
+    // public abstract boolean hasPrevious();
 
     /**
      * The (optional) starting X coordinate, used with {@link #nextCoordTriple()} and {@link #nextBlockPos()}.
@@ -68,9 +66,92 @@ public abstract class Abstract3DIterator { // implements /* List */Iterator<Void
      */
     public int startZ;
 
+    /** An {@link #Ordering} that applies to the order that values are increased.
+     * The default ordering is that X is the first value to be increased, and positive goes before negative.
+     * This changes the output of functions such as {@link #getX()} (anything that says "XYZ")
+     * If you want to ignore this, just use `iter.n`, `iter.l`, `iter.m` for whichever X, Y, Z coord you want.
+     */
+    public int order = Ordering.XYZ;
+
+    /**
+     * An "enum" for the arbitrary ordering of X, Y, and Z coords. Capital letter means positive then negative, lowercase means other way around.
+     * Ordering of coordinates affects priority (for example in a typical implementation for range = 1 with Ordering.XYZ it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.)
+     * This does not define a way to change the order in which the mirroring operation happens (so for example you can't do +x, -y, -x, +y), as that could mess up subclasses.
+     * (So you can do North-South-Down-Up-West-East, but not North-Up-South-East-Down-West). <br>
+     * The format is three nibbles stuck together, the first bit of each being the sign (1 for neg first, 0 for pos first) and the second three bits being which of n, l, m it uses
+     * (100 = n, 010 = l, 001 = m). This assumes that implementing classes have decreasing priority for n, l, and m.
+     */
+    public static final class Ordering {
+
+        public static final byte N = 0b100;
+        public static final byte L = 0b010;
+        public static final byte M = 0b001;
+        public static final byte minus = 8;
+
+        public static final byte X = 8;
+        public static final byte Y = 4;
+        public static final byte Z = 0;
+    
+        public static final short xyz = 0b110010101001;
+        public static final short xyZ = 0b110010100001;
+        public static final short xYz = 0b110000101001;
+        public static final short xYZ = 0b110000100001;
+        public static final short Xyz = 0b010010101001;
+        public static final short XyZ = 0b010010100001;
+        public static final short XYz = 0b010000101001;
+        public static final short XYZ = 0b010000100001;
+    
+        public static final short xzy = 0b110010011010;
+        public static final short xzY = 0b110010010010;
+        public static final short xZy = 0b110000011010;
+        public static final short xZY = 0b110000010010;
+        public static final short Xzy = 0b010010011010;
+        public static final short XzY = 0b010010010010;
+        public static final short XZy = 0b010000011010;
+        public static final short XZY = 0b010000010010;
+    
+        public static final short yxz = 0b101011001001;
+        public static final short yxZ = 0b101011000001;
+        public static final short yXz = 0b101001001001;
+        public static final short yXZ = 0b101001000001;
+        public static final short Yxz = 0b001011001001;
+        public static final short YxZ = 0b001011000001;
+        public static final short YXz = 0b001001001001;
+        public static final short YXZ = 0b001001000001;
+    
+        public static final short yzx = 0b101010011100;
+        public static final short yzX = 0b101010010100;
+        public static final short yZx = 0b101000011100;
+        public static final short yZX = 0b101000010100;
+        public static final short Yzx = 0b001010011100;
+        public static final short YzX = 0b001010010100;
+        public static final short YZx = 0b001000011100;
+        public static final short YZX = 0b001000010100;
+    
+        public static final short zxy = 0b100111001010;
+        public static final short zxY = 0b100111000010;
+        public static final short zXy = 0b100101001010;
+        public static final short zXY = 0b100101000010;
+        public static final short Zxy = 0b000111001010;
+        public static final short ZxY = 0b000111000010;
+        public static final short ZXy = 0b000101001010;
+        public static final short ZXY = 0b000101000010;
+    
+        public static final short zyx = 0b100110101100;
+        public static final short zyX = 0b100110100100;
+        public static final short zYx = 0b100100101100;
+        public static final short zYX = 0b100100100100;
+        public static final short Zyx = 0b000110101100;
+        public static final short ZyX = 0b000110100100;
+        public static final short ZYx = 0b000100101100;
+        public static final short ZYX = 0b000100100100;
+
+    }
+        
+
     /**
      * Initializes the iterator with only the max range. If you don't want a max range, put whatever here and ignore
-     * {@link #hasNext()}.
+     * {@link #hasNext()}. Ordering defaults to X -> Y -> Z (pos -> neg for all).
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
      */
@@ -79,9 +160,17 @@ public abstract class Abstract3DIterator { // implements /* List */Iterator<Void
     }
 
     /**
+     * Same as {@link #Abstract3DIterator(int)} except this sets {@link #order}.
+     */
+    public Abstract3DIterator(int range, short order) {
+        this.range = range;
+        this.order = order;
+    }
+
+    /**
      * Initializes the iterator with the max range and starting XYZ values. If you don't want a max range, put whatever
      * here and ignore {@link #hasNext()}. The XYZ values are not factored into {@link #n}, {@link #l}, or {@link #m};
-     * those are only starting offsets. They are used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}.
+     * those are only starting offsets. They are used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}. Ordering defaults to X -> Y -> Z (pos -> neg for all).
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
      * @param x     the x offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
@@ -96,183 +185,132 @@ public abstract class Abstract3DIterator { // implements /* List */Iterator<Void
     }
 
     /**
-     * The INTERNAL implementation of {@link #next()}.&nbsp;Override this when making a subclass. (Unless you want to
-     * have to spam `return null` everywhere...)
-     * @hidden
-     * @see #next()
+     * Same as {@link #Abstract3DIterator(int, int, int, int)} except this sets {@link #order}.
      */
-    // protected abstract void __next();
-
-    // protected abstract void __previous();
+    public Abstract3DIterator(int range, short order, int x, int y, int z) {
+        this.range = range;
+        this.order = order;
+        startX = x;
+        startY = y;
+        startZ = z;
+    }
 
     /**
      * Progresses the iterator ({@link n}, {@link l}, {@link m} values), but does not directly return them. This is
      * intended so that you don't have to spin up an entire object if you don't want to
-     *
-     * <!-- @return returns null just to comply with Iterator<E> -->
      */
     public abstract void next();
 
-    /*
-     * public final Void previous() { __previous(); return null; } public final void add(Void v) {} public final void
-     * set(Void v) {} public final void remove() {} public int nextIndex() { return 0; } public int previousIndex() {
-     * return 0; }
-     */
-
     /**
-     * Returns the next coords as an array, using the default of x for n, etc., offset by the optional start values. The
+     * Returns the next coords as an array, offset by the optional start values. The
      * start values don't have to be set for this to be used (they default to 0). Using the fields directly or their
-     * getters is better than spinning up an array in most cases. Also note that this method *progresses* the iterator.
+     * getters is better than spinning up an array in most cases. Also note that this method progresses the iterator.
      *
      * @return an array containing the next xyz coordinates, offset if offsets were provided in init
      */
     public final int[] nextCoordTriple() {
         next();
-        return new int[] { startX + n, startY + l, startZ + m };
+        return new int[] { getX(), getY(), getZ() };
     }
 
     /**
-     * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, using the default of x for n,
-     * etc., offset by the optional start values. The start values don't have to be set for this to be used (they
-     * default to 0). Using the fields directly or their getters is usually better than this. Also note that this method
+     * Returns the next coords as an array, not offset by the optional start values if they were set. Identical to {@link #nextCoordTriple()} if offsets weren't set. Using the n, l, m fields directly or their
+     * getters is better than spinning up an array in most cases. Also note that this method progresses the iterator.
+     *
+     * @return an array containing the next xyz coordinates, offset if offsets were provided in init
+     */
+    public final int[] nextRelativeCoordTriple() {
+        next();
+        return new int[] { getRelativeX(), getRelativeY(), getRelativeZ() };
+    }
+
+    /**
+     * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, offset by the optional start values. The start values don't have to be set for this to be used (they
+     * default to 0). Using the fields directly or the XYZ getters is usually better than this. Also note that this method
      * progresses the iterator.
      *
      * @return a BlockPos of the next xyz coordinates, offset if offsets were provided in init
      */
     public final BlockPos nextBlockPos() {
         next();
-        return new BlockPos(startX + n, startY + l, startZ + m);
-    }
-
-    /*
-     * public final int[] prevCoordTriple() { __previous(); return new int[] { n , l , m }; } public final BlockPos
-     * prevBlockPos() { __previous(); return new BlockPos(n, l, m); }
-     */
-
-    /**
-     * Getter for {@link #n}
-     *
-     * @return {@link #n}
-     */
-    public final int getN() {
-        return n;
+        return new BlockPos(getX(), getY(), getZ());
     }
 
     /**
-     * Getter for {@link #l}
+     * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, not offset by the optional start values. Only different if the startX, etc. fields were set. Using the n, l, m fields directly or the XYZ getters is usually better than this. Also note that this method
+     * progresses the iterator.
      *
-     * @return {@link #l}
+     * @return a BlockPos of the next relative xyz coordinates, not offset even if offsets were provided in init
      */
-    public final int getL() {
-        return l;
+    public final BlockPos nextRelativeBlockPos() {
+        next();
+        return new BlockPos(getRelativeX(), getRelativeY(), getRelativeZ());
     }
 
     /**
-     * Getter for {@link #m}
+     * Returns the relative X coordinate according to the XYZ {@link #order}.
      *
-     * @return {@link #m}
+     * @return the relative X coordinate according to the arbitrary ordering
      */
-    public final int getM() {
-        return m;
+    public final int getRelativeX() {
+        byte tmp = (byte) (order >> Ordering.X);
+        int ret = (tmp & Ordering.N) != 0 ? n : (tmp & Ordering.L) != 0 ? l : m;
+        if ((order & Ordering.minus) != 0) ret = -ret;
+        return ret;
     }
 
     /**
-     * Getter for {@link #range}
+     * Returns the relative Y coordinate according to the XYZ {@link #order}.
      *
-     * @return {@link #range}
+     * @return the relative Y coordinate according to the arbitrary ordering
      */
-    public final int getRange() {
-        return range;
+    public final int getRelativeY() {
+        byte tmp = (byte) (order >> Ordering.Y);
+        int ret = (tmp & Ordering.L) != 0 ? l : (tmp & Ordering.L) != 0 ? n : m;
+        if ((order & Ordering.minus) != 0) ret = -ret;
+        return ret;
     }
 
     /**
-     * Getter for {@link #startX}
+     * Returns the relative Z coordinate according to the XYZ {@link #order}.
      *
-     * @return {@link #startX}
+     * @return the relative Z coordinate according to the arbitrary ordering
      */
-    public final int getStartX() {
-        return startX;
+    public final int getRelativeZ() {
+        int tmp = (byte) order;
+        int ret = (tmp & Ordering.M) != 0 ? m : (tmp & Ordering.L) != 0 ? l : n;
+        if ((order & Ordering.minus) != 0) ret = -ret;
+        return ret;
     }
 
     /**
-     * Getter for {@link #startY}
+     * Returns the absolute X coordinate according to the XYZ {@link #order}.
+     * Only different if {@link #startX} was set.
      *
-     * @return {@link #startY}
+     * @return the absolute X coordinate according to the arbitrary ordering
      */
-    public final int getStartY() {
-        return startY;
+    public final int getX() {
+        return startX + getRelativeX();
     }
 
     /**
-     * Getter for {@link #startZ}
+     * Returns the absolute Y coordinate according to the XYZ {@link #order}.
+     * Only different if {@link #startY} was set.
      *
-     * @return {@link #startZ}
+     * @return the absolute Y coordinate according to the arbitrary ordering
      */
-    public final int getStartZ() {
-        return startZ;
+    public final int getY() {
+        return startY + getRelativeY();
     }
 
     /**
-     * Setter for {@link #n}
+     * Returns the absolute Z coordinate according to the XYZ {@link #order}.
+     * Only different if {@link #startZ} was set.
      *
-     * @param n {@link #n}
+     * @return the absolute Z coordinate according to the arbitrary ordering
      */
-    public final void setN(int n) {
-        this.n = n;
-    }
-
-    /**
-     * Setter for {@link #l}
-     *
-     * @param l {@link #l}
-     */
-    public final void setL(int l) {
-        this.l = l;
-    }
-
-    /**
-     * Setter for {@link #m}
-     *
-     * @param m {@link #m}
-     */
-    public final void setM(int m) {
-        this.m = m;
-    }
-
-    /**
-     * Setter for {@link #range}
-     *
-     * @param range {@link #range}
-     */
-    public final void setRange(int range) {
-        this.range = range;
-    }
-
-    /**
-     * Setter for {@link #startX}
-     *
-     * @param startX {@link #startX}
-     */
-    public final void setStartX(int startX) {
-        this.startX = startX;
-    }
-
-    /**
-     * Setter for {@link #startY}
-     *
-     * @param startY {@link #startY}
-     */
-    public final void setStartY(int startY) {
-        this.startY = startY;
-    }
-
-    /**
-     * Setter for {@link #startZ}
-     *
-     * @param startZ {@link #startZ}
-     */
-    public final void setStartZ(int startZ) {
-        this.startZ = startZ;
+    public final int getZ() {
+        return startZ + getRelativeZ();
     }
 
     /**
