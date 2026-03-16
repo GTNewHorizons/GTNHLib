@@ -11,7 +11,8 @@ import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
  * can think of the sign of n or l as the spin). In {@link com.gtnewhorizon.gtnhlib.blockpos.CubeIterator}, from which
  * this was adapted, aside from the symmetry transformations, m is bounded by l and l is bounded by n, similarly to
  * electron orbitals, in order to get unique non-ordered {n,l,m} sets. <br>
- * It is recommended to use direct field access, functions like {#getX()}, or a function such as {@link #nextNLMPacked()} to avoid object spam.
+ * It is recommended to use direct field access, functions like {#getX()}, or a function such as
+ * {@link #nextNLMPacked()} to avoid object spam.
  *
  * @author __felix__
  */
@@ -67,20 +68,24 @@ public abstract class Abstract3DIterator {
      */
     public int startZ;
 
-    /** An {@link #Ordering} that applies to the order that values are increased.
-     * The default ordering is that X is the first value to be increased, and positive goes before negative.
-     * This changes the output of functions such as {@link #getX()} (anything that says "XYZ")
-     * If you want to ignore this, just use `iter.n`, `iter.l`, `iter.m` for whichever X, Y, Z coord you want.
+    /**
+     * An {@link #Ordering} that applies to the order that values are increased. The default ordering is that X is the
+     * first value to be increased, and positive goes before negative. This changes the output of functions such as
+     * {@link #getX()} (anything that says "XYZ") If you want to ignore this, just use `iter.n`, `iter.l`, `iter.m` for
+     * whichever X, Y, Z coord you want.
      */
     public int order = Ordering.XYZ;
 
     /**
-     * An "enum" for the arbitrary ordering of X, Y, and Z coords. Capital letter means positive then negative, lowercase means other way around.
-     * Ordering of coordinates affects priority (for example in a typical implementation for range = 1 with Ordering.XYZ it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.)
-     * This does not define a way to change the order in which the mirroring operation happens (so for example you can't do +x, -y, -x, +y), as that could mess up subclasses.
-     * (So you can do North-South-Down-Up-West-East, but not North-Up-South-East-Down-West). <br>
-     * The format is three nibbles stuck together, the first bit of each being the sign (1 for neg first, 0 for pos first) and the second three bits being which of n, l, m it uses
-     * (100 = n, 010 = l, 001 = m). This assumes that implementing classes have decreasing priority for n, l, and m.
+     * An "enum" for the arbitrary ordering of X, Y, and Z coords. Capital letter means positive then negative,
+     * lowercase means other way around. Ordering of coordinates affects priority (for example in a typical
+     * implementation for range = 1 with Ordering.XYZ it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does
+     * not define a way to change the order in which the mirroring operation happens (so for example you can't do +x,
+     * -y, -x, +y), as that could mess up subclasses. (So you can do North-South-Down-Up-West-East, but not
+     * North-Up-South-East-Down-West). <br>
+     * The format is three nibbles stuck together, the first bit of each being the sign (1 for neg first, 0 for pos
+     * first) and the second three bits being which of n, l, m it uses (100 = n, 010 = l, 001 = m). This assumes that
+     * implementing classes have decreasing priority for n, l, and m.
      */
     public static final class Ordering {
 
@@ -92,7 +97,7 @@ public abstract class Abstract3DIterator {
         public static final byte X = 8;
         public static final byte Y = 4;
         public static final byte Z = 0;
-    
+
         public static final short xyz = 0b110010101001;
         public static final short xyZ = 0b110010100001;
         public static final short xYz = 0b110000101001;
@@ -101,7 +106,7 @@ public abstract class Abstract3DIterator {
         public static final short XyZ = 0b010010100001;
         public static final short XYz = 0b010000101001;
         public static final short XYZ = 0b010000100001;
-    
+
         public static final short xzy = 0b110010011010;
         public static final short xzY = 0b110010010010;
         public static final short xZy = 0b110000011010;
@@ -110,7 +115,7 @@ public abstract class Abstract3DIterator {
         public static final short XzY = 0b010010010010;
         public static final short XZy = 0b010000011010;
         public static final short XZY = 0b010000010010;
-    
+
         public static final short yxz = 0b101011001001;
         public static final short yxZ = 0b101011000001;
         public static final short yXz = 0b101001001001;
@@ -119,7 +124,7 @@ public abstract class Abstract3DIterator {
         public static final short YxZ = 0b001011000001;
         public static final short YXz = 0b001001001001;
         public static final short YXZ = 0b001001000001;
-    
+
         public static final short yzx = 0b101010011100;
         public static final short yzX = 0b101010010100;
         public static final short yZx = 0b101000011100;
@@ -128,7 +133,7 @@ public abstract class Abstract3DIterator {
         public static final short YzX = 0b001010010100;
         public static final short YZx = 0b001000011100;
         public static final short YZX = 0b001000010100;
-    
+
         public static final short zxy = 0b100111001010;
         public static final short zxY = 0b100111000010;
         public static final short zXy = 0b100101001010;
@@ -137,7 +142,7 @@ public abstract class Abstract3DIterator {
         public static final short ZxY = 0b000111000010;
         public static final short ZXy = 0b000101001010;
         public static final short ZXY = 0b000101000010;
-    
+
         public static final short zyx = 0b100110101100;
         public static final short zyX = 0b100110100100;
         public static final short zYx = 0b100100101100;
@@ -148,7 +153,6 @@ public abstract class Abstract3DIterator {
         public static final short ZYX = 0b000100100100;
 
     }
-        
 
     /**
      * Initializes the iterator with only the max range. If you don't want a max range, put whatever here and ignore
@@ -171,7 +175,8 @@ public abstract class Abstract3DIterator {
     /**
      * Initializes the iterator with the max range and starting XYZ values. If you don't want a max range, put whatever
      * here and ignore {@link #hasNext()}. The XYZ values are not factored into {@link #n}, {@link #l}, or {@link #m};
-     * those are only starting offsets. They are used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}. Ordering defaults to X -> Y -> Z (pos -> neg for all).
+     * those are only starting offsets. They are used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}.
+     * Ordering defaults to X -> Y -> Z (pos -> neg for all).
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
      * @param x     the x offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
@@ -203,9 +208,9 @@ public abstract class Abstract3DIterator {
     public abstract void next();
 
     /**
-     * Returns the next coords as an array, offset by the optional start values. The
-     * start values don't have to be set for this to be used (they default to 0). Using the fields directly or their
-     * getters is better than spinning up an array in most cases. Also note that this method progresses the iterator.
+     * Returns the next coords as an array, offset by the optional start values. The start values don't have to be set
+     * for this to be used (they default to 0). Using the fields directly or their getters is better than spinning up an
+     * array in most cases. Also note that this method progresses the iterator.
      *
      * @return an array containing the next xyz coordinates, offset if offsets were provided in init
      */
@@ -215,8 +220,9 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Returns the next coords as an array, not offset by the optional start values if they were set. Identical to {@link #nextCoordTriple()} if offsets weren't set. Using the n, l, m fields directly or their
-     * getters is better than spinning up an array in most cases. Also note that this method progresses the iterator.
+     * Returns the next coords as an array, not offset by the optional start values if they were set. Identical to
+     * {@link #nextCoordTriple()} if offsets weren't set. Using the n, l, m fields directly or their getters is better
+     * than spinning up an array in most cases. Also note that this method progresses the iterator.
      *
      * @return an array containing the next xyz coordinates, offset if offsets were provided in init
      */
@@ -226,9 +232,9 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, offset by the optional start values. The start values don't have to be set for this to be used (they
-     * default to 0). Using the fields directly or the XYZ getters is usually better than this. Also note that this method
-     * progresses the iterator.
+     * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, offset by the optional start
+     * values. The start values don't have to be set for this to be used (they default to 0). Using the fields directly
+     * or the XYZ getters is usually better than this. Also note that this method progresses the iterator.
      *
      * @return a BlockPos of the next xyz coordinates, offset if offsets were provided in init
      */
@@ -238,8 +244,9 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, not offset by the optional start values. Only different if the startX, etc. fields were set. Using the n, l, m fields directly or the XYZ getters is usually better than this. Also note that this method
-     * progresses the iterator.
+     * Returns the next coords as a {@link com.gtnewhorizon.gtnhlib.blockpos.BlockPos}, not offset by the optional start
+     * values. Only different if the startX, etc. fields were set. Using the n, l, m fields directly or the XYZ getters
+     * is usually better than this. Also note that this method progresses the iterator.
      *
      * @return a BlockPos of the next relative xyz coordinates, not offset even if offsets were provided in init
      */
@@ -285,8 +292,7 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Returns the absolute X coordinate according to the XYZ {@link #order}.
-     * Only different if {@link #startX} was set.
+     * Returns the absolute X coordinate according to the XYZ {@link #order}. Only different if {@link #startX} was set.
      *
      * @return the absolute X coordinate according to the arbitrary ordering
      */
@@ -295,8 +301,7 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Returns the absolute Y coordinate according to the XYZ {@link #order}.
-     * Only different if {@link #startY} was set.
+     * Returns the absolute Y coordinate according to the XYZ {@link #order}. Only different if {@link #startY} was set.
      *
      * @return the absolute Y coordinate according to the arbitrary ordering
      */
@@ -305,8 +310,7 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Returns the absolute Z coordinate according to the XYZ {@link #order}.
-     * Only different if {@link #startZ} was set.
+     * Returns the absolute Z coordinate according to the XYZ {@link #order}. Only different if {@link #startZ} was set.
      *
      * @return the absolute Z coordinate according to the arbitrary ordering
      */
@@ -341,7 +345,9 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Progresses the iterator and gives the coordinates of n, l, and m, together, packed with {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * Progresses the iterator and gives the coordinates of n, l, and m, together, packed with
+     * {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * 
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
@@ -354,7 +360,9 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Progresses the iterator and gives the coordinates of x, y, and z, together, packed with {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * Progresses the iterator and gives the coordinates of x, y, and z, together, packed with
+     * {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * 
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
@@ -367,7 +375,9 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Progresses the iterator and gives the relative coordinates of x, y, and z, together, packed with {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * Progresses the iterator and gives the relative coordinates of x, y, and z, together, packed with
+     * {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * 
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
