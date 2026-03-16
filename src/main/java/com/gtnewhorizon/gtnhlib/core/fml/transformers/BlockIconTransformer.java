@@ -41,6 +41,7 @@ public class BlockIconTransformer implements IClassTransformer {
     private static final String NEW_WORLD_DESC = "(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraft/util/IIcon;";
     private static final String MISSINGNO_DESC = "()Lnet/minecraft/util/IIcon;";
 
+    // These are the targeted calls - a variety of getIcons declared by the Block class
     private static final String GI_WORLD = "getIcon(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;";
     private static final String GI_SIDE_META = "getIcon(II)Lnet/minecraft/util/IIcon;";
     private static final String OBF_SIDE_META = "func_149735_b(II)Lnet/minecraft/util/IIcon;";
@@ -63,7 +64,7 @@ public class BlockIconTransformer implements IClassTransformer {
     /// ```java
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getParticleIcon(world, x, y, z);
     /// ```
-    /// This is what our hook is injecting for the side:meta variant:
+    /// This is what our hook is injecting for the side:meta and just side variants:
     /// ```java
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getMissingIcon();
     /// ```
