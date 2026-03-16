@@ -71,6 +71,7 @@ public class BlockIconTransformer implements IClassTransformer {
     /// fails loudly, allowing us to find and patch out the incorrect usages.
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
+        if (basicClass == null) return null;
         final var cr = new ClassReader(basicClass);
         final var blockness = checkForBlockChild(cr.getClassName(), cr.getSuperName());
         if (blockness == NOT_A_BLOCK) {
