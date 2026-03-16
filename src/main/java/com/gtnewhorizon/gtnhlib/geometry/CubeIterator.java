@@ -14,7 +14,7 @@ public class CubeIterator extends Abstract3DIterator {
      * 
      * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int)
      */
-    CubeIterator(int range) {
+    public CubeIterator(int range) {
         super(range);
     }
 
@@ -23,7 +23,7 @@ public class CubeIterator extends Abstract3DIterator {
      * 
      * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int,int,int,int)
      */
-    CubeIterator(int range, int x, int y, int z) {
+    public CubeIterator(int range, int x, int y, int z) {
         super(range, x, y, z);
     }
 
