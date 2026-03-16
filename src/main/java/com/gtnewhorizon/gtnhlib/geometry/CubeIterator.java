@@ -38,6 +38,16 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
+     * Returns whether the iterator is at or past the end position.&nbsp;Slower and much less useful.
+     * @see #hasNext()
+     *
+     * @return whether the iterator is past the end position: n, l, m >= -range
+     */
+    public boolean hasNextAccurate() {
+        return hasNext() && n >= -range && n <= range && l >= -range && l <= range && m >= -range && m <= range;
+    }
+
+    /**
      * Returns whether the iterator is at its start position.
      *
      * @return whether n, l, and m are all 0 (meaning the center block)
