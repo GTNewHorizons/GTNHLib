@@ -200,11 +200,19 @@ public class ModelRegistry {
                     }
                     return;
                 }
-                final var modeled = modeledBlocks.contains(name);
-                modelInfo.nhlib$setModeled(modeled);
+                
+                modelInfo.nhlib$setModeled(modeledBlocks.contains(name));
                 // We can't shortcut this, since some blocks may manually implement the interface.
-                if (modelInfo.nhlib$isModeled())
+                if (modelInfo.nhlib$isModeled()) {
+                    final var item = Item.getItemFromBlock(block);
+                    if (item == null) {
+                        MODEL_LOGGER.error(
+                                "Block {} has a null item! Unable to register item model.",
+                                block.getLocalizedName());
+                        return;
+                    }
                     MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(block), ModelISBRH.INSTANCE);
+                }
             });
 
             EventHandler.texturesToLoad = texturesToLoad;
