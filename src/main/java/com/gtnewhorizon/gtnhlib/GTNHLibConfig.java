@@ -37,8 +37,17 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(true)
     public static boolean enableTranslucentItemRenders;
 
+    @Config.Comment("Enable client-side resource pack update checking for active packs")
+    @Config.DefaultBoolean(true)
+    public static boolean enableResourcePackUpdateCheck;
+
     @Config.Comment("If you're not a dev, you don't need this")
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart
     public static boolean enableTestBlocks;
+
+    @Config.Comment("If you're not a dev, you don't need this")
+    @Config.DefaultBoolean(false)
+    @Config.RequiresMcRestart
+    public static boolean enableTestItems;
 }

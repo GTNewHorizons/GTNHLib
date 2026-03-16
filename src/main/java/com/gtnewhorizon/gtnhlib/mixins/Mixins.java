@@ -33,7 +33,8 @@ public enum Mixins implements IMixins {
                     .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.autoTextureLoading)),
     MODEL_ICON_WRAPPER(new MixinBuilder(
             "Ensures that blocks always return a valid icon for JSON model blocks, by using the particle icon.")
-                    .addClientMixins("models.MixinBlock_IconWrapper").setPhase(Phase.EARLY)
+                    .addClientMixins("models.MixinBlock_IconWrapper")
+                    .addClientMixins("models.MixinEntityDiggingFX_IconWrapper").setPhase(Phase.EARLY)
                     .setApplyIf(() -> GTNHLibConfig.modelIconWrapperMixin)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
@@ -56,6 +57,12 @@ public enum Mixins implements IMixins {
     MULTI_RELEASE_JAR_FILTER(new MixinBuilder("Skip multi-release JAR entries in mod discovery")
             .addCommonMixins("fml.MixinJarDiscoverer").setPhase(Phase.EARLY).addExcludedMod(TargetMods.LWJGL3IFY)),
     PICK_BLOCK_TRAP(Side.CLIENT, "MixinMinecraft_PickBlockTrap"),
+
+    ENHANCED_INFUSION_RECIPE(new MixinBuilder(
+            "Allow Thaumcraft Infusion Recipes to transform items instead of consuming them in an EnhancedInfusionRecipe")
+                    .setPhase(Phase.LATE).addCommonMixins("MixinEnhancedInfusionRecipe")
+                    .addRequiredMod(TargetMods.THAUMCRAFT)),
+    CONFIG_ORDER(Side.CLIENT, "fml.MixinGuiConfig")
     //
     ;
 
