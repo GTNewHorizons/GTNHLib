@@ -47,7 +47,7 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * <!-- Internal call for {@link com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#next()}. --> Progresses the
+     * Progresses the
      * CubeIterator forward by one step (the changes are in the n, l, and m fields). First inverts the coords in a
      * binary-counter fashion, then once they are all negative swaps them around until they are back in descending
      * order, then bumps m up unless it is equal to l, otherwise bumps l up and resets m, or if all three are equal
@@ -110,11 +110,4 @@ public class CubeIterator extends Abstract3DIterator {
         return;
     }
 
-    /*
-     * @Override //Not implemented yet (just the sign reversing part is, so far) public void __previous() { m = -m; if
-     * (m > 0) return; l = -l; if (l > 0) return; n = -n; if (n > 0) return; if (l >= n || m > n) { if (m >= l) { if (n
-     * <= l) { if (m > n) { n ^= m; m ^= n; n ^= m; if (l > m) { ++m; return; } m = 0; ++l; return; } l = 0; m = 0; ++n;
-     * return; } n ^= l; l ^= n; n ^= l; return; } if (n < m) { n ^= m; m ^= n; n ^= m; return; } m ^= l; l ^= m; m ^=
-     * l; return; } if (l > m) { m ^= l; l ^= m; m ^= l; return; } n ^= l; l ^= n; n ^= l; return; }
-     */
 }
