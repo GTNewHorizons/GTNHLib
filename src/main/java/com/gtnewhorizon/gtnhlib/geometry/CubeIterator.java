@@ -47,14 +47,14 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * Internal call for {@link com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#next()}. Progresses the
+     * <!-- Internal call for {@link com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#next()}. --> Progresses the
      * CubeIterator forward by one step (the changes are in the n, l, and m fields). First inverts the coords in a
      * binary-counter fashion, then once they are all negative swaps them around until they are back in descending
      * order, then bumps m up unless it is equal to l, otherwise bumps l up and resets m, or if all three are equal
-     * bumps n and resets the other two. Uses the L infinity distance metric, forming a cube.
+     * bumps n and resets the other two. Uses the L infinity norm/metric, forming a cube.
      */
     @Override
-    protected void __next() {
+    public void next() {
         int g;
         m = -m;
         if (m < 0) return;
