@@ -202,7 +202,8 @@ public class ModelRegistry {
                 }
                 final var modeled = modeledBlocks.contains(name);
                 modelInfo.nhlib$setModeled(modeled);
-                if (modeled)
+                // We can't shortcut this, since some blocks may manually implement the interface.
+                if (modelInfo.nhlib$isModeled())
                     MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(block), ModelISBRH.INSTANCE);
             });
 
