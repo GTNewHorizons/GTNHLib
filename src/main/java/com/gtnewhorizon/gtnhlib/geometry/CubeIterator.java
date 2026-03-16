@@ -39,6 +39,7 @@ public class CubeIterator extends Abstract3DIterator {
 
     /**
      * Returns whether the iterator is at or past the end position.&nbsp;Slower and much less useful.
+     * 
      * @see #hasNext()
      *
      * @return whether the iterator is past the end position: n, l, m >= -range
@@ -57,11 +58,10 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * Progresses the
-     * CubeIterator forward by one step (the changes are in the n, l, and m fields). First inverts the coords in a
-     * binary-counter fashion, then once they are all negative swaps them around until they are back in descending
-     * order, then bumps m up unless it is equal to l, otherwise bumps l up and resets m, or if all three are equal
-     * bumps n and resets the other two. Uses the L infinity norm/metric, forming a cube.
+     * Progresses the CubeIterator forward by one step (the changes are in the n, l, and m fields). First inverts the
+     * coords in a binary-counter fashion, then once they are all negative swaps them around until they are back in
+     * descending order, then bumps m up unless it is equal to l, otherwise bumps l up and resets m, or if all three are
+     * equal bumps n and resets the other two. Uses the L infinity norm/metric, forming a cube.
      */
     @Override
     public void next() {
