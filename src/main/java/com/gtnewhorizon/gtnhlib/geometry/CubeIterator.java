@@ -43,7 +43,7 @@ public class CubeIterator extends Abstract3DIterator {
      * @return whether n, l, and m are all 0 (meaning the center block)
      */
     public boolean hasPrevious() {
-        return n != 0 && l != 0 && m != 0;
+        return n != 0 || l != 0 || m != 0;
     }
 
     /**
