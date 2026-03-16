@@ -97,8 +97,8 @@ public class BlockIconTransformer implements IClassTransformer {
         if (blockness == BLOCK) {
             cn.fields.add(new FieldNode(ACC_PROTECTED, FIELD_NAME, BOOL_DESC, null, 0));
             cn.interfaces.add(BLOCK_MODEL_INFO);
-            ByteCodeUtil.addGetterMethod(cn, "nhlib$isModeled", BLOCK_CLASS, FIELD_NAME, BOOL_DESC, null);
-            ByteCodeUtil.addSetterMethod(cn, "nhlib$setModeled", BLOCK_CLASS, FIELD_NAME, BOOL_DESC, null);
+            ByteCodeUtil.addGetterMethod(cn, "nhlib$isModeled", BLOCK_CLASS, FIELD_NAME, BOOLEAN_TYPE, null);
+            ByteCodeUtil.addSetterMethod(cn, "nhlib$setModeled", BLOCK_CLASS, FIELD_NAME, BOOLEAN_TYPE, null);
             transformed = true;
         }
         for (var methodNode : cn.methods) {
