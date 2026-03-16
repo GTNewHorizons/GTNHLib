@@ -424,7 +424,10 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         worldContext.random = RAND;
         worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
         final var model = ModelRegistry.getBakedModel(worldContext);
-        return model.getParticle(worldContext);
+        final var ret = model.getParticle(worldContext);
+
+        worldContext.reset();
+        return ret;
     }
 
     /// Used in {@link BlockIconTransformer}
