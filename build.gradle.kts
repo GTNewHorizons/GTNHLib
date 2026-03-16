@@ -5,6 +5,7 @@ plugins {
 
 minecraft {
     //extraRunJvmArguments.add("-Dgtnhlib.dumpClass=true")
+    //extraRunJvmArguments.addAll("-Dlegacy.debugClassLoading=true", "-Dlegacy.debugClassLoadingFiner=true", "-Dlegacy.debugClassLoadingSave=true")
 }
 
 // Add a Java 17 sourceset for including code optimized for newer Java versions

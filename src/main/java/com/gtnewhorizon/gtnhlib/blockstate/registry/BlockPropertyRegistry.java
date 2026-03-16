@@ -36,6 +36,51 @@ public class BlockPropertyRegistry {
 
     private BlockPropertyRegistry() {}
 
+    /// Registers the property as normal (see [#registerProperty(Block, BlockProperty)]), and additionally adds it to
+    /// the respective item (obtained from [Item#getItemFromBlock(Block)]). The item property is assigned irrespective
+    /// of metadata, and has only one value - the default passed here.
+    public static <T> void registerBlockItemProperty(Block block, BlockProperty<T> property, T defauld) {
+        registerProperty(block, property);
+        registerProperty(Item.getItemFromBlock(block), new BlockProperty<T>() {
+
+            @Override
+            public String getName() {
+                return property.getName();
+            }
+
+            @Override
+            public Type getType() {
+                return property.getType();
+            }
+
+            @Override
+            public T getValue(ItemStack stack) {
+                return defauld;
+            }
+
+            @Override
+            public boolean hasTrait(BlockPropertyTrait trait) {
+                return trait == BlockPropertyTrait.SupportsStacks;
+            }
+
+            @Override
+            public String stringify(T t) {
+                return property.stringify(t);
+            }
+        });
+    }
+
+    /// Registers the property on both the block given and its block item.
+    ///
+    /// @throws IllegalArgumentException if the property doesn't support itemstacks.
+    public static <T> void registerBlockItemProperty(Block block, BlockProperty<T> property) {
+        if (!property.hasTrait(BlockPropertyTrait.SupportsStacks))
+            throw new IllegalArgumentException("BlockItem property should support ItemStacks!");
+
+        registerProperty(block, property);
+        registerProperty(Item.getItemFromBlock(block), property);
+    }
+
     private static class PropertyMap<K> extends Object2ObjectOpenHashMap<K, Map<String, BlockProperty<?>>> {
 
         public void add(K key, BlockProperty<?> prop) {

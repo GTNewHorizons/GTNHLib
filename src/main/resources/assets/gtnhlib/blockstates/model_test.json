@@ -1,8 +1,8 @@
 {
   "variants": {
-    "meta=0": { "model": "gtnhlib:blocks/old_stairs", "y": 270, "uvlock": true },
-    "meta=1": { "model": "gtnhlib:blocks/old_stairs", "y": 180, "uvlock": true },
-    "meta=2": { "model": "gtnhlib:blocks/old_stairs", "y": 90, "uvlock": true },
-    "meta=3": { "model": "gtnhlib:blocks/old_stairs", "y": 0, "uvlock": true }
+    "facing=north": { "model": "gtnhlib:blocks/old_stairs", "y": 270, "uvlock": true },
+    "facing=south": { "model": "gtnhlib:blocks/old_stairs", "y": 90, "uvlock": true },
+    "facing=west": { "model": "gtnhlib:blocks/old_stairs", "y": 0, "uvlock": true },
+    "facing=east": { "model": "gtnhlib:blocks/old_stairs", "y": 180, "uvlock": true }
   }
 }
