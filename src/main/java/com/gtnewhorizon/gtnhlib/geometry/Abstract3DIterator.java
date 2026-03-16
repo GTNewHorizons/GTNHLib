@@ -10,7 +10,8 @@ import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
  * you like. I initially named them n, l, and m as they increase similarly to the three electronic quantum numbers (you
  * can think of the sign of n or l as the spin). In {@link com.gtnewhorizon.gtnhlib.blockpos.CubeIterator}, from which
  * this was adapted, aside from the symmetry transformations, m is bounded by l and l is bounded by n, similarly to
- * electron orbitals, in order to get unique non-ordered {n,l,m} sets.
+ * electron orbitals, in order to get unique non-ordered {n,l,m} sets. <br>
+ * It is recommended to use direct field access, functions like {#getX()}, or a function such as {@link #nextNLMPacked()} to avoid object spam.
  *
  * @author __felix__
  */
@@ -340,19 +341,42 @@ public abstract class Abstract3DIterator {
     }
 
     /**
-     * Progresses the iterator and gives the coordinates of n, l, and m, together, truncated to signed 21 bit. For when
-     * you know the values of n, l, and m are going to be small, and don't want to spam arrays, since each iteration
-     * with {@link #nextCoordTriple()} makes a whole new array. Output format is 0 + sign of m + last 20 bits of m +
-     * sign of l + last 20 bits of l + etc. for n
+     * Progresses the iterator and gives the coordinates of n, l, and m, together, packed with {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
      *
-     * @return n, l, and m, truncated with sign as s21 ints, added together with offsets, fitting into a long
+     * @return n, l, and m, packed together into a long
      */
-    public final long nextAs21Bit() {
-    next();
-        return (long) (n & 0x000FFFFF | (n & -0x80000000) >> 11) | (long) (l & 0x000FFFFF) << 21
-                | (long) (l & -0x80000000) << 10
-                | (long) (m & 0x000FFFFF) << 42
-                | (long) (m & -0x80000000) << 31;
+    public final long nextNLMPacked() {
+        next();
+        return com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack(n, l, m);
+    }
+
+    /**
+     * Progresses the iterator and gives the coordinates of x, y, and z, together, packed with {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
+     *
+     * @return n, l, and m, packed together into a long
+     */
+    public final long nextXYZPacked() {
+        next();
+        return com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack(getX(), getY(), getZ());
+    }
+
+    /**
+     * Progresses the iterator and gives the relative coordinates of x, y, and z, together, packed with {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
+     * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
+     *
+     * @return n, l, and m, packed together into a long
+     */
+    public final long nextRelativeXYZPacked() {
+        next();
+        return com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack(getRelativeX(), getRelativeY(), getRelativeZ());
     }
 
 }
