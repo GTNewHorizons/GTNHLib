@@ -201,7 +201,7 @@ public class ModelRegistry {
                     return;
                 }
                 final var modeled = modeledBlocks.contains(name);
-                modelInfo.nhlib$setModeled(modeledBlocks.contains(name));
+                modelInfo.nhlib$setModeled(modeled);
                 if (modeled)
                     MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(block), ModelISBRH.INSTANCE);
             });
