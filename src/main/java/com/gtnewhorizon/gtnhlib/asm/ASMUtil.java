@@ -20,10 +20,12 @@ import org.objectweb.asm.util.TraceClassVisitor;
 // This class might be loaded by different class loaders,
 // it should not reference any code from the main mod.
 // See {@link com.gtnewhorizon.gtnhlib.core.shared.package-info}
-public class ASMUtil {
+public final class ASMUtil {
 
     private static final Logger logger = LogManager.getLogger("ASM GTNH");
     private static File outputDir = null;
+
+    private ASMUtil() {}
 
     private static void emptyClassOutputFolder() {
         outputDir = new File(

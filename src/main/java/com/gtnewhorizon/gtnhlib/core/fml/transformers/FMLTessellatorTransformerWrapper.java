@@ -6,6 +6,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
+import com.gtnewhorizon.gtnhlib.asm.SafeClassWriter;
 import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
 import com.gtnewhorizon.gtnhlib.core.shared.transformers.TessellatorTransformer;
 
@@ -29,7 +30,7 @@ public class FMLTessellatorTransformerWrapper implements IClassTransformer {
         final boolean changed = inner.transformClassNode(cn);
         if (changed) {
             // Use COMPUTE_FRAMES since we're modifying control flow with jumps
-            final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            final var cw = new SafeClassWriter(ClassWriter.COMPUTE_FRAMES);
             cn.accept(cw);
             final byte[] transformedBytes = cw.toByteArray();
             GTNHLibClassDump.dumpClass(transformedName, basicClass, transformedBytes, this);

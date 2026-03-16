@@ -25,7 +25,6 @@ public enum Mixins implements IMixins {
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load models, textures, and metadata.").addClientMixins(
             "models.FRMAccessor",
-            "models.MixinBlock_ModelInfo",
             "models.MixinEffectRenderer_FixParticleIcons",
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
