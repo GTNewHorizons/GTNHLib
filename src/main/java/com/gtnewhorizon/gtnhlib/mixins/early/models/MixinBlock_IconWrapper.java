@@ -16,6 +16,7 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.client.registry.RenderingRegistry;
 
 @Mixin(Block.class)
 public abstract class MixinBlock_IconWrapper {
@@ -28,20 +29,22 @@ public abstract class MixinBlock_IconWrapper {
 
     @WrapMethod(method = "getIcon(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;")
     private IIcon nhlib$wrapGetIcon(IBlockAccess world, int x, int y, int z, int side, Operation<IIcon> original) {
-        return getRenderType() == ModelISBRH.JSON_ISBRH_ID
+        return RenderingRegistry.instance().blockRenderers.get(getRenderType()) instanceof ModelISBRH
                 ? nhlib$getParticleIcon(world, x, y, z, world.getBlockMetadata(x, y, z))
                 : original.call(world, x, y, z, side);
     }
 
     @WrapMethod(method = "getIcon(II)Lnet/minecraft/util/IIcon;")
     private IIcon nhlib$wrapGetIcon(int side, int meta, Operation<IIcon> original) {
-        return getRenderType() == ModelISBRH.JSON_ISBRH_ID ? nhlib$getParticleIcon(null, 0, 0, 0, meta)
+        return RenderingRegistry.instance().blockRenderers.get(getRenderType()) instanceof ModelISBRH
+                ? nhlib$getParticleIcon(null, 0, 0, 0, meta)
                 : original.call(side, meta);
     }
 
     @WrapMethod(method = "func_149735_b")
     private IIcon nhlib$wrapGetIconObf(int side, int meta, Operation<IIcon> original) {
-        return getRenderType() == ModelISBRH.JSON_ISBRH_ID ? nhlib$getParticleIcon(null, 0, 0, 0, meta)
+        return RenderingRegistry.instance().blockRenderers.get(getRenderType()) instanceof ModelISBRH
+                ? nhlib$getParticleIcon(null, 0, 0, 0, meta)
                 : original.call(side, meta);
     }
 
@@ -49,14 +52,16 @@ public abstract class MixinBlock_IconWrapper {
     private IIcon nhlib$wrapGetIcon(int side, Operation<IIcon> original) {
         // Set the blockIcon here so anything outside accessing it with ATs still gets the correct icon.
         // Can't do it in registericons because the icon isn't baked or somethimg, it crashes.
-        return getRenderType() == ModelISBRH.JSON_ISBRH_ID ? nhlib$getParticleIcon(null, 0, 0, 0, 0)
+        return RenderingRegistry.instance().blockRenderers.get(getRenderType()) instanceof ModelISBRH
+                ? nhlib$getParticleIcon(null, 0, 0, 0, 0)
                 : original.call(side);
     }
 
     @WrapMethod(method = "registerBlockIcons")
     private void nhlib$setField(IIconRegister reg, Operation<Void> original) {
         original.call(reg);
-        if (getRenderType() == ModelISBRH.JSON_ISBRH_ID && blockIcon == null) {
+        if (RenderingRegistry.instance().blockRenderers.get(getRenderType()) instanceof ModelISBRH
+                && blockIcon == null) {
             blockIcon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");
         }
     }
