@@ -59,13 +59,16 @@ public class BlockIconTransformer implements IClassTransformer {
         blockFamily.add(BLOCK_CLASS);
     }
 
-    /// This is what our hook is doing. It assumes that the
+    /// This is what our hook is injecting for the IBlockAccess variant:
     /// ```java
-    /// // For the IBlockAccess variant
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getParticleIcon(world, x, y, z);
-    /// // For the side:meta variants
-    /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getParticleIcon((Block) this, meta);
     /// ```
+    /// This is what our hook is injecting for the side:meta variant:
+    /// ```java
+    /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getMissingIcon();
+    /// ```
+    /// This is because modeled blocks *need* world access to properly get their particle icons. Returning missingno
+    /// fails loudly, allowing us to find and patch out the incorrect usages.
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         final var cr = new ClassReader(basicClass);
