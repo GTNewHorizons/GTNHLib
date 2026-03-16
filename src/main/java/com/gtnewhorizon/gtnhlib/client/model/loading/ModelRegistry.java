@@ -200,7 +200,7 @@ public class ModelRegistry {
                     }
                     return;
                 }
-                
+
                 modelInfo.nhlib$setModeled(modeledBlocks.contains(name));
                 // We can't shortcut this, since some blocks may manually implement the interface.
                 if (modelInfo.nhlib$isModeled()) {
