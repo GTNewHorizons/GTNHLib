@@ -19,12 +19,30 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
+     * Initializes without setting the offsets used by certain methods and adds an ordering
+     * 
+     * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int, short)
+     */
+    public CubeIterator(int range, short order) {
+        super(range, order);
+    }
+
+    /**
      * Initializes with setting the offsets used by certain methods
      * 
      * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int,int,int,int)
      */
     public CubeIterator(int range, int x, int y, int z) {
         super(range, x, y, z);
+    }
+
+    /**
+     * Initializes with setting the offsets used by certain methods and adds an ordering
+     * 
+     * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int,short,int,int,int)
+     */
+    public CubeIterator(int range, short order, int x, int y, int z) {
+        super(range, order, x, y, z);
     }
 
     /**
