@@ -10,7 +10,8 @@ package com.gtnewhorizon.gtnhlib.geometry;
 public class CubeIterator extends Abstract3DIterator {
 
     /**
-     * Initializes without setting the offsets used by certain methods
+     * Initializes without setting the offsets used by certain methods. <br>
+     * Set the range to a negative number for {@link #hasNext()} and the like to always return true.
      * 
      * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int)
      */
@@ -19,7 +20,8 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * Initializes without setting the offsets used by certain methods and adds an ordering
+     * Initializes without setting the offsets used by certain methods and adds an ordering. <br>
+     * Set the range to a negative number for {@link #hasNext()} and the like to always return true.
      * 
      * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int, short)
      */
@@ -28,7 +30,8 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * Initializes with setting the offsets used by certain methods
+     * Initializes with setting the offsets used by certain methods. <br>
+     * Set the range to a negative number for {@link #hasNext()} and the like to always return true.
      * 
      * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int,int,int,int)
      */
@@ -37,7 +40,8 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * Initializes with setting the offsets used by certain methods and adds an ordering
+     * Initializes with setting the offsets used by certain methods and adds an ordering. <br>
+     * Set the range to a negative number for {@link #hasNext()} and the like to always return true.
      * 
      * @see com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#Abstract3DIterator(int,short,int,int,int)
      */
@@ -52,7 +56,7 @@ public class CubeIterator extends Abstract3DIterator {
      * @return whether the iterator is at the end position: n, l, m >= -range
      */
     public boolean hasNext() {
-        return -n < range || -l < range || -m < range;
+        return range < 0 || -n < range || -l < range || -m < range;
     }
 
     /**
@@ -74,7 +78,7 @@ public class CubeIterator extends Abstract3DIterator {
      * @return whether the iterator is specificially at the position one after the end
      */
     public boolean hasNextFrom0() {
-        return n <= range;
+        return range < 0 || n <= range;
     }
 
     /**
@@ -85,7 +89,7 @@ public class CubeIterator extends Abstract3DIterator {
      * @return whether the iterator is past the end position
      */
     public boolean hasNextFrom0Accurate() {
-        return n >= -range && n <= range && l >= -range && l <= range && m >= -range && m <= range;
+        return range < 0 || n >= -range && n <= range && l >= -range && l <= range && m >= -range && m <= range;
     }
 
     /**
