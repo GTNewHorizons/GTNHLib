@@ -125,23 +125,23 @@ public abstract class Abstract3DIterator {
         public static final short YXz = 0b001001001001;
         public static final short YXZ = 0b001001000001;
 
-        public static final short yzx = 0b101010011100;
-        public static final short yzX = 0b101010010100;
-        public static final short yZx = 0b101000011100;
-        public static final short yZX = 0b101000010100;
-        public static final short Yzx = 0b001010011100;
-        public static final short YzX = 0b001010010100;
-        public static final short YZx = 0b001000011100;
-        public static final short YZX = 0b001000010100;
+        public static final short zxy = 0b101010011100;
+        public static final short zxY = 0b101010010100;
+        public static final short zXy = 0b101000011100;
+        public static final short zXY = 0b101000010100;
+        public static final short Zxy = 0b001010011100;
+        public static final short ZxY = 0b001010010100;
+        public static final short ZXy = 0b001000011100;
+        public static final short ZXY = 0b001000010100;
 
-        public static final short zxy = 0b100111001010;
-        public static final short zxY = 0b100111000010;
-        public static final short zXy = 0b100101001010;
-        public static final short zXY = 0b100101000010;
-        public static final short Zxy = 0b000111001010;
-        public static final short ZxY = 0b000111000010;
-        public static final short ZXy = 0b000101001010;
-        public static final short ZXY = 0b000101000010;
+        public static final short yzx = 0b100111001010;
+        public static final short yzX = 0b100111000010;
+        public static final short yZx = 0b100101001010;
+        public static final short yZX = 0b100101000010;
+        public static final short Yzx = 0b000111001010;
+        public static final short YzX = 0b000111000010;
+        public static final short YZx = 0b000101001010;
+        public static final short YZX = 0b000101000010;
 
         public static final short zyx = 0b100110101100;
         public static final short zyX = 0b100110100100;
