@@ -1,9 +1,8 @@
 package com.gtnewhorizon.gtnhlib.client.model.loading;
 
-import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.autoTextureLoading;
 import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
-import static it.unimi.dsi.fastutil.objects.Object2ObjectMaps.unmodifiable;
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
 import java.util.List;
 
@@ -12,15 +11,20 @@ import net.minecraft.client.resources.FallbackResourceManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.item.Item;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.TextureStitchEvent;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
+import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
+import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
-import com.gtnewhorizon.gtnhlib.client.model.state.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
@@ -29,9 +33,9 @@ import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 
 import cpw.mods.fml.common.FMLContainerHolder;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -41,7 +45,32 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 /// beyond excessively complex models being loaded multiple times... add a counter if I'm wrong.
 public class ModelRegistry {
 
-    public static final Logger MODEL_LOGGER = LogManager.getLogger(ModelRegistry.class);
+    /// Obtain a model, diverting to a custom pipeline if it exists. See {@link IBlockModelProvider} if you wish to
+    /// implement said custom pipeline.
+    public static BakedModel getBakedModel(BakedModelQuadContext context) {
+        if (context.getBlockState().getBlock() instanceof IBlockModelProvider selector)
+            return selector.getModel(context);
+        return getBakedModel(context.getBlockState());
+    }
+
+    /// Getter for {@link BakedModel}s, obtained purely from the default path. We don't want to publicly expose the
+    /// cache, modders can't be trusted with it :P
+    public static BakedModel getBakedModel(BlockState state) {
+        return BLOCKSTATE_MODEL_CACHE.get(state.clone());
+    }
+
+    /// Getter for {@link JSONModel}s - again, normal pipeline, but this grabs them pre-bake. See
+    /// {@link ModelRegistry#getBakedModel(BlockState)}
+    public static JSONModel getJSONModel(ResourceLoc.ModelLoc loc) {
+        return JSON_MODEL_CACHE.get(loc);
+    }
+
+    /// Registers the given mod ID for automatic texture loading. The resource pack attached to this mod will be scanned
+    /// for model files, and textures from those files will be automatically loaded.
+    public static void registerModid(String modid) {
+        ReloadListener.PERMITTED_MODIDS.add(modid);
+    }
+
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StateModelMap.class, new StateDeserializer())
             .registerTypeAdapter(JSONModel.class, new ModelDeserializer()).create();
 
@@ -67,39 +96,17 @@ public class ModelRegistry {
             s -> loadAndResolveJSONModel((ResourceLoc.ModelLoc) s),
             false);
 
-    private static final String[] DEFAULT_STATE_KEYS = new String[] { "meta" };
-
     private static BakedModel bakeModel(BlockState state) {
-        final var block = state.block();
-        final var meta = state.meta();
-
-        final var smm = getStateModelMap(block);
-        final var properties = unmodifiable(
-                new Object2ObjectArrayMap<String, String>(DEFAULT_STATE_KEYS, new String[] { Integer.toString(meta) }));
+        final Block block = state.getBlock();
+        final StateModelMap smm = getStateModelMap(block);
 
         // Caching this would be a little pointless, since an UnbakedModel here would map directly to the BakedModel
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
         // will be cached, however.
-        final var dough = smm.selectModel(properties);
+        final var dough = smm.selectModel(state);
         if (dough == null) return MISSING_MODEL.bake();
 
         return dough.bake();
-    }
-
-    /// Getter for {@link BakedModel}s. We don't want to publicly expose the cache, modders can't be trusted with it :P
-    public static BakedModel getBakedModel(BlockState state) {
-        return BLOCKSTATE_MODEL_CACHE.get(state);
-    }
-
-    /// Getter for {@link JSONModel}s. See {@link ModelRegistry#getBakedModel(BlockState)}
-    public static JSONModel getJSONModel(ResourceLoc.ModelLoc loc) {
-        return JSON_MODEL_CACHE.get(loc);
-    }
-
-    /// Registers the given mod ID for automatic texture loading. The resource pack attached to this mod will be scanned
-    /// for model files, and textures from those files will be automatically loaded.
-    public static void registerModid(String modid) {
-        ReloadListener.PERMITTED_MODIDS.add(modid);
     }
 
     private static StateModelMap getStateModelMap(Block block) {
@@ -150,14 +157,15 @@ public class ModelRegistry {
                 return;
             }
 
-            if (autoTextureLoading) detectAndLoadTextures(manager);
+            loadModelInfo(manager);
         }
 
-        private void detectAndLoadTextures(GlobalResourceManager manager) {
+        private boolean infoMixinFailed = false;
+
+        private void loadModelInfo(GlobalResourceManager manager) {
             // Scan resource packs for model files
             final var domains = manager.nhlib$getDomainResourceManagers();
             final var resourcePacks = new ObjectOpenHashSet<IResourcePack>();
-
             for (var entry : domains.entrySet()) {
                 var files = entry.getValue();
                 if (files instanceof FallbackResourceManager) {
@@ -165,6 +173,8 @@ public class ModelRegistry {
                 }
             }
 
+            // Gather the list of modeled blocks and their textures
+            final var modeledBlocks = new ObjectOpenHashSet<String>();
             final var texturesToLoad = new ObjectArrayList<String>();
             for (var pack : resourcePacks) {
                 if (!(pack instanceof ModelResourcePack mrp)) continue;
@@ -174,9 +184,36 @@ public class ModelRegistry {
                         && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
                     continue;
 
-                final var texture = mrp.nhlib$getReferencedTextures(reader -> GSON.fromJson(reader, JSONModel.class));
-                texturesToLoad.addAll(texture);
+                final var info = mrp.nhlib$gatherModelInfo(reader -> GSON.fromJson(reader, JSONModel.class));
+                modeledBlocks.addAll(info.modeledBlocks());
+                texturesToLoad.addAll(info.textureNames());
             }
+
+            GameData.getBlockRegistry().registryObjects.forEach((s, b) -> {
+                if (!(s instanceof String name)) return;
+                if (!(b instanceof Block block)) return;
+                if (!(b instanceof BlockModelInfo modelInfo)) {
+                    if (!infoMixinFailed) {
+                        MODEL_LOGGER.error("Block registry contained a non-block or the info mixin failed!");
+                        MODEL_LOGGER.error("Either you won't notice anything, or all JSON models will stop loading...");
+                        infoMixinFailed = true;
+                    }
+                    return;
+                }
+
+                modelInfo.nhlib$setModeled(modeledBlocks.contains(name));
+                // We can't shortcut this, since some blocks may manually implement the interface.
+                if (modelInfo.nhlib$isModeled()) {
+                    final var item = Item.getItemFromBlock(block);
+                    if (item == null) {
+                        MODEL_LOGGER.error(
+                                "Block {} has a null item! Unable to register item model.",
+                                block.getLocalizedName());
+                        return;
+                    }
+                    MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(block), ModelISBRH.INSTANCE);
+                }
+            });
 
             EventHandler.texturesToLoad = texturesToLoad;
         }
@@ -184,7 +221,7 @@ public class ModelRegistry {
 
     public static class EventHandler {
 
-        private static List<String> texturesToLoad = ObjectLists.emptyList();
+        private static @NotNull List<String> texturesToLoad = ObjectLists.emptyList();
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
@@ -192,6 +229,7 @@ public class ModelRegistry {
             for (var texture : texturesToLoad) {
                 event.map.registerIcon(texture.replaceFirst("^minecraft:", ""));
             }
+            texturesToLoad = ObjectLists.emptyList(); // don't need it anymore
         }
     }
 }

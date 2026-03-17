@@ -23,6 +23,7 @@
 package com.gtnewhorizon.gtnhlib.asm;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Using this class to search for a (single) String reference is > 40 times faster than parsing a class with a
@@ -74,16 +75,22 @@ public final class ClassConstantPoolParser {
         }
     }
 
-    // the strings to search should not be resized
-    // during runtime to avoid becoming less performant
-    // than using ASM directly
-    private final byte[][] BYTES_TO_SEARCH;
+    private byte[][] BYTES_TO_SEARCH;
 
     public ClassConstantPoolParser(String... strings) {
         BYTES_TO_SEARCH = new byte[strings.length][];
         for (int i = 0; i < BYTES_TO_SEARCH.length; i++) {
             BYTES_TO_SEARCH[i] = strings[i].getBytes(StandardCharsets.UTF_8);
         }
+    }
+
+    /// the strings to search should not be resized
+    /// during runtime to avoid becoming less performant
+    /// than using ASM directly
+    @Deprecated
+    public void addString(String string) {
+        BYTES_TO_SEARCH = Arrays.copyOf(BYTES_TO_SEARCH, BYTES_TO_SEARCH.length + 1);
+        BYTES_TO_SEARCH[BYTES_TO_SEARCH.length - 1] = string.getBytes(StandardCharsets.UTF_8);
     }
 
     /**

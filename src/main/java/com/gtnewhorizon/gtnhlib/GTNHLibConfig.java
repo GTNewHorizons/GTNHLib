@@ -19,15 +19,6 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static int modelCacheSize;
 
-    @Config.Comment("Automatically load model textures based on model files. Disabling may cause models to lose their textures.")
-    @Config.DefaultBoolean(true)
-    @Config.RequiresMcRestart
-    public static boolean autoTextureLoading;
-
-    @Config.Comment("Ensures that blocks always return a valid icon for JSON model blocks, by overriding the block icon functions and passing the particle icon.")
-    @Config.DefaultBoolean(true)
-    public static boolean modelIconWrapperMixin;
-
     @Config.Comment("Enables various mixins that allow blocks to dynamically change their sound.")
     @Config.DefaultBoolean(true)
     @Config.RequiresMcRestart

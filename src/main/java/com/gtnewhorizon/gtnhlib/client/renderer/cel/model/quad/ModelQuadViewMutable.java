@@ -59,6 +59,11 @@ public interface ModelQuadViewMutable extends ModelQuadView {
     void setColorIndex(int index);
 
     /**
+     * Sets if this quad is non-opaque (by default, they are opaque)
+     */
+    void setTransparent();
+
+    /**
      * See {@link ModelQuadView#hasDirectionalShading()} for what this value does
      */
     boolean setDirectionalShading(boolean dirShading);

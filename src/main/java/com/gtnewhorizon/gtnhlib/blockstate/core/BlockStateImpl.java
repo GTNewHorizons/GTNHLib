@@ -218,4 +218,20 @@ public class BlockStateImpl implements BlockState {
     public void close() {
         POOL.releaseInstance(this.reset());
     }
+
+    @Override
+    public int hashCode() {
+        int result = block != null ? block.hashCode() : 0;
+        result = 31 * result + meta;
+        result = 31 * result + values.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BlockStateImpl other)) return false;
+
+        return this.block == other.block && this.meta == other.meta && this.values.equals(other.values);
+    }
 }
