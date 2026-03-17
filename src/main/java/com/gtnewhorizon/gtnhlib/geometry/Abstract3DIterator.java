@@ -98,59 +98,59 @@ public abstract class Abstract3DIterator {
         public static final byte Y = 4;
         public static final byte Z = 0;
 
-        public static final short xyz = 0b110010101001;
-        public static final short xyZ = 0b110010100001;
-        public static final short xYz = 0b110000101001;
-        public static final short xYZ = 0b110000100001;
-        public static final short Xyz = 0b010010101001;
-        public static final short XyZ = 0b010010100001;
-        public static final short XYz = 0b010000101001;
-        public static final short XYZ = 0b010000100001;
+        public static final short xyz = 0b1100_1010_1001;
+        public static final short xyZ = 0b1100_1010_0001;
+        public static final short xYz = 0b1100_0010_1001;
+        public static final short xYZ = 0b1100_0010_0001;
+        public static final short Xyz = 0b0100_1010_1001;
+        public static final short XyZ = 0b0100_1010_0001;
+        public static final short XYz = 0b0100_0010_1001;
+        public static final short XYZ = 0b0100_0010_0001;
 
-        public static final short xzy = 0b110010011010;
-        public static final short xzY = 0b110010010010;
-        public static final short xZy = 0b110000011010;
-        public static final short xZY = 0b110000010010;
-        public static final short Xzy = 0b010010011010;
-        public static final short XzY = 0b010010010010;
-        public static final short XZy = 0b010000011010;
-        public static final short XZY = 0b010000010010;
+        public static final short xzy = 0b1100_1001_1010;
+        public static final short xZy = 0b1100_1001_0010;
+        public static final short xzY = 0b1100_0001_1010;
+        public static final short xZY = 0b1100_0001_0010;
+        public static final short Xzy = 0b0100_1001_1010;
+        public static final short XZy = 0b0100_1001_0010;
+        public static final short XzY = 0b0100_0001_1010;
+        public static final short XZY = 0b0100_0001_0010;
 
-        public static final short yxz = 0b101011001001;
-        public static final short yxZ = 0b101011000001;
-        public static final short yXz = 0b101001001001;
-        public static final short yXZ = 0b101001000001;
-        public static final short Yxz = 0b001011001001;
-        public static final short YxZ = 0b001011000001;
-        public static final short YXz = 0b001001001001;
-        public static final short YXZ = 0b001001000001;
+        public static final short yxz = 0b1010_1100_1001;
+        public static final short yxZ = 0b1010_1100_0001;
+        public static final short Yxz = 0b1010_0100_1001;
+        public static final short YxZ = 0b1010_0100_0001;
+        public static final short yXz = 0b0010_1100_1001;
+        public static final short yXZ = 0b0010_1100_0001;
+        public static final short YXz = 0b0010_0100_1001;
+        public static final short YXZ = 0b0010_0100_0001;
 
-        public static final short zxy = 0b101010011100;
-        public static final short zxY = 0b101010010100;
-        public static final short zXy = 0b101000011100;
-        public static final short zXY = 0b101000010100;
-        public static final short Zxy = 0b001010011100;
-        public static final short ZxY = 0b001010010100;
-        public static final short ZXy = 0b001000011100;
-        public static final short ZXY = 0b001000010100;
+        public static final short zxy = 0b1010_1001_1100;
+        public static final short Zxy = 0b1010_1001_0100;
+        public static final short zxY = 0b1010_0001_1100;
+        public static final short ZxY = 0b1010_0001_0100;
+        public static final short zXy = 0b0010_1001_1100;
+        public static final short ZXy = 0b0010_1001_0100;
+        public static final short zXY = 0b0010_0001_1100;
+        public static final short ZXY = 0b0010_0001_0100;
 
-        public static final short yzx = 0b100111001010;
-        public static final short yzX = 0b100111000010;
-        public static final short yZx = 0b100101001010;
-        public static final short yZX = 0b100101000010;
-        public static final short Yzx = 0b000111001010;
-        public static final short YzX = 0b000111000010;
-        public static final short YZx = 0b000101001010;
-        public static final short YZX = 0b000101000010;
+        public static final short yzx = 0b1001_1100_1010;
+        public static final short yZx = 0b1001_1100_0010;
+        public static final short Yzx = 0b1001_0100_1010;
+        public static final short YZx = 0b1001_0100_0010;
+        public static final short yzX = 0b0001_1100_1010;
+        public static final short yZX = 0b0001_1100_0010;
+        public static final short YzX = 0b0001_0100_1010;
+        public static final short YZX = 0b0001_0100_0010;
 
-        public static final short zyx = 0b100110101100;
-        public static final short zyX = 0b100110100100;
-        public static final short zYx = 0b100100101100;
-        public static final short zYX = 0b100100100100;
-        public static final short Zyx = 0b000110101100;
-        public static final short ZyX = 0b000110100100;
-        public static final short ZYx = 0b000100101100;
-        public static final short ZYX = 0b000100100100;
+        public static final short zyx = 0b1001_1010_1100;
+        public static final short Zyx = 0b1001_1010_0100;
+        public static final short zYx = 0b1001_0010_1100;
+        public static final short ZYx = 0b1001_0010_0100;
+        public static final short zyX = 0b0001_1010_1100;
+        public static final short ZyX = 0b0001_1010_0100;
+        public static final short zYX = 0b0001_0010_1100;
+        public static final short ZYX = 0b0001_0010_0100;
 
     }
 
