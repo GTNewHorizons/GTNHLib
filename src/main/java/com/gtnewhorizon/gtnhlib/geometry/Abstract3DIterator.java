@@ -274,7 +274,7 @@ public abstract class Abstract3DIterator {
      */
     public final int getRelativeY() {
         byte tmp = (byte) (order >> Ordering.Y);
-        int ret = (tmp & Ordering.L) != 0 ? l : (tmp & Ordering.L) != 0 ? n : m;
+        int ret = (tmp & Ordering.L) != 0 ? l : (tmp & Ordering.N) != 0 ? n : m;
         if ((order & Ordering.minus) != 0) ret = -ret;
         return ret;
     }
@@ -285,7 +285,8 @@ public abstract class Abstract3DIterator {
      * @return the relative Z coordinate according to the arbitrary ordering
      */
     public final int getRelativeZ() {
-        int tmp = (byte) order;
+        // If for whatever reason Ordering.Z changes to not be 0, update this
+        byte tmp = (byte) order;
         int ret = (tmp & Ordering.M) != 0 ? m : (tmp & Ordering.L) != 0 ? l : n;
         if ((order & Ordering.minus) != 0) ret = -ret;
         return ret;
