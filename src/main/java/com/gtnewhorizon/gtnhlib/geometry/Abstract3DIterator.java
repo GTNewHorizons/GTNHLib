@@ -321,19 +321,28 @@ public abstract class Abstract3DIterator {
     /**
      * Outputs the current iterator relative position as a string, for debugging.
      *
-     * @return &quot;&lt;n,l,m&gt;&quot;
+     * @return &quot;&lt;n,l,m&gt;&quot; with the ordering applied
      */
     public String getCurrentRelativePos() {
-        return String.format("<%d,%d,%d>", n, l, m);
+        return String.format("<%d,%d,%d>", getRelativeX(), getRelativeY(), getRelativeZ());
     }
 
     /**
      * Outputs the current iterator absolute position as a string, for debugging.
      *
-     * @return &quot;&lt;startX+n,startY+l,startZ+m&gt;&quot;
+     * @return &quot;&lt;startX+n,startY+l,startZ+m&gt;&quot; with the ordering applied
      */
     public String getCurrentAbsolutePos() {
-        return String.format("<%d,%d,%d>", startX + n, startY + l, startZ + m);
+        return String.format("<%d,%d,%d>", getX(), getY(), getZ());
+    }
+
+    /**
+     * Outputs the current iterator internal values as a string, for debugging.
+     *
+     * @return &quot;&lt;n,l,m&gt;&quot; WITHOUT the ordering applied
+     */
+    public String getCurrentNLM() {
+        return String.format("<%d,%d,%d>", n, l, m);
     }
 
     /**
