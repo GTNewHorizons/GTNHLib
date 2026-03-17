@@ -41,7 +41,9 @@ public abstract class Abstract3DIterator {
     public int m;
 
     /**
-     * The maximum distance or radius that the iterator can go through, used in {@link #hasNext()}.
+     * The maximum distance or radius that the iterator can go through, used in {@link #hasNext()}. <br>
+     * It is encouraged for a negative range to mean the iterator is unbounded (so {@link #hasNext()} and the like would
+     * always return `true`), but it is not required since they can just be ignored.
      */
     public int range;
 
@@ -169,7 +171,8 @@ public abstract class Abstract3DIterator {
 
     /**
      * Initializes the iterator with only the max range. If you don't want a max range, put whatever here and ignore
-     * {@link #hasNext()}. Ordering defaults to X -> Y -> Z (pos -> neg for all).
+     * {@link #hasNext()}. Ordering defaults to X -> Y -> Z (pos -> neg for all). Some implementations may have a
+     * negative range mean unbounded.
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
      */
