@@ -60,10 +60,32 @@ public class CubeIterator extends Abstract3DIterator {
      * 
      * @see #hasNext()
      *
-     * @return whether the iterator is past the end position: n, l, m >= -range
+     * @return whether the iterator is at or past the end position: n, l, m >= -range
      */
     public boolean hasNextAccurate() {
-        return hasNext() && n >= -range && n <= range && l >= -range && l <= range && m >= -range && m <= range;
+        return hasNext() && hasNextFrom0Accurate();
+    }
+
+    /**
+     * Returns whether the iterator is specifically at the end position, if you call {@link #next()} AFTER using it.
+     * Basically, the iterator starts at &lt;0,0,0&gt;, so if you want to use that position and not have it end one
+     * iteration before the final corner, use this.
+     *
+     * @return whether the iterator is specificially at the position one after the end
+     */
+    public boolean hasNextFrom0() {
+        return n <= range;
+    }
+
+    /**
+     * Slower and less useful form of {@link #hasNextFrom0()}, accurate if the iterator is past its end position.
+     *
+     * @see #hasNextFrom0()
+     *
+     * @return whether the iterator is past the end position
+     */
+    public boolean hasNextFrom0Accurate() {
+        return n >= -range && n <= range && l >= -range && l <= range && m >= -range && m <= range;
     }
 
     /**
