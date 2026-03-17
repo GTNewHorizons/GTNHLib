@@ -47,11 +47,24 @@ public abstract class Abstract3DIterator {
 
     /**
      * Whether the iterator is not specifically at the last value before it exceeds {@link #range}. Does NOT have to be
-     * truthful for values *beyond* that last value (and isn't in current impl).
+     * truthful for values *beyond* that last value (and isn't in current impl). The iterator SHOULD still faithfully go
+     * past the maximum value, so that unbounded iterators can be made by setting a dummy range and ignoring this. It is
+     * encourged to optionally have a check where, if the range is negative, return true.
      *
      * @return Whether the iterator is at the last value before it exceeds the provided range
      */
     public abstract boolean hasNext();
+
+    /**
+     * Whether the iterator is not specifically at the value where it exceeds {@link #range}. Does NOT have to be
+     * truthful for values *beyond* that last value (and isn't in current impl). This is used for when you want to
+     * include <0,0,0> and not exclude the last point (which means you are calling {@link #next()} AFTER getting the
+     * coords). <br>
+     * Ex: `while(iter.hasNextFrom0()) { something(iter.n, iter.l, iter.m); next(); }` <br>
+     *
+     * @return Whether the iterator is at the last value before it exceeds the provided range
+     */
+    public abstract boolean hasNextFrom0();
 
     // public abstract boolean hasPrevious();
 
