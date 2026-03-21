@@ -62,6 +62,11 @@ public class BlockIconTransformer implements IClassTransformer {
 
     private final ObjectOpenHashSet<String> blockFamily = new ObjectOpenHashSet<>();
 
+    public BlockIconTransformer() {
+        blockFamily.add("net/minecraft/block/Block");
+        blockFamily.add("aji");
+    }
+
     /// This is what our hook is injecting for the IBlockAccess variant:
     /// ```java
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getParticleIcon(world, x, y, z);
