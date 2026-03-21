@@ -39,6 +39,7 @@ public class BlockIconTransformer implements IClassTransformer {
 
     private static final String FIELD_NAME = "nhlib$isModeled";
     private static final String BOOL_DESC = BOOLEAN_TYPE.getDescriptor();
+    private static final String BLOCK_CLASS = "net/minecraft/block/Block";
     private static final String BLOCK_MODEL_INFO = "com/gtnewhorizon/gtnhlib/api/BlockModelInfo";
     private static final String ISBRH_CLASS = "com/gtnewhorizon/gtnhlib/client/model/ModelISBRH";
     private static final String ISBRH_DESC = "L" + ISBRH_CLASS + ";";
