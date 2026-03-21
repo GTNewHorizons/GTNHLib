@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.geometry;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
+import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
 
 /**
  * An iterator through positions in 3D space, typically starting at relative <0,0,0> and going outward. To use, call
@@ -382,7 +383,7 @@ public abstract class Abstract3DIterator {
      */
     public final long nextNLMPacked() {
         next();
-        return com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack(n, l, m);
+        return CoordinatePacker.pack(n, l, m);
     }
 
     /**
@@ -397,7 +398,7 @@ public abstract class Abstract3DIterator {
      */
     public final long nextXYZPacked() {
         next();
-        return com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack(getX(), getY(), getZ());
+        return CoordinatePacker.pack(getX(), getY(), getZ());
     }
 
     /**
@@ -412,7 +413,7 @@ public abstract class Abstract3DIterator {
      */
     public final long nextRelativeXYZPacked() {
         next();
-        return com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack(getRelativeX(), getRelativeY(), getRelativeZ());
+        return CoordinatePacker.pack(getRelativeX(), getRelativeY(), getRelativeZ());
     }
 
 }
