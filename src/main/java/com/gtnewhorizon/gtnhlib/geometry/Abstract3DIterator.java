@@ -196,8 +196,8 @@ public abstract class Abstract3DIterator {
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
      * @param x     the x offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
-     * @param x     the y offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
-     * @param x     the z offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
+     * @param y     the y offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
+     * @param z     the z offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
      */
     public Abstract3DIterator(int range, int x, int y, int z) {
         this.range = range;
