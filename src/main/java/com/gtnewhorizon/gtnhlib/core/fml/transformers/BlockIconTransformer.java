@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.core.fml.transformers;
 
+import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
 import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.ARETURN;
@@ -41,6 +42,7 @@ public class BlockIconTransformer implements IClassTransformer {
 
     // These are the targeted calls - a variety of getIcons declared by the Block class
     private static final String GI_WORLD = "getIcon(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;";
+    private static final String GI_WORLD_SRG = "func_149673_e(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;";
     private static final String GI_WORLD_OBF = "e(Lahl;IIII)Lrf;";
 
     private static final String GI_SIDE_META = "getIcon(II)Lnet/minecraft/util/IIcon;";
@@ -48,16 +50,19 @@ public class BlockIconTransformer implements IClassTransformer {
     private static final String GI_SIDE_META_OBF = "a(II)Lrf;";
 
     private static final String GI_SIDE = "getBlockTextureFromSide(I)Lnet/minecraft/util/IIcon;";
+    private static final String GI_SIDE_SRG = "func_149733_h(I)Lnet/minecraft/util/IIcon;";
     private static final String GI_SIDE_OBF = "h(I)Lrf;";
 
     private static final HashSet<String> GETICON_SIGS = new HashSet<>(
             Arrays.asList(
                     GI_WORLD,
+                    GI_WORLD_SRG,
                     GI_WORLD_OBF,
                     GI_SIDE_META,
                     GI_SIDE_META_SRG,
                     GI_SIDE_META_OBF,
                     GI_SIDE,
+                    GI_SIDE_SRG,
                     GI_SIDE_OBF));
 
     private final ObjectOpenHashSet<String> blockFamily = new ObjectOpenHashSet<>();
@@ -110,6 +115,8 @@ public class BlockIconTransformer implements IClassTransformer {
     }
 
     private boolean hookMethod(ClassNode cn, MethodNode mn) {
+        if ((mn.access & ACC_ABSTRACT) != 0) return false;
+
         final var signature = mn.name + mn.desc;
         if (!GETICON_SIGS.contains(signature)) return false;
 
@@ -122,7 +129,7 @@ public class BlockIconTransformer implements IClassTransformer {
 
         // This call varies based on the node we injected to.
         switch (signature) {
-            case GI_WORLD, GI_WORLD_OBF -> {
+            case GI_WORLD, GI_WORLD_SRG, GI_WORLD_OBF -> {
                 injectedHook.add(new VarInsnNode(ALOAD, 1));
                 injectedHook.add(new VarInsnNode(ILOAD, 2));
                 injectedHook.add(new VarInsnNode(ILOAD, 3));
@@ -130,7 +137,7 @@ public class BlockIconTransformer implements IClassTransformer {
                 injectedHook
                         .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getParticleIcon", NEW_WORLD_DESC, false));
             }
-            case GI_SIDE_META, GI_SIDE_META_SRG, GI_SIDE_META_OBF, GI_SIDE, GI_SIDE_OBF -> injectedHook
+            case GI_SIDE_META, GI_SIDE_META_SRG, GI_SIDE_META_OBF, GI_SIDE, GI_SIDE_SRG, GI_SIDE_OBF -> injectedHook
                     .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getMissingIcon", MISSINGNO_DESC, false));
             default -> throw new RuntimeException("Attempted to hook non-icon method!");
         }
