@@ -88,14 +88,15 @@ public abstract class Abstract3DIterator {
      * An {@link #Ordering} that applies to the order that values are increased. The default ordering is that X is the
      * first value to be increased, and positive goes before negative. This changes the output of functions such as
      * {@link #getX()} (anything that says "XYZ") If you want to ignore this, just use `iter.n`, `iter.l`, `iter.m` for
-     * whichever X, Y, Z coord you want.
+     * whichever X, Y, Z coord you want. <br>
+     * Remember to use bitwise & to combine the directional and negational enums.
      */
-    public int order = Ordering.XYZ;
+    public int order = Ordering.xyz;
 
     /**
-     * An "enum" for the arbitrary ordering of X, Y, and Z coords. Capital letter means positive then negative,
-     * lowercase means other way around. Ordering of coordinates affects priority (for example in a typical
-     * implementation for range = 1 with Ordering.XYZ it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does
+     * An "enum" for the arbitrary ordering of X, Y, and Z coords. Use the bitwise & operator to combine the ordering
+     * and negation enums. Ordering of coordinates affects priority (for example in a typical <!-- aaaaaaaaaaaaaa -->
+     * implementation for range = 1 with Ordering.xyz it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does
      * not define a way to change the order in which the mirroring operation happens (so for example you can't do +x,
      * -y, -x, +y), as that could mess up subclasses. (So you can do North-South-Down-Up-West-East, but not
      * North-Up-South-East-Down-West). <br>
@@ -105,68 +106,39 @@ public abstract class Abstract3DIterator {
      */
     public static final class Ordering {
 
-        public static final byte N = 0b100;
-        public static final byte L = 0b010;
-        public static final byte M = 0b001;
-        public static final byte minus = 8;
+        /**
+         * N, L, M, minus: ID's for the internals and sign; use bitwise & to test after shift <br>
+         * X, Y, Z: Offsets for the ordering data; right shift by them before testing
+         */
+        public static final class Position {
 
-        public static final byte X = 8;
-        public static final byte Y = 4;
-        public static final byte Z = 0;
+            public static final byte N = 0b100;
+            public static final byte L = 0b010;
+            public static final byte M = 0b001;
+            public static final byte minus = 8;
 
-        public static final short xyz = 0b1100_1010_1001;
-        public static final short xyZ = 0b1100_1010_0001;
-        public static final short xYz = 0b1100_0010_1001;
-        public static final short xYZ = 0b1100_0010_0001;
-        public static final short Xyz = 0b0100_1010_1001;
-        public static final short XyZ = 0b0100_1010_0001;
-        public static final short XYz = 0b0100_0010_1001;
-        public static final short XYZ = 0b0100_0010_0001;
+            public static final byte X = 8;
+            public static final byte Y = 4;
+            public static final byte Z = 0;
 
-        public static final short xzy = 0b1100_1001_1010;
-        public static final short xZy = 0b1100_1001_0010;
-        public static final short xzY = 0b1100_0001_1010;
-        public static final short xZY = 0b1100_0001_0010;
-        public static final short Xzy = 0b0100_1001_1010;
-        public static final short XZy = 0b0100_1001_0010;
-        public static final short XzY = 0b0100_0001_1010;
-        public static final short XZY = 0b0100_0001_0010;
+        }
 
-        public static final short yxz = 0b1010_1100_1001;
-        public static final short yxZ = 0b1010_1100_0001;
-        public static final short Yxz = 0b1010_0100_1001;
-        public static final short YxZ = 0b1010_0100_0001;
-        public static final short yXz = 0b0010_1100_1001;
-        public static final short yXZ = 0b0010_1100_0001;
-        public static final short YXz = 0b0010_0100_1001;
-        public static final short YXZ = 0b0010_0100_0001;
+        public static final short xyz = 0b0100_0010_0001;
+        public static final short xzy = 0b0100_0001_0010;
+        public static final short yxz = 0b0010_0100_0001;
+        public static final short zxy = 0b0010_0001_0100;
+        public static final short yzx = 0b0001_0100_0010;
+        public static final short zyx = 0b0001_0010_0100;
 
-        public static final short zxy = 0b1010_1001_1100;
-        public static final short Zxy = 0b1010_1001_0100;
-        public static final short zxY = 0b1010_0001_1100;
-        public static final short ZxY = 0b1010_0001_0100;
-        public static final short zXy = 0b0010_1001_1100;
-        public static final short ZXy = 0b0010_1001_0100;
-        public static final short zXY = 0b0010_0001_1100;
-        public static final short ZXY = 0b0010_0001_0100;
+        public static final short NEG_X = 0b1000_0000_0000;
+        public static final short NEG_Y = 0b0000_1000_0000;
+        public static final short NEG_Z = 0b0000_0000_1000;
 
-        public static final short yzx = 0b1001_1100_1010;
-        public static final short yZx = 0b1001_1100_0010;
-        public static final short Yzx = 0b1001_0100_1010;
-        public static final short YZx = 0b1001_0100_0010;
-        public static final short yzX = 0b0001_1100_1010;
-        public static final short yZX = 0b0001_1100_0010;
-        public static final short YzX = 0b0001_0100_1010;
-        public static final short YZX = 0b0001_0100_0010;
+        public static final short NEG_XY = 0b1000_1000_0000;
+        public static final short NEG_XZ = 0b1000_0000_1000;
+        public static final short NEG_YZ = 0b0000_1000_1000;
 
-        public static final short zyx = 0b1001_1010_1100;
-        public static final short Zyx = 0b1001_1010_0100;
-        public static final short zYx = 0b1001_0010_1100;
-        public static final short ZYx = 0b1001_0010_0100;
-        public static final short zyX = 0b0001_1010_1100;
-        public static final short ZyX = 0b0001_1010_0100;
-        public static final short zYX = 0b0001_0010_1100;
-        public static final short ZYX = 0b0001_0010_0100;
+        public static final short NEG_XYZ = 0b1000_1000_1000;
 
     }
 
@@ -183,6 +155,9 @@ public abstract class Abstract3DIterator {
 
     /**
      * Same as {@link #Abstract3DIterator(int)} except this sets {@link #order}.
+     *
+     * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
+     * @param order an {@link #Ordering}; use bitwise & with the NEG_ enums to flip signs
      */
     public Abstract3DIterator(int range, short order) {
         this.range = range;
@@ -209,6 +184,12 @@ public abstract class Abstract3DIterator {
 
     /**
      * Same as {@link #Abstract3DIterator(int, int, int, int)} except this sets {@link #order}.
+     *
+     * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
+     * @param order an {@link #Ordering}; use bitwise & with the NEG_ enums to flip signs
+     * @param x     the x offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
+     * @param y     the y offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
+     * @param z     the z offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
      */
     public Abstract3DIterator(int range, short order, int x, int y, int z) {
         this.range = range;
@@ -278,9 +259,9 @@ public abstract class Abstract3DIterator {
      * @return the relative X coordinate according to the arbitrary ordering
      */
     public final int getRelativeX() {
-        byte tmp = (byte) (order >> Ordering.X);
-        int ret = (tmp & Ordering.N) != 0 ? n : (tmp & Ordering.L) != 0 ? l : m;
-        if ((tmp & Ordering.minus) != 0) ret = -ret;
+        byte tmp = (byte) (order >> Ordering.Position.X);
+        int ret = (tmp & Ordering.Position.N) != 0 ? n : (tmp & Ordering.Position.L) != 0 ? l : m;
+        if ((tmp & Ordering.Position.minus) != 0) ret = -ret;
         return ret;
     }
 
@@ -290,9 +271,9 @@ public abstract class Abstract3DIterator {
      * @return the relative Y coordinate according to the arbitrary ordering
      */
     public final int getRelativeY() {
-        byte tmp = (byte) (order >> Ordering.Y);
-        int ret = (tmp & Ordering.L) != 0 ? l : (tmp & Ordering.N) != 0 ? n : m;
-        if ((tmp & Ordering.minus) != 0) ret = -ret;
+        byte tmp = (byte) (order >> Ordering.Position.Y);
+        int ret = (tmp & Ordering.Position.L) != 0 ? l : (tmp & Ordering.Position.N) != 0 ? n : m;
+        if ((tmp & Ordering.Position.minus) != 0) ret = -ret;
         return ret;
     }
 
@@ -304,8 +285,8 @@ public abstract class Abstract3DIterator {
     public final int getRelativeZ() {
         // If for whatever reason Ordering.Z changes to not be 0, update this
         byte tmp = (byte) order;
-        int ret = (tmp & Ordering.M) != 0 ? m : (tmp & Ordering.L) != 0 ? l : n;
-        if ((tmp & Ordering.minus) != 0) ret = -ret;
+        int ret = (tmp & Ordering.Position.M) != 0 ? m : (tmp & Ordering.Position.L) != 0 ? l : n;
+        if ((tmp & Ordering.Position.minus) != 0) ret = -ret;
         return ret;
     }
 
