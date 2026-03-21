@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.core.fml.transformers;
 
-import static com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer.Blockness.BLOCK;
-import static com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer.Blockness.NOT_A_BLOCK;
+import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
 import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.ARETURN;
@@ -12,6 +11,7 @@ import static org.objectweb.asm.Opcodes.ILOAD;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Type.BOOLEAN_TYPE;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 import net.minecraft.launchwrapper.IClassTransformer;
@@ -35,7 +35,6 @@ public class BlockIconTransformer implements IClassTransformer {
 
     private static final String FIELD_NAME = "nhlib$isModeled";
     private static final String BOOL_DESC = BOOLEAN_TYPE.getDescriptor();
-    private static final String BLOCK_CLASS = "net/minecraft/block/Block";
     private static final String ISBRH_CLASS = "com/gtnewhorizon/gtnhlib/client/model/ModelISBRH";
     private static final String ISBRH_DESC = "L" + ISBRH_CLASS + ";";
     private static final String NEW_WORLD_DESC = "(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraft/util/IIcon;";
@@ -43,21 +42,34 @@ public class BlockIconTransformer implements IClassTransformer {
 
     // These are the targeted calls - a variety of getIcons declared by the Block class
     private static final String GI_WORLD = "getIcon(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;";
+    private static final String GI_WORLD_SRG = "func_149673_e(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;";
+    private static final String GI_WORLD_OBF = "e(Lahl;IIII)Lrf;";
+
     private static final String GI_SIDE_META = "getIcon(II)Lnet/minecraft/util/IIcon;";
-    private static final String OBF_SIDE_META = "func_149735_b(II)Lnet/minecraft/util/IIcon;";
+    private static final String GI_SIDE_META_SRG = "func_149735_b(II)Lnet/minecraft/util/IIcon;";
+    private static final String GI_SIDE_META_OBF = "a(II)Lrf;";
+
     private static final String GI_SIDE = "getBlockTextureFromSide(I)Lnet/minecraft/util/IIcon;";
-    private static final HashSet<String> GETICON_SIGS = new HashSet<>();
-    static {
-        GETICON_SIGS.add(GI_WORLD);
-        GETICON_SIGS.add(GI_SIDE_META);
-        GETICON_SIGS.add(OBF_SIDE_META);
-        GETICON_SIGS.add(GI_SIDE);
-    }
+    private static final String GI_SIDE_SRG = "func_149733_h(I)Lnet/minecraft/util/IIcon;";
+    private static final String GI_SIDE_OBF = "h(I)Lrf;";
+
+    private static final HashSet<String> GETICON_SIGS = new HashSet<>(
+            Arrays.asList(
+                    GI_WORLD,
+                    GI_WORLD_SRG,
+                    GI_WORLD_OBF,
+                    GI_SIDE_META,
+                    GI_SIDE_META_SRG,
+                    GI_SIDE_META_OBF,
+                    GI_SIDE,
+                    GI_SIDE_SRG,
+                    GI_SIDE_OBF));
 
     private final ObjectOpenHashSet<String> blockFamily = new ObjectOpenHashSet<>();
 
     public BlockIconTransformer() {
-        blockFamily.add(BLOCK_CLASS);
+        blockFamily.add("net/minecraft/block/Block");
+        blockFamily.add("aji");
     }
 
     /// This is what our hook is injecting for the IBlockAccess variant:
@@ -73,9 +85,10 @@ public class BlockIconTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (basicClass == null) return null;
+
         final var cr = new ClassReader(basicClass);
-        final var blockness = checkForBlockChild(cr.getClassName(), cr.getSuperName());
-        if (blockness == NOT_A_BLOCK) {
+        final boolean isBlockClass = "net.minecraft.block.Block".equals(transformedName);
+        if (!isBlockClass && !isBlockSubclass(cr.getClassName(), cr.getSuperName())) {
             return basicClass;
         }
 
@@ -84,7 +97,7 @@ public class BlockIconTransformer implements IClassTransformer {
         // TODO determine if the Block#blockIcon field needs to be redirected
         final var cn = new ClassNode();
         boolean transformed = false;
-        if (blockness == BLOCK) {
+        if (isBlockClass) {
             cn.fields.add(new FieldNode(ACC_PROTECTED, FIELD_NAME, BOOL_DESC, null, 0));
             transformed = true;
         }
@@ -102,6 +115,8 @@ public class BlockIconTransformer implements IClassTransformer {
     }
 
     private boolean hookMethod(ClassNode cn, MethodNode mn) {
+        if ((mn.access & ACC_ABSTRACT) != 0) return false;
+
         final var signature = mn.name + mn.desc;
         if (!GETICON_SIGS.contains(signature)) return false;
 
@@ -114,7 +129,7 @@ public class BlockIconTransformer implements IClassTransformer {
 
         // This call varies based on the node we injected to.
         switch (signature) {
-            case GI_WORLD -> {
+            case GI_WORLD, GI_WORLD_SRG, GI_WORLD_OBF -> {
                 injectedHook.add(new VarInsnNode(ALOAD, 1));
                 injectedHook.add(new VarInsnNode(ILOAD, 2));
                 injectedHook.add(new VarInsnNode(ILOAD, 3));
@@ -122,7 +137,7 @@ public class BlockIconTransformer implements IClassTransformer {
                 injectedHook
                         .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getParticleIcon", NEW_WORLD_DESC, false));
             }
-            case GI_SIDE_META, OBF_SIDE_META, GI_SIDE -> injectedHook
+            case GI_SIDE_META, GI_SIDE_META_SRG, GI_SIDE_META_OBF, GI_SIDE, GI_SIDE_SRG, GI_SIDE_OBF -> injectedHook
                     .add(new MethodInsnNode(INVOKEVIRTUAL, ISBRH_CLASS, "getMissingIcon", MISSINGNO_DESC, false));
             default -> throw new RuntimeException("Attempted to hook non-icon method!");
         }
@@ -135,18 +150,11 @@ public class BlockIconTransformer implements IClassTransformer {
         return true;
     }
 
-    private Blockness checkForBlockChild(String className, String superName) {
-        if (BLOCK_CLASS.equals(className)) return BLOCK;
+    private boolean isBlockSubclass(String className, String superName) {
         if (blockFamily.contains(superName)) {
             blockFamily.add(className);
-            return Blockness.BLOCK_SUBCLASS;
+            return true;
         }
-        return NOT_A_BLOCK;
-    }
-
-    enum Blockness {
-        BLOCK,
-        BLOCK_SUBCLASS,
-        NOT_A_BLOCK
+        return false;
     }
 }
