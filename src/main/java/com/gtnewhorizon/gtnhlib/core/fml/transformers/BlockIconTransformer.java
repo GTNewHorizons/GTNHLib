@@ -29,12 +29,18 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
+import com.gtnewhorizon.gtnhlib.asm.ByteCodeUtil;
+import com.gtnewhorizon.gtnhlib.asm.SafeClassWriter;
+import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
+
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public class BlockIconTransformer implements IClassTransformer {
 
     private static final String FIELD_NAME = "nhlib$isModeled";
     private static final String BOOL_DESC = BOOLEAN_TYPE.getDescriptor();
+    private static final String BLOCK_CLASS = "net/minecraft/block/Block";
+    private static final String BLOCK_MODEL_INFO = "com/gtnewhorizon/gtnhlib/api/BlockModelInfo";
     private static final String ISBRH_CLASS = "com/gtnewhorizon/gtnhlib/client/model/ModelISBRH";
     private static final String ISBRH_DESC = "L" + ISBRH_CLASS + ";";
     private static final String NEW_WORLD_DESC = "(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraft/util/IIcon;";
@@ -72,10 +78,14 @@ public class BlockIconTransformer implements IClassTransformer {
         blockFamily.add("aji");
     }
 
+    /// Implements the {@link com.gtnewhorizon.gtnhlib.api.BlockModelInfo} interface on the Block class,
+    /// adds the boolean nhlib$isModeled field and adds associated getter/setter for it.
+    ///
     /// This is what our hook is injecting for the IBlockAccess variant:
     /// ```java
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getParticleIcon(world, x, y, z);
     /// ```
+    ///
     /// This is what our hook is injecting for the side:meta and just side variants:
     /// ```java
     /// if (this.nhlib$isModeled) return ModelISBRH.INSTANCE.getMissingIcon();
@@ -96,20 +106,25 @@ public class BlockIconTransformer implements IClassTransformer {
         // - getIcon and overloads (func_149735_b, getBlockTextureFromSide), inserting an early return if needed
         // TODO determine if the Block#blockIcon field needs to be redirected
         final var cn = new ClassNode();
+        cr.accept(cn, 0);
         boolean transformed = false;
         if (isBlockClass) {
             cn.fields.add(new FieldNode(ACC_PROTECTED, FIELD_NAME, BOOL_DESC, null, 0));
+            cn.interfaces.add(BLOCK_MODEL_INFO);
+            ByteCodeUtil.addGetterMethod(cn, "nhlib$isModeled", BLOCK_CLASS, FIELD_NAME, BOOLEAN_TYPE, null);
+            ByteCodeUtil.addSetterMethod(cn, "nhlib$setModeled", BLOCK_CLASS, FIELD_NAME, BOOLEAN_TYPE, null);
             transformed = true;
         }
-        cr.accept(cn, 0);
         for (var methodNode : cn.methods) {
             transformed |= hookMethod(cn, methodNode);
         }
 
         if (transformed) {
-            final var cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+            final var cw = new SafeClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
             cn.accept(cw);
-            return cw.toByteArray();
+            final byte[] transformedBytes = cw.toByteArray();
+            GTNHLibClassDump.dumpClass(transformedName, basicClass, transformedBytes, this);
+            return transformedBytes;
         }
         return basicClass;
     }

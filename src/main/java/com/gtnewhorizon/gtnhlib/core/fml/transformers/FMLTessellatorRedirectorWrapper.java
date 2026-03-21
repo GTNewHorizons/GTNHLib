@@ -10,13 +10,13 @@ import com.gtnewhorizon.gtnhlib.core.GTNHLibCore;
 import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
 import com.gtnewhorizon.gtnhlib.core.shared.transformers.TessellatorRedirector;
 
-/** IClassTransformer wrapper for {@link TessellatorRedirector} */
-public class TessellatorRedirectorTransformer implements IClassTransformer {
+/** FML IClassTransformer wrapper for {@link TessellatorRedirector} */
+public class FMLTessellatorRedirectorWrapper implements IClassTransformer {
 
     private final TessellatorRedirector inner;
     private final String[] exclusions;
 
-    public TessellatorRedirectorTransformer() {
+    public FMLTessellatorRedirectorWrapper() {
         inner = new TessellatorRedirector(GTNHLibCore.isObf());
         exclusions = inner.getTransformerExclusions();
     }
@@ -37,7 +37,7 @@ public class TessellatorRedirectorTransformer implements IClassTransformer {
         final ClassReader cr = new ClassReader(basicClass);
         final ClassNode cn = new ClassNode();
         cr.accept(cn, 0);
-        final boolean changed = inner.transformClassNode(transformedName, cn);
+        final boolean changed = inner.transformClassNode(cn);
         if (changed) {
             final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             cn.accept(cw);
