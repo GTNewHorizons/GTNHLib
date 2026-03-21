@@ -50,8 +50,8 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * Returns whether the iterator is at or past the end position. Use this if you call it BEFORE {@link #next()}
-     * in your loop.
+     * Returns whether the iterator is at or past the end position. Use this if you use the values after or with
+     * {@link #next()} in your loop.
      *
      * @return whether the iterator is at the end position: n, l, m >= -range
      */
@@ -60,9 +60,9 @@ public class CubeIterator extends Abstract3DIterator {
     }
 
     /**
-     * Returns whether the iterator is at or past the end position, if you call {@link #next()} BEFORE using it in
-     * your loop. Basically, the iterator starts at &lt;0,0,0&gt;, so if you want to use that position and not have
-     * it end one iteration before the final corner, call this after next() and use it.
+     * Returns whether the iterator is at or past the end position, if you call {@link #next()} BEFORE using the
+     * coords in your loop. Basically, the iterator starts at &lt;0,0,0&gt;, so if you want to use that position
+     * and not have it end one iteration before the final corner, call this instead as the check in the loop.
      *
      * @return whether the iterator is past the end position
      */
