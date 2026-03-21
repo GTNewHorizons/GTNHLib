@@ -51,7 +51,7 @@ public final class ByteCodeUtil implements Opcodes {
         mv.visitLabel(l2);
         mv.visitLocalVariable("this", "L" + owner + ";", null, l0, l2, 0);
         mv.visitLocalVariable(fieldName + "In", fieldDesc, null, l0, l2, 1);
-        mv.visitMaxs(1 + fieldType.getSize(), 2);
+        mv.visitMaxs(1 + fieldType.getSize(), 1 + fieldType.getSize());
         mv.visitEnd();
     }
 }
