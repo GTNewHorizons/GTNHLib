@@ -160,7 +160,7 @@ public class ModelRegistry {
             loadModelInfo(manager);
         }
 
-        private boolean infoMixinFailed = false;
+        private boolean infoASMFailed = false;
 
         private void loadModelInfo(GlobalResourceManager manager) {
             // Scan resource packs for model files
@@ -193,10 +193,10 @@ public class ModelRegistry {
                 if (!(s instanceof String name)) return;
                 if (!(b instanceof Block block)) return;
                 if (!(b instanceof BlockModelInfo modelInfo)) {
-                    if (!infoMixinFailed) {
+                    if (!infoASMFailed) {
                         MODEL_LOGGER.error("Block registry contained a non-block or the info ASM failed!");
                         MODEL_LOGGER.error("Either you won't notice anything, or all JSON models will stop loading...");
-                        infoMixinFailed = true;
+                        infoASMFailed = true;
                     }
                     return;
                 }
