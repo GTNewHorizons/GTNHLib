@@ -92,7 +92,7 @@ public abstract class Abstract3DIterator {
     public int order = Ordering.xyz;
 
     /**
-     * An "enum" for the arbitrary ordering of X, Y, and Z coords. Use the bitwise & operator to combine the ordering
+     * An "enum" for the arbitrary ordering of X, Y, and Z coords. Use the bitwise | operator to combine the ordering
      * and negation enums. Ordering of coordinates affects priority (for example in a typical <!-- aaaaaaaaaaaaaa -->
      * implementation for range = 1 with Ordering.xyz it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does
      * not define a way to change the order in which the mirroring operation happens (so for example you can't do +x,
@@ -155,7 +155,7 @@ public abstract class Abstract3DIterator {
      * Same as {@link #Abstract3DIterator(int)} except this sets {@link #order}.
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
-     * @param order an {@link #Ordering}; use bitwise & with the NEG_ enums to flip signs
+     * @param order an {@link #Ordering}; use bitwise | with a NEG_ enum to flip signs
      */
     public Abstract3DIterator(int range, short order) {
         this.range = range;
@@ -184,7 +184,7 @@ public abstract class Abstract3DIterator {
      * Same as {@link #Abstract3DIterator(int, int, int, int)} except this sets {@link #order}.
      *
      * @param range the maximum radius the iterator goes up to, used in {@link #hasNext()}
-     * @param order an {@link #Ordering}; use bitwise & with the NEG_ enums to flip signs
+     * @param order an {@link #Ordering}; use bitwise | with the NEG_ enums to flip signs
      * @param x     the x offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
      * @param y     the y offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
      * @param z     the z offset used in {@link #nextCoordTriple()} and {@link #nextBlockPos()}
