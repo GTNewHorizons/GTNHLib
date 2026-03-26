@@ -13,7 +13,7 @@ import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 public interface ModelResourcePack {
 
     /// Returns a list of the texture names referenced by models in this resource pack.
-    List<String> nhlib$getReferencedTextures(Function<Reader, JSONModel> jsonParser);
+    RPInfo nhlib$gatherModelInfo(Function<Reader, JSONModel> jsonParser);
 
     default List<String> nhlib$getReferencedTextures(Stream<? extends InputStream> files,
             Function<Reader, JSONModel> jsonParser) {

@@ -63,7 +63,7 @@ public class FontRendering {
             }
 
             if (curBold && charWidth > 0) {
-                width += fontParams.getShadowOffset();
+                width += 1.0f;
             }
         }
 
@@ -113,7 +113,7 @@ public class FontRendering {
                     }
 
                     if (curBold) {
-                        width += fontParams.getShadowOffset();
+                        width += 1.0f;
                     }
             }
 
@@ -165,7 +165,7 @@ public class FontRendering {
                 }
 
                 if (curBold) {
-                    width += fontParams.getShadowOffset();
+                    width += 1.0f;
                 }
             }
 

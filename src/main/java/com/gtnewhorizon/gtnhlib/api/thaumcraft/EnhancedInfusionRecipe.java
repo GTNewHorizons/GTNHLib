@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.api.thaumcraft;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
@@ -69,7 +70,7 @@ public class EnhancedInfusionRecipe extends InfusionRecipe {
     }
 
     public List<Replacement> getReplacements() {
-        return this.replacements;
+        return new ArrayList<>(this.replacements);
     }
 
     /**

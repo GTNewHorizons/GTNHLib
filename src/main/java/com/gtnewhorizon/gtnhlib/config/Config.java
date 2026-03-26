@@ -269,4 +269,11 @@ public @interface Config {
         Class<? extends GuiConfigEntries.IConfigEntry> value();
     }
 
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.FIELD, ElementType.TYPE })
+    @interface Order {
+
+        int value() default Integer.MAX_VALUE;
+    }
+
 }

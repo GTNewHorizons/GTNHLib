@@ -52,6 +52,7 @@ public class ConfigurationManager {
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
     private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
+    private static final Map<Class<?>, ConfigNode> configNode = new HashMap<>();
 
     private static final ConfigurationManager instance = new ConfigurationManager();
     private final static Path configDir;
@@ -90,6 +91,8 @@ public class ConfigurationManager {
         configToCategoryClassMap.computeIfAbsent(rawConfig, (ignored) -> new HashMap<>())
                 .computeIfAbsent(category, (ignored) -> new HashSet<>()).add(configClass);
 
+        configNode.put(configClass, new ConfigNode(configClass));
+
         try {
             processConfigInternal(configClass, category, rawConfig, null);
             rawConfig.save();
@@ -121,7 +124,7 @@ public class ConfigurationManager {
     private static void save(Class<?> configClass, Object instance, Configuration rawConfig, String category)
             throws IllegalAccessException, ConfigException {
         for (val field : configClass.getDeclaredFields()) {
-            if (field.getAnnotation(Config.Ignore.class) != null) {
+            if (shouldSkipField(field)) {
                 continue;
             }
 
@@ -190,7 +193,7 @@ public class ConfigurationManager {
 
         List<String> observedValues = new ArrayList<>();
         for (val field : configClass.getDeclaredFields()) {
-            if (field.isAnnotationPresent(Config.Ignore.class)) {
+            if (shouldSkipField(field)) {
                 continue;
             }
 
@@ -364,6 +367,9 @@ public class ConfigurationManager {
             Configuration rawConfig, boolean categorized) {
         List<IConfigElement> elements = new ArrayList<>();
         for (val field : configClass.getDeclaredFields()) {
+            if (shouldSkipField(field)) {
+                continue;
+            }
             if (isFieldSubCategory(field)) {
                 val name = ConfigFieldParser.getFieldName(field).toLowerCase();
                 elements.add(
@@ -388,6 +394,11 @@ public class ConfigurationManager {
             return proxy;
         }
 
+        ConfigNode rootNode = configNode.get(configClass);
+        ConfigNode node = rootNode.children.getOrDefault(element.getName().toLowerCase(), rootNode);
+        Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
+        int order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
+
         return new IConfigElementProxy(element, () -> {
             try {
                 processConfigInternal(configClass, category, rawConfig, null);
@@ -396,7 +407,7 @@ public class ConfigurationManager {
                     | ConfigException e) {
                 e.printStackTrace();
             }
-        });
+        }, node, order);
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
@@ -471,11 +482,15 @@ public class ConfigurationManager {
     }
 
     private static boolean isFieldSubCategory(@Nullable Field field) {
-        if (field == null) return false;
+        if (shouldSkipField(field)) return false;
 
         Class<?> fieldClass = field.getType();
         return !ConfigFieldParser.canParse(field) && fieldClass.getSuperclass() != null
                 && fieldClass.getSuperclass().equals(Object.class);
+    }
+
+    private static boolean shouldSkipField(@Nullable Field field) {
+        return field == null || field.isSynthetic() || field.isAnnotationPresent(Config.Ignore.class);
     }
 
     public static Configuration getConfig(Class<?> configClass) {
@@ -513,6 +528,9 @@ public class ConfigurationManager {
             Class<?> configClass = entry.getValue();
 
             for (val field : configClass.getDeclaredFields()) {
+                if (shouldSkipField(field)) {
+                    continue;
+                }
                 val fieldName = ConfigFieldParser.getFieldName(field);
                 Config.Entry fieldEntry = field.getAnnotation(Config.Entry.class);
                 if (fieldEntry != null && fieldEntry.value() != null) {
@@ -591,5 +609,25 @@ public class ConfigurationManager {
             }
         }
         return true;
+    }
+
+    public static class ConfigNode {
+
+        final Map<String, Integer> fieldOrder = new HashMap<>();
+        final Map<String, ConfigNode> children = new HashMap<>();
+
+        public ConfigNode(Class<?> configClass) {
+            for (Field field : configClass.getDeclaredFields()) {
+                if (shouldSkipField(field)) {
+                    continue;
+                }
+                String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
+                Config.Order ann = field.getAnnotation(Config.Order.class);
+                if (ann != null && fieldName != null) fieldOrder.put(fieldName, ann.value());
+                if (ConfigurationManager.isFieldSubCategory(field)) {
+                    children.put(fieldName, new ConfigNode(field.getType()));
+                }
+            }
+        }
     }
 }

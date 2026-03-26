@@ -8,13 +8,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.FakePlayer;
 
-import com.gtnewhorizon.gtnhlib.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentItemName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -28,6 +29,7 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
@@ -61,9 +63,9 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
 
         if (GTNHLibConfig.enableTestBlocks) {
-            GameRegistry.registerBlock(new BlockTest(), "model_test");
-            GameRegistry.registerBlock(new BlockTestTint(), "model_test_tint");
-            GameRegistry.registerBlock(new BlockTestTintMul(), "model_test_tint_mul");
+            BlockTest.register();
+            BlockTestTint.register();
+            BlockTestTintMul.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
@@ -75,6 +77,8 @@ public class CommonProxy {
         ChatComponentCustomRegistry.register(ChatComponentNumber::new);
         ChatComponentCustomRegistry.register(ChatComponentFluid::new);
         ChatComponentCustomRegistry.register(ChatComponentEnergy::new);
+        ChatComponentCustomRegistry.register(ChatComponentFluidName::new);
+        ChatComponentCustomRegistry.register(ChatComponentItemName::new);
 
         // Number formatting config registration. Primarily aimed at client side, but does exist on server side
         // as well, just in-case calls are made to number formatting.

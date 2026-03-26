@@ -22,7 +22,7 @@ public final class TessellatorRedirector {
     }
 
     public String[] getTransformerExclusions() {
-        return new String[] { "org.lwjgl", "com.gtnewhorizons.angelica.glsm.", "com.gtnewhorizons.angelica.transform",
+        return new String[] { "org.lwjgl", "com.gtnewhorizons.angelica.glsm.", "com.gtnewhorizons.angelica.loading",
                 "me.eigenraven.lwjgl3ify", "com.gtnewhorizon.gtnhlib", "net.minecraft.client.renderer.Tessellator" };
     }
 
@@ -33,10 +33,7 @@ public final class TessellatorRedirector {
     /**
      * @return Was the class changed?
      */
-    public boolean transformClassNode(String className, ClassNode cn) {
-        if (cn == null) {
-            return false;
-        }
+    public boolean transformClassNode(ClassNode cn) {
         boolean changed = false;
         for (MethodNode mn : cn.methods) {
             for (AbstractInsnNode node : mn.instructions.toArray()) {
