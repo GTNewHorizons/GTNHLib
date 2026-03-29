@@ -51,7 +51,10 @@ public abstract class Abstract3DIterator {
     /**
      * Whether the iterator is not at or past the last value before it exceeds {@link #range}. The iterator should still
      * faithfully go past the maximum value so that unbounded iterators can be made by setting a dummy range and
-     * ignoring this. It is also encouraged to have a check where, if the range is negative, return true.
+     * ignoring this. It is also encouraged to have a check where, if the range is negative, return true. <br>
+     * If you are retreiving coordinates without progressing the iterator BEFORE calling next() (i.e. you want to include
+     * &lt;0,0,0&gt;, use {@link #hasNextFrom0()}, as it will allow the iterator to progress one more loop and not miss the
+     * last position.
      *
      * @return Whether the iterator is at or past the last value before it exceeds the provided range
      */
@@ -60,7 +63,7 @@ public abstract class Abstract3DIterator {
     /**
      * Whether the iterator is not at or past the value where it exceeds {@link #range}. This is used for when you want
      * to include <0,0,0> and not exclude the last point (which means you are calling {@link #next()} AFTER getting the
-     * coords). It's encouraged to return true for range &lt; 0.<br>
+     * coords). It's encouraged to return true for range &lt; 0. <br>
      * Ex: `while(iter.hasNextFrom0()) { something(iter.n, iter.l, iter.m); next(); }` <br>
      *
      * @return Whether the iterator exceeds the provided range
