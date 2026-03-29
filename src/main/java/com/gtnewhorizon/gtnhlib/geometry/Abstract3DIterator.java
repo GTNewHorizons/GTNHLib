@@ -373,7 +373,7 @@ public abstract class Abstract3DIterator {
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
      *
-     * @return n, l, and m, packed together into a long
+     * @return absolute x, y, and z, packed together into a long
      */
     public final long nextXYZPacked() {
         next();
@@ -388,7 +388,7 @@ public abstract class Abstract3DIterator {
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
      *
-     * @return n, l, and m, packed together into a long
+     * @return relative x, y, and z, packed together into a long
      */
     public final long nextRelativeXYZPacked() {
         next();
