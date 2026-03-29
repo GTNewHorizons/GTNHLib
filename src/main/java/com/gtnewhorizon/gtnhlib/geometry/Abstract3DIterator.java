@@ -208,7 +208,7 @@ public abstract class Abstract3DIterator {
      * for this to be used (they default to 0). Using the fields directly or their getters is better than spinning up an
      * array in most cases. Also note that this method progresses the iterator.
      *
-     * @return an array containing the next xyz coordinates, offset if offsets were provided in init
+     * @return an array containing the next absolute xyz coordinates
      */
     public final int[] nextCoordTriple() {
         next();
@@ -220,7 +220,7 @@ public abstract class Abstract3DIterator {
      * {@link #nextCoordTriple()} if offsets weren't set. Using the n, l, m fields directly or their getters is better
      * than spinning up an array in most cases. Also note that this method progresses the iterator.
      *
-     * @return an array containing the next xyz coordinates, offset if offsets were provided in init
+     * @return an array containing the next absolute xyz coordinates
      */
     public final int[] nextRelativeCoordTriple() {
         next();
@@ -232,7 +232,7 @@ public abstract class Abstract3DIterator {
      * values. The start values don't have to be set for this to be used (they default to 0). Using the fields directly
      * or the XYZ getters is usually better than this. Also note that this method progresses the iterator.
      *
-     * @return a BlockPos of the next xyz coordinates, offset if offsets were provided in init
+     * @return a BlockPos of the next absolute xyz coordinates
      */
     public final BlockPos nextBlockPos() {
         next();
