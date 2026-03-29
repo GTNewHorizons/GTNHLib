@@ -93,10 +93,10 @@ public abstract class Abstract3DIterator {
 
     /**
      * An "enum" for the arbitrary ordering of X, Y, and Z coords. Use the bitwise | operator to combine the ordering
-     * and negation enums. Ordering of coordinates affects priority (for example in a typical <!-- aaaaaaaaaaaaaa -->
-     * implementation for range = 1 with Ordering.xyz it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does
-     * not define a way to change the order in which the mirroring operation happens (so for example you can't do +x,
-     * -y, -x, +y), as that could mess up subclasses. (So you can do North-South-Down-Up-West-East, but not
+     * and negation enums. Ordering of coordinates affects priority (for example in a typical implementation for
+     * range&nbsp;=&nbsp;1 with Ordering.xyz it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does not
+     * define a way to change the order in which the mirroring operation happens (so for example you can't do +x, -y,
+     * -x, +y), as that could mess up subclasses. (So you can do North-South-Down-Up-West-East, but not
      * North-Up-South-East-Down-West). <br>
      * The format is three nibbles stuck together, the first bit of each being the sign (1 for neg first, 0 for pos
      * first) and the second three bits being which of n, l, m it uses (100 = n, 010 = l, 001 = m). This assumes that
