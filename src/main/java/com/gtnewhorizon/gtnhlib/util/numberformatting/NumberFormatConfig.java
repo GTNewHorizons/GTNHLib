@@ -30,8 +30,7 @@ public final class NumberFormatConfig {
     public static String formatPattern = "SCIENTIFIC";
 
     @Config.Comment({ "Select the number formatting locale. Choose SYSTEM_DEFAULT to use your operating system locale.",
-            "Each option shows example formatting:",
-            "  SYSTEM_DEFAULT – Use your system language settings",
+            "Each option shows example formatting:", "  SYSTEM_DEFAULT – Use your system language settings",
             "  ENGLISH_US     – 1,234.56 (comma grouping, period decimal)",
             "  RUSSIAN        – 1 234,56 (space grouping, comma decimal)",
             "  GERMAN         – 1.234,56 (period grouping, comma decimal)",
@@ -124,11 +123,7 @@ public final class NumberFormatConfig {
                             + activeLocale
                             + "); invalid format pattern, fell back to SCIENTIFIC");
         } else {
-            GTNHLib.info(
-                    "Number formatting: Using " + numberFormatLocale.getDisplayName()
-                            + " ("
-                            + activeLocale
-                            + ")");
+            GTNHLib.info("Number formatting: Using " + numberFormatLocale.getDisplayName() + " (" + activeLocale + ")");
         }
     }
 
@@ -142,8 +137,8 @@ public final class NumberFormatConfig {
     }
 
     /**
-     * Checks if a non-system locale override is active.
-     * Intended for downstream consumers that want to detect a locale override.
+     * Checks if a non-system locale override is active. Intended for downstream consumers that want to detect a locale
+     * override.
      *
      * @return true if a locale other than system default is selected
      */
