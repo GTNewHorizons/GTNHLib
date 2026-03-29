@@ -9,7 +9,7 @@ import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
  * coordinates can be optionally supplied; n is treated as x, l as y, and m as z in methods that use those. One reason
  * n, l, and m are not internally x, y, and z is to highlight that their ordering is arbitrary; swap or invert them if
  * you like. I initially named them n, l, and m as they increase similarly to the three electronic quantum numbers (you
- * can think of the sign of n or l as the spin). In {@link com.gtnewhorizon.gtnhlib.blockpos.CubeIterator}, from which
+ * can think of the sign of n or l as the spin). In {@link com.gtnewhorizon.gtnhlib.geometry.CubeIterator}, from which
  * this was adapted, aside from the symmetry transformations, m is bounded by l and l is bounded by n, similarly to
  * electron orbitals, in order to get unique non-ordered {n,l,m} sets. <br>
  * It is recommended to use direct field access, functions like {#getX()}, or a function such as
