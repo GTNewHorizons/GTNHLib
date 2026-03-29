@@ -89,7 +89,7 @@ public abstract class Abstract3DIterator {
      * whichever X, Y, Z coord you want. <br>
      * Remember to use bitwise & to combine the directional and negational enums.
      */
-    public int order = Ordering.xyz;
+    public short order = Ordering.xyz;
 
     /**
      * An "enum" for the arbitrary ordering of X, Y, and Z coords. Use the bitwise | operator to combine the ordering
