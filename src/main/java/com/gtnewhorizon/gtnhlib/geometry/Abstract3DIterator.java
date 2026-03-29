@@ -51,7 +51,7 @@ public abstract class Abstract3DIterator {
     /**
      * Whether the iterator is not at or past the last value before it exceeds {@link #range}. The iterator should still
      * faithfully go past the maximum value so that unbounded iterators can be made by setting a dummy range and
-     * ignoring this. It is also encourged to have a check where, if the range is negative, return true.
+     * ignoring this. It is also encouraged to have a check where, if the range is negative, return true.
      *
      * @return Whether the iterator is at or past the last value before it exceeds the provided range
      */
