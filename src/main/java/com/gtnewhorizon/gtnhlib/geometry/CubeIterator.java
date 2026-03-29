@@ -3,7 +3,7 @@ package com.gtnewhorizon.gtnhlib.geometry;
 /**
  * Abstract3DIterator that works outwards under the L infinity metric, forming a cube. (distance = max(x, y, z)) <br>
  * Uses the manhattan metric secondarially to order triples in the same shell. (distance = x+y+z) <br>
- * Use {com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#getCurrentRelativePos} to debug.
+ * Use {@link com.gtnewhorizon.gtnhlib.geometry.Abstract3DIterator#getCurrentRelativePos} to debug.
  *
  * @author __felix__
  */
