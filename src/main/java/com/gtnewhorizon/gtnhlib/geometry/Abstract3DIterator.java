@@ -87,7 +87,7 @@ public abstract class Abstract3DIterator {
      * first value to be increased, and positive goes before negative. This changes the output of functions such as
      * {@link #getX()} (anything that says "XYZ") If you want to ignore this, just use `iter.n`, `iter.l`, `iter.m` for
      * whichever X, Y, Z coord you want. <br>
-     * Remember to use bitwise & to combine the directional and negational enums.
+     * Remember to use bitwise | to combine the directional and negational enums.
      */
     public short order = Ordering.xyz;
 
