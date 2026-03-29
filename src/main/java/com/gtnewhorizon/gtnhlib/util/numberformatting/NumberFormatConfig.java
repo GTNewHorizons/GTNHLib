@@ -25,11 +25,12 @@ public final class NumberFormatConfig {
             "  SCIENTIFIC   – Standard scientific notation (e.g. 1.23e12)",
             "  ENGINEERING  – Engineering notation with exponent in multiples of 3 (e.g. 123e9)",
             "  POWER_OF_TEN – Power-of-ten notation using explicit multiplication (e.g. 1.23*10^12)",
-            "Invalid values will cause the game to fail fast with an error." })
+            "Invalid values will be logged and fall back to SCIENTIFIC." })
     @Config.DefaultString("SCIENTIFIC")
     public static String formatPattern = "SCIENTIFIC";
 
-    @Config.Comment({ "Select language format for number formatting.", "Each option shows example formatting:",
+    @Config.Comment({ "Select the number formatting locale. Choose SYSTEM_DEFAULT to use your operating system locale.",
+            "Each option shows example formatting:",
             "  SYSTEM_DEFAULT – Use your system language settings",
             "  ENGLISH_US     – 1,234.56 (comma grouping, period decimal)",
             "  RUSSIAN        – 1 234,56 (space grouping, comma decimal)",
@@ -53,15 +54,12 @@ public final class NumberFormatConfig {
     @Config.Ignore
     public static ExponentialFormat EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
 
-    @Config.Ignore
-    private static Locale customLocale = LocaleOption.SYSTEM_DEFAULT.getLocale();
-
     /**
      * Enum representing available locale options for number formatting
      */
     public enum LocaleOption {
 
-        SYSTEM_DEFAULT("System Default", Locale.getDefault(Locale.Category.FORMAT)),
+        SYSTEM_DEFAULT("System Default", null),
         ENGLISH_US("English (US) - 1,234.56", new Locale("en", "US")),
         RUSSIAN("Russian - 1 234,56", new Locale("ru", "RU")),
         GERMAN("German - 1.234,56", new Locale("de", "DE")),
@@ -92,7 +90,7 @@ public final class NumberFormatConfig {
         }
 
         public Locale getLocale() {
-            if (this == SYSTEM_DEFAULT) {
+            if (this == SYSTEM_DEFAULT || locale == null) {
                 return Locale.getDefault(Locale.Category.FORMAT);
             }
             return locale;
@@ -109,19 +107,29 @@ public final class NumberFormatConfig {
      */
     public static void syncNumberFormatting() {
         // Parse and apply exponential format pattern
+        boolean fallbackToScientific = false;
         try {
             EXPONENTIAL_FORMAT = ExponentialFormat.parse(formatPattern);
-        } catch (Exception e) {
-            GTNHLib.error("Invalid exponential format pattern: " + formatPattern + ", using SCIENTIFIC");
+        } catch (IllegalStateException ignored) {
+            GTNHLib.error("Invalid exponential format pattern: '" + formatPattern + "', using SCIENTIFIC");
             EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
+            fallbackToScientific = true;
         }
 
-        customLocale = numberFormatLocale.getLocale();
-        GTNHLib.info(
-                "Number formatting: Using " + numberFormatLocale.getDisplayName()
-                        + " ("
-                        + customLocale.toString()
-                        + ")");
+        Locale activeLocale = numberFormatLocale.getLocale();
+        if (fallbackToScientific) {
+            GTNHLib.info(
+                    "Number formatting: Using " + numberFormatLocale.getDisplayName()
+                            + " ("
+                            + activeLocale
+                            + "); invalid format pattern, fell back to SCIENTIFIC");
+        } else {
+            GTNHLib.info(
+                    "Number formatting: Using " + numberFormatLocale.getDisplayName()
+                            + " ("
+                            + activeLocale
+                            + ")");
+        }
     }
 
     /**
@@ -130,14 +138,12 @@ public final class NumberFormatConfig {
      * @return Active locale selected by configuration
      */
     public static Locale getActiveLocale() {
-        if (numberFormatLocale == LocaleOption.SYSTEM_DEFAULT) {
-            return Locale.getDefault(Locale.Category.FORMAT);
-        }
-        return customLocale;
+        return numberFormatLocale.getLocale();
     }
 
     /**
      * Checks if a non-system locale override is active.
+     * Intended for downstream consumers that want to detect a locale override.
      *
      * @return true if a locale other than system default is selected
      */
