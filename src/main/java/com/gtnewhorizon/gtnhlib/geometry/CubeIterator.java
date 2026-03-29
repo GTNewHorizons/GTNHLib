@@ -67,7 +67,7 @@ public class CubeIterator extends Abstract3DIterator {
      * @return whether the iterator is past the end position
      */
     public boolean hasNextFrom0() {
-        return range < 0 || n >= -range && n <= range && l >= -range && l <= range && m >= -range && m <= range;
+        return range < 0 || (n >= -range && n <= range && l >= -range && l <= range && m >= -range && m <= range);
     }
 
     /**
