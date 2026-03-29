@@ -12,7 +12,7 @@ import com.gtnewhorizon.gtnhlib.util.CoordinatePacker;
  * can think of the sign of n or l as the spin). In {@link com.gtnewhorizon.gtnhlib.geometry.CubeIterator}, from which
  * this was adapted, aside from the symmetry transformations, m is bounded by l and l is bounded by n, similarly to
  * electron orbitals, in order to get unique non-ordered {n,l,m} sets. <br>
- * It is recommended to use direct field access, functions like {#getX()}, or a function such as
+ * It is recommended to use direct field access, functions like {@link #getX()}, or a function such as
  * {@link #nextNLMPacked()} to avoid object spam.
  *
  * @author __felix__
