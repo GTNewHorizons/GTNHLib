@@ -52,9 +52,9 @@ public abstract class Abstract3DIterator {
      * Whether the iterator is not at or past the last value before it exceeds {@link #range}. The iterator should still
      * faithfully go past the maximum value so that unbounded iterators can be made by setting a dummy range and
      * ignoring this. It is also encouraged to have a check where, if the range is negative, return true. <br>
-     * If you are retreiving coordinates without progressing the iterator BEFORE calling next() (i.e. you want to include
-     * &lt;0,0,0&gt;, use {@link #hasNextFrom0()}, as it will allow the iterator to progress one more loop and not miss the
-     * last position.
+     * If you are retreiving coordinates without progressing the iterator BEFORE calling next() (i.e. you want to
+     * include &lt;0,0,0&gt;, use {@link #hasNextFrom0()}, as it will allow the iterator to progress one more loop and
+     * not miss the last position.
      *
      * @return Whether the iterator is at or past the last value before it exceeds the provided range
      */
@@ -96,11 +96,10 @@ public abstract class Abstract3DIterator {
 
     /**
      * An "enum" for the arbitrary ordering of X, Y, and Z coords. Use the bitwise | operator to combine the ordering
-     * and negation enums. Ordering of coordinates affects priority (for example in a typical implementation for
-     * range = 1 with Ordering.xyz it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does not
-     * define a way to change the order in which the mirroring operation happens (so for example you can't do +x, -y,
-     * -x, +y), as that could mess up subclasses. (So you can do North-South-Down-Up-West-East, but not
-     * North-Up-South-East-Down-West). <br>
+     * and negation enums. Ordering of coordinates affects priority (for example, with range = 1 and Ordering.xyz it
+     * goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does not define a way to change the order in which the
+     * mirroring operation happens (so for example you can't do +x, -y, -x, +y), as that could mess up subclasses. (So
+     * you can do North-South-Down-Up-West-East, but not North-Up-South-East-Down-West). <br>
      * The format is three nibbles stuck together, the first bit of each being the sign (1 for neg first, 0 for pos
      * first) and the second three bits being which of n, l, m it uses (100 = n, 010 = l, 001 = m). This assumes that
      * implementing classes have decreasing priority for n, l, and m.
