@@ -97,7 +97,7 @@ public abstract class Abstract3DIterator {
     /**
      * An "enum" for the arbitrary ordering of X, Y, and Z coords. Use the bitwise | operator to combine the ordering
      * and negation enums. Ordering of coordinates affects priority (for example in a typical implementation for
-     * range&nbsp;=&nbsp;1 with Ordering.xyz it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does not
+     * range = 1 with Ordering.xyz it goes +x, -x, +y, -y, +z, -z, +x+y, +x-y, -x+y, etc.) This does not
      * define a way to change the order in which the mirroring operation happens (so for example you can't do +x, -y,
      * -x, +y), as that could mess up subclasses. (So you can do North-South-Down-Up-West-East, but not
      * North-Up-South-East-Down-West). <br>
@@ -223,7 +223,7 @@ public abstract class Abstract3DIterator {
      * {@link #nextCoordTriple()} if offsets weren't set. Using the n, l, m fields directly or their getters is better
      * than spinning up an array in most cases. Also note that this method progresses the iterator.
      *
-     * @return an array containing the next absolute xyz coordinates
+     * @return an array containing the next relative xyz coordinates
      */
     public final int[] nextRelativeCoordTriple() {
         next();
@@ -356,7 +356,7 @@ public abstract class Abstract3DIterator {
     /**
      * Progresses the iterator and gives the coordinates of n, l, and m, together, packed with
      * {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
-     * 
+     *
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
@@ -371,7 +371,7 @@ public abstract class Abstract3DIterator {
     /**
      * Progresses the iterator and gives the coordinates of x, y, and z, together, packed with
      * {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
-     * 
+     *
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
@@ -386,7 +386,7 @@ public abstract class Abstract3DIterator {
     /**
      * Progresses the iterator and gives the relative coordinates of x, y, and z, together, packed with
      * {@link com.gtnewhorizon.gtnhlib.util.CoordinatePacker}
-     * 
+     *
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackX
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackY
      * @see com.gtnewhorizon.gtnhlib.util.CoordinatePacker#unpackZ
