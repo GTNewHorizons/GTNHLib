@@ -53,7 +53,7 @@ public class CubeIterator extends Abstract3DIterator {
      * Returns whether the iterator is at or past the end position. Use this if you use the values after or with
      * {@link #next()} in your loop.
      *
-     * @return whether the iterator is at the end position: n, l, m >= -range
+     * @return whether the iterator is at or past the end position: n, l, m >= -range
      */
     public boolean hasNext() {
         return (range < 0 || -n < range || -l < range || -m < range) && hasNextFrom0();
