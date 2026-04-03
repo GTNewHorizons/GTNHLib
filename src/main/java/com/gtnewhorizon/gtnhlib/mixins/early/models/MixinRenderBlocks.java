@@ -31,7 +31,7 @@ public abstract class MixinRenderBlocks {
             @Local(name = "l") int renderType) {
         if (((BlockModelInfo) block).nhlib$isModeled()) {
             cir.setReturnValue(
-                    ModelISBRH.INSTANCE
+                    ModelISBRH.INSTANCE.get()
                             .renderWorldBlock(blockAccess, x, y, z, block, renderType, (RenderBlocks) (Object) this));
         }
     }
