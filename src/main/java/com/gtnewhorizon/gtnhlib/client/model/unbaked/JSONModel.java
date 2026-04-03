@@ -328,7 +328,7 @@ public class JSONModel implements UnbakedModel {
     }
 
     protected IIcon getParticle() {
-        String key = "particle";
+        String key = "#particle";
         if (!textures.containsKey(key) && !textures.isEmpty()) {
             key = textures.keySet().iterator().next();
         }
