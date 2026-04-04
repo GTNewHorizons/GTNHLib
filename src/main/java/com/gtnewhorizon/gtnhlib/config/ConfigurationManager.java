@@ -47,14 +47,13 @@ public class ConfigurationManager {
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
     private static final Map<String, Set<Class<?>>> modIdToConfigClasses = new HashMap<>();
     private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
-    private static final Boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
-    private static final Boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
+    private static final boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
+    private static final boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
     private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
     private static final Map<Class<?>, ConfigNode> configNode = new HashMap<>();
 
-    private static final ConfigurationManager instance = new ConfigurationManager();
     private final static Path configDir;
 
     static {
