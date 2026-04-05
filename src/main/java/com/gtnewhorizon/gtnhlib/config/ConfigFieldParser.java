@@ -596,13 +596,13 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public void setFromString(@Nullable Object instance, String value, Field field) {
-            field.set(instance, value.split("|||"));
+            field.set(instance, value.split("\n"));
         }
 
         @Override
         @SneakyThrows
         public String getAsString(@Nullable Object instance, Field field) {
-            return String.join("|||", (String[]) field.get(instance));
+            return String.join("\n", (String[]) field.get(instance));
         }
     }
 

@@ -261,7 +261,7 @@ public class ConfigurationManager {
 
         if (category.isEmpty()) return;
 
-        if (cat.keySet().size() != observedValues.size()) {
+        if (cat.size() != observedValues.size()) {
             final var properties = new ArrayList<>(cat.keySet());
             properties.removeIf(observedValues::contains);
             properties.forEach(cat::remove);
@@ -619,7 +619,7 @@ public class ConfigurationManager {
                 }
                 String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
                 Config.Order ann = field.getAnnotation(Config.Order.class);
-                if (ann != null && fieldName != null) fieldOrder.put(fieldName, ann.value());
+                if (ann != null) fieldOrder.put(fieldName, ann.value());
                 if (ConfigurationManager.isFieldSubCategory(field)) {
                     children.put(fieldName, new ConfigNode(field.getType()));
                 }
