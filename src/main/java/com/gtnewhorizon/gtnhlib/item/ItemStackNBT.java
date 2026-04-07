@@ -1,17 +1,19 @@
 package com.gtnewhorizon.gtnhlib.item;
 
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility class for safe and convenient manipulation of {@link ItemStack} NBT data.
