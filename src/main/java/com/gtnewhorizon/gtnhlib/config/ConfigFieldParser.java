@@ -18,7 +18,6 @@ import cpw.mods.fml.common.Loader;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import lombok.SneakyThrows;
-import lombok.val;
 
 public class ConfigFieldParser {
 
@@ -47,8 +46,8 @@ public class ConfigFieldParser {
             Parser parser = getParser(field);
             var comment = Optional.ofNullable(field.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
                     .map((lines) -> String.join("\n", lines)).orElse("");
-            val name = getFieldName(field);
-            val defValueString = getModDefault(field);
+            final var name = getFieldName(field);
+            final var defValueString = getModDefault(field);
             parser.load(instance, defValueString, field, config, category, name, comment, key);
         } catch (Exception e) {
             throw new ConfigException(
@@ -65,7 +64,7 @@ public class ConfigFieldParser {
     public static void saveField(Object instance, Field field, Configuration config, String category)
             throws ConfigException {
         try {
-            val name = getFieldName(field);
+            final var name = getFieldName(field);
             Parser parser = getParser(field);
             parser.save(instance, field, config, category, name);
         } catch (Exception e) {
@@ -108,7 +107,7 @@ public class ConfigFieldParser {
     }
 
     private static @Nullable String getModDefault(Field field) {
-        val modDefaultList = field.getAnnotation(Config.ModDetectedDefaultList.class);
+        final var modDefaultList = field.getAnnotation(Config.ModDetectedDefaultList.class);
         if (modDefaultList != null) {
             return Arrays.stream(modDefaultList.values()).filter(ConfigFieldParser::isModDetected).findFirst()
                     .map(
@@ -117,7 +116,7 @@ public class ConfigFieldParser {
                     .orElse(null);
         }
 
-        val modDefault = field.getAnnotation(Config.ModDetectedDefault.class);
+        final var modDefault = field.getAnnotation(Config.ModDetectedDefault.class);
         if (isModDetected(modDefault)) {
             return modDefault.values().length != 0 ? String.join(",", modDefault.values()) : modDefault.value().trim();
         }
@@ -127,8 +126,8 @@ public class ConfigFieldParser {
 
     private static boolean isModDetected(Config.ModDetectedDefault modDefault) {
         if (modDefault == null) return false;
-        val modID = modDefault.modID();
-        val coremod = modDefault.coremod();
+        final var modID = modDefault.modID();
+        final var coremod = modDefault.coremod();
         if (modID.isEmpty() && coremod.isEmpty()) return false;
         return detectedMods.computeIfAbsent(modID.isEmpty() ? coremod : modID, id -> {
             if (!coremod.isEmpty()) {
@@ -144,7 +143,7 @@ public class ConfigFieldParser {
 
     static String getValueAsString(@Nullable Object instance, Field field) throws ConfigException {
         try {
-            val parser = getParser(field);
+            final var parser = getParser(field);
             return parser.getAsString(instance, field);
         } catch (Exception e) {
             throw new ConfigException(
@@ -160,7 +159,7 @@ public class ConfigFieldParser {
 
     static void setValueFromString(@Nullable Object instance, Field field, String value) throws ConfigException {
         try {
-            val parser = getParser(field);
+            final var parser = getParser(field);
             parser.setFromString(instance, value, field);
         } catch (Exception e) {
             throw new ConfigException(
@@ -203,7 +202,7 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
             field.setBoolean(instance, config.getBoolean(name, category, defaultValue, comment, langKey));
         }
 
@@ -217,7 +216,7 @@ public class ConfigFieldParser {
 
         @SneakyThrows
         private boolean fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
-            val boxed = field.getType().equals(Boolean.class);
+            final var boxed = field.getType().equals(Boolean.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultBoolean.class))
                         .map(Config.DefaultBoolean::value)
@@ -235,7 +234,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public void setFromString(@Nullable Object instance, String value, Field field) {
-            val boxed = field.getType().equals(Boolean.class);
+            final var boxed = field.getType().equals(Boolean.class);
             if (boxed) {
                 field.set(instance, Boolean.parseBoolean(value));
                 return;
@@ -247,7 +246,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public String getAsString(@Nullable Object instance, Field field) {
-            val boxed = field.getType().equals(Boolean.class);
+            final var boxed = field.getType().equals(Boolean.class);
             return Boolean.toString(boxed ? (Boolean) field.get(instance) : field.getBoolean(instance));
         }
     }
@@ -258,10 +257,10 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val range = Optional.ofNullable(field.getAnnotation(Config.RangeInt.class));
-            val min = range.map(Config.RangeInt::min).orElse(Integer.MIN_VALUE);
-            val max = range.map(Config.RangeInt::max).orElse(Integer.MAX_VALUE);
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var range = Optional.ofNullable(field.getAnnotation(Config.RangeInt.class));
+            final var min = range.map(Config.RangeInt::min).orElse(Integer.MIN_VALUE);
+            final var max = range.map(Config.RangeInt::max).orElse(Integer.MAX_VALUE);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
 
             field.setInt(instance, config.getInt(name, category, defaultValue, min, max, comment, langKey));
         }
@@ -276,7 +275,7 @@ public class ConfigFieldParser {
 
         @SneakyThrows
         private int fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
-            val boxed = field.getType().equals(Integer.class);
+            final var boxed = field.getType().equals(Integer.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultInt.class)).map(Config.DefaultInt::value)
                         .orElse(boxed ? (Integer) field.get(instance) : field.getInt(instance));
@@ -288,7 +287,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public void setFromString(@Nullable Object instance, String value, Field field) {
-            val boxed = field.getType().equals(Integer.class);
+            final var boxed = field.getType().equals(Integer.class);
             if (boxed) {
                 field.set(instance, Integer.parseInt(value));
                 return;
@@ -300,7 +299,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public String getAsString(@Nullable Object instance, Field field) {
-            val boxed = field.getType().equals(Integer.class);
+            final var boxed = field.getType().equals(Integer.class);
             return Integer.toString(boxed ? (Integer) field.get(instance) : field.getInt(instance));
         }
     }
@@ -311,10 +310,10 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val range = Optional.ofNullable(field.getAnnotation(Config.RangeFloat.class));
-            val min = range.map(Config.RangeFloat::min).orElse(Float.MIN_VALUE);
-            val max = range.map(Config.RangeFloat::max).orElse(Float.MAX_VALUE);
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var range = Optional.ofNullable(field.getAnnotation(Config.RangeFloat.class));
+            final var min = range.map(Config.RangeFloat::min).orElse(Float.MIN_VALUE);
+            final var max = range.map(Config.RangeFloat::max).orElse(Float.MAX_VALUE);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
             field.setFloat(instance, config.getFloat(name, category, defaultValue, min, max, comment, langKey));
         }
 
@@ -328,7 +327,7 @@ public class ConfigFieldParser {
 
         @SneakyThrows
         private float fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
-            val boxed = field.getType().equals(Float.class);
+            final var boxed = field.getType().equals(Float.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultFloat.class))
                         .map(Config.DefaultFloat::value)
@@ -341,7 +340,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public void setFromString(@org.jetbrains.annotations.Nullable Object instance, String value, Field field) {
-            val boxed = field.getType().equals(Float.class);
+            final var boxed = field.getType().equals(Float.class);
             if (boxed) {
                 field.set(instance, Float.parseFloat(value));
                 return;
@@ -353,7 +352,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public String getAsString(@Nullable Object instance, Field field) {
-            val boxed = field.getType().equals(Float.class);
+            final var boxed = field.getType().equals(Float.class);
             return Float.toString(boxed ? (Float) field.get(instance) : field.getFloat(instance));
         }
     }
@@ -364,12 +363,18 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val range = Optional.ofNullable(field.getAnnotation(Config.RangeDouble.class));
-            val min = range.map(Config.RangeDouble::min).orElse(Double.MIN_VALUE);
-            val max = range.map(Config.RangeDouble::max).orElse(Double.MAX_VALUE);
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var range = Optional.ofNullable(field.getAnnotation(Config.RangeDouble.class));
+            final var min = range.map(Config.RangeDouble::min).orElse(Double.MIN_VALUE);
+            final var max = range.map(Config.RangeDouble::max).orElse(Double.MAX_VALUE);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
 
-            val defaultValueComment = comment + " [range: " + min + " ~ " + max + ", default: " + defaultValue + "]";
+            final var defaultValueComment = comment + " [range: "
+                    + min
+                    + " ~ "
+                    + max
+                    + ", default: "
+                    + defaultValue
+                    + "]";
             field.setDouble(
                     instance,
                     config.get(category, name, defaultValue, defaultValueComment, min, max).setLanguageKey(langKey)
@@ -386,7 +391,7 @@ public class ConfigFieldParser {
 
         @SneakyThrows
         private double fromStringOrDefault(@Nullable Object instance, @Nullable String defValueString, Field field) {
-            val boxed = field.getType().equals(Double.class);
+            final var boxed = field.getType().equals(Double.class);
             if (defValueString == null) {
                 return Optional.ofNullable(field.getAnnotation(Config.DefaultDouble.class))
                         .map(Config.DefaultDouble::value)
@@ -399,7 +404,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public void setFromString(@Nullable Object instance, String value, Field field) {
-            val boxed = field.getType().equals(Double.class);
+            final var boxed = field.getType().equals(Double.class);
             if (boxed) {
                 field.set(instance, Double.parseDouble(value));
                 return;
@@ -411,7 +416,7 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public String getAsString(@Nullable Object instance, Field field) {
-            val boxed = field.getType().equals(Double.class);
+            final var boxed = field.getType().equals(Double.class);
             return Double.toString(boxed ? (Double) field.get(instance) : field.getDouble(instance));
         }
     }
@@ -422,9 +427,9 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
-            val pattern = Optional.ofNullable(field.getAnnotation(Config.Pattern.class)).map(Config.Pattern::value)
-                    .map(Pattern::compile).orElse(null);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var pattern = Optional.ofNullable(field.getAnnotation(Config.Pattern.class))
+                    .map(Config.Pattern::value).map(Pattern::compile).orElse(null);
             field.set(instance, config.getString(name, category, defaultValue, comment, langKey, pattern));
         }
 
@@ -465,10 +470,10 @@ public class ConfigFieldParser {
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
             Class<?> fieldClass = field.getType();
-            val enumValues = Arrays.stream((Object[]) fieldClass.getDeclaredMethod("values").invoke(instance))
+            final var enumValues = Arrays.stream((Object[]) fieldClass.getDeclaredMethod("values").invoke(instance))
                     .map((obj) -> (Enum<?>) obj).collect(Collectors.toList());
-            val defaultValue = fromStringOrDefault(instance, defValueString, field, enumValues);
-            val possibleValues = enumValues.stream().map(Enum::name).toArray(String[]::new);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field, enumValues);
+            final var possibleValues = enumValues.stream().map(Enum::name).toArray(String[]::new);
             String value = config.getString(
                     name,
                     category,
@@ -521,7 +526,7 @@ public class ConfigFieldParser {
                         .map(Config.DefaultEnum::value).map((defName) -> extractField(field.getType(), defName))
                         .map(ConfigFieldParser::extractValue).orElse(field.get(instance));
             } else {
-                val modDefaultField = extractField(field.getType(), defValueString);
+                final var modDefaultField = extractField(field.getType(), defValueString);
                 value = (Enum<?>) extractValue(modDefaultField);
             }
 
@@ -564,15 +569,15 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
-            val value = config.getStringList(name, category, defaultValue, comment, null, langKey);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var value = config.getStringList(name, category, defaultValue, comment, null, langKey);
             field.set(instance, value);
         }
 
         @Override
         @SneakyThrows
         public void save(@Nullable Object instance, Field field, Configuration config, String category, String name) {
-            val prop = config.getCategory(category).get(name);
+            final var prop = config.getCategory(category).get(name);
             prop.set((String[]) field.get(instance));
         }
 
@@ -591,13 +596,13 @@ public class ConfigFieldParser {
         @Override
         @SneakyThrows
         public void setFromString(@Nullable Object instance, String value, Field field) {
-            field.set(instance, value.split("|||"));
+            field.set(instance, value.split("\n"));
         }
 
         @Override
         @SneakyThrows
         public String getAsString(@Nullable Object instance, Field field) {
-            return String.join("|||", (String[]) field.get(instance));
+            return String.join("\n", (String[]) field.get(instance));
         }
     }
 
@@ -607,7 +612,7 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
 
             String[] stringValues = new String[defaultValue.length];
             for (int i = 0; i < defaultValue.length; i++) {
@@ -660,7 +665,7 @@ public class ConfigFieldParser {
         @SneakyThrows
         public void load(@Nullable Object instance, @Nullable String defValueString, Field field, Configuration config,
                 String category, String name, String comment, String langKey) {
-            val defaultValue = fromStringOrDefault(instance, defValueString, field);
+            final var defaultValue = fromStringOrDefault(instance, defValueString, field);
             String[] stringValues = new String[defaultValue.length];
             for (int i = 0; i < defaultValue.length; i++) {
                 stringValues[i] = Integer.toString(defaultValue[i]);
