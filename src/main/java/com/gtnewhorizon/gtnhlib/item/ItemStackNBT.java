@@ -4,9 +4,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,6 +11,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility class for safe and convenient manipulation of {@link ItemStack} NBT data.
@@ -99,10 +98,10 @@ public final class ItemStackNBT {
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     private static final int[] EMPTY_INT_ARRAY = new int[0];
 
-    @Nonnull
+    @NotNull
     private final ItemStack stack;
 
-    private ItemStackNBT(@Nonnull ItemStack stack) {
+    private ItemStackNBT(@NotNull ItemStack stack) {
         this.stack = stack;
     }
 
@@ -324,6 +323,24 @@ public final class ItemStackNBT {
         return false;
     }
 
+    /**
+     * Implementation is different from {@link ItemStack#getDisplayName()}, this method returns the display name embeded
+     * in the attached NBTTagCompound if any, returns null otherwise.
+     */
+    @Nullable
+    public String getDisplayName() {
+        if (stack.hasTagCompound()) {
+            final NBTTagCompound nbt = stack.getTagCompound();
+            if (nbt.hasKey("display", NBT.TAG_COMPOUND)) {
+                final NBTTagCompound display = nbt.getCompoundTag("display");
+                if (display.hasKey("Name", NBT.TAG_STRING)) {
+                    return display.getString("Name");
+                }
+            }
+        }
+        return null;
+    }
+
     // endregion
     // region instance util methods
 
@@ -356,6 +373,16 @@ public final class ItemStackNBT {
             return (NBTTagCompound) stack.getTagCompound().copy();
         }
         return null;
+    }
+
+    /**
+     * Inverts the boolean associated with the key and returns the new value
+     */
+    public boolean invertBoolean(String key) {
+        ensureInitialized();
+        final boolean b = !stack.getTagCompound().getBoolean(key);
+        stack.getTagCompound().setBoolean(key, b);
+        return b;
     }
 
     private void ensureInitialized() {
@@ -565,6 +592,24 @@ public final class ItemStackNBT {
         return false;
     }
 
+    /**
+     * Implementation is different from {@link ItemStack#getDisplayName()}, this method returns the display name embeded
+     * in the attached NBTTagCompound if any, returns null otherwise.
+     */
+    @Nullable
+    public static String getDisplayName(ItemStack stack) {
+        if (stack.hasTagCompound()) {
+            final NBTTagCompound nbt = stack.getTagCompound();
+            if (nbt.hasKey("display", NBT.TAG_COMPOUND)) {
+                final NBTTagCompound display = nbt.getCompoundTag("display");
+                if (display.hasKey("Name", NBT.TAG_STRING)) {
+                    return display.getString("Name");
+                }
+            }
+        }
+        return null;
+    }
+
     // endregion
     // region static util methods
 
@@ -608,10 +653,20 @@ public final class ItemStackNBT {
     }
 
     /**
+     * Inverts the boolean associated with the key and returns the new value
+     */
+    public static boolean invertBoolean(ItemStack stack, String key) {
+        ensureInitialized(stack);
+        final boolean b = !stack.getTagCompound().getBoolean(key);
+        stack.getTagCompound().setBoolean(key, b);
+        return b;
+    }
+
+    /**
      * This method returns the NBTTagCompound attached to the ItemStack, if it is not present it creates one and returns
      * it. This method defeats the whole point of the api, only use if you absolutely need the NBTTagCompound to exist.
      */
-    @Nonnull
+    @NotNull
     public static NBTTagCompound get(ItemStack stack) {
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());
