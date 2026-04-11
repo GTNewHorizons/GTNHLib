@@ -48,7 +48,7 @@ public class ClientProxy extends CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
 
-        RenderingRegistry.registerBlockHandler(ModelISBRH.INSTANCE);
+        RenderingRegistry.registerBlockHandler(ModelISBRH.INSTANCE.get());
 
         // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
         // you too can automatically load textures for your models!
