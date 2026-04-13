@@ -1,11 +1,45 @@
 package com.gtnewhorizon.gtnhlib.util.font;
 
+import java.util.function.Function;
+
 import net.minecraft.client.gui.FontRenderer;
 
 // Common font rendering utilities that may be better-behaved than vanilla counterparts
 public class FontRendering {
 
     private static final char FORMATTING_CHAR = 167; // §
+
+    private static Function<String, String> textPreprocessor = null;
+
+    public static void setTextPreprocessor(Function<String, String> preprocessor) {
+        textPreprocessor = preprocessor;
+    }
+
+    /**
+     * Apply the registered text preprocessor (e.g. &amp;RRGGBB → §x conversion). Returns the input unchanged if no
+     * preprocessor is set.
+     */
+    public static String preprocessText(String str) {
+        return textPreprocessor != null ? textPreprocessor.apply(str) : str;
+    }
+
+    /**
+     * Count visible characters in a string after preprocessing (e.g. &RRGGBB → §x conversion), skipping all §-prefixed
+     * formatting pairs.
+     */
+    public static int countVisibleChars(String str) {
+        if (str == null || str.isEmpty()) return 0;
+        str = preprocessText(str);
+        int count = 0;
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) == FORMATTING_CHAR && i + 1 < str.length()) {
+                i++;
+            } else {
+                count++;
+            }
+        }
+        return count;
+    }
 
     public static boolean charInRange(char what, char fromInclusive, char toInclusive) {
         return (what >= fromInclusive) && (what <= toInclusive);
@@ -25,6 +59,44 @@ public class FontRendering {
         return wasBold;
     }
 
+    private static boolean isHexChar(char c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+    }
+
+    private static boolean isHex6(String str, int start) {
+        if (start + 6 > str.length()) return false;
+        for (int k = 0; k < 6; k++) {
+            if (!isHexChar(str.charAt(start + k))) return false;
+        }
+        return true;
+    }
+
+    private static boolean isValidAmpCode(char c) {
+        char cl = Character.toLowerCase(c);
+        return (cl >= '0' && cl <= '9') || (cl >= 'a' && cl <= 'f')
+                || (cl >= 'k' && cl <= 'o')
+                || cl == 'r'
+                || cl == 'x'
+                || cl == 'y'
+                || cl == 'w'
+                || cl == 'j'
+                || cl == 'g';
+    }
+
+    /**
+     * Check if there is a valid &g&#RRGGBB&#RRGGBB gradient sequence starting at the given index. The char at pos must
+     * be '&' and the char at pos+1 must be 'g'.
+     */
+    private static boolean isAmpGradient(String str, int pos) {
+        // &g&#RRGGBB&#RRGGBB = 18 chars total
+        if (pos + 18 > str.length()) return false;
+        return str.charAt(pos + 2) == '&' && str.charAt(pos + 3) == '#'
+                && isHex6(str, pos + 4)
+                && str.charAt(pos + 10) == '&'
+                && str.charAt(pos + 11) == '#'
+                && isHex6(str, pos + 12);
+    }
+
     /**
      * A getStringWidth implementation that respects formatting rules and works with custom fonts through Angelica.
      */
@@ -33,6 +105,8 @@ public class FontRendering {
         if (str == null || str.isEmpty()) {
             return 0;
         }
+
+        str = preprocessText(str);
 
         IFontParameters fontParams = (IFontParameters) fr;
 
@@ -100,6 +174,28 @@ public class FontRendering {
                         curBold = determineIfBold(curBold, fmtChar);
                     }
                     break;
+                case '&':
+                    // Skip & color codes as zero-width only when a preprocessor is registered
+                    // (i.e. Angelica is present). Without it, & has no special meaning.
+                    if (textPreprocessor != null && i + 1 < originalStringLength) {
+                        char next = str.charAt(i + 1);
+                        if (next == '#' && isHex6(str, i + 2)) {
+                            // &#RRGGBB (8 chars)
+                            i += 7;
+                            break;
+                        } else if (Character.toLowerCase(next) == 'g' && isAmpGradient(str, i)) {
+                            // &g&#RRGGBB&#RRGGBB (18 chars)
+                            i += 17;
+                            break;
+                        } else if (isValidAmpCode(next)) {
+                            // &X single code (2 chars)
+                            curBold = determineIfBold(curBold, next);
+                            i += 1;
+                            break;
+                        }
+                    }
+                    // Literal & — fall through to default width calculation
+                    // (fall through)
                 case ' ':
                     lastBreakSpot = i;
                 default:
@@ -154,6 +250,38 @@ public class FontRendering {
                 curBold = determineIfBold(curBold, ch);
             } else if (charWidth < 0) {
                 parsingFormatCode = true;
+            } else if (!reverse && ch == '&' && textPreprocessor != null && i + 1 < str.length()) {
+                // Skip & color codes as zero-width (forward direction only, only when Angelica is present)
+                char next = str.charAt(i + 1);
+                int skip = 0;
+                if (next == '#' && isHex6(str, i + 2)) {
+                    skip = 7; // &#RRGGBB (8 chars total, 7 after &)
+                } else if (Character.toLowerCase(next) == 'g' && isAmpGradient(str, i)) {
+                    skip = 17; // &g&#RRGGBB&#RRGGBB (18 chars total)
+                } else if (isValidAmpCode(next)) {
+                    skip = 1; // &X (2 chars total)
+                    curBold = determineIfBold(curBold, next);
+                }
+                if (skip > 0) {
+                    // Append all & code chars to output without counting width
+                    for (int k = 0; k <= skip; k++) {
+                        stringbuilder.append(str.charAt(i + k));
+                    }
+                    i += skip;
+                    continue;
+                }
+                // Literal & — fall through to width calculation below
+                width += charWidth;
+
+                if (spacingOmittedOnce) {
+                    width += fontParams.getGlyphSpacing();
+                } else {
+                    spacingOmittedOnce = true;
+                }
+
+                if (curBold) {
+                    width += 1.0f;
+                }
             } else {
                 width += charWidth;
 
