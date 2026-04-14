@@ -77,10 +77,10 @@ public class FontRendering {
                 || (cl >= 'k' && cl <= 'o')
                 || cl == 'r'
                 || cl == 'x'
-                || cl == 'y'
-                || cl == 'w'
-                || cl == 'j'
-                || cl == 'g';
+                || cl == 'q'
+                || cl == 'z'
+                || cl == 'v';
+        // Note: 'g' excluded — &g only valid as part of &g&#RRGGBB&#RRGGBB (handled by isAmpGradient)
     }
 
     /**
