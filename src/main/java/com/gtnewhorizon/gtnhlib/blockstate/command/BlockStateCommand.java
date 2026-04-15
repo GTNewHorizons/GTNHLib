@@ -88,7 +88,21 @@ public class BlockStateCommand extends CommandBase {
 
                     Object v = prop.getValue(player.worldObj, hit.blockX, hit.blockY, hit.blockZ);
 
-                    sendChatToPlayer(player, prop.getName() + ": " + prop.stringify(v));
+                    EnumChatFormatting valueColor = EnumChatFormatting.RESET;
+                    if (v instanceof Integer) valueColor = EnumChatFormatting.YELLOW;
+                    else if (v instanceof Float) valueColor = EnumChatFormatting.LIGHT_PURPLE;
+                    else if (v instanceof String) valueColor = EnumChatFormatting.AQUA;
+                    else if (v instanceof Boolean)
+                        valueColor = (boolean) v ? EnumChatFormatting.GREEN : EnumChatFormatting.RED;
+
+                    sendChatToPlayer(
+                            player,
+                            String.format(
+                                    "%s: %s%s%s",
+                                    prop.getName(),
+                                    valueColor,
+                                    prop.stringify(v),
+                                    EnumChatFormatting.RESET));
                 }
             }
         } else {
