@@ -95,7 +95,10 @@ public class BlockStateCommand extends CommandBase {
                     else if (v instanceof Boolean)
                         valueColor = (boolean) v ? EnumChatFormatting.GREEN : EnumChatFormatting.RED;
 
-                    sendChatToPlayer(
+                    if (prop.getName() == "meta") sendChatToPlayer(
+                            player,
+                            String.format("meta: %d (0b%s)", (int) v, Integer.toBinaryString((int) v)));
+                    else sendChatToPlayer(
                             player,
                             String.format(
                                     "%s: %s%s%s",
