@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.util.font;
 
 import java.util.function.Function;
 
+import lombok.Setter;
 import net.minecraft.client.gui.FontRenderer;
 
 // Common font rendering utilities that may be better-behaved than vanilla counterparts
@@ -9,14 +10,11 @@ public class FontRendering {
 
     private static final char FORMATTING_CHAR = 167; // §
 
+    @Setter
     private static Function<String, String> textPreprocessor = null;
 
-    public static void setTextPreprocessor(Function<String, String> preprocessor) {
-        textPreprocessor = preprocessor;
-    }
-
     /**
-     * Apply the registered text preprocessor (e.g. &amp;RRGGBB → §x conversion). Returns the input unchanged if no
+     * Apply the registered text preprocessor (e.g. &RRGGBB → §x conversion). Returns the input unchanged if no
      * preprocessor is set.
      */
     public static String preprocessText(String str) {
@@ -175,8 +173,8 @@ public class FontRendering {
                     }
                     break;
                 case '&':
-                    // Skip & color codes as zero-width only when a preprocessor is registered
-                    // (i.e. Angelica is present). Without it, & has no special meaning.
+                    // Skip & color codes as zero-width only when a text preprocessor is registered.
+                    // Without one, & has no special meaning.
                     if (textPreprocessor != null && i + 1 < originalStringLength) {
                         char next = str.charAt(i + 1);
                         if (next == '#' && isHex6(str, i + 2)) {
@@ -251,7 +249,7 @@ public class FontRendering {
             } else if (charWidth < 0) {
                 parsingFormatCode = true;
             } else if (!reverse && ch == '&' && textPreprocessor != null && i + 1 < str.length()) {
-                // Skip & color codes as zero-width (forward direction only, only when Angelica is present)
+                // Skip & color codes as zero-width (forward direction only, only when a text preprocessor is set)
                 char next = str.charAt(i + 1);
                 int skip = 0;
                 if (next == '#' && isHex6(str, i + 2)) {
