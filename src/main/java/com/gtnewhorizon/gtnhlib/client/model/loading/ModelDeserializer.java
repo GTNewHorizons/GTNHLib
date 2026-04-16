@@ -106,7 +106,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private static Pattern TEXEX = Pattern.compile("^([^:]+:)block/");
+    private static Pattern TEXEX = Pattern.compile("^([^:]+:)blocks?/");
 
     private static Object2ObjectOpenHashMap<String, String> loadTextures(JsonObject in) {
 
