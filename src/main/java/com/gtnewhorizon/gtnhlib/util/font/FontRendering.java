@@ -2,8 +2,9 @@ package com.gtnewhorizon.gtnhlib.util.font;
 
 import java.util.function.Function;
 
-import lombok.Setter;
 import net.minecraft.client.gui.FontRenderer;
+
+import lombok.Setter;
 
 // Common font rendering utilities that may be better-behaved than vanilla counterparts
 public class FontRendering {
@@ -12,6 +13,29 @@ public class FontRendering {
 
     @Setter
     private static Function<String, String> textPreprocessor = null;
+
+    /**
+     * Extension of {@link Function} that lets a preprocessor declare capability metadata. Width calculations
+     * ({@link #sizeStringToWidth(String,int,FontRenderer)},
+     * {@link #trimStringToWidth(String,int,boolean,FontRenderer)}) consult {@link #handlesAmpCodes()} to decide whether
+     * {@code &}-prefixed sequences should be treated as zero-width. A plain {@link Function} preprocessor is still
+     * accepted by {@link #setTextPreprocessor(Function)}; it defaults to {@code handlesAmpCodes() == false}, so
+     * {@code &} is counted as a literal character.
+     */
+    public interface TextPreprocessor extends Function<String, String> {
+
+        /**
+         * Whether this preprocessor converts ampersand color codes (&c, &#RRGGBB, &g gradients) into their §-prefixed
+         * equivalents. Evaluated per call, so implementations may return a live value tied to configuration state.
+         */
+        default boolean handlesAmpCodes() {
+            return false;
+        }
+    }
+
+    private static boolean preprocessorHandlesAmpCodes() {
+        return textPreprocessor instanceof TextPreprocessor && ((TextPreprocessor) textPreprocessor).handlesAmpCodes();
+    }
 
     /**
      * Apply the registered text preprocessor (e.g. &RRGGBB → §x conversion). Returns the input unchanged if no
@@ -173,9 +197,9 @@ public class FontRendering {
                     }
                     break;
                 case '&':
-                    // Skip & color codes as zero-width only when a text preprocessor is registered.
-                    // Without one, & has no special meaning.
-                    if (textPreprocessor != null && i + 1 < originalStringLength) {
+                    // Skip & color codes as zero-width when the preprocessor declares it converts them to § at
+                    // render time.
+                    if (preprocessorHandlesAmpCodes() && i + 1 < originalStringLength) {
                         char next = str.charAt(i + 1);
                         if (next == '#' && isHex6(str, i + 2)) {
                             // &#RRGGBB (8 chars)
@@ -248,8 +272,9 @@ public class FontRendering {
                 curBold = determineIfBold(curBold, ch);
             } else if (charWidth < 0) {
                 parsingFormatCode = true;
-            } else if (!reverse && ch == '&' && textPreprocessor != null && i + 1 < str.length()) {
-                // Skip & color codes as zero-width (forward direction only, only when a text preprocessor is set)
+            } else if (!reverse && ch == '&' && preprocessorHandlesAmpCodes() && i + 1 < str.length()) {
+                // Skip & color codes as zero-width (forward direction only) when the preprocessor declares it
+                // converts them to § at render time.
                 char next = str.charAt(i + 1);
                 int skip = 0;
                 if (next == '#' && isHex6(str, i + 2)) {
