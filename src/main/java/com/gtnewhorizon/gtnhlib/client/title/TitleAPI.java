@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.title;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.IChatComponent;
 
 import cpw.mods.fml.relauncher.Side;
@@ -8,9 +7,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
 
 /**
- * Client-side title/subtitle API. Any mod can call {@link #setTitle}/{@link #setSubtitle} to display overlay text. If a
- * renderer has registered via {@link #registerRenderer()}, it handles full rendering with scale, fade, and subtitle.
- * Otherwise {@link #setTitle} falls back to the vanilla action bar overlay.
+ * Client-side title/subtitle API. Any mod can call {@link #setTitle}/{@link #setSubtitle} to display overlay text. The
+ * renderer is shipped in this lib and runs whenever a title is active.
  */
 @SideOnly(Side.CLIENT)
 public class TitleAPI {
@@ -27,25 +25,14 @@ public class TitleAPI {
     private static volatile int stayTime = 70;
     @Getter
     private static volatile int fadeOutTime = 20;
-    @Getter
-    private static volatile boolean rendererRegistered;
-
-    /** Register a full title renderer. Once called, {@link #setTitle} no longer falls back to the action bar. */
-    public static void registerRenderer() {
-        rendererRegistered = true;
-    }
 
     /** Display a title for {@code fadeIn + stay + fadeOut} ticks. */
     public static void setTitle(IChatComponent component) {
         title = component;
         titleTime = fadeInTime + stayTime + fadeOutTime;
-        if (!rendererRegistered) {
-            Minecraft.getMinecraft().ingameGUI
-                    .func_110326_a(component != null ? component.getFormattedText() : "", false);
-        }
     }
 
-    /** Set the subtitle. Only visible while a title is active and a renderer is registered. */
+    /** Set the subtitle. Only visible while a title is active. */
     public static void setSubtitle(IChatComponent component) {
         subtitle = component;
     }
