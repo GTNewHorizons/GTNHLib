@@ -31,6 +31,8 @@ public class ItemTransfer {
     protected int maxItemsPerTransfer = 64;
     @Setter
     protected int maxTotalTransferred = Integer.MAX_VALUE;
+    @Setter
+    protected int maxSinkSlotStackSize = Integer.MAX_VALUE;
 
     @Getter
     protected int totalItemsTransferred = 0;
@@ -123,6 +125,7 @@ public class ItemTransfer {
 
         source.setAllowedSourceSlots(sourceSlots);
         sink.setAllowedSinkSlots(sinkSlots);
+        sink.setSlotStackLimit(maxSinkSlotStackSize);
 
         InventoryIterator iter = source.sourceIterator();
 
