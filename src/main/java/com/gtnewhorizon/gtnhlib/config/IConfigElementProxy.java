@@ -15,7 +15,8 @@ public class IConfigElementProxy<T> implements IConfigElement<T> {
     private final IConfigElement<T> proxied;
     private final Runnable onUpdate;
     private final ConfigurationManager.ConfigNode node;
-    private Boolean requiredModsVisible = null;
+    private Boolean requiredModsOrVisible = null;
+    private Boolean requiredModsAndVisible = null;
 
     public IConfigElementProxy(IConfigElement<T> proxied, Runnable onUpdate, ConfigurationManager.ConfigNode node) {
         this.proxied = proxied;
@@ -125,20 +126,31 @@ public class IConfigElementProxy<T> implements IConfigElement<T> {
     @Override
     public boolean showInGui() {
         if (!proxied.showInGui()) return false;
-        if (node.requiredMods == null || node.requiredMods.length == 0) return true;
 
-        if (requiredModsVisible == null) {
-            requiredModsVisible = false;
-
-            for (String mod : node.requiredMods) {
-                if (Loader.isModLoaded(mod)) {
-                    requiredModsVisible = true;
-                    break;
-                }
+        if (node.requiredModsOr != null && node.requiredModsOr.length > 0) {
+            if (requiredModsOrVisible == null) {
+                requiredModsOrVisible = isVisible(node.requiredModsOr, false);
             }
+            if (!requiredModsOrVisible) return false;
         }
 
-        return requiredModsVisible;
+        if (node.requiredModsAnd != null && node.requiredModsAnd.length > 0) {
+            if (requiredModsAndVisible == null) {
+                requiredModsAndVisible = isVisible(node.requiredModsAnd, true);
+            }
+            if (!requiredModsAndVisible) return false;
+        }
+
+        return true;
+    }
+
+    private boolean isVisible(String[] mods, boolean requireAll) {
+
+        for (String mod : mods) {
+            if (Loader.isModLoaded(mod) != requireAll) return !requireAll;
+        }
+
+        return requireAll;
     }
 
     @Override
