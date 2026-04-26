@@ -277,36 +277,28 @@ public @interface Config {
     }
 
     /**
-     * Hides this field or category from the config GUI if the specified mod is not loaded. The field is still loaded
+     * Hides this field or category from the config GUI if the required mods are not loaded. The field is still loaded
      * from and saved to the config file regardless.
+     * <p>
+     * A single mod: {@code @Config.RequiresMod("modid")}<br>
+     * Any of several mods (OR): {@code @Config.RequiresMod({"modA", "modB"})}<br>
+     * All of several mods (AND): {@code @Config.RequiresMod(value = {"modA", "modB"}, mode =
+     * Config.RequiresMod.Mode.AND)}
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ ElementType.FIELD, ElementType.TYPE })
     @interface RequiresMod {
 
-        String value();
-    }
-
-    /**
-     * Hides this field or category from the config GUI if none of the specified mods are loaded (OR logic). The field
-     * is still loaded from and saved to the config file regardless.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ ElementType.FIELD, ElementType.TYPE })
-    @interface RequiresModOr {
-
         String[] value();
-    }
 
-    /**
-     * Hides this field or category from the config GUI if any of the specified mods are not loaded (AND logic). The
-     * field is still loaded from and saved to the config file regardless.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ ElementType.FIELD, ElementType.TYPE })
-    @interface RequiresModAnd {
+        Mode mode() default Mode.OR;
 
-        String[] value();
+        enum Mode {
+            /** Hidden unless at least one of the specified mods is loaded. */
+            OR,
+            /** Hidden unless all of the specified mods are loaded. */
+            AND
+        }
     }
 
 }

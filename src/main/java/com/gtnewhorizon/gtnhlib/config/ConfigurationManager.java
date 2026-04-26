@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.config;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -614,9 +613,21 @@ public class ConfigurationManager {
 
         public ConfigNode(Class<?> configClass) {
             Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
+            Config.RequiresMod reqAnn = configClass.getAnnotation(Config.RequiresMod.class);
+
             this.order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
-            this.requiredModsOr = getModsOr(configClass);
-            this.requiredModsAnd = getModsAnd(configClass);
+
+            if (reqAnn != null && reqAnn.mode() == Config.RequiresMod.Mode.OR) {
+                this.requiredModsOr = reqAnn.value();
+                this.requiredModsAnd = null;
+            } else if (reqAnn != null && reqAnn.mode() == Config.RequiresMod.Mode.AND) {
+                this.requiredModsOr = null;
+                this.requiredModsAnd = reqAnn.value();
+            } else {
+                this.requiredModsOr = null;
+                this.requiredModsAnd = null;
+            }
+
             buildChildren(configClass);
         }
 
@@ -628,37 +639,28 @@ public class ConfigurationManager {
             if (categoryClass != null) buildChildren(categoryClass);
         }
 
-        private static @Nullable String[] getModsOr(AnnotatedElement e) {
-            Config.RequiresModOr ann = e.getAnnotation(Config.RequiresModOr.class);
-            return ann != null ? ann.value() : null;
-        }
-
-        private static @Nullable String[] getModsAnd(AnnotatedElement e) {
-            Config.RequiresMod single = e.getAnnotation(Config.RequiresMod.class);
-            Config.RequiresModAnd multi = e.getAnnotation(Config.RequiresModAnd.class);
-            if (single == null && multi == null) return null;
-            if (single == null) return multi.value();
-            if (multi == null) return new String[] { single.value() };
-
-            final String[] merged = new String[multi.value().length + 1];
-            merged[0] = single.value();
-            System.arraycopy(multi.value(), 0, merged, 1, multi.value().length);
-            return merged;
-        }
-
         private void buildChildren(Class<?> configClass) {
             for (Field field : configClass.getDeclaredFields()) {
                 if (shouldSkipField(field)) continue;
                 String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
                 Config.Order orderAnn = field.getAnnotation(Config.Order.class);
                 int fieldOrder = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
-                String[] fieldModsOr = getModsOr(field);
-                String[] fieldModsAnd = getModsAnd(field);
-                boolean hasAnnotations = orderAnn != null || fieldModsOr != null || fieldModsAnd != null;
+
+                Config.RequiresMod reqAnn = field.getAnnotation(Config.RequiresMod.class);
+                String[] fieldModsOr = null;
+                String[] fieldModsAnd = null;
+
+                if (reqAnn != null) {
+                    if (reqAnn.mode() == Config.RequiresMod.Mode.OR) {
+                        fieldModsOr = reqAnn.value();
+                    } else if (reqAnn.mode() == Config.RequiresMod.Mode.AND) {
+                        fieldModsAnd = reqAnn.value();
+                    }
+                }
 
                 if (!ConfigurationManager.isFieldSubCategory(field)) {
                     children.put(fieldName, new ConfigNode(fieldOrder, fieldModsOr, fieldModsAnd, null));
-                } else if (hasAnnotations) {
+                } else if (orderAnn != null || reqAnn != null) {
                     children.put(fieldName, new ConfigNode(fieldOrder, fieldModsOr, fieldModsAnd, field.getType()));
                 } else {
                     children.put(fieldName, new ConfigNode(field.getType()));

@@ -73,11 +73,11 @@ public class ExampleConfig {
     public static boolean hodgepodgeIntegration = true;
 
     @Config.Comment("Only visible in GUI if 'nei' or 'jei' is loaded.")
-    @Config.RequiresModOr({ "nei", "jei" })
+    @Config.RequiresMod({ "nei", "jei" })
     public static boolean itemSearchIntegration = false;
 
     @Config.Comment("This entire category is hidden unless 'thaumcraft' is loaded.")
-    @Config.RequiresModAnd({ "thaumcraft", "thaumicenergistics" })
+    @Config.RequiresMod(value = { "thaumcraft", "thaumicenergistics" }, mode = Config.RequiresMod.Mode.AND)
     @Config.Order(1)
     public static ThaumcraftCategory thaumcraft = new ThaumcraftCategory();
 
