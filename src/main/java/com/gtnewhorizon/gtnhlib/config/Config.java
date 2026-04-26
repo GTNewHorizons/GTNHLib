@@ -276,4 +276,15 @@ public @interface Config {
         int value() default Integer.MAX_VALUE;
     }
 
+    /**
+     * Hides this field or category from the config GUI if none of the specified mods are loaded. The field is still
+     * loaded from and saved to the config file regardless.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.FIELD, ElementType.TYPE })
+    @interface RequiresMod {
+
+        String[] value();
+    }
+
 }

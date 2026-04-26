@@ -392,9 +392,6 @@ public class ConfigurationManager {
 
         ConfigNode rootNode = configNode.get(configClass);
         ConfigNode node = rootNode.children.getOrDefault(element.getName().toLowerCase(), rootNode);
-        Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
-        int order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
-
         return new IConfigElementProxy(element, () -> {
             try {
                 processConfigInternal(configClass, category, rawConfig, null);
@@ -403,7 +400,7 @@ public class ConfigurationManager {
                     | ConfigException e) {
                 e.printStackTrace();
             }
-        }, node, order);
+        }, node);
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
@@ -609,18 +606,38 @@ public class ConfigurationManager {
 
     public static class ConfigNode {
 
-        final Map<String, Integer> fieldOrder = new HashMap<>();
-        final Map<String, ConfigNode> children = new HashMap<>();
+        public final int order;
+        public final String[] requiredMods;
+        public final Map<String, ConfigNode> children = new HashMap<>();
 
         public ConfigNode(Class<?> configClass) {
+            Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
+            this.order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
+            Config.RequiresMod modAnn = configClass.getAnnotation(Config.RequiresMod.class);
+            this.requiredMods = modAnn != null ? modAnn.value() : null;
+            buildChildren(configClass);
+        }
+
+        public ConfigNode(int order, @Nullable String[] requiredMods, @Nullable Class<?> categoryClass) {
+            this.order = order;
+            this.requiredMods = requiredMods;
+            if (categoryClass != null) buildChildren(categoryClass);
+        }
+
+        private void buildChildren(Class<?> configClass) {
             for (Field field : configClass.getDeclaredFields()) {
-                if (shouldSkipField(field)) {
-                    continue;
-                }
+                if (shouldSkipField(field)) continue;
                 String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
-                Config.Order ann = field.getAnnotation(Config.Order.class);
-                if (ann != null) fieldOrder.put(fieldName, ann.value());
-                if (ConfigurationManager.isFieldSubCategory(field)) {
+                Config.Order fieldOrderAnn = field.getAnnotation(Config.Order.class);
+                int fieldOrder = fieldOrderAnn != null ? fieldOrderAnn.value() : Integer.MAX_VALUE;
+                Config.RequiresMod fieldModAnn = field.getAnnotation(Config.RequiresMod.class);
+                String[] fieldMods = fieldModAnn != null ? fieldModAnn.value() : null;
+
+                if (!ConfigurationManager.isFieldSubCategory(field)) {
+                    children.put(fieldName, new ConfigNode(fieldOrder, fieldMods, null));
+                } else if (fieldOrderAnn != null || fieldModAnn != null) {
+                    children.put(fieldName, new ConfigNode(fieldOrder, fieldMods, field.getType()));
+                } else {
                     children.put(fieldName, new ConfigNode(field.getType()));
                 }
             }

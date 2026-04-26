@@ -8,20 +8,19 @@ import cpw.mods.fml.client.config.ConfigGuiType;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiEditArrayEntries;
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.common.Loader;
 
 public class IConfigElementProxy<T> implements IConfigElement<T> {
 
     private final IConfigElement<T> proxied;
     private final Runnable onUpdate;
     private final ConfigurationManager.ConfigNode node;
-    private final int order;
+    private Boolean requiredModsVisible = null;
 
-    public IConfigElementProxy(IConfigElement<T> proxied, Runnable onUpdate, ConfigurationManager.ConfigNode node,
-            int order) {
+    public IConfigElementProxy(IConfigElement<T> proxied, Runnable onUpdate, ConfigurationManager.ConfigNode node) {
         this.proxied = proxied;
         this.onUpdate = onUpdate;
         this.node = node;
-        this.order = order;
     }
 
     @Override
@@ -61,7 +60,7 @@ public class IConfigElementProxy<T> implements IConfigElement<T> {
     }
 
     public int getOrder() {
-        return order;
+        return node.order;
     }
 
     @SuppressWarnings("rawtypes")
@@ -70,10 +69,9 @@ public class IConfigElementProxy<T> implements IConfigElement<T> {
         List<IConfigElement> elements = new ArrayList<>();
         for (IConfigElement<?> element : proxied.getChildElements()) {
             String name = element.getName().toLowerCase();
-            if (node != null) {
-                ConfigurationManager.ConfigNode childNode = node.children.get(name);
-                int childOrder = node.fieldOrder.getOrDefault(name, Integer.MAX_VALUE);
-                elements.add(new IConfigElementProxy<>(element, onUpdate, childNode, childOrder));
+            ConfigurationManager.ConfigNode childNode = node.children.get(name);
+            if (childNode != null) {
+                elements.add(new IConfigElementProxy<>(element, onUpdate, childNode));
             }
         }
         return elements;
@@ -126,7 +124,21 @@ public class IConfigElementProxy<T> implements IConfigElement<T> {
 
     @Override
     public boolean showInGui() {
-        return proxied.showInGui();
+        if (!proxied.showInGui()) return false;
+        if (node.requiredMods == null || node.requiredMods.length == 0) return true;
+
+        if (requiredModsVisible == null) {
+            requiredModsVisible = false;
+
+            for (String mod : node.requiredMods) {
+                if (Loader.isModLoaded(mod)) {
+                    requiredModsVisible = true;
+                    break;
+                }
+            }
+        }
+
+        return requiredModsVisible;
     }
 
     @Override
