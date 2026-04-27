@@ -35,9 +35,9 @@ public class ExampleConfig {
     @Config.Entry(RedCategory.class)
     @Config.Order(0)
     // the ordering happens right after SortedCategory so it will be on top
-    public static testCategory redCategory = new testCategory();
+    public static TestCategory redCategory = new TestCategory();
 
-    public static class testCategory {
+    public static class TestCategory {
 
         @Config.Comment("This category button should have RED text.")
         @Config.Entry(RedCategory.class)
@@ -66,6 +66,29 @@ public class ExampleConfig {
         @Config.Entry(YellowBoolean.class)
         @Config.Order(0)
         public boolean yellowBoolean = true;
+    }
+
+    @Config.Comment("Only visible in GUI if 'Hodgepodge' mod is loaded.")
+    @Config.RequiresMod("hodgepodge")
+    public static boolean hodgepodgeIntegration = true;
+
+    @Config.Comment("Only visible in GUI if 'nei' or 'jei' is loaded.")
+    @Config.RequiresMod({ "nei", "jei" })
+    public static boolean itemSearchIntegration = false;
+
+    @Config.Comment("This entire category is hidden unless 'thaumcraft' is loaded.")
+    @Config.RequiresMod(value = { "thaumcraft", "thaumicenergistics" }, mode = Config.RequiresMod.Mode.AND)
+    @Config.Order(1)
+    public static ThaumcraftCategory thaumcraft = new ThaumcraftCategory();
+
+    public static class ThaumcraftCategory {
+
+        @Config.Comment("Enable Thaumcraft research tweaks.")
+        public boolean researchTweaks = true;
+
+        @Config.Comment("Only visible if 'thaumicbases' is also present.")
+        @Config.RequiresMod("thaumicbases")
+        public boolean thaumicBasesCompat = false;
     }
 
     public static class SortedCategory extends GuiConfigEntries.CategoryEntry {

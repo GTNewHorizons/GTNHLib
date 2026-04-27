@@ -276,4 +276,29 @@ public @interface Config {
         int value() default Integer.MAX_VALUE;
     }
 
+    /**
+     * Hides this field or category from the config GUI if the required mods are not loaded. The field is still loaded
+     * from and saved to the config file regardless.
+     * <p>
+     * A single mod: {@code @Config.RequiresMod("modid")}<br>
+     * Any of several mods (OR): {@code @Config.RequiresMod({"modA", "modB"})}<br>
+     * All of several mods (AND): {@code @Config.RequiresMod(value = {"modA", "modB"}, mode =
+     * Config.RequiresMod.Mode.AND)}
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.FIELD, ElementType.TYPE })
+    @interface RequiresMod {
+
+        String[] value();
+
+        Mode mode() default Mode.OR;
+
+        enum Mode {
+            /** Hidden unless at least one of the specified mods is loaded. */
+            OR,
+            /** Hidden unless all of the specified mods are loaded. */
+            AND
+        }
+    }
+
 }
