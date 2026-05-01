@@ -211,7 +211,7 @@ public class ModelRegistry {
                                 block.getLocalizedName());
                         return;
                     }
-                    MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(block), ModelISBRH.INSTANCE);
+                    MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(block), ModelISBRH.INSTANCE.get());
                 }
             });
 
