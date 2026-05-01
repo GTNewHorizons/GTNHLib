@@ -44,7 +44,7 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
-    public static final ModelISBRH INSTANCE = new ModelISBRH();
+    public static final ThreadLocal<ModelISBRH> INSTANCE = ThreadLocal.withInitial(ModelISBRH::new);
 
     /// Any blocks using a JSON model may return this for [Block#getRenderType()]. However, models are primarily
     /// identified via the presence of a blockstate -> model map for the block. If you don't have such a file, you can
