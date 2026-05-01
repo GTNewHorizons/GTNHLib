@@ -106,25 +106,15 @@ public final class NumberFormatConfig {
      */
     public static void syncNumberFormatting() {
         // Parse and apply exponential format pattern
-        boolean fallbackToScientific = false;
         try {
             EXPONENTIAL_FORMAT = ExponentialFormat.parse(formatPattern);
         } catch (IllegalStateException ignored) {
-            GTNHLib.error("Invalid exponential format pattern: '" + formatPattern + "', using SCIENTIFIC");
+            GTNHLib.error("Invalid exponential format pattern: '" + formatPattern + "', fell back to SCIENTIFIC");
             EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
-            fallbackToScientific = true;
         }
 
         Locale activeLocale = numberFormatLocale.getLocale();
-        if (fallbackToScientific) {
-            GTNHLib.info(
-                    "Number formatting: Using " + numberFormatLocale.getDisplayName()
-                            + " ("
-                            + activeLocale
-                            + "); invalid format pattern, fell back to SCIENTIFIC");
-        } else {
-            GTNHLib.info("Number formatting: Using " + numberFormatLocale.getDisplayName() + " (" + activeLocale + ")");
-        }
+        GTNHLib.info("Number formatting: Using " + numberFormatLocale.getDisplayName() + " (" + activeLocale + ")");
     }
 
     /**
