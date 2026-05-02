@@ -1,0 +1,9 @@
+{
+    "identifier": "falsepatternlib_dependencies",
+    "minJava": 17,
+    "dependencies": {
+        "always": {
+            "common": ["$DEPS"]
+        }
+    }
+}
