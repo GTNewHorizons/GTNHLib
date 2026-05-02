@@ -13,6 +13,7 @@ public class TeamManager {
 
     protected static final List<Team> TEAMS = new ArrayList<>();
     protected static final Map<UUID, Team> TEAM_MAP = new HashMap<>();
+    protected static final Map<UUID, Team> PLAYER_TEAM_CACHE = new HashMap<>();
     protected static final Map<UUID, Set<Team>> PENDING_INVITES = new HashMap<>();
     // keyed by target team, value is the set of source teams requesting to merge into it
     protected static final Map<Team, Set<Team>> PENDING_MERGE_REQUESTS = new HashMap<>();
@@ -28,8 +29,14 @@ public class TeamManager {
     }
 
     public static Team getTeamByPlayer(UUID playerUuid) {
+        Team foundTeam = PLAYER_TEAM_CACHE.get(playerUuid);
+        if(foundTeam != null && foundTeam.isMember(playerUuid)){
+            return foundTeam;
+        }
+        //Cache miss
         for (Team team : TEAMS) {
             if (team.isMember(playerUuid)) {
+                PLAYER_TEAM_CACHE.put(playerUuid, team);
                 return team;
             }
         }
