@@ -18,8 +18,7 @@ public class MixinGuiSelectWorld extends GuiScreen {
             method = "confirmClicked",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/storage/ISaveFormat;deleteWorldDirectory(Ljava/lang/String;)Z"),
-            index = 0)
+                    target = "Lnet/minecraft/world/storage/ISaveFormat;deleteWorldDirectory(Ljava/lang/String;)Z"))
     private String onDeleteWorldDirectoryCalled(String worldName) {
         try {
             MinecraftForge.EVENT_BUS.post(new WorldDeletionEvent(worldName));
