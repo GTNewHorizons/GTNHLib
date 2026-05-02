@@ -18,20 +18,32 @@ public class Team {
     private String teamName;
     @Getter
     private final UUID teamId;
+    @Getter
+    private final boolean clientSide;
     private final ObjectSet<UUID> owners = new ObjectOpenHashSet<>();
     private final ObjectSet<UUID> officers = new ObjectOpenHashSet<>();
     private final ObjectSet<UUID> members = new ObjectOpenHashSet<>();
     private final Map<String, ITeamData> teamData = new HashMap<>();
 
     Team(String teamName, UUID teamId) {
+        this(teamName, teamId, false);
+    }
+
+    Team(String teamName, UUID teamId, boolean clientSide) {
         this.teamName = teamName;
         this.teamId = teamId;
+        this.clientSide = clientSide;
     }
 
     public boolean renameTeam(String newName) {
+        if (clientSide) {
+            teamName = newName;
+            return true;
+        }
+
         if (TeamManager.isTeamNameValid(newName)) {
             this.teamName = newName;
-            TeamDataSaver.markForSaving();
+            markDirty();
             return true;
         }
         return false;
@@ -50,14 +62,14 @@ public class Team {
     }
 
     public void addMember(UUID uuid) {
-        if (members.add(uuid)) TeamDataSaver.markForSaving();
+        if (members.add(uuid)) markDirty();
     }
 
     public void addOfficer(UUID uuid) {
         if (!officers.add(uuid)) return;
         // officers are also always members
         members.add(uuid);
-        TeamDataSaver.markForSaving();
+        markDirty();
     }
 
     public void addOwner(UUID uuid) {
@@ -65,25 +77,31 @@ public class Team {
         // owners are also always members and officers
         officers.add(uuid);
         members.add(uuid);
-        TeamDataSaver.markForSaving();
+        markDirty();
     }
 
     public void removeMember(UUID uuid) {
         members.remove(uuid);
         officers.remove(uuid);
         owners.remove(uuid);
-        TeamDataSaver.markForSaving();
+        markDirty();
     }
 
     public void removeOfficer(UUID uuid) {
         owners.remove(uuid);
         officers.remove(uuid);
-        TeamDataSaver.markForSaving();
+        markDirty();
     }
 
     public void removeOwner(UUID uuid) {
         owners.remove(uuid);
-        TeamDataSaver.markForSaving();
+        markDirty();
+    }
+
+    private void markDirty() {
+        if (!clientSide) {
+            TeamDataSaver.markForSaving();
+        }
     }
 
     public Set<UUID> getMembers() {

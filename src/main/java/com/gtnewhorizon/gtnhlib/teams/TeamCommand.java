@@ -24,6 +24,8 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -147,6 +149,9 @@ public class TeamCommand {
         if (!team.renameTeam(newName)) {
             return error(sender, "gtnhlib.chat.teams.error.name_in_use");
         }
+
+        TeamInfoSync packet = TeamNetwork.CreateTeamInfoSyncPacket(team);
+        TeamManager.ForEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
 
         for (UUID memberUuid : team.getMembers()) {
             EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID

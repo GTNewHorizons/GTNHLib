@@ -19,6 +19,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.util.NBTJson;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -81,7 +82,8 @@ public class TeamDataSaver {
     @SubscribeEvent
     public static void onPlayerLogin(PlayerLoggedInEvent event) {
         if (event.player instanceof EntityPlayerMP player) {
-            TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
+            Team team = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
+            NetworkHandler.instance.sendTo(TeamNetwork.CreateTeamInfoSyncPacket(team), player);
         }
     }
 
@@ -166,8 +168,7 @@ public class TeamDataSaver {
         NBTTagCompound teamTag = new NBTTagCompound();
         teamTag.setInteger("Version", SAVE_VER);
         teamTag.setString("TeamName", team.getTeamName());
-        teamTag.setLong("UUIDMost", team.getTeamId().getMostSignificantBits());
-        teamTag.setLong("UUIDLeast", team.getTeamId().getLeastSignificantBits());
+        teamTag.setString("UUID", team.getTeamId().toString());
 
         // Owners
         NBTTagList ownersList = new NBTTagList();

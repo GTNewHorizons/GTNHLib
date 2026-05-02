@@ -12,18 +12,6 @@ public interface ITeamData {
 
     void readFromNBT(NBTTagCompound NBT);
 
-    default void toPacketTag(NBTTagCompound tag) {
-        writeToNBT(tag);
-    }
-
-    default void fromPacketTag(NBTTagCompound tag) {
-        readFromNBT(tag);
-    }
-
-    default boolean shouldSyncToClient() {
-        return false;
-    }
-
     /**
      * Called on each piece of ITeamData on the surviving team during a team merge. Implementers are responsible for
      * defining what merging data means for their data type!

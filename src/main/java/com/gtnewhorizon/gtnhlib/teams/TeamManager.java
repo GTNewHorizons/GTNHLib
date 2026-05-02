@@ -8,6 +8,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 public class TeamManager {
 
@@ -103,6 +107,17 @@ public class TeamManager {
         }
     }
 
+    public static void ForEachOnlineTeamMember(Team team, Consumer<EntityPlayerMP> consumer) {
+        MinecraftServer server = MinecraftServer.getServer();
+        if (server == null) return;
+        Set<UUID> members = team.getMembers();
+        for (EntityPlayerMP playerEntity : server.getConfigurationManager().playerEntityList) {
+            if (members.contains(playerEntity.getUniqueID())) {
+                consumer.accept(playerEntity);
+            }
+        }
+    }
+
     public static void addPendingInvite(UUID uuid, Team team) {
         PENDING_INVITES.computeIfAbsent(uuid, k -> new HashSet<>()).add(team);
     }
@@ -166,6 +181,7 @@ public class TeamManager {
     public static void clear() {
         TEAMS.clear();
         TEAM_MAP.clear();
+        PLAYER_TEAM_CACHE.clear();
         PENDING_INVITES.clear();
         PENDING_MERGE_REQUESTS.clear();
     }

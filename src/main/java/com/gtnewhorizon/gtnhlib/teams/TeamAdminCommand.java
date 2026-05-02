@@ -23,6 +23,8 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
@@ -87,6 +89,9 @@ public class TeamAdminCommand {
         if (team == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", oldName);
 
         if (!team.renameTeam(newName)) return error(sender, "gtnhlib.chat.teams.admin.error.name_in_use", newName);
+
+        TeamInfoSync packet = TeamNetwork.CreateTeamInfoSyncPacket(team);
+        TeamManager.ForEachOnlineTeamMember(team, player -> NetworkHandler.instance.sendTo(packet, player));
 
         return success(
                 sender,
