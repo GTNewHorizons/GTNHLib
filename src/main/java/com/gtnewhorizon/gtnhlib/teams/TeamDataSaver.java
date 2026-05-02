@@ -4,20 +4,22 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.world.WorldEvent;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.util.NBTJson;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -93,54 +95,53 @@ public class TeamDataSaver {
         if (files == null) return;
         for (File file : files) {
             if (file.isFile()) {
-                try (FileReader fileReader = new FileReader(file)) {
-                    JsonObject obj = GSON.fromJson(fileReader, JsonObject.class);
-                    TeamManager.addTeamDeduplicated(jsonToTeam(obj));
+                try (FileReader reader = new FileReader(file)) {
+                    JsonObject obj = GSON.fromJson(reader, JsonObject.class);
+                    Team team = loadFromNBT((NBTTagCompound) NBTJson.toNbt(obj));
+                    TeamManager.addTeamDeduplicated(team);
                 } catch (Exception e) {
                     GTNHLib.LOG.error("Unable to load team {}", file.getName(), e);
                 }
             }
         }
-
     }
 
-    private Team jsonToTeam(JsonObject obj) {
-        String teamName = obj.get("TeamName").getAsString();
-        UUID uuid = UUID.fromString(obj.get("UUID").getAsString());
+    private Team loadFromNBT(NBTTagCompound teamTag) {
+        String teamName = teamTag.getString("TeamName");
+        UUID uuid = UUID.fromString(teamTag.getString("UUID"));
+
         Team team = new Team(teamName, uuid);
 
         // Owners
-        for (JsonElement elem : obj.getAsJsonArray("Owners")) {
-            team.addOwner(UUID.fromString(elem.getAsString()));
+        NBTTagList ownersList = teamTag.getTagList("Owners", Constants.NBT.TAG_STRING);
+        for (int j = 0; j < ownersList.tagCount(); j++) {
+            team.addOwner(UUID.fromString(ownersList.getStringTagAt(j)));
         }
 
         // Officers
-        for (JsonElement elem : obj.getAsJsonArray("Officers")) {
-            team.addOfficer(UUID.fromString(elem.getAsString()));
+        NBTTagList officersList = teamTag.getTagList("Officers", Constants.NBT.TAG_STRING);
+        for (int j = 0; j < officersList.tagCount(); j++) {
+            team.addOfficer(UUID.fromString(officersList.getStringTagAt(j)));
         }
 
         // Members
-        for (JsonElement elem : obj.getAsJsonArray("Members")) {
-            team.addMember(UUID.fromString(elem.getAsString()));
+        NBTTagList membersList = teamTag.getTagList("Members", Constants.NBT.TAG_STRING);
+        for (int j = 0; j < membersList.tagCount(); j++) {
+            team.addMember(UUID.fromString(membersList.getStringTagAt(j)));
         }
 
-        JsonObject teamData = obj.getAsJsonObject("TeamData");
-
+        NBTTagCompound teamData = teamTag.getCompoundTag("TeamData");
         for (String key : TeamDataRegistry.getRegisteredKeys()) {
             try {
-                if (teamData.has(key)) {
-                    ITeamData data = TeamDataRegistry.construct(key);
-                    if (data != null) {
-                        data.load(teamData.getAsJsonObject(key));
-                        team.putData(key, data);
-                    }
+                ITeamData data = TeamDataRegistry.construct(key);
+                if (data != null && teamData.hasKey(key)) {
+                    data.readFromNBT(teamData.getCompoundTag(key));
+                    team.putData(key, data);
                 }
             } catch (Exception ex) {
                 GTNHLib.LOG.error("Error while loading TeamData {} for team {}", key, uuid, ex);
             }
-
         }
-
         return team;
     }
 
@@ -152,8 +153,8 @@ public class TeamDataSaver {
         for (Team team : TeamManager.TEAMS) {
             try {
                 File saveFile = new File(saveDir, team.getTeamId().toString() + ".json");
-                JsonObject obj = teamToJson(team);
-                String json = GSON.toJson(obj);
+                NBTTagCompound tag = writeToNBT(team);
+                String json = GSON.toJson(NBTJson.toJsonObject(tag));
                 Files.write(saveFile.toPath(), json.getBytes(StandardCharsets.UTF_8));
             } catch (Exception e) {
                 GTNHLib.LOG.error("Unable to save team {}", team.getTeamId(), e);
@@ -161,36 +162,41 @@ public class TeamDataSaver {
         }
     }
 
-    private JsonObject teamToJson(Team team) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("Version", SAVE_VER);
-        obj.addProperty("TeamName", team.getTeamName());
-        obj.addProperty("UUID", team.getTeamId().toString());
+    private NBTTagCompound writeToNBT(Team team) {
+        NBTTagCompound teamTag = new NBTTagCompound();
+        teamTag.setInteger("Version", SAVE_VER);
+        teamTag.setString("TeamName", team.getTeamName());
+        teamTag.setLong("UUIDMost", team.getTeamId().getMostSignificantBits());
+        teamTag.setLong("UUIDLeast", team.getTeamId().getLeastSignificantBits());
 
-        JsonArray owners = new JsonArray();
+        // Owners
+        NBTTagList ownersList = new NBTTagList();
         for (UUID owner : team.getOwners()) {
-            owners.add(new JsonPrimitive(owner.toString()));
+            ownersList.appendTag(new NBTTagString(owner.toString()));
         }
-        obj.add("Owners", owners);
+        teamTag.setTag("Owners", ownersList);
 
-        JsonArray officers = new JsonArray();
+        // Officers
+        NBTTagList officersList = new NBTTagList();
         for (UUID officer : team.getOfficers()) {
-            officers.add(new JsonPrimitive(officer.toString()));
+            officersList.appendTag(new NBTTagString(officer.toString()));
         }
-        obj.add("Officers", officers);
+        teamTag.setTag("Officers", officersList);
 
-        JsonArray members = new JsonArray();
+        // Members
+        NBTTagList membersList = new NBTTagList();
         for (UUID member : team.getMembers()) {
-            members.add(new JsonPrimitive(member.toString()));
+            membersList.appendTag(new NBTTagString(member.toString()));
         }
-        obj.add("Members", members);
+        teamTag.setTag("Members", membersList);
 
-        JsonObject teamData = new JsonObject();
-        for (Entry<String, ITeamData> entry : team.getAllDataEntries()) {
+        // Team Data
+        NBTTagCompound dataTag = new NBTTagCompound();
+        for (Map.Entry<String, ITeamData> entry : team.getAllDataEntries()) {
             try {
-                JsonObject data = new JsonObject();
-                entry.getValue().save(data);
-                teamData.add(entry.getKey(), data);
+                NBTTagCompound entryTag = new NBTTagCompound();
+                entry.getValue().writeToNBT(entryTag);
+                dataTag.setTag(entry.getKey(), entryTag);
             } catch (Exception ex) {
                 GTNHLib.LOG.error(
                         "Error while saving TeamData {} for team {}",
@@ -199,8 +205,8 @@ public class TeamDataSaver {
                         ex);
             }
         }
-        obj.add("TeamData", teamData);
+        teamTag.setTag("TeamData", dataTag);
 
-        return obj;
+        return teamTag;
     }
 }
