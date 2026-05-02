@@ -16,13 +16,16 @@ public class Team {
 
     @Getter
     private String teamName;
+    @Getter
+    private final UUID teamId;
     private final ObjectSet<UUID> owners = new ObjectOpenHashSet<>();
     private final ObjectSet<UUID> officers = new ObjectOpenHashSet<>();
     private final ObjectSet<UUID> members = new ObjectOpenHashSet<>();
     private final Map<String, ITeamData> teamData = new HashMap<>();
 
-    Team(String teamName) {
+    Team(String teamName, UUID teamId) {
         this.teamName = teamName;
+        this.teamId = teamId;
     }
 
     public boolean renameTeam(String newName) {

@@ -80,8 +80,10 @@ public class TeamWorldSavedData extends WorldSavedData {
         for (int i = 0; i < teamList.tagCount(); i++) {
             NBTTagCompound teamTag = teamList.getCompoundTagAt(i);
             String teamName = teamTag.getString("TeamName");
+            long uuidMost = teamTag.getLong("UUIDMost");
+            long uuidLeast = teamTag.getLong("UUIDLeast");
 
-            Team team = new Team(teamName);
+            Team team = new Team(teamName, new UUID(uuidMost, uuidLeast));
 
             // Owners
             NBTTagList ownersList = teamTag.getTagList("Owners", Constants.NBT.TAG_STRING);
@@ -122,6 +124,8 @@ public class TeamWorldSavedData extends WorldSavedData {
 
             NBTTagCompound teamTag = new NBTTagCompound();
             teamTag.setString("TeamName", team.getTeamName());
+            teamTag.setLong("UUIDMost", team.getTeamId().getMostSignificantBits());
+            teamTag.setLong("UUIDLeast", team.getTeamId().getLeastSignificantBits());
 
             // Owners
             NBTTagList ownersList = new NBTTagList();

@@ -302,6 +302,7 @@ public class TeamCommand {
         team.removeMember(playerId);
         if (team.getMembers().isEmpty()) {
             TeamManager.TEAMS.remove(team);
+            TeamManager.TEAM_MAP.remove(team);
             TeamWorldSavedData.markForSaving();
         }
 

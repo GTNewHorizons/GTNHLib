@@ -12,6 +12,7 @@ import java.util.UUID;
 public class TeamManager {
 
     protected static final List<Team> TEAMS = new ArrayList<>();
+    protected static final Map<UUID, Team> TEAM_MAP = new HashMap<>();
     protected static final Map<UUID, Set<Team>> PENDING_INVITES = new HashMap<>();
     // keyed by target team, value is the set of source teams requesting to merge into it
     protected static final Map<Team, Set<Team>> PENDING_MERGE_REQUESTS = new HashMap<>();
@@ -44,6 +45,10 @@ public class TeamManager {
         return null;
     }
 
+    public static Team getTeamById(UUID id) {
+        return TEAM_MAP.get(id);
+    }
+
     /**
      * Returns the player's current team, creating a solo team for them if they are not in one.
      */
@@ -51,10 +56,11 @@ public class TeamManager {
         Team existing = getTeamByPlayer(playerUuid);
         if (existing != null) return existing;
 
-        Team team = new Team(playerName + "'s Team");
+        Team team = new Team(playerName + "'s Team", UUID.randomUUID());
         team.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
         team.addOwner(playerUuid);
         TEAMS.add(team);
+        TEAM_MAP.put(team.getTeamId(), team);
         TeamWorldSavedData.markForSaving();
         return team;
     }
@@ -76,6 +82,7 @@ public class TeamManager {
         }
 
         TEAMS.remove(consumed);
+        TEAM_MAP.remove(consumed.getTeamId());
         PENDING_MERGE_REQUESTS.remove(consumed);
         TeamWorldSavedData.markForSaving();
     }
@@ -145,11 +152,13 @@ public class TeamManager {
             }
         }
         TEAMS.add(team);
+        TEAM_MAP.put(team.getTeamId(), team);
         return true;
     }
 
     public static void clear() {
         TEAMS.clear();
+        TEAM_MAP.clear();
         PENDING_INVITES.clear();
         PENDING_MERGE_REQUESTS.clear();
     }

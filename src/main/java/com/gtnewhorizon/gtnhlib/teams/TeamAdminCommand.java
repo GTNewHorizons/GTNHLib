@@ -173,6 +173,7 @@ public class TeamAdminCommand {
         List<UUID> members = new ArrayList<>(team.getMembers());
 
         TeamManager.TEAMS.remove(team);
+        TeamManager.TEAM_MAP.remove(team.getTeamId());
         TeamManager.PENDING_MERGE_REQUESTS.remove(team);
         for (Set<Team> teams : TeamManager.PENDING_INVITES.values()) {
             teams.remove(team);
