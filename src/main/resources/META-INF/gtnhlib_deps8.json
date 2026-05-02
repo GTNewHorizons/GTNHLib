@@ -1,0 +1,9 @@
+{
+    "identifier": "falsepatternlib_dependencies",
+    "maxJava": 16,
+    "dependencies": {
+        "always": {
+            "common": ["$DEPS"]
+        }
+    }
+}

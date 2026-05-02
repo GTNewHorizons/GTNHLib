@@ -39,20 +39,9 @@ tasks.processResources {
     }
 }
 
-// Shadow source jars too
-val shadowSources = configurations.getByName("shadowSources")
-tasks.sourcesJar {
-    from(shadowSources.map { zipTree(it) })
-    exclude("META-INF/versions/9/module-info.class")
-    exclude("META-INF/versions/9/module-info.java")
-}
-
-val jvmdgDowngraded17 = configurations.named("jvmdgDowngraded17").get()
-
 tasks.shadowJar {
     into("META-INF/versions/17") {
         from(main17.output)
-        from(zipTree(provider { jvmdgDowngraded17.files.single() }))
     }
     exclude("META-INF/versions/9/module-info.class")
 }
@@ -79,6 +68,48 @@ for (jarTask in listOf(tasks.jar, tasks.shadowJar, tasks.sourcesJar)) {
     jarTask.configure {
         manifest {
             attributes("Multi-Release" to true)
+        }
+    }
+}
+
+//deploader
+run {
+
+    tasks.processResources {
+        from(configurations["deploader"]) {
+            rename { "fplib_deploader.jar" }
+        }
+    }
+
+    fun DependencyHandlerScope.depload(name: String) {
+        add("compileOnlyApi", name)
+        add("testImplementation", name)
+        val parts = name.split(':')
+        val path = "META-INF/falsepatternlib_repo/${parts[0].replace('.', '/')}/${parts[1]}/${parts[2]}/"
+        val jarName = parts.subList(1, parts.size).joinToString("-") + ".jar"
+        tasks.processResources {
+            into(path) {
+                from(configurations.compileClasspath.map { it.filter { file -> file.name.equals(jarName) } })
+            }
+        }
+    }
+
+
+    @Suppress("UNCHECKED_CAST")
+    afterEvaluate {
+        //defined in dependencies.gradle
+        val allDeps = project.ext.get("depload_libs") as List<Pair<String, String>>
+        dependencies {
+            allDeps.forEach { depload(it.first) }
+        }
+        tasks.processResources {
+            allDeps.groupBy { it.second }
+                .mapValues { it.value.map { it.first } }
+                .forEach { (java, deps) ->
+                    filesMatching("META-INF/gtnhlib_deps${java}.json") {
+                        expand("DEPS" to deps.joinToString("\", \""))
+                    }
+                }
         }
     }
 }
