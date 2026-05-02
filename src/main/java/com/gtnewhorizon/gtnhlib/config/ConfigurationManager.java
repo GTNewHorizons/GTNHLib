@@ -31,15 +31,10 @@ import org.jetbrains.annotations.NotNull;
 
 import cpw.mods.fml.client.config.IConfigElement;
 import cpw.mods.fml.common.FMLCommonHandler;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.val;
 
 /**
  * Class for controlling the loading of configuration files.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-@SuppressWarnings("unused")
 public class ConfigurationManager {
 
     static final Logger LOGGER = LogManager.getLogger("GTNHLibConfig");
@@ -47,19 +42,20 @@ public class ConfigurationManager {
     private static final Map<Configuration, Map<String, Set<Class<?>>>> configToCategoryClassMap = new HashMap<>();
     private static final Map<String, Set<Class<?>>> modIdToConfigClasses = new HashMap<>();
     private static final String[] langKeyPlaceholders = new String[] { "%mod", "%file", "%cat", "%field" };
-    private static final Boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
-    private static final Boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
+    private static final boolean PRINT_KEYS = Boolean.getBoolean("gtnhlib.printkeys");
+    private static final boolean DUMP_KEYS = Boolean.getBoolean("gtnhlib.dumpkeys");
     private static final Map<String, List<String>> generatedLangKeys = new HashMap<>();
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
     private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
     private static final Map<Class<?>, ConfigNode> configNode = new HashMap<>();
 
-    private static final ConfigurationManager instance = new ConfigurationManager();
     private final static Path configDir;
 
     static {
         configDir = minecraftHome().toPath().resolve("config");
     }
+
+    private ConfigurationManager() {}
 
     /**
      * Registers a configuration class to be loaded. This should be done before or during preInit.
@@ -67,11 +63,11 @@ public class ConfigurationManager {
      * @param configClass The class to register.
      */
     public static void registerConfig(Class<?> configClass) throws ConfigException {
-        val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
+        final var cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
-        val category = cfg.category().trim().toLowerCase();
-        val modid = cfg.modid();
-        val filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
+        final var category = cfg.category().trim().toLowerCase();
+        final var modid = cfg.modid();
+        final var filename = Optional.of(cfg.filename().trim()).filter(s -> !s.isEmpty()).orElse(modid);
 
         if (!configClass.isAnnotationPresent(Config.ExcludeFromAutoGui.class)) {
             modIdToConfigClasses.computeIfAbsent(modid, (ignored) -> new HashSet<>()).add(configClass);
@@ -82,8 +78,8 @@ public class ConfigurationManager {
             if (!cfg.configSubDirectory().trim().isEmpty()) {
                 newConfigDir = newConfigDir.resolve(cfg.configSubDirectory().trim());
             }
-            val configFile = newConfigDir.resolve(filename + ".cfg").toFile();
-            val config = new Configuration(configFile);
+            final var configFile = newConfigDir.resolve(filename + ".cfg").toFile();
+            final var config = new Configuration(configFile);
             config.load();
             return config;
         });
@@ -105,11 +101,11 @@ public class ConfigurationManager {
         if (configClasses.length == 0) return;
 
         Set<Configuration> savedConfigs = new HashSet<>();
-        for (val clazz : configClasses) {
+        for (final var clazz : configClasses) {
             try {
-                val cfg = Optional.ofNullable(clazz.getAnnotation(Config.class)).orElseThrow(
+                final var cfg = Optional.ofNullable(clazz.getAnnotation(Config.class)).orElseThrow(
                         () -> new ConfigException("Class " + clazz.getName() + " does not have a @Config annotation!"));
-                val category = cfg.category().trim().toLowerCase();
+                final var category = cfg.category().trim().toLowerCase();
                 Configuration rawConfig = configs.get(getConfigKey(cfg));
                 save(clazz, null, rawConfig, category);
                 savedConfigs.add(rawConfig);
@@ -123,7 +119,7 @@ public class ConfigurationManager {
 
     private static void save(Class<?> configClass, Object instance, Configuration rawConfig, String category)
             throws IllegalAccessException, ConfigException {
-        for (val field : configClass.getDeclaredFields()) {
+        for (final var field : configClass.getDeclaredFields()) {
             if (shouldSkipField(field)) {
                 continue;
             }
@@ -137,7 +133,7 @@ public class ConfigurationManager {
 
             if (!ConfigFieldParser.canParse(field)) {
                 if (isFieldSubCategory(field)) {
-                    val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER)
+                    final var cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER)
                             + ConfigFieldParser.getFieldName(field).toLowerCase();
                     Object subInstance = field.get(instance);
                     save(field.getType(), subInstance, rawConfig, cat);
@@ -153,8 +149,8 @@ public class ConfigurationManager {
 
     private static void processSubCategory(Object instance, Configuration config, Field subCategoryField,
             String category) throws ConfigException {
-        val name = ConfigFieldParser.getFieldName(subCategoryField);
-        val cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name.toLowerCase();
+        final var name = ConfigFieldParser.getFieldName(subCategoryField);
+        final var cat = (category.isEmpty() ? "" : category + Configuration.CATEGORY_SPLITTER) + name.toLowerCase();
         ConfigCategory subCat = config.getCategory(cat);
 
         Optional.ofNullable(subCategoryField.getAnnotation(Config.Comment.class)).map(Config.Comment::value)
@@ -192,7 +188,7 @@ public class ConfigurationManager {
                 || foundCategory && cat.requiresWorldRestart();
 
         List<String> observedValues = new ArrayList<>();
-        for (val field : configClass.getDeclaredFields()) {
+        for (final var field : configClass.getDeclaredFields()) {
             if (shouldSkipField(field)) {
                 continue;
             }
@@ -225,8 +221,8 @@ public class ConfigurationManager {
 
             if (category.isEmpty()) continue;
 
-            val fieldName = ConfigFieldParser.getFieldName(field);
-            val langKey = getLangKey(configClass, field.getAnnotation(Config.LangKey.class), fieldName, cat);
+            final var fieldName = ConfigFieldParser.getFieldName(field);
+            final var langKey = getLangKey(configClass, field.getAnnotation(Config.LangKey.class), fieldName, cat);
             ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
             observedValues.add(fieldName);
 
@@ -265,14 +261,14 @@ public class ConfigurationManager {
 
         if (category.isEmpty()) return;
 
-        if (cat.keySet().size() != observedValues.size()) {
-            val properties = new ArrayList<>(cat.keySet());
+        if (cat.size() != observedValues.size()) {
+            final var properties = new ArrayList<>(cat.keySet());
             properties.removeIf(observedValues::contains);
             properties.forEach(cat::remove);
         }
 
         if (cat.getLanguagekey().equals(category)) {
-            val langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
+            final var langKey = getLangKey(configClass, configClass.getAnnotation(Config.LangKey.class), null, cat);
             cat.setLanguageKey(langKey);
         }
 
@@ -308,9 +304,9 @@ public class ConfigurationManager {
     @SuppressWarnings("rawtypes")
     public static List<IConfigElement> getConfigElements(Class<?> configClass, boolean categorized)
             throws ConfigException {
-        val cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
+        final var cfg = Optional.ofNullable(configClass.getAnnotation(Config.class)).orElseThrow(
                 () -> new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!"));
-        val rawConfig = Optional.ofNullable(configs.get(getConfigKey(cfg))).map(
+        final var rawConfig = Optional.ofNullable(configs.get(getConfigKey(cfg))).map(
                 (conf) -> Optional.ofNullable(configToCategoryClassMap.get(conf))
                         .map((map) -> map.get(cfg.category().trim().toLowerCase()).contains(configClass)).orElse(false)
                                 ? conf
@@ -318,7 +314,7 @@ public class ConfigurationManager {
                 .orElseThrow(
                         () -> new ConfigException("Tried to get config elements for non-registered config class!"));
 
-        val category = cfg.category().toLowerCase();
+        final var category = cfg.category().toLowerCase();
         List<IConfigElement> result = new ArrayList<>();
         if (categorized) {
             if (category.isEmpty()) return getSubcategoryElements(configClass, category, rawConfig, true);
@@ -330,7 +326,7 @@ public class ConfigurationManager {
                             rawConfig,
                             category));
         } else {
-            val elements = category.isEmpty() ? getSubcategoryElements(configClass, category, rawConfig, false)
+            final var elements = category.isEmpty() ? getSubcategoryElements(configClass, category, rawConfig, false)
                     : new ConfigElement<>(rawConfig.getCategory(category)).getChildElements();
             elements.stream().map((element) -> getProxyElement(element, configClass, rawConfig, category))
                     .forEach(result::add);
@@ -353,8 +349,8 @@ public class ConfigurationManager {
             case 1:
                 return getConfigElements(configClasses[0], categorized);
             default:
-                val result = new ArrayList<IConfigElement>();
-                for (val configClass : configClasses) {
+                final var result = new ArrayList<IConfigElement>();
+                for (final var configClass : configClasses) {
                     List<IConfigElement> elements = getConfigElements(configClass, categorized);
                     result.addAll(elements);
                 }
@@ -366,12 +362,12 @@ public class ConfigurationManager {
     private static List<IConfigElement> getSubcategoryElements(Class<?> configClass, String category,
             Configuration rawConfig, boolean categorized) {
         List<IConfigElement> elements = new ArrayList<>();
-        for (val field : configClass.getDeclaredFields()) {
+        for (final var field : configClass.getDeclaredFields()) {
             if (shouldSkipField(field)) {
                 continue;
             }
             if (isFieldSubCategory(field)) {
-                val name = ConfigFieldParser.getFieldName(field).toLowerCase();
+                final var name = ConfigFieldParser.getFieldName(field).toLowerCase();
                 elements.add(
                         getProxyElement(
                                 new ConfigElement(rawConfig.getCategory(name)),
@@ -396,9 +392,6 @@ public class ConfigurationManager {
 
         ConfigNode rootNode = configNode.get(configClass);
         ConfigNode node = rootNode.children.getOrDefault(element.getName().toLowerCase(), rootNode);
-        Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
-        int order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
-
         return new IConfigElementProxy(element, () -> {
             try {
                 processConfigInternal(configClass, category, rawConfig, null);
@@ -407,7 +400,7 @@ public class ConfigurationManager {
                     | ConfigException e) {
                 e.printStackTrace();
             }
-        }, node, order);
+        }, node);
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
@@ -494,7 +487,7 @@ public class ConfigurationManager {
     }
 
     public static Configuration getConfig(Class<?> configClass) {
-        val cfg = configClass.getAnnotation(Config.class);
+        final var cfg = configClass.getAnnotation(Config.class);
         return configs.get(getConfigKey(cfg));
     }
 
@@ -527,11 +520,11 @@ public class ConfigurationManager {
             ConfigCategory cat = entry.getKey();
             Class<?> configClass = entry.getValue();
 
-            for (val field : configClass.getDeclaredFields()) {
+            for (final var field : configClass.getDeclaredFields()) {
                 if (shouldSkipField(field)) {
                     continue;
                 }
-                val fieldName = ConfigFieldParser.getFieldName(field);
+                final var fieldName = ConfigFieldParser.getFieldName(field);
                 Config.Entry fieldEntry = field.getAnnotation(Config.Entry.class);
                 if (fieldEntry != null && fieldEntry.value() != null) {
                     if (cat.get(fieldName) != null) {
@@ -549,7 +542,7 @@ public class ConfigurationManager {
 
     private static void writeLangKeysToFile() {
         for (Map.Entry<String, List<String>> entry : generatedLangKeys.entrySet()) {
-            val langFile = new File("generated-lang-keys", entry.getKey() + ".txt");
+            final var langFile = new File("generated-lang-keys", entry.getKey() + ".txt");
             try {
                 FileUtils.writeLines(langFile, entry.getValue());
             } catch (IOException e) {
@@ -563,21 +556,21 @@ public class ConfigurationManager {
     }
 
     private static void cullDeadCategories() {
-        for (val entry : observedCategories.entrySet()) {
-            val config = entry.getKey();
+        for (final var entry : observedCategories.entrySet()) {
+            final var config = entry.getKey();
 
             if (!isCategoryCullingEnabled(config)) {
                 LOGGER.info("Skipping category culling for config {}", config);
                 continue;
             }
 
-            val observedCategoryNames = entry.getValue();
+            final var observedCategoryNames = entry.getValue();
 
             if (config.getCategoryNames().size() == observedCategoryNames.size()) {
                 continue;
             }
 
-            val savedCategoryNames = new ArrayList<>(config.getCategoryNames());
+            final var savedCategoryNames = new ArrayList<>(config.getCategoryNames());
             savedCategoryNames.removeIf(observedCategoryNames::contains);
 
             // Only keep the top-level category that needs removal otherwise getCategory() for any subcategory will
@@ -586,7 +579,7 @@ public class ConfigurationManager {
                     .filter(s -> savedCategoryNames.stream().noneMatch(existing -> s.startsWith(existing + ".")))
                     .collect(Collectors.toList());
 
-            for (val category : parentsToRemove) {
+            for (final var category : parentsToRemove) {
                 ConfigCategory cat = config.getCategory(category);
                 config.removeCategory(cat);
             }
@@ -613,18 +606,63 @@ public class ConfigurationManager {
 
     public static class ConfigNode {
 
-        final Map<String, Integer> fieldOrder = new HashMap<>();
-        final Map<String, ConfigNode> children = new HashMap<>();
+        public final int order;
+        public final String[] requiredModsOr;
+        public final String[] requiredModsAnd;
+        public final Map<String, ConfigNode> children = new HashMap<>();
 
         public ConfigNode(Class<?> configClass) {
+            Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
+            Config.RequiresMod reqAnn = configClass.getAnnotation(Config.RequiresMod.class);
+
+            this.order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
+
+            if (reqAnn != null && reqAnn.mode() == Config.RequiresMod.Mode.OR) {
+                this.requiredModsOr = reqAnn.value();
+                this.requiredModsAnd = null;
+            } else if (reqAnn != null && reqAnn.mode() == Config.RequiresMod.Mode.AND) {
+                this.requiredModsOr = null;
+                this.requiredModsAnd = reqAnn.value();
+            } else {
+                this.requiredModsOr = null;
+                this.requiredModsAnd = null;
+            }
+
+            buildChildren(configClass);
+        }
+
+        public ConfigNode(int order, @Nullable String[] requiredModsOr, @Nullable String[] requiredModsAnd,
+                @Nullable Class<?> categoryClass) {
+            this.order = order;
+            this.requiredModsOr = requiredModsOr;
+            this.requiredModsAnd = requiredModsAnd;
+            if (categoryClass != null) buildChildren(categoryClass);
+        }
+
+        private void buildChildren(Class<?> configClass) {
             for (Field field : configClass.getDeclaredFields()) {
-                if (shouldSkipField(field)) {
-                    continue;
-                }
+                if (shouldSkipField(field)) continue;
                 String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
-                Config.Order ann = field.getAnnotation(Config.Order.class);
-                if (ann != null && fieldName != null) fieldOrder.put(fieldName, ann.value());
-                if (ConfigurationManager.isFieldSubCategory(field)) {
+                Config.Order orderAnn = field.getAnnotation(Config.Order.class);
+                int fieldOrder = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
+
+                Config.RequiresMod reqAnn = field.getAnnotation(Config.RequiresMod.class);
+                String[] fieldModsOr = null;
+                String[] fieldModsAnd = null;
+
+                if (reqAnn != null) {
+                    if (reqAnn.mode() == Config.RequiresMod.Mode.OR) {
+                        fieldModsOr = reqAnn.value();
+                    } else if (reqAnn.mode() == Config.RequiresMod.Mode.AND) {
+                        fieldModsAnd = reqAnn.value();
+                    }
+                }
+
+                if (!ConfigurationManager.isFieldSubCategory(field)) {
+                    children.put(fieldName, new ConfigNode(fieldOrder, fieldModsOr, fieldModsAnd, null));
+                } else if (orderAnn != null || reqAnn != null) {
+                    children.put(fieldName, new ConfigNode(fieldOrder, fieldModsOr, fieldModsAnd, field.getType()));
+                } else {
                     children.put(fieldName, new ConfigNode(field.getType()));
                 }
             }

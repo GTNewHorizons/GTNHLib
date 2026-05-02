@@ -5,8 +5,8 @@ import net.minecraft.launchwrapper.Launch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.core.rfb.transformers.RFBTessellatorRedirector;
-import com.gtnewhorizon.gtnhlib.rfb.TessellatorTransformerWrapper;
+import com.gtnewhorizon.gtnhlib.core.rfb.transformers.RFBTessellatorRedirectorWrapper;
+import com.gtnewhorizon.gtnhlib.core.rfb.transformers.RFBTessellatorTransformerWrapper;
 import com.gtnewhorizons.retrofuturabootstrap.api.PluginContext;
 import com.gtnewhorizons.retrofuturabootstrap.api.RetroFuturaBootstrap;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
@@ -28,6 +28,7 @@ public class GTNHLibRfbPlugin implements RfbPlugin {
         }
         boolean isObf = RetroFuturaBootstrap.API.launchClassLoader().findClassMetadata("net.minecraft.world.World")
                 == null;
-        return new RfbClassTransformer[] { new TessellatorTransformerWrapper(), new RFBTessellatorRedirector(isObf) };
+        return new RfbClassTransformer[] { new RFBTessellatorTransformerWrapper(),
+                new RFBTessellatorRedirectorWrapper(isObf) };
     }
 }

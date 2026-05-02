@@ -2,24 +2,14 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.isObf;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IChatComponent;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
-import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
-import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
@@ -27,6 +17,7 @@ import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentItemName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
+import com.gtnewhorizon.gtnhlib.commands.TitleCommand;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
@@ -41,7 +32,6 @@ import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
-import com.gtnewhorizon.gtnhlib.test.block.TileTestTintMul;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
@@ -71,52 +61,9 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
 
         if (GTNHLibConfig.enableTestBlocks) {
-            GameRegistry.registerBlock(new BlockTest(), "model_test");
-            GameRegistry.registerBlock(new BlockTestTint(), "model_test_tint");
-
-            Block block = new BlockTestTintMul();
-            GameRegistry.registerBlock(block, "model_test_tint_mul");
-            GameRegistry.registerTileEntity(TileTestTintMul.class, "tile_test_tint_mul");
-            DirectionBlockProperty property = new DirectionBlockProperty() {
-
-                @Override
-                public String getName() {
-                    return "facing";
-                }
-
-                @Override
-                public boolean hasTrait(BlockPropertyTrait trait) {
-                    return switch (trait) {
-                        case SupportsWorld, WorldMutable, StackMutable, SupportsStacks -> true;
-                        default -> false;
-                    };
-                }
-
-                @Override
-                public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
-                    TileEntity te = world.getTileEntity(x, y, z);
-                    if (te instanceof TileTestTintMul tile) {
-                        return tile.getFacing();
-                    }
-                    return ForgeDirection.NORTH;
-                }
-
-                @Override
-                public void setValue(World world, int x, int y, int z, ForgeDirection value) {
-                    TileEntity te = world.getTileEntity(x, y, z);
-                    if (te instanceof TileTestTintMul tile) {
-                        tile.setFacing(value);
-                    }
-                }
-
-                @Override
-                public ForgeDirection getValue(ItemStack stack) {
-                    return ForgeDirection.NORTH;
-                }
-            };
-
-            BlockPropertyRegistry.registerProperty(block, property);
-            BlockPropertyRegistry.registerProperty(Item.getItemFromBlock(block), property);
+            BlockTest.register();
+            BlockTestTint.register();
+            BlockTestTintMul.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
@@ -164,6 +111,7 @@ public class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new BlockStateCommand());
+        event.registerServerCommand(new TitleCommand());
     }
 
     public void serverStarted(FMLServerStartedEvent event) {}

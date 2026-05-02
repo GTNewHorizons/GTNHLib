@@ -11,6 +11,7 @@ import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
@@ -20,11 +21,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
+import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
@@ -33,6 +35,7 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
+import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -41,11 +44,11 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
-    public static final ModelISBRH INSTANCE = new ModelISBRH();
+    public static final ThreadLocal<ModelISBRH> INSTANCE = ThreadLocal.withInitial(ModelISBRH::new);
 
-    /**
-     * Any blocks using a JSON model should return this for {@link Block#getRenderType()}.
-     */
+    /// Any blocks using a JSON model may return this for [Block#getRenderType()]. However, models are primarily
+    /// identified via the presence of a blockstate -> model map for the block. If you don't have such a file, you can
+    /// implement {@link BlockModelInfo} instead, and simply always return true.
     public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
     private final Random RAND = new Random();
@@ -54,14 +57,6 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     private final ItemContext itemContext = new ItemContext();
 
     public ModelISBRH() {}
-
-    /// For programmatic model selection, see {@link IBlockModelProvider}
-    @SuppressWarnings("unused")
-    public BakedModel getModel(BakedModelQuadContext context) {
-        if (context.getBlockState().getBlock() instanceof IBlockModelProvider selector)
-            return selector.getModel(context);
-        return ModelRegistry.getBakedModel(context.getBlockState());
-    }
 
     @Override
     public void renderInventoryBlock(Block block, int meta, int modelId, RenderBlocks renderer) {}
@@ -82,7 +77,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
         worldContext.random = random;
 
-        final BakedModel model = getModel(worldContext);
+        final BakedModel model = ModelRegistry.getBakedModel(worldContext);
 
         int color = model.getColor(world, x, y, z, block, meta, random);
 
@@ -113,9 +108,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                     quadColor = BlockColor.getColor(block, world, x, y, z, meta, quad.getColorIndex());
                 }
 
-                final float r = (quadColor & 255) / 255f;
+                final float r = (quadColor >> 16 & 255) / 255f;
                 final float g = (quadColor >> 8 & 255) / 255f;
-                final float b = (quadColor >> 16 & 255) / 255f;
+                final float b = (quadColor & 255) / 255f;
 
                 final int lm = getLightMap(block, quad, quad.getLightFace(), world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
@@ -243,7 +238,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
         itemContext.random = RAND;
 
-        final BakedModel model = getModel(itemContext);
+        final BakedModel model = ModelRegistry.getBakedModel(itemContext);
 
         GL11.glPushMatrix();
         GL11.glEnable(GL11.GL_BLEND);
@@ -267,9 +262,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                     quadColor = BlockColor.getColor(block, stack, quad.getColorIndex());
                 }
 
-                float r = (quadColor & 0xFF) / 255f;
-                float g = (quadColor >> 8 & 0xFF) / 255f;
-                float b = (quadColor >> 16 & 0xFF) / 255f;
+                final float r = (quadColor >> 16 & 255) / 255f;
+                final float g = (quadColor >> 8 & 255) / 255f;
+                final float b = (quadColor & 255) / 255f;
 
                 final float shade = diffuseLight(quad.getComputedFaceNormal());
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
@@ -287,11 +282,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         itemContext.reset();
     }
 
-    /**
-     * TODO: We need to find a good way to make it so the bound fields are not accounted for but I still want to use
-     * {@link Block#shouldSideBeRendered}. This is so blocks can define custom culling behavior when needed, but the
-     * bound fields are not relevant here because JSON models don't listen to them.
-     */
+    /// TODO: We need to find a good way to make it so the bound fields are not accounted for but I still want to use
+    /// [Block#shouldSideBeRendered]. This is so blocks can define custom culling behavior when needed, but the
+    /// bound fields are not relevant here because JSON models don't listen to them.
     protected boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side, Block block) {
         return block.shouldSideBeRendered(world, x, y, z, side);
     }
@@ -418,14 +411,28 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
     }
 
-    public IIcon getParticleIcon(Block block, @Nullable IBlockAccess world, int x, int y, int z, int meta) {
+    /// Mirrors the default {@link Block#getIcon(IBlockAccess, int, int, int, int)}, with the exception that the block
+    /// is also re-fetched. This is because the blockstate construction does world access anyway, overriding just the
+    /// block is annoying and seems less correct.
+    ///
+    /// Used in {@link BlockIconTransformer}
+    public @NotNull IIcon getParticleIcon(@Nullable IBlockAccess world, int x, int y, int z) {
         worldContext.world = world;
         worldContext.x = x;
         worldContext.y = y;
         worldContext.z = z;
         worldContext.random = RAND;
         worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
-        final var model = getModel(worldContext);
-        return model.getParticle(worldContext);
+        final var model = ModelRegistry.getBakedModel(worldContext);
+        final var ret = model.getParticle(worldContext);
+
+        worldContext.reset();
+        return ret;
+    }
+
+    /// Used in {@link BlockIconTransformer}
+    @SuppressWarnings("unused")
+    public @NotNull IIcon getMissingIcon() {
+        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");
     }
 }

@@ -1,5 +1,14 @@
-#Moved from WAWLA
-#Villager Professions
+# Test block names
+tile.model_test.name=Test Block
+tile.model_test_tint.name=Test Block (Tint)
+tile.model_test_tint_mul.name=Test Block (Tint Mul)
+
+# Configuration
+fml.configgui.tooltip.default=[default: %s]
+fml.configgui.tooltip.defaultNumeric=[range: %2$s ~ %3$s, default: %1$s]
+
+# Moved from WAWLA
+# Villager Professions
 description.villager.profession.farmer=Farmer
 description.villager.profession.librarian=Librarian
 description.villager.profession.priest=Priest
@@ -84,7 +93,11 @@ description.villager.profession.rftools.rftoolsvillager=RFTools Engineer
 description.villager.profession.forbidden.heretic=Heretic
 description.villager.profession.agricraft.villager=Agricraft Farmer
 
+# Number Formatting Config
+gtnhlib.config.number_formatting.numberFormatLocale=Number Format Locale
+gtnhlib.config.number_formatting.numberFormatLocale.tooltip=Select the locale used for number formatting. System Default uses the system language format.
 # Resource Pack Updater
+# Resource Pack Update Notifier
 gtnhlib.chat.rpupdater.update_available=§3New update available for §f%s: v%s §7(you have v%s)§3.
 gtnhlib.chat.rpupdater.click_here=§6Click here
 gtnhlib.chat.rpupdater.open_release= §3to open the release page.
@@ -196,3 +209,9 @@ gtnhlib.chat.teams.admin.help.4=/gtnhteam_admin promote <team> <player> - Forcib
 gtnhlib.chat.teams.admin.help.5=/gtnhteam_admin demote <team> <player> - Forcibly demote targeted player in team.
 gtnhlib.chat.teams.admin.help.6=/gtnhteam_admin merge <source team> <target team> - Forcibly merge source team into target team, transferring their members and merging data.
 gtnhlib.chat.teams.admin.help.7=/gtnhteam_admin disband <team> - Forcibly disband team. Players will be immediately placed into solo teams and the team's data will be permanently lost.
+
+commands.title.cleared.single=Cleared title for %s
+commands.title.reset.single=Reset title options for %s
+commands.title.show.title.single=Showed title to %s
+commands.title.show.subtitle.single=Showed subtitle to %s
+commands.title.times.single=Changed title display times for %s

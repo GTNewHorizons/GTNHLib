@@ -1,9 +1,9 @@
 package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
-import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry.MODEL_LOGGER;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
@@ -328,7 +328,7 @@ public class JSONModel implements UnbakedModel {
     }
 
     protected IIcon getParticle() {
-        String key = "particle";
+        String key = "#particle";
         if (!textures.containsKey(key) && !textures.isEmpty()) {
             key = textures.keySet().iterator().next();
         }
