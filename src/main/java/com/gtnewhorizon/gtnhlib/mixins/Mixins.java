@@ -57,7 +57,8 @@ public enum Mixins implements IMixins {
                     .setPhase(Phase.LATE).addCommonMixins("MixinEnhancedInfusionRecipe")
                     .addRequiredMod(TargetMods.THAUMCRAFT)),
     CONFIG_ORDER(Side.CLIENT, "fml.MixinGuiConfig"),
-    TITLE_OVERLAY(Side.CLIENT, "MixinGuiIngameForge_TitleRender", "MixinGuiIngame_TitleTick")
+    TITLE_OVERLAY(Side.CLIENT, "MixinGuiIngameForge_TitleRender", "MixinGuiIngame_TitleTick"),
+    WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld")
     //
     ;
 
