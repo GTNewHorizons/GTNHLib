@@ -1,6 +1,10 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import java.util.UUID;
+
 import net.minecraft.nbt.NBTTagCompound;
+
+import org.jetbrains.annotations.Nullable;
 
 public interface ITeamData {
 
@@ -12,12 +16,21 @@ public interface ITeamData {
      * Called on each piece of ITeamData on the surviving team during a team merge. Implementers are responsible for
      * defining what merging data means for their data type!
      *
-     * @param data ITeamData of the team that is being disbanded.
+     * @param oldTeamData ITeamData of the team that is being disbanded.
      */
-    default void mergeData(ITeamData data) {}
+    default void mergeData(Team consumed, Team surviving, ITeamData oldTeamData) {}
 
     default void markDirty() {
         TeamWorldSavedData.markForSaving();
+    }
+
+    /**
+     * Called when a player moves from one team to another.
+     * 
+     * @return The copied ITeamData or null if no data should be copied.
+     */
+    default @Nullable ITeamData copyData(Team oldTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
+        return null;
     }
 
     ITeamData UNIMPLEMENTED = new ITeamData() {

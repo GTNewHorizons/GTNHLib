@@ -196,8 +196,9 @@ public class TeamCommand {
     private static int executeAccept(ICommandSender sender, String teamName) {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
+        UUID playerId = player.getUniqueID();
 
-        Set<Team> invites = TeamManager.getPendingInvites(player.getUniqueID());
+        Set<Team> invites = TeamManager.getPendingInvites(playerId);
         if (invites == null || invites.isEmpty()) return error(sender, "gtnhlib.chat.teams.error.no_invite");
 
         Team invitedTeam;
@@ -212,14 +213,14 @@ public class TeamCommand {
         }
 
         // Leave current team first. If the team would be disbanded, merge it into the new team automatically.
-        Team currentTeam = TeamManager.getTeamByPlayer(player.getUniqueID());
+        Team currentTeam = TeamManager.getTeamByPlayer(playerId);
         if (currentTeam != null) {
             // Don't allow joining if player is sole owner of their team AND there are other members
-            if (currentTeam.isOwner(player.getUniqueID()) && currentTeam.getOwners().size() == 1
+            if (currentTeam.isOwner(playerId) && currentTeam.getOwners().size() == 1
                     && currentTeam.getMembers().size() > 1) {
                 return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
             }
-            currentTeam.removeMember(player.getUniqueID());
+            currentTeam.removeMember(playerId);
 
             for (UUID memberUuid : currentTeam.getMembers()) {
                 EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
@@ -231,6 +232,8 @@ public class TeamCommand {
 
             if (currentTeam.getMembers().isEmpty()) {
                 TeamManager.mergeTeams(invitedTeam, currentTeam);
+            } else {
+                TeamManager.copyTeamData(currentTeam, invitedTeam, playerId, TeamDataCopyReason.JoinedExistingTeam);
             }
         }
 
@@ -282,20 +285,21 @@ public class TeamCommand {
     private static int executeLeave(ICommandSender sender) {
         EntityPlayer player = asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
+        UUID playerId = player.getUniqueID();
 
-        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
+        Team team = TeamManager.getTeamByPlayer(playerId);
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
 
         if (team.getMembers().size() == 1) {
             return error(sender, "gtnhlib.chat.teams.error.last_member_leave");
         }
-        if (team.isOwner(player.getUniqueID()) && team.getOwners().size() == 1) {
+        if (team.isOwner(playerId) && team.getOwners().size() == 1) {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
         }
 
         String teamName = team.getTeamName();
 
-        team.removeMember(player.getUniqueID());
+        team.removeMember(playerId);
         if (team.getMembers().isEmpty()) {
             TeamManager.TEAMS.remove(team);
             TeamWorldSavedData.markForSaving();
@@ -310,7 +314,8 @@ public class TeamCommand {
         }
 
         // Create a new solo team for the player
-        TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
+        Team newTeam = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
+        TeamManager.copyTeamData(team, newTeam, playerId, TeamDataCopyReason.JoinedNewTeam);
 
         return success(
                 sender,

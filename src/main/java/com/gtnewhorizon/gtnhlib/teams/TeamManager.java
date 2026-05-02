@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
@@ -70,13 +71,22 @@ public class TeamManager {
             ITeamData survivingData = surviving.getData(dataKey);
             ITeamData consumedData = consumed.getData(dataKey);
             if (survivingData != null && consumedData != null) {
-                survivingData.mergeData(consumedData);
+                survivingData.mergeData(consumed, surviving, consumedData);
             }
         }
 
         TEAMS.remove(consumed);
         PENDING_MERGE_REQUESTS.remove(consumed);
         TeamWorldSavedData.markForSaving();
+    }
+
+    public static void copyTeamData(Team oldTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
+        for (Entry<String, ITeamData> entry : oldTeam.getAllDataEntries()) {
+            ITeamData copied = entry.getValue().copyData(oldTeam, newTeam, playerId, reason);
+            if (copied != null) {
+                newTeam.putData(entry.getKey(), copied);
+            }
+        }
     }
 
     public static void addPendingInvite(UUID uuid, Team team) {

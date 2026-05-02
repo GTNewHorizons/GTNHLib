@@ -186,7 +186,8 @@ public class TeamAdminCommand {
         for (UUID uuid : members) {
             EntityPlayer member = sender.getEntityWorld().func_152378_a(uuid); // getPlayerByUUID
             String name = member != null ? member.getCommandSenderName() : uuid.toString();
-            TeamManager.getOrCreateTeam(name, uuid);
+            Team newTeam = TeamManager.getOrCreateTeam(name, uuid);
+            TeamManager.copyTeamData(team, newTeam, uuid, TeamDataCopyReason.JoinedNewTeam);
             if (member != null) member.addChatMessage(notice);
         }
 
