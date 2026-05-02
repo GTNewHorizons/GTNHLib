@@ -30,10 +30,10 @@ public class TeamManager {
 
     public static Team getTeamByPlayer(UUID playerUuid) {
         Team foundTeam = PLAYER_TEAM_CACHE.get(playerUuid);
-        if(foundTeam != null && foundTeam.isMember(playerUuid)){
+        if (foundTeam != null && foundTeam.isMember(playerUuid)) {
             return foundTeam;
         }
-        //Cache miss
+        // Cache miss
         for (Team team : TEAMS) {
             if (team.isMember(playerUuid)) {
                 PLAYER_TEAM_CACHE.put(playerUuid, team);
