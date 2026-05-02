@@ -61,14 +61,14 @@ public class TeamManager {
         team.addOwner(playerUuid);
         TEAMS.add(team);
         TEAM_MAP.put(team.getTeamId(), team);
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
         return team;
     }
 
     /**
      * Merges the consumed team into the surviving team. All members of the consumed team become members of the
-     * surviving team. {@link ITeamData#mergeData(ITeamData)} is called on all registered data types. The consumed team
-     * is disbanded afterward.
+     * surviving team. {@link ITeamData#mergeData} is called on all registered data types. The consumed team is
+     * disbanded afterward.
      */
     public static void mergeTeams(Team surviving, Team consumed) {
         for (UUID uuid : consumed.getMembers()) surviving.addMember(uuid);
@@ -84,7 +84,7 @@ public class TeamManager {
         TEAMS.remove(consumed);
         TEAM_MAP.remove(consumed.getTeamId());
         PENDING_MERGE_REQUESTS.remove(consumed);
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
     }
 
     public static void copyTeamData(Team oldTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {

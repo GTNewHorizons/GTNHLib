@@ -31,7 +31,7 @@ public class Team {
     public boolean renameTeam(String newName) {
         if (TeamManager.isTeamNameValid(newName)) {
             this.teamName = newName;
-            TeamWorldSavedData.markForSaving();
+            TeamDataSaver.markForSaving();
             return true;
         }
         return false;
@@ -50,14 +50,14 @@ public class Team {
     }
 
     public void addMember(UUID uuid) {
-        if (members.add(uuid)) TeamWorldSavedData.markForSaving();
+        if (members.add(uuid)) TeamDataSaver.markForSaving();
     }
 
     public void addOfficer(UUID uuid) {
         if (!officers.add(uuid)) return;
         // officers are also always members
         members.add(uuid);
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
     }
 
     public void addOwner(UUID uuid) {
@@ -65,25 +65,25 @@ public class Team {
         // owners are also always members and officers
         officers.add(uuid);
         members.add(uuid);
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
     }
 
     public void removeMember(UUID uuid) {
         members.remove(uuid);
         officers.remove(uuid);
         owners.remove(uuid);
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
     }
 
     public void removeOfficer(UUID uuid) {
         owners.remove(uuid);
         officers.remove(uuid);
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
     }
 
     public void removeOwner(UUID uuid) {
         owners.remove(uuid);
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
     }
 
     public Set<UUID> getMembers() {

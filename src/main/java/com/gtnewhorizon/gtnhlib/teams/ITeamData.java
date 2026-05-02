@@ -2,15 +2,15 @@ package com.gtnewhorizon.gtnhlib.teams;
 
 import java.util.UUID;
 
-import net.minecraft.nbt.NBTTagCompound;
-
 import org.jetbrains.annotations.Nullable;
+
+import com.google.gson.JsonObject;
 
 public interface ITeamData {
 
-    void writeToNBT(NBTTagCompound NBT);
+    void save(JsonObject obj);
 
-    void readFromNBT(NBTTagCompound NBT);
+    void load(JsonObject obj);
 
     /**
      * Called on each piece of ITeamData on the surviving team during a team merge. Implementers are responsible for
@@ -21,12 +21,12 @@ public interface ITeamData {
     default void mergeData(Team consumed, Team surviving, ITeamData oldTeamData) {}
 
     default void markDirty() {
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
     }
 
     /**
      * Called when a player moves from one team to another.
-     * 
+     *
      * @return The copied ITeamData or null if no data should be copied.
      */
     default @Nullable ITeamData copyData(Team oldTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
@@ -36,9 +36,9 @@ public interface ITeamData {
     ITeamData UNIMPLEMENTED = new ITeamData() {
 
         @Override
-        public void writeToNBT(NBTTagCompound NBT) {}
+        public void save(JsonObject obj) {}
 
         @Override
-        public void readFromNBT(NBTTagCompound NBT) {}
+        public void load(JsonObject obj) {}
     };
 }

@@ -248,7 +248,7 @@ public class TeamCommand {
 
         invitedTeam.addMember(player.getUniqueID());
         TeamManager.removeAllPendingInvites(player.getUniqueID());
-        TeamWorldSavedData.markForSaving();
+        TeamDataSaver.markForSaving();
 
         return success(
                 sender,
@@ -303,7 +303,7 @@ public class TeamCommand {
         if (team.getMembers().isEmpty()) {
             TeamManager.TEAMS.remove(team);
             TeamManager.TEAM_MAP.remove(team);
-            TeamWorldSavedData.markForSaving();
+            TeamDataSaver.markForSaving();
         }
 
         for (UUID memberUuid : team.getMembers()) {
