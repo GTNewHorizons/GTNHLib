@@ -5,10 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.falsepattern.deploader.DeploaderStub;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -24,6 +26,21 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.core", "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
+
+    static {
+        try {
+            var cleF = LaunchClassLoader.class.getDeclaredField("classLoaderExceptions");
+            cleF.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            var cle = (Set<String>) cleF.get(Launch.classLoader);
+            // for Brigadier
+            cle.remove("com.mojang.");
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        DeploaderStub.bootstrap(false);
+        DeploaderStub.runDepLoader();
+    }
 
     /// Lifted here so we can safely use it in Mixins. This class should be loaded by the time Mixins fire.
     public static final Logger MODEL_LOGGER = LogManager.getLogger("GTNHLib|Models");
