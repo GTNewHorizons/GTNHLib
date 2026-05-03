@@ -5,9 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -35,19 +33,11 @@ public class TeamDataSaver {
     public static TeamDataSaver INSTANCE;
 
     private File saveDir;
-    private boolean dirty = false;
 
     private TeamDataSaver(File saveDir) {
         this.saveDir = saveDir;
         saveDir.mkdir();
         loadFromFiles();
-    }
-
-    public static void markForSaving() {
-        if (INSTANCE != null) {
-            // if at the time of calling, the instance is null, then there is no need to mark it dirty anyway
-            INSTANCE.dirty = true;
-        }
     }
 
     @SubscribeEvent
@@ -62,9 +52,7 @@ public class TeamDataSaver {
     public static void onWorldUnload(WorldEvent.Unload event) {
         if (!event.world.isRemote && event.world.provider.dimensionId == 0) {
             if (INSTANCE != null) {
-                if (INSTANCE.dirty) {
-                    INSTANCE.saveToFiles();
-                }
+                INSTANCE.saveToFiles();
                 TeamManager.clear();
                 INSTANCE = null;
             }
@@ -74,8 +62,7 @@ public class TeamDataSaver {
     @SubscribeEvent
     public static void onWorldSave(WorldEvent.Save event) {
         if (!event.world.isRemote && event.world.provider.dimensionId == 0) {
-            if (INSTANCE != null && INSTANCE.dirty) {
-                INSTANCE.dirty = false;
+            if (INSTANCE != null) {
                 INSTANCE.saveToFiles();
             }
         }
@@ -154,29 +141,26 @@ public class TeamDataSaver {
             GTNHLib.error("Unable to save all teams, directory does not exist: " + saveDir);
             return;
         }
-        Set<String> allTeamFileSet = new HashSet<>();
-        File[] allTeamFiles = saveDir.listFiles((dir, name) -> name.endsWith(".json"));
-        if (allTeamFiles != null) {
-            for (File file : allTeamFiles) {
-                allTeamFileSet.add(file.getName());
-            }
-        }
 
         for (Team team : TeamManager.TEAMS) {
-            try {
-                String fileName = team.getTeamId().toString() + ".json";
-                File saveFile = new File(saveDir, fileName);
-                NBTTagCompound tag = writeToNBT(team);
-                String json = GSON.toJson(NBTJson.toJsonObject(tag));
-                Files.write(saveFile.toPath(), json.getBytes(StandardCharsets.UTF_8));
-                allTeamFileSet.remove(fileName);
-            } catch (Exception e) {
-                GTNHLib.LOG.error("Unable to save team {}", team.getTeamId(), e);
+            TeamSaveStatus status = team.getStatus();
+            if (status == TeamSaveStatus.CLEAN) continue;
+            String fileName = team.getTeamId().toString() + ".json";
+            if (status == TeamSaveStatus.DIRTY) {
+                try {
+                    File saveFile = new File(saveDir, fileName);
+                    NBTTagCompound tag = writeToNBT(team);
+                    String json = GSON.toJson(NBTJson.toJsonObject(tag));
+                    Files.write(saveFile.toPath(), json.getBytes(StandardCharsets.UTF_8));
+                    team.markClean();
+                } catch (Exception e) {
+                    GTNHLib.LOG.error("Unable to save team {} ({})", team.getTeamId(), team.getTeamName(), e);
+                }
             }
         }
 
-        // Remove old teams
-        for (String fileName : allTeamFileSet) {
+        for (UUID removedTeam : TeamManager.REMOVED_TEAMS) {
+            String fileName = removedTeam + ".json";
             File deleteFile = new File(saveDir, fileName);
             try {
                 Files.deleteIfExists(deleteFile.toPath());
@@ -184,6 +168,7 @@ public class TeamDataSaver {
                 GTNHLib.LOG.error("Unable to delete team {}", fileName, e);
             }
         }
+        TeamManager.REMOVED_TEAMS.clear();
     }
 
     private NBTTagCompound writeToNBT(Team team) {

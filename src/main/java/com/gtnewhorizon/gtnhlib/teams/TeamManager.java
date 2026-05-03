@@ -18,6 +18,8 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamCreateEvent;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamMergeEvent;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+
 public class TeamManager {
 
     protected static final List<Team> TEAMS = new ArrayList<>();
@@ -26,6 +28,8 @@ public class TeamManager {
     protected static final Map<UUID, Set<Team>> PENDING_INVITES = new HashMap<>();
     // keyed by target team, value is the set of source teams requesting to merge into it
     protected static final Map<Team, Set<Team>> PENDING_MERGE_REQUESTS = new HashMap<>();
+
+    protected static final Set<UUID> REMOVED_TEAMS = new ObjectOpenHashSet<>();
 
     public static boolean isTeamNameValid(String name) {
         if (name == null || name.isEmpty()) return false;
@@ -80,7 +84,7 @@ public class TeamManager {
         MinecraftForge.EVENT_BUS.post(new TeamCreateEvent(team, playerUuid));
         TEAMS.add(team);
         TEAM_MAP.put(team.getTeamId(), team);
-        TeamDataSaver.markForSaving();
+        team.markDirty();
         return team;
     }
 
@@ -107,7 +111,8 @@ public class TeamManager {
         TEAMS.remove(consumed);
         TEAM_MAP.remove(consumed.getTeamId());
         PENDING_MERGE_REQUESTS.remove(consumed);
-        TeamDataSaver.markForSaving();
+        surviving.markDirty();
+        consumed.markRemoved();
     }
 
     public static void copyTeamData(Team oldTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
@@ -193,6 +198,7 @@ public class TeamManager {
     public static void clear() {
         TEAMS.clear();
         TEAM_MAP.clear();
+        REMOVED_TEAMS.clear();
         PLAYER_TEAM_CACHE.clear();
         PENDING_INVITES.clear();
         PENDING_MERGE_REQUESTS.clear();

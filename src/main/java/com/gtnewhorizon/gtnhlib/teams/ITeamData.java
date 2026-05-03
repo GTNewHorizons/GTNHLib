@@ -20,10 +20,6 @@ public interface ITeamData {
      */
     default void mergeData(Team consumed, Team surviving, ITeamData oldTeamData) {}
 
-    default void markDirty() {
-        TeamDataSaver.markForSaving();
-    }
-
     /**
      * Called when a player moves from one team to another.
      *

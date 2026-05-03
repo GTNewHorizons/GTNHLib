@@ -256,7 +256,7 @@ public class TeamCommand {
         TeamManager.removeAllPendingInvites(playerId);
         TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, invitedTeam);
         TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitedTeam);
-        TeamDataSaver.markForSaving();
+        invitedTeam.markDirty();
 
         return success(
                 sender,
@@ -310,8 +310,8 @@ public class TeamCommand {
         team.removeMember(playerId);
         if (team.getMembers().isEmpty()) {
             TeamManager.TEAMS.remove(team);
-            TeamManager.TEAM_MAP.remove(team);
-            TeamDataSaver.markForSaving();
+            TeamManager.TEAM_MAP.remove(team.getTeamId());
+            team.markRemoved();
         }
 
         for (UUID memberUuid : team.getMembers()) {

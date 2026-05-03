@@ -25,6 +25,9 @@ public class Team {
     private final ObjectSet<UUID> members = new ObjectOpenHashSet<>();
     private final Map<String, ITeamData> teamData = new HashMap<>();
 
+    @Getter
+    private TeamSaveStatus status = TeamSaveStatus.CLEAN;
+
     Team(String teamName, UUID teamId) {
         this(teamName, teamId, false);
     }
@@ -98,9 +101,22 @@ public class Team {
         markDirty();
     }
 
-    private void markDirty() {
+    public void markDirty() {
+        if (!clientSide && status == TeamSaveStatus.CLEAN) {
+            status = TeamSaveStatus.DIRTY;
+        }
+    }
+
+    protected void markRemoved() {
         if (!clientSide) {
-            TeamDataSaver.markForSaving();
+            status = TeamSaveStatus.REMOVED;
+            TeamManager.REMOVED_TEAMS.add(this.getTeamId());
+        }
+    }
+
+    protected void markClean() {
+        if (!clientSide && status == TeamSaveStatus.DIRTY) {
+            status = TeamSaveStatus.CLEAN;
         }
     }
 
