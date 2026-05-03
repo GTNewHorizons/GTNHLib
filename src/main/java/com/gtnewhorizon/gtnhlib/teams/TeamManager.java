@@ -12,8 +12,11 @@ import java.util.function.Consumer;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamCreateEvent;
+import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamMergeEvent;
 
 public class TeamManager {
 
@@ -74,6 +77,7 @@ public class TeamManager {
         Team team = new Team(playerName + "'s Team", UUID.randomUUID());
         team.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
         team.addOwner(playerUuid);
+        MinecraftForge.EVENT_BUS.post(new TeamCreateEvent(team, playerUuid));
         TEAMS.add(team);
         TEAM_MAP.put(team.getTeamId(), team);
         TeamDataSaver.markForSaving();
@@ -99,6 +103,7 @@ public class TeamManager {
             }
         }
 
+        MinecraftForge.EVENT_BUS.post(new TeamMergeEvent(consumed, surviving));
         TEAMS.remove(consumed);
         TEAM_MAP.remove(consumed.getTeamId());
         PENDING_MERGE_REQUESTS.remove(consumed);
