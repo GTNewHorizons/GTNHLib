@@ -48,6 +48,7 @@ public class ConfigurationManager {
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
     private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
     private static final Map<Class<?>, ConfigNode> configNode = new HashMap<>();
+    private static final Map<Config, Map<String, Set<Runnable>>> reloadables = new HashMap<>();
 
     private final static Path configDir;
 
@@ -115,6 +116,22 @@ public class ConfigurationManager {
         }
 
         savedConfigs.forEach(Configuration::save);
+    }
+
+    public static void reloadConfig(Class<?> configClass, String id) {
+        Config config = getClassOrBaseAnnotation(configClass, Config.class);
+        if (config == null) {
+            throw new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!");
+        }
+        Map<String, Set<Runnable>> toReload = reloadables.get(config);
+        if (toReload == null) return;
+        Set<Runnable> reloadables = toReload.get(id);
+        Configuration rawConfig = configs.get(getConfigKey(config));
+        if (reloadables == null || rawConfig == null) return;
+        rawConfig.load();
+        for (Runnable runnable : reloadables) {
+            runnable.run();
+        }
     }
 
     private static void save(Class<?> configClass, Object instance, Configuration rawConfig, String category)
@@ -228,21 +245,26 @@ public class ConfigurationManager {
 
             Config.Sync fieldSync = field.getAnnotation(Config.Sync.class);
             if (fieldSync != null && fieldSync.value() || syncCategory && fieldSync == null) {
-                SyncedConfigElement element = new SyncedConfigElement(instance, field, () -> {
-                    try {
-                        ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
-                    } catch (ConfigException e) {
-                        LOGGER.error(
-                                "Failed to restore synced field {} in class {}",
-                                fieldName,
-                                field.getDeclaringClass(),
-                                e);
-                    }
-                });
+                SyncedConfigElement element = new SyncedConfigElement(
+                        instance,
+                        field,
+                        () -> ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey));
                 ConfigSyncHandler.syncedElements.put(field.toString(), element);
 
                 if (!requiresWorldRestart) {
                     cat.get(fieldName).setRequiresWorldRestart(true);
+                }
+            }
+
+            Config.Reloadable reloadable = field.getAnnotation(Config.Reloadable.class);
+            if (reloadable != null) {
+                // Uses the config annotation as key since there can be multiple reloadables
+                // with the same id in config class
+                Config configAnno = getClassOrBaseAnnotation(configClass, Config.class);
+                if (configAnno != null) {
+                    reloadables.computeIfAbsent(configAnno, (ignored) -> new HashMap<>())
+                            .computeIfAbsent(reloadable.value(), (ignored) -> new HashSet<>())
+                            .add(() -> ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey));
                 }
             }
 
