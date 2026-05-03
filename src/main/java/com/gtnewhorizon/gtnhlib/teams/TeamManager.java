@@ -124,7 +124,7 @@ public class TeamManager {
         }
     }
 
-    public static void ForEachOnlineTeamMember(Team team, Consumer<EntityPlayerMP> consumer) {
+    public static void forEachOnlineTeamMember(Team team, Consumer<EntityPlayerMP> consumer) {
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null) return;
         Set<UUID> members = team.getMembers();

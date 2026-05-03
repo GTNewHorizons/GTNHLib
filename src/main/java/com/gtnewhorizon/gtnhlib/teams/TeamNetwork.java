@@ -50,7 +50,7 @@ public class TeamNetwork {
             NBTTagCompound tag = new NBTTagCompound();
             networkTeamData.toPacketTag(tag, false);
             TeamDataSync packet = new TeamDataSync(key, tag);
-            TeamManager.ForEachOnlineTeamMember(team, player -> NetworkHandler.instance.sendTo(packet, player));
+            TeamManager.forEachOnlineTeamMember(team, player -> NetworkHandler.instance.sendTo(packet, player));
             networkTeamData.markSyncedToClient();
             return;
         }

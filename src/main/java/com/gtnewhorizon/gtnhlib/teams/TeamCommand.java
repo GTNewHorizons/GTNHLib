@@ -152,7 +152,7 @@ public class TeamCommand {
         }
 
         TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket(team);
-        TeamManager.ForEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
+        TeamManager.forEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
 
         for (UUID memberUuid : team.getMembers()) {
             EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID

@@ -23,7 +23,7 @@ public class TeamManagerClient {
         TEAM = null;
     }
 
-    public static void OnTeamInfoSyncPacket(TeamInfoSync packet) {
+    public static void onTeamInfoSyncPacket(TeamInfoSync packet) {
         if (TEAM != null && TEAM.getTeamId().equals(packet.uuid)) {
             TEAM.renameTeam(packet.name);
         } else {

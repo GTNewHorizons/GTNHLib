@@ -10,7 +10,7 @@ public class TeamInfoSyncHandler implements IMessageHandler<TeamInfoSync, IMessa
 
     @Override
     public IMessage onMessage(TeamInfoSync message, MessageContext ctx) {
-        TeamManagerClient.OnTeamInfoSyncPacket(message);
+        TeamManagerClient.onTeamInfoSyncPacket(message);
         return null;
     }
 
