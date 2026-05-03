@@ -90,7 +90,7 @@ public class TeamAdminCommand {
 
         if (!team.renameTeam(newName)) return error(sender, "gtnhlib.chat.teams.admin.error.name_in_use", newName);
 
-        TeamInfoSync packet = TeamNetwork.CreateTeamInfoSyncPacket(team);
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket(team);
         TeamManager.ForEachOnlineTeamMember(team, player -> NetworkHandler.instance.sendTo(packet, player));
 
         return success(

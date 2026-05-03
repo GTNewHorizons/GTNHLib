@@ -120,7 +120,12 @@ public class Team {
         for (String key : keys) {
             if (!teamData.containsKey(key)) {
                 ITeamData data = TeamDataRegistry.construct(key);
-                if (data != null) teamData.put(key, data);
+                if (data != null) {
+                    // Only add INetworkTeamData for the client-side team
+                    if (data instanceof INetworkTeamData || !clientSide) {
+                        teamData.put(key, data);
+                    }
+                }
             }
         }
     }

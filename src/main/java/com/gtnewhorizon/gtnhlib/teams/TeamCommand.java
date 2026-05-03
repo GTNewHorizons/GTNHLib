@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
@@ -150,7 +151,7 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.name_in_use");
         }
 
-        TeamInfoSync packet = TeamNetwork.CreateTeamInfoSyncPacket(team);
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket(team);
         TeamManager.ForEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
 
         for (UUID memberUuid : team.getMembers()) {
@@ -251,8 +252,10 @@ public class TeamCommand {
                     colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
         }
 
-        invitedTeam.addMember(player.getUniqueID());
-        TeamManager.removeAllPendingInvites(player.getUniqueID());
+        invitedTeam.addMember(playerId);
+        TeamManager.removeAllPendingInvites(playerId);
+        TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, invitedTeam);
+        TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitedTeam);
         TeamDataSaver.markForSaving();
 
         return success(

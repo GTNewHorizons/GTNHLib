@@ -2,9 +2,12 @@ package com.gtnewhorizon.gtnhlib.teams;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -19,7 +22,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
-import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.util.NBTJson;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -83,7 +85,7 @@ public class TeamDataSaver {
     public static void onPlayerLogin(PlayerLoggedInEvent event) {
         if (event.player instanceof EntityPlayerMP player) {
             Team team = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
-            NetworkHandler.instance.sendTo(TeamNetwork.CreateTeamInfoSyncPacket(team), player);
+            TeamNetwork.sendPlayerAllTeamData(player, team);
         }
     }
 
@@ -152,14 +154,34 @@ public class TeamDataSaver {
             GTNHLib.error("Unable to save all teams, directory does not exist: " + saveDir);
             return;
         }
+        Set<String> allTeamFileSet = new HashSet<>();
+        File[] allTeamFiles = saveDir.listFiles((dir, name) -> name.endsWith(".json"));
+        if (allTeamFiles != null) {
+            for (File file : allTeamFiles) {
+                allTeamFileSet.add(file.getName());
+            }
+        }
+
         for (Team team : TeamManager.TEAMS) {
             try {
-                File saveFile = new File(saveDir, team.getTeamId().toString() + ".json");
+                String fileName = team.getTeamId().toString() + ".json";
+                File saveFile = new File(saveDir, fileName);
                 NBTTagCompound tag = writeToNBT(team);
                 String json = GSON.toJson(NBTJson.toJsonObject(tag));
                 Files.write(saveFile.toPath(), json.getBytes(StandardCharsets.UTF_8));
+                allTeamFileSet.remove(fileName);
             } catch (Exception e) {
                 GTNHLib.LOG.error("Unable to save team {}", team.getTeamId(), e);
+            }
+        }
+
+        // Remove old teams
+        for (String fileName : allTeamFileSet) {
+            File deleteFile = new File(saveDir, fileName);
+            try {
+                Files.deleteIfExists(deleteFile.toPath());
+            } catch (IOException e) {
+                GTNHLib.LOG.error("Unable to delete team {}", fileName, e);
             }
         }
     }

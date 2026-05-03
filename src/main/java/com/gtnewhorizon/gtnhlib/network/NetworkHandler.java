@@ -3,6 +3,8 @@ package com.gtnewhorizon.gtnhlib.network;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.config.PacketSyncConfig;
 import com.gtnewhorizon.gtnhlib.keybind.PacketKeyDown;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSync;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSyncHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSyncHandler;
 
@@ -25,5 +27,6 @@ public class NetworkHandler {
         instance.registerMessage(PacketViewDistance.Handler.class, PacketViewDistance.class, 3, Side.CLIENT);
         instance.registerMessage(MessageTitleHandler.class, MessageTitle.class, 4, Side.CLIENT);
         instance.registerMessage(TeamInfoSyncHandler.class, TeamInfoSync.class, 5, Side.CLIENT);
+        instance.registerMessage(TeamDataSyncHandler.class, TeamDataSync.class, 6, Side.CLIENT);
     }
 }

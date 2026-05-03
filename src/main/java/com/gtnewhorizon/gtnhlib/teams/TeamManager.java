@@ -13,6 +13,8 @@ import java.util.function.Consumer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+
 public class TeamManager {
 
     protected static final List<Team> TEAMS = new ArrayList<>();
@@ -34,7 +36,7 @@ public class TeamManager {
 
     public static Team getTeamByPlayer(UUID playerUuid) {
         Team foundTeam = PLAYER_TEAM_CACHE.get(playerUuid);
-        if (foundTeam != null && foundTeam.isMember(playerUuid)) {
+        if (foundTeam != null && foundTeam.isMember(playerUuid) && TEAM_MAP.containsKey(foundTeam.getTeamId())) {
             return foundTeam;
         }
         // Cache miss
@@ -44,6 +46,8 @@ public class TeamManager {
                 return team;
             }
         }
+        PLAYER_TEAM_CACHE.remove(playerUuid);
+        GTNHLib.LOG.error("Unable to find team for player {}", playerUuid);
         return null;
     }
 
@@ -82,7 +86,10 @@ public class TeamManager {
      * disbanded afterward.
      */
     public static void mergeTeams(Team surviving, Team consumed) {
-        for (UUID uuid : consumed.getMembers()) surviving.addMember(uuid);
+        for (UUID uuid : consumed.getMembers()) {
+            PLAYER_TEAM_CACHE.put(uuid, surviving);
+            surviving.addMember(uuid);
+        }
 
         for (String dataKey : TeamDataRegistry.getRegisteredKeys()) {
             ITeamData survivingData = surviving.getData(dataKey);

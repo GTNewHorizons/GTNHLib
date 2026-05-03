@@ -8,9 +8,9 @@ import org.jetbrains.annotations.Nullable;
 
 public interface ITeamData {
 
-    void writeToNBT(NBTTagCompound NBT);
+    void writeToNBT(NBTTagCompound tag);
 
-    void readFromNBT(NBTTagCompound NBT);
+    void readFromNBT(NBTTagCompound tag);
 
     /**
      * Called on each piece of ITeamData on the surviving team during a team merge. Implementers are responsible for
