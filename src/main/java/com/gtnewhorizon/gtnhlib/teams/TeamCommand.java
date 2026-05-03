@@ -6,7 +6,6 @@ import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.argument;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.colorChatComponent;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.error;
-import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.formatUuidList;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.literal;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.resolveTeamMemberUuid;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.success;
@@ -409,25 +408,7 @@ public class TeamCommand {
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
 
-        sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + "=== " + team.getTeamName() + " ==="));
-
-        ChatComponentTranslation ownersTrans = new ChatComponentTranslation(
-                "gtnhlib.chat.teams.info.owners",
-                colorChatComponent(EnumChatFormatting.WHITE, formatUuidList(team.getOwners(), player.worldObj)));
-        ownersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
-        sender.addChatMessage(ownersTrans);
-
-        ChatComponentTranslation officersTrans = new ChatComponentTranslation(
-                "gtnhlib.chat.teams.info.officers",
-                colorChatComponent(EnumChatFormatting.WHITE, formatUuidList(team.getOfficers(), player.worldObj)));
-        officersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
-        sender.addChatMessage(officersTrans);
-
-        ChatComponentTranslation membersTrans = new ChatComponentTranslation(
-                "gtnhlib.chat.teams.info.members",
-                colorChatComponent(EnumChatFormatting.WHITE, formatUuidList(team.getMembers(), player.worldObj)));
-        membersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
-        sender.addChatMessage(membersTrans);
+        TeamCommandsUtils.printTeamInfo(sender, team);
 
         return Command.SINGLE_SUCCESS;
     }
