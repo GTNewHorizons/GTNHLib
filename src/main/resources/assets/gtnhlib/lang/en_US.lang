@@ -93,6 +93,10 @@ description.villager.profession.rftools.rftoolsvillager=RFTools Engineer
 description.villager.profession.forbidden.heretic=Heretic
 description.villager.profession.agricraft.villager=Agricraft Farmer
 
+# Number Formatting Config
+gtnhlib.config.number_formatting.numberFormatLocale=Number Format Locale
+gtnhlib.config.number_formatting.numberFormatLocale.tooltip=Select the locale used for number formatting. System Default uses the system language format.
+# Resource Pack Updater
 # Resource Pack Update Notifier
 gtnhlib.chat.rpupdater.update_available=§3New update available for §f%s: v%s §7(you have v%s)§3.
 gtnhlib.chat.rpupdater.click_here=§6Click here
@@ -122,3 +126,8 @@ gtnhlib.chat.rpupdater.info.no_updater=No updater metadata found for this pack.
 gtnhlib.chat.rpupdater.info.updater_name=Updater name: §7%s
 gtnhlib.chat.rpupdater.info.version=Version: §7%s (GTNH %s)
 gtnhlib.chat.rpupdater.info.source=Source: §7%s/%s
+commands.title.cleared.single=Cleared title for %s
+commands.title.reset.single=Reset title options for %s
+commands.title.show.title.single=Showed title to %s
+commands.title.show.subtitle.single=Showed subtitle to %s
+commands.title.times.single=Changed title display times for %s
