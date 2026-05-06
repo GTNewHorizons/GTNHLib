@@ -3,12 +3,12 @@ package com.gtnewhorizon.gtnhlib.teams;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_NEW_NAME;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_PLAYER;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
-import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.argument;
-import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.colorChatComponent;
-import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.error;
-import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.literal;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.resolveTeamMemberUuid;
-import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.success;
+import static com.gtnewhorizon.gtnhlib.util.CommandUtils.argument;
+import static com.gtnewhorizon.gtnhlib.util.CommandUtils.colorChatComponent;
+import static com.gtnewhorizon.gtnhlib.util.CommandUtils.error;
+import static com.gtnewhorizon.gtnhlib.util.CommandUtils.literal;
+import static com.gtnewhorizon.gtnhlib.util.CommandUtils.success;
 
 import java.util.ArrayList;
 import java.util.List;

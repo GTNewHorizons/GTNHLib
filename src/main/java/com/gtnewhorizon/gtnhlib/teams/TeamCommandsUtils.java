@@ -15,30 +15,13 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.UsernameCache;
 
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.gtnewhorizon.gtnhlib.util.CommandUtils;
 
 public abstract class TeamCommandsUtils {
 
     static final String ARG_TEAM_NAME = "teamName";
     static final String ARG_NEW_NAME = "newName";
     static final String ARG_PLAYER = "player";
-
-    static int success(ICommandSender sender, String transKey, Object... args) {
-        ChatComponentTranslation msg = new ChatComponentTranslation(transKey, args);
-        msg.getChatStyle().setColor(EnumChatFormatting.GREEN);
-        sender.addChatMessage(msg);
-        return Command.SINGLE_SUCCESS;
-    }
-
-    static int error(ICommandSender sender, String transKey, Object... args) {
-        ChatComponentTranslation msg = new ChatComponentTranslation(transKey, args);
-        msg.getChatStyle().setColor(EnumChatFormatting.RED);
-        sender.addChatMessage(msg);
-        return 0;
-    }
 
     static UUID resolveTeamMemberUuid(Team team, String name) {
         EntityPlayer online = MinecraftServer.getServer().getConfigurationManager().func_152612_a(name);
@@ -73,7 +56,7 @@ public abstract class TeamCommandsUtils {
         Set<UUID> seen = new HashSet<>();
         ChatComponentTranslation ownersTrans = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.info.owners",
-                colorChatComponent(
+                CommandUtils.colorChatComponent(
                         EnumChatFormatting.WHITE,
                         formatUuidList(team.getOwners(), sender.getEntityWorld(), seen)));
         ownersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
@@ -81,7 +64,7 @@ public abstract class TeamCommandsUtils {
 
         ChatComponentTranslation officersTrans = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.info.officers",
-                colorChatComponent(
+                CommandUtils.colorChatComponent(
                         EnumChatFormatting.WHITE,
                         formatUuidList(team.getOfficers(), sender.getEntityWorld(), seen)));
         officersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
@@ -89,24 +72,11 @@ public abstract class TeamCommandsUtils {
 
         ChatComponentTranslation membersTrans = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.info.members",
-                colorChatComponent(
+                CommandUtils.colorChatComponent(
                         EnumChatFormatting.WHITE,
                         formatUuidList(team.getMembers(), sender.getEntityWorld(), seen)));
         membersTrans.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(membersTrans);
     }
 
-    static LiteralArgumentBuilder<ICommandSender> literal(String name) {
-        return LiteralArgumentBuilder.literal(name);
-    }
-
-    static <T> RequiredArgumentBuilder<ICommandSender, T> argument(String name, ArgumentType<T> type) {
-        return RequiredArgumentBuilder.argument(name, type);
-    }
-
-    static ChatComponentText colorChatComponent(EnumChatFormatting format, String string) {
-        ChatComponentText newComponent = new ChatComponentText(string);
-        newComponent.getChatStyle().setColor(format);
-        return newComponent;
-    }
 }
