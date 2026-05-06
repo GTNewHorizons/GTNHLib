@@ -14,6 +14,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
@@ -126,15 +127,75 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
-        // TODO: Respect overrideIcon
+        final var overrideTex = overrideIcon != null;
+        float u, v;
         for (int i = 0; i < 4; ++i) {
-            tessellator.addVertexWithUV(
-                    quad.getX(i) + x,
-                    quad.getY(i) + y,
-                    quad.getZ(i) + z,
-                    quad.getTexU(i),
-                    quad.getTexV(i));
+            if (overrideTex) {
+                final long pUV = getOverrideUV(quad, i, overrideIcon);
+                u = Float.intBitsToFloat((int) (pUV >> 32));
+                v = Float.intBitsToFloat((int) pUV);
+            } else {
+                u = quad.getTexU(i);
+                v = quad.getTexV(i);
+            }
+
+            tessellator.addVertexWithUV(quad.getX(i) + x, quad.getY(i) + y, quad.getZ(i) + z, u, v);
         }
+    }
+
+    /// This returns u,v packed in a long bitwise, because Java doesn't have tuple returns. This isn't for performance,
+    /// just clarity so I can set u and v in the same function.
+    private long getOverrideUV(ModelQuadView quad, int idx, IIcon overrideIcon) {
+        float u01, v01;
+        final var side = quad.getNormalFace();
+
+        switch (side) {
+            case UNASSIGNED -> {
+                float originalU = quad.getTexU(idx);
+                float originalV = quad.getTexV(idx);
+
+                final var sprite = (TextureAtlasSprite) quad.celeritas$getSprite();
+                u01 = mapTo01(sprite.getMinU(), sprite.getMaxU(), originalU);
+                v01 = mapTo01(sprite.getMinV(), sprite.getMaxV(), originalV);
+            }
+            case POS_X -> {
+                v01 = quad.getY(idx);
+                u01 = 1 - quad.getZ(idx);
+            }
+            case POS_Y -> {
+                v01 = quad.getZ(idx);
+                u01 = quad.getX(idx);
+            }
+            case POS_Z -> {
+                v01 = quad.getY(idx);
+                u01 = quad.getX(idx);
+            }
+            case NEG_X -> {
+                v01 = quad.getY(idx);
+                u01 = quad.getZ(idx);
+            }
+            case NEG_Y -> {
+                v01 = 1 - quad.getZ(idx);
+                u01 = quad.getX(idx);
+            }
+            case NEG_Z -> {
+                v01 = quad.getY(idx);
+                u01 = 1 - quad.getX(idx);
+            }
+            default -> {
+                u01 = 0;
+                v01 = 0;
+            }
+        }
+
+        float finalU = overrideIcon.getInterpolatedU(u01 * 16.0f);
+        float finalV = overrideIcon.getInterpolatedV(v01 * 16.0f);
+
+        return ((long) Float.floatToIntBits(finalU) << 32) | Float.floatToIntBits(finalV);
+    }
+
+    private float mapTo01(float oldMin, float oldMax, float val) {
+        return (val - oldMin) / (oldMax - oldMin);
     }
 
     public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
