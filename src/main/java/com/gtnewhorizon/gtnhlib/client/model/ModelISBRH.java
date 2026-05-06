@@ -146,46 +146,18 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// This returns u,v packed in a long bitwise, because Java doesn't have tuple returns. This isn't for performance,
     /// just clarity so I can set u and v in the same function.
     private long getOverrideUV(ModelQuadView quad, int idx, IIcon overrideIcon) {
+        float originalU = quad.getTexU(idx);
+        float originalV = quad.getTexV(idx);
+
+        final TextureAtlasSprite sprite = (TextureAtlasSprite) quad.celeritas$getSprite();
+
         float u01, v01;
-        final var side = quad.getNormalFace();
-
-        switch (side) {
-            case UNASSIGNED -> {
-                float originalU = quad.getTexU(idx);
-                float originalV = quad.getTexV(idx);
-
-                final var sprite = (TextureAtlasSprite) quad.celeritas$getSprite();
-                u01 = mapTo01(sprite.getMinU(), sprite.getMaxU(), originalU);
-                v01 = mapTo01(sprite.getMinV(), sprite.getMaxV(), originalV);
-            }
-            case POS_X -> {
-                v01 = quad.getY(idx);
-                u01 = 1 - quad.getZ(idx);
-            }
-            case POS_Y -> {
-                v01 = quad.getZ(idx);
-                u01 = quad.getX(idx);
-            }
-            case POS_Z -> {
-                v01 = quad.getY(idx);
-                u01 = quad.getX(idx);
-            }
-            case NEG_X -> {
-                v01 = quad.getY(idx);
-                u01 = quad.getZ(idx);
-            }
-            case NEG_Y -> {
-                v01 = 1 - quad.getZ(idx);
-                u01 = quad.getX(idx);
-            }
-            case NEG_Z -> {
-                v01 = quad.getY(idx);
-                u01 = 1 - quad.getX(idx);
-            }
-            default -> {
-                u01 = 0;
-                v01 = 0;
-            }
+        if (sprite != null) {
+            u01 = mapTo01(sprite.getMinU(), sprite.getMaxU(), originalU);
+            v01 = mapTo01(sprite.getMinV(), sprite.getMaxV(), originalV);
+        } else {
+            u01 = 0;
+            v01 = 0;
         }
 
         float finalU = overrideIcon.getInterpolatedU(u01 * 16.0f);
@@ -195,7 +167,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     }
 
     private float mapTo01(float oldMin, float oldMax, float val) {
-        return (val - oldMin) / (oldMax - oldMin);
+        float range = oldMax - oldMin;
+        return Math.abs(range) < 1.0E-7F ? 0.0F : (val - oldMin) / range;
     }
 
     public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
