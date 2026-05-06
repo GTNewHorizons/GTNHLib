@@ -137,8 +137,8 @@ public class TeamDataSaver {
     }
 
     private void saveToFiles() {
-        if (!saveDir.exists()) {
-            GTNHLib.error("Unable to save all teams, directory does not exist: " + saveDir);
+        if (!saveDir.exists() && !saveDir.mkdir()) {
+            GTNHLib.error("Unable to save all teams, unable to create directory: " + saveDir);
             return;
         }
 
