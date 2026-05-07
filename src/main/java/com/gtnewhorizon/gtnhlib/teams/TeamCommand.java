@@ -39,7 +39,7 @@ public class TeamCommand {
             return Command.SINGLE_SUCCESS;
         }).then(
                 literal("rename").then(
-                        argument(ARG_NEW_NAME, StringArgumentType.greedyString()).executes(
+                        argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
                                 ctx -> executeRename(
                                         ctx.getSource(),
                                         StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
@@ -58,7 +58,7 @@ public class TeamCommand {
 
                 .then(
                         literal("accept").executes(ctx -> executeAccept(ctx.getSource(), "")).then(
-                                argument(ARG_TEAM_NAME, StringArgumentType.greedyString())
+                                argument(ARG_TEAM_NAME, StringArgumentType.string())
                                         .suggests((ctx, builder) -> suggestPendingInvites(ctx.getSource(), builder))
                                         .executes(
                                                 ctx -> executeAccept(
@@ -67,7 +67,7 @@ public class TeamCommand {
 
                 .then(
                         literal("deny").executes(ctx -> executeDeny(ctx.getSource(), "")).then(
-                                argument(ARG_TEAM_NAME, StringArgumentType.greedyString())
+                                argument(ARG_TEAM_NAME, StringArgumentType.string())
                                         .suggests((ctx, builder) -> suggestPendingInvites(ctx.getSource(), builder))
                                         .executes(
                                                 ctx -> executeDeny(
@@ -100,7 +100,7 @@ public class TeamCommand {
                         literal("merge")
                                 .then(
                                         literal("request").then(
-                                                argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).suggests(
+                                                argument(ARG_TEAM_NAME, StringArgumentType.string()).suggests(
                                                         (ctx, builder) -> suggestOtherTeams(ctx.getSource(), builder))
                                                         .executes(
                                                                 ctx -> executeMergeRequest(
@@ -110,7 +110,7 @@ public class TeamCommand {
                                 .then(
                                         literal("accept").executes(ctx -> executeMergeAccept(ctx.getSource(), ""))
                                                 .then(
-                                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString())
+                                                        argument(ARG_TEAM_NAME, StringArgumentType.string())
                                                                 .suggests(
                                                                         (ctx, builder) -> suggestPendingMerges(
                                                                                 ctx.getSource(),
@@ -124,7 +124,7 @@ public class TeamCommand {
                                 .then(
                                         literal("deny").executes(ctx -> executeMergeDeny(ctx.getSource(), ""))
                                                 .then(
-                                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString())
+                                                        argument(ARG_TEAM_NAME, StringArgumentType.string())
                                                                 .suggests(
                                                                         (ctx, builder) -> suggestPendingMerges(
                                                                                 ctx.getSource(),
