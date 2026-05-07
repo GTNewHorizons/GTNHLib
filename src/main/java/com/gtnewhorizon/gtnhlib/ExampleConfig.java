@@ -31,6 +31,10 @@ public class ExampleConfig {
     @Config.Entry(ModIDEntry.class)
     public static String selectionList = "Mod ID";
 
+    @Config.Comment("A config option that can be reloaded to read changes made in config file")
+    @Config.Reloadable("reload")
+    public static String reloadableField = "I should be Reloadable";
+
     @Config.Comment("This category button should have RED text.")
     @Config.Entry(RedCategory.class)
     @Config.Order(0)
