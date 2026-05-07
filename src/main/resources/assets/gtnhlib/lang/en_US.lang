@@ -155,7 +155,8 @@ gtnhlib.chat.teams.error.last_owner_leave=You cannot leave a team as the last ow
 gtnhlib.chat.teams.error.last_owner_demote=You cannot demote yourself as the last owner of your team.
 gtnhlib.chat.teams.error.demote_member=%s is already the lowest rank (member).
 gtnhlib.chat.teams.error.promote_owner=%s is already an owner.
-gtnhlib.chat.teams.message.usage=GTNHTeams commands: help, info, rename, invite, accept, deny, leave, promote, demote, merge <request|accept|deny>
+gtnhlib.chat.teams.error.not_player=This command can only be used by a player.
+gtnhlib.chat.teams.message.usage=GTNHTeams commands: gui, help, info, rename, invite, accept, deny, leave, promote, demote, merge <request|accept|deny>
 gtnhlib.chat.teams.message.renamed_team=Your team was renamed to %s.
 gtnhlib.chat.teams.message.joined_team=You joined %s.
 gtnhlib.chat.teams.message.other_joined_team=%s has joined your team.
@@ -194,7 +195,7 @@ gtnhlib.chat.teams.admin.error.team_not_found=No team named %s could be found.
 gtnhlib.chat.teams.admin.error.name_in_use=The name %s is already in use.
 gtnhlib.chat.teams.admin.error.player_not_in_team=%s is not in team %s.
 gtnhlib.chat.teams.admin.error.demote_last_owner=%s cannot be force-demoted as long as they are the last owner of team %s.
-gtnhlib.chat.teams.admin.message.usage=GTNHTeams Admin commands: help, info, rename, promote, demote, merge, disband
+gtnhlib.chat.teams.admin.message.usage=GTNHTeams Admin commands: gui, help, info, rename, promote, demote, merge, disband
 gtnhlib.chat.teams.admin.message.renamed=Team %s was force-renamed to %s.
 gtnhlib.chat.teams.admin.message.merged=Team %s was force-merged into %s.
 gtnhlib.chat.teams.admin.message.merge_teams_same=Can't merge a team into itself!
@@ -211,6 +212,11 @@ gtnhlib.chat.teams.admin.help.4=/gtnhteam_admin promote <team> <player> - Forcib
 gtnhlib.chat.teams.admin.help.5=/gtnhteam_admin demote <team> <player> - Forcibly demote targeted player in team.
 gtnhlib.chat.teams.admin.help.6=/gtnhteam_admin merge <source team> <target team> - Forcibly merge source team into target team, transferring their members and merging data.
 gtnhlib.chat.teams.admin.help.7=/gtnhteam_admin disband <team> - Forcibly disband team. Players will be immediately placed into solo teams and the team's data will be permanently lost.
+
+# GTNHTeams MUI2 Integration Commands
+gtnhlib.chat.teams.help.gui=/gtnhteam gui - Show Teams GUI.
+gtnhlib.chat.teams.admin.help.gui=/gtnhteam_admin gui - Show Teams Admin GUI.
+gtnhlib.chat.teams.error.mui2_not_loaded=MUI2 is required for Teams GUI.
 
 commands.title.cleared.single=Cleared title for %s
 commands.title.reset.single=Reset title options for %s

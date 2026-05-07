@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
@@ -80,4 +81,24 @@ public abstract class TeamCommandsUtils {
         sender.addChatMessage(membersTrans);
     }
 
+    static EntityPlayer asPlayer(ICommandSender sender) {
+        if (!(sender instanceof EntityPlayer player)) {
+            ChatComponentTranslation msg = new ChatComponentTranslation("gtnhlib.chat.teams.error.not_player");
+            msg.getChatStyle().setColor(EnumChatFormatting.RED);
+            sender.addChatMessage(msg);
+            return null;
+        }
+        return player;
+    }
+
+    static EntityPlayerMP asPlayerMP(ICommandSender sender) {
+        // MUI2 specifically wants the EntityPlayerMP object, so here we are lol
+        if (!(sender instanceof EntityPlayerMP player)) {
+            ChatComponentTranslation msg = new ChatComponentTranslation("gtnhlib.chat.teams.error.not_player");
+            msg.getChatStyle().setColor(EnumChatFormatting.RED);
+            sender.addChatMessage(msg);
+            return null;
+        }
+        return player;
+    }
 }

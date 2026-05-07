@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import static com.gtnewhorizon.gtnhlib.integration.mui2.TeamGui.teamGui;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_NEW_NAME;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_PLAYER;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
@@ -23,6 +24,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
@@ -37,13 +39,15 @@ public class TeamCommand {
         BrigadierApi.getCommandDispatcher().register(literal("gtnhteam").executes(ctx -> {
             sendUsage(ctx.getSource());
             return Command.SINGLE_SUCCESS;
-        }).then(
-                literal("rename").then(
-                        argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
-                                ctx -> executeRename(
-                                        ctx.getSource(),
-                                        StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
+        }).then(literal("gui").executes(ctx -> executeGui(ctx.getSource())))
 
+                .then(
+                        literal("rename").then(
+                                argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
+                                        ctx -> executeRename(
+                                                ctx.getSource(),
+                                                StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
+1
                 .then(
                         literal("invite")
                                 .then(argument(ARG_PLAYER, StringArgumentType.word()).suggests((ctx, builder) -> {
@@ -138,8 +142,20 @@ public class TeamCommand {
                 .then(literal("help").executes(ctx -> executeHelp(ctx.getSource()))));
     }
 
+    private static int executeGui(ICommandSender sender) {
+        if (!GTNHLib.isMui2Loaded) {
+            return error(sender, "gtnhlib.chat.teams.error.mui2_not_loaded");
+        }
+
+        EntityPlayerMP player = TeamCommandsUtils.asPlayerMP(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+
+        teamGui.open(player);
+        return Command.SINGLE_SUCCESS;
+    }
+
     private static int executeRename(ICommandSender sender, String newName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -165,7 +181,7 @@ public class TeamCommand {
     }
 
     private static int executeInvite(ICommandSender sender, String targetName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -199,7 +215,7 @@ public class TeamCommand {
     }
 
     private static int executeAccept(ICommandSender sender, String teamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
         UUID playerId = player.getUniqueID();
 
@@ -264,7 +280,7 @@ public class TeamCommand {
     }
 
     private static int executeDeny(ICommandSender sender, String teamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Set<Team> invites = TeamManager.getPendingInvites(player.getUniqueID());
@@ -290,7 +306,7 @@ public class TeamCommand {
     }
 
     private static int executeLeave(ICommandSender sender) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
         UUID playerId = player.getUniqueID();
 
@@ -332,7 +348,7 @@ public class TeamCommand {
     }
 
     private static int executePromote(ICommandSender sender, String targetName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -366,7 +382,7 @@ public class TeamCommand {
     }
 
     private static int executeDemote(ICommandSender sender, String targetName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -402,7 +418,7 @@ public class TeamCommand {
     }
 
     private static int executeInfo(ICommandSender sender) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -414,7 +430,7 @@ public class TeamCommand {
     }
 
     private static int executeMergeRequest(ICommandSender sender, String targetTeamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team source = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -455,7 +471,7 @@ public class TeamCommand {
     }
 
     private static int executeMergeAccept(ICommandSender sender, String sourceTeamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -503,7 +519,7 @@ public class TeamCommand {
     }
 
     private static int executeMergeDeny(ICommandSender sender, String sourceTeamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -534,6 +550,10 @@ public class TeamCommand {
     }
 
     private static int executeHelp(ICommandSender sender) {
+        if (GTNHLib.isMui2Loaded) {
+            sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.gui"));
+        }
+
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1"));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2"));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.3"));
@@ -601,11 +621,4 @@ public class TeamCommand {
         sender.addChatMessage(msg);
     }
 
-    private static EntityPlayer asPlayer(ICommandSender sender) {
-        if (!(sender instanceof EntityPlayer player)) {
-            sender.addChatMessage(new ChatComponentText("This command can only be used by a player."));
-            return null;
-        }
-        return player;
-    }
 }

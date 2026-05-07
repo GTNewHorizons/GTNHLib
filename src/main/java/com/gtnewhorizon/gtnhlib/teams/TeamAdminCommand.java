@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import static com.gtnewhorizon.gtnhlib.integration.mui2.TeamAdminGui.teamAdminGui;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_NEW_NAME;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_PLAYER;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
@@ -18,10 +19,12 @@ import java.util.UUID;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
@@ -36,7 +39,7 @@ public class TeamAdminCommand {
                         .executes(ctx -> {
                             sendUsage(ctx.getSource());
                             return Command.SINGLE_SUCCESS;
-                        })
+                        }).then(literal("gui").executes(ctx -> executeAdminGui(ctx.getSource())))
                         .then(
                                 literal("rename").then(
                                         argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
@@ -83,6 +86,19 @@ public class TeamAdminCommand {
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
                         .then(literal("help").executes(ctx -> executeAdminHelp(ctx.getSource()))));
+    }
+
+    private static int executeAdminGui(ICommandSender sender) {
+        if (!GTNHLib.isMui2Loaded) {
+            return error(sender, "gtnhlib.chat.teams.error.mui2_not_loaded");
+        }
+
+        EntityPlayerMP player = TeamCommandsUtils.asPlayerMP(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+
+        teamAdminGui.open(player);
+        return Command.SINGLE_SUCCESS;
+
     }
 
     private static int executeAdminRename(ICommandSender sender, String oldName, String newName) {
@@ -219,6 +235,9 @@ public class TeamAdminCommand {
     }
 
     private static int executeAdminHelp(ICommandSender sender) {
+        if (GTNHLib.isMui2Loaded) {
+            sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.gui"));
+        }
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.1"));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.2"));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.3"));
