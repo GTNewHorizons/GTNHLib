@@ -115,12 +115,9 @@ public class TeamManager {
         consumed.markRemoved();
     }
 
-    public static void copyTeamData(Team oldTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
-        for (Entry<String, ITeamData> entry : oldTeam.getAllDataEntries()) {
-            ITeamData copied = entry.getValue().copyData(oldTeam, newTeam, playerId, reason);
-            if (copied != null) {
-                newTeam.putData(entry.getKey(), copied);
-            }
+    public static void copyTeamData(Team prevTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
+        for (Entry<String, ITeamData> entry : newTeam.getAllDataEntries()) {
+            entry.getValue().copyData(prevTeam, newTeam, playerId, prevTeam.getData(entry.getKey()), reason);
         }
     }
 

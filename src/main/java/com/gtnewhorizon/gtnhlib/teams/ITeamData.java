@@ -4,8 +4,6 @@ import java.util.UUID;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-import org.jetbrains.annotations.Nullable;
-
 public interface ITeamData {
 
     void writeToNBT(NBTTagCompound tag);
@@ -23,11 +21,11 @@ public interface ITeamData {
     /**
      * Called when a player moves from one team to another.
      *
-     * @return The copied ITeamData or null if no data should be copied.
+     * @param playerId     UUID of the player who is moving teams
+     * @param prevTeamData ITeamData of the previous team
      */
-    default @Nullable ITeamData copyData(Team oldTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
-        return null;
-    }
+    default void copyData(Team prevTeam, Team newTeam, UUID playerId, ITeamData prevTeamData,
+            TeamDataCopyReason reason) {}
 
     ITeamData UNIMPLEMENTED = new ITeamData() {
 
