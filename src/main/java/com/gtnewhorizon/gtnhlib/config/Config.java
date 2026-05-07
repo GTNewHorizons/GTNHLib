@@ -301,4 +301,31 @@ public @interface Config {
         }
     }
 
+    /**
+     * spotless:off
+     * Marks a config field as reloadable from the backing config file.
+     * Reloadable fields are not automatically refreshed when the file changes. Instead, they are re-read when
+     * {@link ConfigurationManager#reloadConfig(Class, String)} is called with the owning config class and a matching
+     * reload id.
+     * Multiple fields may share the same reload id. Calling reload with that id reloads all matching fields in the
+     * config class.
+     * Example:
+     * <pre>{@code
+     * @Config.Reloadable("runtime")
+     * public static String runtimeValue = "default";
+     *
+     * ConfigurationManager.reloadConfig(MyConfig.class, "runtime");
+     * }</pre>
+     * spotless:on
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Reloadable {
+
+        /**
+         * @return the id of the config option to reload
+         */
+        String value();
+    }
+
 }
