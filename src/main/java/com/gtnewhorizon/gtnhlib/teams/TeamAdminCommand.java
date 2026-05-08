@@ -38,8 +38,8 @@ public class TeamAdminCommand {
                         })
                         .then(
                                 literal("rename").then(
-                                        argument(ARG_TEAM_NAME, StringArgumentType.word()).then(
-                                                argument(ARG_NEW_NAME, StringArgumentType.greedyString()).executes(
+                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
+                                                argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
                                                         ctx -> executeAdminRename(
                                                                 ctx.getSource(),
                                                                 StringArgumentType.getString(ctx, ARG_TEAM_NAME),
@@ -70,13 +70,13 @@ public class TeamAdminCommand {
                                                                 StringArgumentType.getString(ctx, ARG_TEAM_NAME))))))
                         .then(
                                 literal("disband").then(
-                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).executes(
+                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).executes(
                                                 ctx -> executeAdminDisband(
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
                         .then(
                                 literal("info").then(
-                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).executes(
+                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).executes(
                                                 ctx -> executeAdminInfo(
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
