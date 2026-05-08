@@ -190,8 +190,8 @@ public class TeamCommand {
                 "gtnhlib.chat.teams.message.received_invite",
                 colorChatComponent(EnumChatFormatting.GOLD, player.getCommandSenderName()),
                 colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam accept " + team.getTeamName()),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam deny " + team.getTeamName()));
+                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam accept \"" + team.getTeamName() + "\""),
+                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam deny \"" + team.getTeamName() + "\""));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
         target.addChatMessage(notification);
 
@@ -440,8 +440,10 @@ public class TeamCommand {
         ChatComponentTranslation notification = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.message.merge_request_received",
                 sourceComponent,
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam merge accept " + source.getTeamName()),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam merge deny " + source.getTeamName()));
+                colorChatComponent(
+                        EnumChatFormatting.YELLOW,
+                        "/gtnhteam merge accept \"" + source.getTeamName() + "\""),
+                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam merge deny \"" + source.getTeamName() + "\""));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID ownerUuid : target.getOwners()) {
