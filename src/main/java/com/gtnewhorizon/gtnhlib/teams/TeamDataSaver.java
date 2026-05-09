@@ -127,8 +127,8 @@ public class TeamDataSaver {
                 ITeamData data = TeamDataRegistry.construct(key);
                 if (data != null && teamData.hasKey(key)) {
                     data.readFromNBT(teamData.getCompoundTag(key));
-                    team.putData(key, data);
                 }
+                team.putData(key, data);
             } catch (Exception ex) {
                 GTNHLib.LOG.error("Error while loading TeamData {} for team {}", key, uuid, ex);
             }
