@@ -93,6 +93,10 @@ description.villager.profession.rftools.rftoolsvillager=RFTools Engineer
 description.villager.profession.forbidden.heretic=Heretic
 description.villager.profession.agricraft.villager=Agricraft Farmer
 
+# Number Formatting Config
+gtnhlib.config.number_formatting.numberFormatLocale=Number Format Locale
+gtnhlib.config.number_formatting.numberFormatLocale.tooltip=Select the locale used for number formatting. System Default uses the system language format.
+# Resource Pack Updater
 # Resource Pack Update Notifier
 gtnhlib.chat.rpupdater.update_available=§3New update available for §f%s: v%s §7(you have v%s)§3.
 gtnhlib.chat.rpupdater.click_here=§6Click here
@@ -122,3 +126,92 @@ gtnhlib.chat.rpupdater.info.no_updater=No updater metadata found for this pack.
 gtnhlib.chat.rpupdater.info.updater_name=Updater name: §7%s
 gtnhlib.chat.rpupdater.info.version=Version: §7%s (GTNH %s)
 gtnhlib.chat.rpupdater.info.source=Source: §7%s/%s
+
+# GTNHTeams Commands
+gtnhlib.chat.teams.error.name_in_use=That team name is already taken or invalid.
+gtnhlib.chat.teams.error.not_in_team=You are not in a team.
+gtnhlib.chat.teams.error.not_online=Player "%s" is not online.
+gtnhlib.chat.teams.error.no_invite=You have no pending team invites.
+gtnhlib.chat.teams.error.team_not_found=Team "%s" does not exist.
+gtnhlib.chat.teams.error.no_invite_specific=You were not invited to "%s".
+gtnhlib.chat.teams.error.disambiguate_invite=You have been invited to multiple teams. Use /gtnhteam accept <Team Name> or /gtnhteam deny <Team Name>.
+gtnhlib.chat.teams.error.other_not_in_team=%s is not in your team.
+gtnhlib.chat.teams.error.invite_teammate=%s is already in your team.
+gtnhlib.chat.teams.error.invite_self=You cannot invite yourself.
+gtnhlib.chat.teams.error.not_owner_rename=Only team owners can rename the team.
+gtnhlib.chat.teams.error.not_owner_promote=Only team owners can promote members.
+gtnhlib.chat.teams.error.not_owner_demote=Only team owners can demote members.
+gtnhlib.chat.teams.error.not_owner_merge_request=Only team owners can send merge requests.
+gtnhlib.chat.teams.error.not_owner_merge_response=Only team owners can accept or deny merge requests.
+gtnhlib.chat.teams.error.not_officer_invite=Only team owners or officers can invite players.
+gtnhlib.chat.teams.error.merge_self=Your team cannot be merged with itself.
+gtnhlib.chat.teams.error.merge_already_requested=Your team already has a pending merge request with %s.
+gtnhlib.chat.teams.error.no_merge_request=Your team has no pending merge requests.
+gtnhlib.chat.teams.error.disambiguate_merge=Your team has multiple pending merge requests. Use /gtnhteam merge accept <Team Name> or /gtnhteam merge deny <Team Name>.
+gtnhlib.chat.teams.error.no_merge_request_specific=Your team has not received a merge request from "%s".
+gtnhlib.chat.teams.error.last_member_leave=You cannot leave a team you are the only member of.
+gtnhlib.chat.teams.error.last_owner_leave=You cannot leave a team as the last owner while other members are present. Promote another member first.
+gtnhlib.chat.teams.error.last_owner_demote=You cannot demote yourself as the last owner of your team.
+gtnhlib.chat.teams.error.demote_member=%s is already the lowest rank (member).
+gtnhlib.chat.teams.error.promote_owner=%s is already an owner.
+gtnhlib.chat.teams.message.usage=GTNHTeams commands: help, info, rename, invite, accept, deny, leave, promote, demote, merge <request|accept|deny>
+gtnhlib.chat.teams.message.renamed_team=Your team was renamed to %s.
+gtnhlib.chat.teams.message.joined_team=You joined %s.
+gtnhlib.chat.teams.message.other_joined_team=%s has joined your team.
+gtnhlib.chat.teams.message.left_team=You left %s.
+gtnhlib.chat.teams.message.other_left_team=%s has left your team.
+gtnhlib.chat.teams.message.sent_invite=Invited %s to your team.
+gtnhlib.chat.teams.message.received_invite=%s has invited you to join %s. Use %s to accept or %s to decline.
+gtnhlib.chat.teams.message.declined_invite=Declined the invite to %s.
+gtnhlib.chat.teams.message.promoted_to_owner=%s is now a team owner.
+gtnhlib.chat.teams.message.promoted_to_officer=%s is now a team officer.
+gtnhlib.chat.teams.message.demoted_to_officer=%s is no longer a team owner.
+gtnhlib.chat.teams.message.demoted_to_member=%s is no longer a team officer.
+gtnhlib.chat.teams.message.merge_request_sent=Sent a merge request to %s.
+gtnhlib.chat.teams.message.merge_request_received=%s has requested to merge their team into yours. Accepting will move all of their members into your team and merge data. This is irreversible! Use %s to accept or %s to decline.
+gtnhlib.chat.teams.message.merge_complete=%s has been merged into %s. All members and data have been transferred.
+gtnhlib.chat.teams.message.merge_denied=Denied merge request from %s.
+gtnhlib.chat.teams.info.owners=Owners: %s
+gtnhlib.chat.teams.info.officers=Officers: %s
+gtnhlib.chat.teams.info.members=Members: %s
+gtnhlib.chat.teams.help.1=GTNHTeams Help Page:
+gtnhlib.chat.teams.help.2=/gtnhteam info - Print out the members list for your current team.
+gtnhlib.chat.teams.help.3=/gtnhteam invite <player> - [Officer] Invite an online player to your team.
+gtnhlib.chat.teams.help.4=/gtnhteam accept [team] - Accept a pending team invitation.
+gtnhlib.chat.teams.help.5=/gtnhteam deny [team] - Decline a pending team invitation.
+gtnhlib.chat.teams.help.6=/gtnhteam leave - Leave your current team and form a solo team.
+gtnhlib.chat.teams.help.7=/gtnhteam rename <new name> - [Owner] Change your team's name.
+gtnhlib.chat.teams.help.8=/gtnhteam promote <player> - [Owner] Promote a member to officer or officer to owner.
+gtnhlib.chat.teams.help.9=/gtnhteam demote <player> - [Owner] Demote an owner to officer or officer to member.
+gtnhlib.chat.teams.help.10=/gtnhteam merge request <team> - [Owner] Request for your team to be merged into another.
+gtnhlib.chat.teams.help.11=/gtnhteam merge accept [team] - [Owner] Accept a pending merge request.
+gtnhlib.chat.teams.help.12=/gtnhteam merge deny [team] - [Owner] Deny a pending merge request.
+
+
+# GTNHTeams Admin Commands
+gtnhlib.chat.teams.admin.error.team_not_found=No team named %s could be found.
+gtnhlib.chat.teams.admin.error.name_in_use=The name %s is already in use.
+gtnhlib.chat.teams.admin.error.player_not_in_team=%s is not in team %s.
+gtnhlib.chat.teams.admin.error.demote_last_owner=%s cannot be force-demoted as long as they are the last owner of team %s.
+gtnhlib.chat.teams.admin.message.usage=GTNHTeams Admin commands: help, info, rename, promote, demote, merge, disband
+gtnhlib.chat.teams.admin.message.renamed=Team %s was force-renamed to %s.
+gtnhlib.chat.teams.admin.message.merged=Team %s was force-merged into %s.
+gtnhlib.chat.teams.admin.message.team_disbanded=%s was forcibly disbanded by an administrator.
+gtnhlib.chat.teams.admin.message.disbanded=%s was force-disbanded.
+gtnhlib.chat.teams.admin.message.promoted_to_owner=%s was force-promoted to an owner of %s.
+gtnhlib.chat.teams.admin.message.promoted_to_officer=%s was force-promoted to an officer of %s.
+gtnhlib.chat.teams.admin.message.demoted_to_officer=%s was force-demoted to an officer of %s.
+gtnhlib.chat.teams.admin.message.demoted_to_member=%s was force-demoted to a member of %s.
+gtnhlib.chat.teams.admin.help.1=GTNHTeams Admin Help Page:
+gtnhlib.chat.teams.admin.help.2=/gtnhteam_admin info <team> - Print members list for targeted team.
+gtnhlib.chat.teams.admin.help.3=/gtnhteam_admin rename <team> <new name> - Forcibly rename targeted team.
+gtnhlib.chat.teams.admin.help.4=/gtnhteam_admin promote <team> <player> - Forcibly promote targeted player in team.
+gtnhlib.chat.teams.admin.help.5=/gtnhteam_admin demote <team> <player> - Forcibly demote targeted player in team.
+gtnhlib.chat.teams.admin.help.6=/gtnhteam_admin merge <source team> <target team> - Forcibly merge source team into target team, transferring their members and merging data.
+gtnhlib.chat.teams.admin.help.7=/gtnhteam_admin disband <team> - Forcibly disband team. Players will be immediately placed into solo teams and the team's data will be permanently lost.
+
+commands.title.cleared.single=Cleared title for %s
+commands.title.reset.single=Reset title options for %s
+commands.title.show.title.single=Showed title to %s
+commands.title.show.subtitle.single=Showed subtitle to %s
+commands.title.times.single=Changed title display times for %s
