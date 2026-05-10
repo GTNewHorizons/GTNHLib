@@ -1,18 +1,24 @@
 package com.gtnewhorizon.gtnhlib.network.teams;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import io.netty.buffer.ByteBuf;
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
+import com.gtnewhorizon.gtnhlib.teams.TeamManagerClient;
 
-public class TeamDataSync implements IMessage {
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+public class TeamDataSync implements IPacket {
 
     public boolean complete;
     public List<Pair<String, NBTTagCompound>> data;
@@ -30,25 +36,32 @@ public class TeamDataSync implements IMessage {
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
+    public void encode(PacketBuffer buf) throws IOException {
         buf.writeBoolean(complete);
         buf.writeShort(data.size());
         for (Pair<String, NBTTagCompound> pair : data) {
-            ByteBufUtils.writeUTF8String(buf, pair.getLeft());
-            ByteBufUtils.writeTag(buf, pair.getRight());
+            buf.writeStringToBuffer(pair.getLeft());
+            buf.writeNBTTagCompoundToBuffer(pair.getRight());
         }
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
+    public void decode(PacketBuffer buf) throws IOException {
         complete = buf.readBoolean();
         int length = buf.readShort();
         data = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
-            String key = ByteBufUtils.readUTF8String(buf);
-            NBTTagCompound tag = ByteBufUtils.readTag(buf);
+            String key = buf.readStringFromBuffer(NetworkUtils.MAX_STRING_BYTES);
+            NBTTagCompound tag = buf.readNBTTagCompoundFromBuffer();
             data.add(Pair.of(key, tag));
         }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        TeamManagerClient.onTeamDataSyncPacket(this);
+        return null;
     }
 
 }

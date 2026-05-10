@@ -1,12 +1,19 @@
 package com.gtnewhorizon.gtnhlib.network.teams;
 
+import java.io.IOException;
 import java.util.UUID;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.PacketBuffer;
 
-public class TeamInfoSync implements IMessage {
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
+import com.gtnewhorizon.gtnhlib.teams.TeamManagerClient;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+public class TeamInfoSync implements IPacket {
 
     public UUID uuid;
     public String name;
@@ -19,16 +26,22 @@ public class TeamInfoSync implements IMessage {
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeLong(uuid.getMostSignificantBits());
-        buf.writeLong(uuid.getLeastSignificantBits());
-        ByteBufUtils.writeUTF8String(buf, name);
+    public void encode(PacketBuffer buf) throws IOException {
+        NetworkUtils.writeUUID(buf, uuid);
+        buf.writeStringToBuffer(name);
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
-        uuid = new UUID(buf.readLong(), buf.readLong());
-        name = ByteBufUtils.readUTF8String(buf);
+    public void decode(PacketBuffer buf) throws IOException {
+        uuid = NetworkUtils.readUUID(buf);
+        name = buf.readStringFromBuffer(NetworkUtils.MAX_STRING_BYTES);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        TeamManagerClient.onTeamInfoSyncPacket(this);
+        return null;
     }
 
 }
