@@ -13,9 +13,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 
-/**
- * Note: a public no-arg constructor is required by FML for packet deserialization.
- */
 public interface IPacket extends IMessage, IMessageHandler<IPacket, IMessage> {
 
     void encode(PacketBuffer buf) throws IOException;

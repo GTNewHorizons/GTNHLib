@@ -23,17 +23,18 @@ public class NetworkChannel {
     }
 
     // Packets the client receives — sent from server to client.
-    public void toClient(Class<? extends IPacket> packet) {
+    public void toClient(IPacket packet) {
         register(packet, Side.CLIENT);
     }
 
     // Packets the server receives — sent from client to server.
-    public void toServer(Class<? extends IPacket> packet) {
+    public void toServer(IPacket packet) {
         register(packet, Side.SERVER);
     }
 
-    private void register(Class<? extends IPacket> packet, Side side) {
-        network.registerMessage((Class) packet, (Class) packet, nextId.getAndIncrement(), side);
+    private void register(IPacket packet, Side side) {
+        network.registerMessage(packet, (Class) packet.getClass(), nextId.getAndIncrement(), side);
+
     }
 
     // Use where a Packet object is needed, e.g. TileEntity#getDescriptionPacket.
