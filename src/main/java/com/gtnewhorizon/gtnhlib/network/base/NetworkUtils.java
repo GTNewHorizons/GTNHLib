@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.network.base;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -12,7 +11,6 @@ import net.minecraftforge.fluids.FluidStack;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 
 import io.netty.buffer.ByteBuf;
