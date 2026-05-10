@@ -94,6 +94,10 @@ public class TeamManager {
      * disbanded afterward.
      */
     public static void mergeTeams(Team surviving, Team consumed) {
+        if (surviving.getTeamId().equals(consumed.getTeamId())) {
+            GTNHLib.LOG.error("Cannot merge team into itself.");
+            return;
+        }
         for (UUID uuid : consumed.getMembers()) {
             PLAYER_TEAM_CACHE.put(uuid, surviving);
             surviving.addMember(uuid);
