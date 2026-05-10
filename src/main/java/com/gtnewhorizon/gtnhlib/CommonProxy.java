@@ -17,6 +17,7 @@ import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentItemName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
+import com.gtnewhorizon.gtnhlib.commands.TitleCommand;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
@@ -26,6 +27,8 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
+import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
+import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
@@ -102,10 +105,13 @@ public class CommonProxy {
 
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         BrigadierApi.init();
+        TeamCommand.register();
+        TeamAdminCommand.register();
     }
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new BlockStateCommand());
+        event.registerServerCommand(new TitleCommand());
     }
 
     public void serverStarted(FMLServerStartedEvent event) {}
