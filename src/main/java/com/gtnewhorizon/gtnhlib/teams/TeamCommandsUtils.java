@@ -20,6 +20,7 @@ import com.gtnewhorizon.gtnhlib.util.CommandUtils;
 public abstract class TeamCommandsUtils {
 
     static final String ARG_TEAM_NAME = "teamName";
+    static final String ARG_TEAM_NAME_OTHER = "otherTeamName";
     static final String ARG_NEW_NAME = "newName";
     static final String ARG_PLAYER = "player";
 
