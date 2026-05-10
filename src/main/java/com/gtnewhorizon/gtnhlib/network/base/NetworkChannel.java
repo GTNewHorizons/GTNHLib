@@ -12,25 +12,23 @@ import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 import lombok.Getter;
 
-public abstract class AbstractNetwork {
+public class NetworkChannel {
 
     @Getter
     private final SimpleNetworkWrapper network;
     private final AtomicInteger nextId = new AtomicInteger();
 
-    protected AbstractNetwork(String channel) {
+    public NetworkChannel(String channel) {
         this.network = NetworkRegistry.INSTANCE.newSimpleChannel(channel);
     }
 
-    public abstract void init();
-
     // Packets the client receives — sent from server to client.
-    protected void clientside(Class<? extends IPacket> packet) {
+    public void toClient(Class<? extends IPacket> packet) {
         register(packet, Side.CLIENT);
     }
 
     // Packets the server receives — sent from client to server.
-    protected void serverside(Class<? extends IPacket> packet) {
+    public void toServer(Class<? extends IPacket> packet) {
         register(packet, Side.SERVER);
     }
 
