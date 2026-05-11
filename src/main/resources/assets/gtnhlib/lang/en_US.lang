@@ -197,6 +197,7 @@ gtnhlib.chat.teams.admin.error.demote_last_owner=%s cannot be force-demoted as l
 gtnhlib.chat.teams.admin.message.usage=GTNHTeams Admin commands: help, info, rename, promote, demote, merge, disband
 gtnhlib.chat.teams.admin.message.renamed=Team %s was force-renamed to %s.
 gtnhlib.chat.teams.admin.message.merged=Team %s was force-merged into %s.
+gtnhlib.chat.teams.admin.message.merge_teams_same=Can't merge a team into itself!
 gtnhlib.chat.teams.admin.message.team_disbanded=%s was forcibly disbanded by an administrator.
 gtnhlib.chat.teams.admin.message.disbanded=%s was force-disbanded.
 gtnhlib.chat.teams.admin.message.promoted_to_owner=%s was force-promoted to an owner of %s.

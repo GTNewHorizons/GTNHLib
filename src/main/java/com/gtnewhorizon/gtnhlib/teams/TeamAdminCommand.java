@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.teams;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_NEW_NAME;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_PLAYER;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
+import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME_OTHER;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.resolveTeamMemberUuid;
 import static com.gtnewhorizon.gtnhlib.util.CommandUtils.argument;
 import static com.gtnewhorizon.gtnhlib.util.CommandUtils.colorChatComponent;
@@ -38,8 +39,8 @@ public class TeamAdminCommand {
                         })
                         .then(
                                 literal("rename").then(
-                                        argument(ARG_TEAM_NAME, StringArgumentType.word()).then(
-                                                argument(ARG_NEW_NAME, StringArgumentType.greedyString()).executes(
+                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
+                                                argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
                                                         ctx -> executeAdminRename(
                                                                 ctx.getSource(),
                                                                 StringArgumentType.getString(ctx, ARG_TEAM_NAME),
@@ -63,20 +64,21 @@ public class TeamAdminCommand {
                         .then(
                                 literal("merge").then(
                                         argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
-                                                argument(ARG_TEAM_NAME, StringArgumentType.string()).executes(
+                                                argument(ARG_TEAM_NAME_OTHER, StringArgumentType.string()).executes(
                                                         ctx -> executeAdminMerge(
                                                                 ctx.getSource(),
                                                                 StringArgumentType.getString(ctx, ARG_TEAM_NAME),
-                                                                StringArgumentType.getString(ctx, ARG_TEAM_NAME))))))
+                                                                StringArgumentType
+                                                                        .getString(ctx, ARG_TEAM_NAME_OTHER))))))
                         .then(
                                 literal("disband").then(
-                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).executes(
+                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).executes(
                                                 ctx -> executeAdminDisband(
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
                         .then(
                                 literal("info").then(
-                                        argument(ARG_TEAM_NAME, StringArgumentType.greedyString()).executes(
+                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).executes(
                                                 ctx -> executeAdminInfo(
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, ARG_TEAM_NAME)))))
@@ -146,6 +148,10 @@ public class TeamAdminCommand {
         if (sourceTeam == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", sourceName);
         Team targetTeam = TeamManager.getTeamByName(targetName);
         if (targetTeam == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", targetName);
+
+        if (sourceTeam.getTeamId().equals(targetTeam.getTeamId())) {
+            return error(sender, "gtnhlib.chat.teams.admin.message.merge_teams_same");
+        }
 
         List<UUID> allMembers = new ArrayList<>(sourceTeam.getMembers());
         allMembers.addAll(targetTeam.getMembers());
