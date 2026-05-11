@@ -20,6 +20,8 @@ import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
 import com.gtnewhorizon.gtnhlib.commands.TitleCommand;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
+import com.gtnewhorizon.gtnhlib.datacomponent.command.DataComponentCommand;
+import com.gtnewhorizon.gtnhlib.datacomponent.init.DataComponents;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
@@ -73,6 +75,7 @@ public class CommonProxy {
         }
 
         BlockPropertyInit.init();
+        DataComponents.init();
 
         ChatComponentCustomRegistry.register(ChatComponentNumber::new);
         ChatComponentCustomRegistry.register(ChatComponentFluid::new);
@@ -113,6 +116,7 @@ public class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new BlockStateCommand());
+        event.registerServerCommand(new DataComponentCommand());
         event.registerServerCommand(new TitleCommand());
     }
 
