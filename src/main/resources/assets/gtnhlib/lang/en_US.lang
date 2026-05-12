@@ -2,6 +2,7 @@
 tile.model_test.name=Test Block
 tile.model_test_tint.name=Test Block (Tint)
 tile.model_test_tint_mul.name=Test Block (Tint Mul)
+tile.model_test_lectern.name=Lectern Test Block
 
 # Configuration
 fml.configgui.tooltip.default=[default: %s]
