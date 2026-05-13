@@ -1,14 +1,21 @@
 package com.gtnewhorizon.gtnhlib.datacomponent.init;
 
+import java.lang.reflect.Type;
+import java.util.Map;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.datacomponent.components.BooleanComponent;
 import com.gtnewhorizon.gtnhlib.datacomponent.components.IntegerComponent;
 import com.gtnewhorizon.gtnhlib.datacomponent.components.StringComponent;
+import com.gtnewhorizon.gtnhlib.datacomponent.core.DataComponentType;
 import com.gtnewhorizon.gtnhlib.datacomponent.registry.DataComponentRegistry;
 
 public class DataComponents {
@@ -26,6 +33,7 @@ public class DataComponents {
         DataComponentRegistry.registerComponent(REPAIRABLE);
         DataComponentRegistry.registerComponent(REPAIR_COST);
         DataComponentRegistry.registerComponent(UNBREAKABLE);
+        DataComponentRegistry.registerComponent(BLOCK_STATE);
     }
 
     public static final BooleanComponent DAMAGED = new BooleanComponent() {
@@ -188,6 +196,45 @@ public class DataComponents {
         @Override
         public Boolean getValue(ItemStack stack) {
             return stack != null && stack.hasTagCompound() && stack.stackTagCompound.getBoolean("Unbreakable");
+        }
+    };
+
+    public static final DataComponentType<BlockState> BLOCK_STATE = new DataComponentType<BlockState>() {
+
+        @Override
+        public String getName() {
+            return "block_state";
+        }
+
+        @Override
+        public Type getType() {
+            return BlockState.class;
+        }
+
+        @Override
+        public boolean appliesTo(ItemStack stack, Item item, int meta) {
+            return item instanceof ItemBlock;
+        }
+
+        @Override
+        public String stringify(BlockState value) {
+            if (value == null) return "null";
+
+            Map<String, String> propMap = value.toMap();
+            if (propMap.isEmpty()) return "[]";
+
+            java.util.StringJoiner joiner = new java.util.StringJoiner(", ", "[", "]");
+            propMap.forEach((k, v) -> joiner.add(k + "=" + v));
+
+            return joiner.toString();
+        }
+
+        @Override
+        public BlockState getValue(ItemStack stack) {
+            if (stack == null || stack.getItem() == null) return null;
+            try (BlockState component = BlockPropertyRegistry.getBlockState(stack)) {
+                return component != null ? component.clone() : null;
+            }
         }
     };
 
