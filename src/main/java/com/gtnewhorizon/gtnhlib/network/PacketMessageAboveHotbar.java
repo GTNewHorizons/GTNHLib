@@ -1,16 +1,19 @@
 package com.gtnewhorizon.gtnhlib.network;
 
+import java.io.IOException;
+
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.IChatComponent;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import io.netty.buffer.ByteBuf;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class PacketMessageAboveHotbar implements IMessage {
+public class PacketMessageAboveHotbar implements IPacket {
 
     private IChatComponent chatComponent;
     private int displayDuration;
@@ -29,31 +32,27 @@ public class PacketMessageAboveHotbar implements IMessage {
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
-        this.chatComponent = IChatComponent.Serializer.func_150699_a(ByteBufUtils.readUTF8String(buf));
-        this.displayDuration = buf.readInt();
-        this.drawShadow = buf.readBoolean();
-        this.shouldFade = buf.readBoolean();
+    public void encode(PacketBuffer buf) throws IOException {
+        buf.writeStringToBuffer(IChatComponent.Serializer.func_150696_a(chatComponent));
+        buf.writeInt(displayDuration);
+        buf.writeBoolean(drawShadow);
+        buf.writeBoolean(shouldFade);
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        ByteBufUtils.writeUTF8String(buf, IChatComponent.Serializer.func_150696_a(this.chatComponent));
-        buf.writeInt(this.displayDuration);
-        buf.writeBoolean(this.drawShadow);
-        buf.writeBoolean(this.shouldFade);
+    public void decode(PacketBuffer buf) throws IOException {
+        chatComponent = IChatComponent.Serializer
+                .func_150699_a(buf.readStringFromBuffer(NetworkUtils.MAX_STRING_BYTES));
+        displayDuration = buf.readInt();
+        drawShadow = buf.readBoolean();
+        shouldFade = buf.readBoolean();
     }
 
-    public static class HandlerMessageAboveHotbar implements IMessageHandler<PacketMessageAboveHotbar, IMessage> {
-
-        @Override
-        public IMessage onMessage(PacketMessageAboveHotbar message, MessageContext ctx) {
-            GTNHLib.proxy.printMessageAboveHotbar(
-                    message.chatComponent.getFormattedText(),
-                    message.displayDuration,
-                    message.drawShadow,
-                    message.shouldFade);
-            return null;
-        }
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        GTNHLib.proxy
+                .printMessageAboveHotbar(chatComponent.getFormattedText(), displayDuration, drawShadow, shouldFade);
+        return null;
     }
 }
