@@ -31,10 +31,12 @@ public class VertexFormat {
 
     protected final int vertexFlags;
 
+    @Deprecated
     public static void registerSetupBufferStateOverride(SetupBufferState override) {
         setupBufferStateOverrride.add(override);
     }
 
+    @Deprecated
     public static void registerClearBufferStateOverride(ClearBufferState override) {
         clearBufferStateOverrride.add(override);
     }
@@ -228,6 +230,21 @@ public class VertexFormat {
 
     public final boolean hasBrightness() {
         return (vertexFlags & BRIGHTNESS_BIT) != 0;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName() + "[size="
+                + vertexSize
+                + " hasTexture="
+                + hasTexture()
+                + " hasColor="
+                + hasColor()
+                + " hasNormals="
+                + hasNormals()
+                + " hasBrightness="
+                + hasBrightness()
+                + "]";
     }
 
     @FunctionalInterface

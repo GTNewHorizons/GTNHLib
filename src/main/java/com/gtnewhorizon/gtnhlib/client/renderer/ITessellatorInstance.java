@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer;
 /**
  * Interface for Tessellator instances to support GTNHLib's capturing/compiling features.
  */
+@Deprecated
 public interface ITessellatorInstance {
 
     /**

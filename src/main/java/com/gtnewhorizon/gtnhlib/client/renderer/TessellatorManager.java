@@ -12,11 +12,11 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.github.bsideup.jabel.Desugar;
-import com.google.common.annotations.Beta;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
+import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
@@ -77,6 +77,7 @@ public class TessellatorManager {
     private static final Thread mainThread = Thread.currentThread();
 
     // Recursion protection (compiling is main-thread only)
+    @Deprecated
     private static boolean isInCompilingCallback = false;
 
     public static Tessellator get() {
@@ -168,6 +169,7 @@ public class TessellatorManager {
     /**
      * Sets the compiling flag on vanilla Tessellator.instance if it implements ITessellatorInstance.
      */
+    @Deprecated
     private static void setVanillaTessellatorCompiling(boolean compiling) {
         if (Tessellator.instance instanceof ITessellatorInstance tessInst) {
             tessInst.gtnhlib$setCompiling(compiling);
@@ -281,7 +283,7 @@ public class TessellatorManager {
 
     public static final int DEFAULT_BUFFER_SIZE = 0x8000; // 32KB, enough to store 1024 full-sized vertices
     private static final int BUFFER_CAPACITY = Tessellator.byteBuffer.capacity();
-    private static final int DIRECT_TESSELLATOR_STACK_DEPTH = 16;
+    public static final int DIRECT_TESSELLATOR_STACK_DEPTH = 16;
 
     // Instances to use for capturing to vbo's (Cannot be used outside the tessellator stack)
     private static final DirectTessellator mainInstance = new DirectTessellator(Tessellator.byteBuffer);
@@ -336,16 +338,21 @@ public class TessellatorManager {
         return tessellator;
     }
 
-    @Beta // Not a stable API. May change in the future.
+    @Deprecated // Temporary method (to make older angelica version with newer gtnhlib versions)
     public static CallbackTessellator startCapturingDirect(DirectDrawCallback callback) {
-        if (!mainInstanceInStack) {
-            final CallbackTessellator tessellator = mainCallbackInstance;
-            tessellator.setDrawCallback(callback);
-            setDirectTessellator(tessellator);
-            return tessellator;
-        }
-        final CallbackTessellator tessellator = new CallbackTessellator(DEFAULT_BUFFER_SIZE);
-        tessellator.setDrawCallback(callback);
+        return startCapturingDirect(new TessellatorCallback() {
+
+            @Override
+            public boolean onDraw(CallbackTessellator tessellator) {
+                return callback.onDraw(tessellator);
+            }
+        });
+    }
+
+    public static CallbackTessellator startCapturingDirect(TessellatorCallback callback) {
+        VertexCallbackManager.pushCallback(callback);
+        final CallbackTessellator tessellator = mainInstanceInStack ? new CallbackTessellator(DEFAULT_BUFFER_SIZE)
+                : mainCallbackInstance;
         setDirectTessellator(tessellator);
         return tessellator;
     }
@@ -576,7 +583,8 @@ public class TessellatorManager {
             final DirectTessellator tessellator = getDirectTessellator();
             final int result = tessellator.interceptDraw(tess);
 
-            ((ITessellatorInstance) tess).discard();
+            tess.isDrawing = false;
+            tess.reset();
             return result;
         }
 
@@ -749,6 +757,7 @@ public class TessellatorManager {
         return result;
     }
 
+    @Deprecated
     public static void cleanup() {
         // Ensure we've cleaned everything up
         final CapturingTessellator tessellator = capturingTessellator.get();
