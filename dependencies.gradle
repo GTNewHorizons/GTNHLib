@@ -44,9 +44,6 @@ dependencies {
 
 
     compileOnly("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev") {transitive = false}
-
-    // Teams UI
-    compileOnly("com.github.GTNewHorizons:ModularUI2:2.3.54-1.7.10:dev") {transitive = false}
 //    devOnlyNonPublishable('com.github.GTNewHorizons:Baubles-Expanded:2.2.11-GTNH:dev') {transitive = false} // For testing Thaumcraft
 
     // Replace Baubles with Baubles-Expanded for testing Thaumcraft
