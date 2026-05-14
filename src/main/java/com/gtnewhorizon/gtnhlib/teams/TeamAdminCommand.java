@@ -201,6 +201,7 @@ public class TeamAdminCommand {
         TeamManager.TEAMS.remove(team);
         TeamManager.TEAM_MAP.remove(team.getTeamId());
         TeamManager.PENDING_MERGE_REQUESTS.remove(team);
+        TeamManager.PENDING_MERGE_REQUESTS.values().forEach(teamSet -> teamSet.remove(team));
         team.markRemoved();
         for (Set<Team> teams : TeamManager.PENDING_INVITES.values()) {
             teams.remove(team);
