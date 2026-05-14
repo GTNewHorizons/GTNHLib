@@ -27,7 +27,6 @@ public class GTNHLib {
 
     public static boolean isMFRLoaded;
     public static boolean isCoFHCoreLoaded;
-    public static boolean isMui2Loaded;
 
     @Mod.EventHandler
     public void construct(FMLConstructionEvent event) {
@@ -38,9 +37,6 @@ public class GTNHLib {
     public void preInit(FMLPreInitializationEvent event) {
         isMFRLoaded = Loader.isModLoaded("MineFactoryReloaded");
         isCoFHCoreLoaded = Loader.isModLoaded("CoFHCore");
-        isMui2Loaded = Loader.isModLoaded("modularui2");
-
-        LOG.info("GTNHLib MUI2 integration enabled (for teams UI): {}", isMui2Loaded);
 
         proxy.preInit(event);
     }

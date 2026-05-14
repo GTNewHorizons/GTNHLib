@@ -23,7 +23,6 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
@@ -536,10 +535,6 @@ public class TeamCommand {
     }
 
     private static int executeHelp(ICommandSender sender) {
-        if (GTNHLib.isMui2Loaded) {
-            sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.gui"));
-        }
-
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1"));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2"));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.3"));
