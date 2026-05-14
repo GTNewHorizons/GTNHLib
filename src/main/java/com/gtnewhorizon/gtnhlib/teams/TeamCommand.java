@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
-import static com.gtnewhorizon.gtnhlib.integration.mui2.TeamGui.teamGui;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_NEW_NAME;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_PLAYER;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
@@ -40,14 +39,13 @@ public class TeamCommand {
         BrigadierApi.getCommandDispatcher().register(literal("gtnhteam").executes(ctx -> {
             sendUsage(ctx.getSource());
             return Command.SINGLE_SUCCESS;
-        }).then(literal("gui").executes(ctx -> executeGui(ctx.getSource())))
+        }).then(
+                literal("rename").then(
+                        argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
+                                ctx -> executeRename(
+                                        ctx.getSource(),
+                                        StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
 
-                .then(
-                        literal("rename").then(
-                                argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
-                                        ctx -> executeRename(
-                                                ctx.getSource(),
-                                                StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
                 .then(
                         literal("invite")
                                 .then(argument(ARG_PLAYER, StringArgumentType.word()).suggests((ctx, builder) -> {
@@ -140,18 +138,6 @@ public class TeamCommand {
                                                                                         ctx,
                                                                                         ARG_TEAM_NAME))))))
                 .then(literal("help").executes(ctx -> executeHelp(ctx.getSource()))));
-    }
-
-    private static int executeGui(ICommandSender sender) {
-        if (!GTNHLib.isMui2Loaded) {
-            return error(sender, "gtnhlib.chat.teams.error.mui2_not_loaded");
-        }
-
-        EntityPlayerMP player = TeamCommandsUtils.asPlayerMP(sender);
-        if (player == null) return Command.SINGLE_SUCCESS;
-
-        teamGui.open(player);
-        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeRename(ICommandSender sender, String newName) {
