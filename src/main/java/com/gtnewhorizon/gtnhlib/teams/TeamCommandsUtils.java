@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.UsernameCache;
 
 import com.gtnewhorizon.gtnhlib.util.CommandUtils;
+import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 
 public abstract class TeamCommandsUtils {
 
@@ -40,7 +41,7 @@ public abstract class TeamCommandsUtils {
         List<String> names = new ArrayList<>();
         for (UUID uuid : uuids) {
             if (seen.add(uuid)) {
-                EntityPlayer p = world.func_152378_a(uuid); // getPlayerByUUID
+                EntityPlayer p = ServerPlayerUtils.getPlayerByUUID(world, uuid);
                 if (p != null) {
                     names.add(p.getCommandSenderName());
                 } else {

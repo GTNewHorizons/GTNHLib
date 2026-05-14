@@ -28,6 +28,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
+import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
@@ -181,7 +182,7 @@ public class TeamAdminCommand {
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID memberUuid : allMembers) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) member.addChatMessage(notification);
         }
 
@@ -213,7 +214,7 @@ public class TeamAdminCommand {
         notice.getChatStyle().setColor(EnumChatFormatting.RED);
 
         for (UUID uuid : members) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(uuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), uuid);
             String name = member != null ? member.getCommandSenderName() : uuid.toString();
             Team newTeam = TeamManager.getOrCreateTeam(name, uuid);
             TeamManager.copyTeamData(team, newTeam, uuid, TeamDataCopyReason.JoinedNewTeam);

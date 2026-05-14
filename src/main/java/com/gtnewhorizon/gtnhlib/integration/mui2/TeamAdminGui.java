@@ -24,8 +24,7 @@ public class TeamAdminGui implements IGuiHolder<GuiData> {
                 .child(new TextWidget<>(IKey.str("team admin gui")));
 
         IPanelHandler teamGuiChildPanel = IPanelHandler.simple(panel, (mainPanel, player) -> {
-            ModularPanel teamPanel = new Dialog<>("team_subpanel").setDisablePanelsBelow(true)
-                    .setDraggable(false);
+            ModularPanel teamPanel = new Dialog<>("team_subpanel").setDisablePanelsBelow(true).setDraggable(false);
             return teamPanel;
         }, true);
         panel.child(new ButtonWidget<>().top(7).size(12, 12).leftRel(0.5f).onMouseTapped(mouseButton -> {

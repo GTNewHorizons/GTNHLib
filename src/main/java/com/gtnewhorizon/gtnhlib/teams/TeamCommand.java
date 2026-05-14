@@ -28,6 +28,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
+import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -47,7 +48,6 @@ public class TeamCommand {
                                         ctx -> executeRename(
                                                 ctx.getSource(),
                                                 StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
-1
                 .then(
                         literal("invite")
                                 .then(argument(ARG_PLAYER, StringArgumentType.word()).suggests((ctx, builder) -> {
@@ -170,7 +170,7 @@ public class TeamCommand {
         TeamManager.forEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
 
         for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) success(
                     member,
                     "gtnhlib.chat.teams.message.renamed_team",
@@ -244,11 +244,11 @@ public class TeamCommand {
             currentTeam.removeMember(playerId);
 
             for (UUID memberUuid : currentTeam.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.other_left_team",
-                        colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+                        colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
             }
 
             if (currentTeam.getMembers().isEmpty()) {
@@ -260,11 +260,11 @@ public class TeamCommand {
 
         // Done before player is added to team so that they are not notified of their own join
         for (UUID memberUuid : invitedTeam.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) success(
                     member,
                     "gtnhlib.chat.teams.message.other_joined_team",
-                    colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
         }
 
         invitedTeam.addMember(playerId);
@@ -330,11 +330,11 @@ public class TeamCommand {
         }
 
         for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) success(
                     member,
                     "gtnhlib.chat.teams.message.other_left_team",
-                    colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
         }
 
         // Create a new solo team for the player
@@ -362,7 +362,7 @@ public class TeamCommand {
         if (team.isOfficer(targetUuid)) {
             team.addOwner(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.promoted_to_owner",
@@ -371,7 +371,7 @@ public class TeamCommand {
         } else {
             team.addOfficer(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.promoted_to_officer",
@@ -398,7 +398,7 @@ public class TeamCommand {
         if (team.isOwner(targetUuid)) {
             team.removeOwner(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.demoted_to_officer",
@@ -407,7 +407,7 @@ public class TeamCommand {
         } else {
             team.removeOfficer(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.demoted_to_member",
@@ -463,7 +463,7 @@ public class TeamCommand {
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID ownerUuid : target.getOwners()) {
-            EntityPlayer owner = sender.getEntityWorld().func_152378_a(ownerUuid); // getPlayerByUUID
+            EntityPlayer owner = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), ownerUuid);
             if (owner != null) owner.addChatMessage(notification);
         }
 
@@ -511,7 +511,7 @@ public class TeamCommand {
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID memberUuid : allMembers) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) member.addChatMessage(notification);
         }
 
@@ -576,7 +576,7 @@ public class TeamCommand {
         if (team == null) return builder.buildFuture();
 
         for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) builder.suggest(member.getCommandSenderName());
         }
         return builder.buildFuture();
