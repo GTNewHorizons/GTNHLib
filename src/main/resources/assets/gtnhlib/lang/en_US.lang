@@ -155,6 +155,7 @@ gtnhlib.chat.teams.error.last_owner_leave=You cannot leave a team as the last ow
 gtnhlib.chat.teams.error.last_owner_demote=You cannot demote yourself as the last owner of your team.
 gtnhlib.chat.teams.error.demote_member=%s is already the lowest rank (member).
 gtnhlib.chat.teams.error.promote_owner=%s is already an owner.
+gtnhlib.chat.teams.error.not_player=This command can only be used by a player.
 gtnhlib.chat.teams.message.usage=GTNHTeams commands: help, info, rename, invite, accept, deny, leave, promote, demote, merge <request|accept|deny>
 gtnhlib.chat.teams.message.renamed_team=Your team was renamed to %s.
 gtnhlib.chat.teams.message.joined_team=You joined %s.

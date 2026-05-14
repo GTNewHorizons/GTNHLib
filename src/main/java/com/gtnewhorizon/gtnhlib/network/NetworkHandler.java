@@ -28,5 +28,6 @@ public class NetworkHandler {
         instance.registerMessage(MessageTitleHandler.class, MessageTitle.class, 4, Side.CLIENT);
         instance.registerMessage(TeamInfoSyncHandler.class, TeamInfoSync.class, 5, Side.CLIENT);
         instance.registerMessage(TeamDataSyncHandler.class, TeamDataSync.class, 6, Side.CLIENT);
+        instance.registerMessage(PlayerDataSyncHandler.class, PlayerDataSync.class, 7, Side.CLIENT);
     }
 }
