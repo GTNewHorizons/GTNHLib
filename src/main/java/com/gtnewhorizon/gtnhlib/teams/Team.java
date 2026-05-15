@@ -25,6 +25,8 @@ public class Team {
     private final ObjectSet<UUID> members = new ObjectOpenHashSet<>();
     private final Map<String, ITeamData> teamData = new HashMap<>();
 
+    public static final int MAX_TEAM_NAME_LENGTH = 10000;
+
     @Getter
     private TeamSaveStatus status = TeamSaveStatus.CLEAN;
 

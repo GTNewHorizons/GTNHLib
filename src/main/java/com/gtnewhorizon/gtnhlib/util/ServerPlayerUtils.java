@@ -13,8 +13,6 @@ import net.minecraftforge.common.UsernameCache;
 
 public class ServerPlayerUtils {
 
-    public static final Map<String, UUID> serverPlayerMap = new HashMap<>();
-
     public static String getPlayerName(EntityPlayer player) {
         return player.getCommandSenderName();
     }
@@ -42,8 +40,11 @@ public class ServerPlayerUtils {
     }
 
     public static UUID getPlayerUUID(String name) {
-        synchronized (serverPlayerMap) {
-            return serverPlayerMap.get(name);
+        for (Map.Entry<UUID, String> entry : UsernameCache.getMap().entrySet()) {
+            if (entry.getValue().equals(name)) {
+                return entry.getKey();
+            }
         }
+        return null;
     }
 }

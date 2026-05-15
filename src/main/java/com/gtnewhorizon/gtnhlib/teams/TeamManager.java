@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +40,10 @@ public class TeamManager {
             }
         }
         return true;
+    }
+
+    public static Map<UUID, Team> getTeamMap() {
+        return TEAM_MAP;
     }
 
     public static Team getTeamByPlayer(UUID playerUuid) {
@@ -119,12 +124,7 @@ public class TeamManager {
         surviving.markDirty();
         consumed.markRemoved();
 
-        PENDING_INVITES.forEach((player, teamSet) -> {
-            if (teamSet.contains(consumed)) {
-                // adding more code here for UI later
-                teamSet.remove(consumed);
-            }
-        });
+        PENDING_INVITES.forEach((player, teamSet) -> teamSet.remove(consumed));
     }
 
     public static void copyTeamData(Team prevTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
@@ -149,7 +149,7 @@ public class TeamManager {
     }
 
     public static Set<Team> getPendingInvites(UUID uuid) {
-        return PENDING_INVITES.get(uuid);
+        return PENDING_INVITES.getOrDefault(uuid, Collections.emptySet());
     }
 
     public static void removePendingInvite(UUID uuid, Team team) {
@@ -168,7 +168,7 @@ public class TeamManager {
     }
 
     public static Set<Team> getPendingMergeRequests(Team target) {
-        return PENDING_MERGE_REQUESTS.get(target);
+        return PENDING_MERGE_REQUESTS.getOrDefault(target, Collections.emptySet());
     }
 
     public static void removePendingMergeRequest(Team source, Team target) {
