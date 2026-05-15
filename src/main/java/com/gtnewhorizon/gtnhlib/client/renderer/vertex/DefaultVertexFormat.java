@@ -59,69 +59,75 @@ public final class DefaultVertexFormat {
 
     // --------------- FORMATS ---------------
 
-    public static final VertexFormat POSITION = new VertexFormat(POSITION_ELEMENT);
+    public static final VertexFormat POSITION = registerFormat(POSITION_ELEMENT);
 
     // 2
-    public static final VertexFormat POSITION_TEXTURE = new VertexFormat(POSITION_ELEMENT, TEXTURE_ELEMENT);
-    public static final VertexFormat POSITION_COLOR = new VertexFormat(POSITION_ELEMENT, COLOR_ELEMENT);
-    public static final VertexFormat POSITION_NORMAL = new VertexFormat(POSITION_ELEMENT, NORMAL_ELEMENT);
-    public static final VertexFormat POSITION_LIGHT = new VertexFormat(POSITION_ELEMENT, LIGHT_ELEMENT);
+    public static final VertexFormat POSITION_TEXTURE = registerFormat(POSITION_ELEMENT, TEXTURE_ELEMENT);
+    public static final VertexFormat POSITION_COLOR = registerFormat(POSITION_ELEMENT, COLOR_ELEMENT);
+    public static final VertexFormat POSITION_NORMAL = registerFormat(POSITION_ELEMENT, NORMAL_ELEMENT);
+    public static final VertexFormat POSITION_LIGHT = registerFormat(POSITION_ELEMENT, LIGHT_ELEMENT);
 
     // 3
-    public static final VertexFormat POSITION_TEXTURE_NORMAL = new VertexFormat(
+    public static final VertexFormat POSITION_TEXTURE_NORMAL = registerFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             NORMAL_ELEMENT);
-    public static final VertexFormat POSITION_TEXTURE_COLOR = new VertexFormat(
+    public static final VertexFormat POSITION_TEXTURE_COLOR = registerFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             COLOR_ELEMENT);
-    public static final VertexFormat POSITION_TEXTURE_LIGHT = new VertexFormat(
+    public static final VertexFormat POSITION_TEXTURE_LIGHT = registerFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             LIGHT_ELEMENT);
-    public static final VertexFormat POSITION_COLOR_LIGHT = new VertexFormat(
+    public static final VertexFormat POSITION_COLOR_LIGHT = registerFormat(
             POSITION_ELEMENT,
             COLOR_ELEMENT,
             LIGHT_ELEMENT);
-    public static final VertexFormat POSITION_NORMAL_COLOR = new VertexFormat(
+    public static final VertexFormat POSITION_NORMAL_COLOR = registerFormat(
             POSITION_ELEMENT,
             NORMAL_ELEMENT,
             COLOR_ELEMENT);
-    public static final VertexFormat POSITION_NORMAL_LIGHT = new VertexFormat(
+    public static final VertexFormat POSITION_NORMAL_LIGHT = registerFormat(
             POSITION_ELEMENT,
             NORMAL_ELEMENT,
             LIGHT_ELEMENT);
 
     // 4
-    public static final VertexFormat POSITION_TEXTURE_LIGHT_NORMAL = new VertexFormat(
+    public static final VertexFormat POSITION_TEXTURE_LIGHT_NORMAL = registerFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             LIGHT_ELEMENT,
             NORMAL_ELEMENT);
-    public static final VertexFormat POSITION_TEXTURE_COLOR_LIGHT = new VertexFormat(
+    public static final VertexFormat POSITION_TEXTURE_COLOR_LIGHT = registerFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             COLOR_ELEMENT,
             LIGHT_ELEMENT);
-    public static final VertexFormat POSITION_TEXTURE_COLOR_NORMAL = new VertexFormat(
+    public static final VertexFormat POSITION_TEXTURE_COLOR_NORMAL = registerFormat(
             POSITION_ELEMENT,
             TEXTURE_ELEMENT,
             COLOR_ELEMENT,
             NORMAL_ELEMENT);
-    public static final VertexFormat POSITION_COLOR_LIGHT_NORMAL = new VertexFormat(
+    public static final VertexFormat POSITION_COLOR_LIGHT_NORMAL = registerFormat(
             POSITION_ELEMENT,
             COLOR_ELEMENT,
             LIGHT_ELEMENT,
             NORMAL_ELEMENT);
 
     // All
-    public static final VertexFormat POSITION_COLOR_TEXTURE_LIGHT_NORMAL = new VertexFormat(
+    public static final VertexFormat POSITION_COLOR_TEXTURE_LIGHT_NORMAL = registerFormat(
             POSITION_ELEMENT,
             COLOR_ELEMENT,
             TEXTURE_ELEMENT,
             LIGHT_ELEMENT,
             NORMAL_ELEMENT);
+
+    private static VertexFormat registerFormat(VertexFormatElement... elements) {
+        final VertexFormat format = new VertexFormat(elements);
+        ALL_FORMATS[format.vertexFlags] = format;
+        return format;
+    }
 
     // Duplicate of POSITION_TEXTURE_COLOR
     @Deprecated

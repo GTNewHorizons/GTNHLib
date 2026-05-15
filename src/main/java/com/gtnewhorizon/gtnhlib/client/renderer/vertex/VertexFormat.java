@@ -58,8 +58,6 @@ public class VertexFormat {
 
         this.elements = new ObjectImmutableList<>(elements);
         this.vertexSize = offset;
-
-        DefaultVertexFormat.ALL_FORMATS[this.vertexFlags] = this;
     }
 
     public void setupBufferState(long l) {
