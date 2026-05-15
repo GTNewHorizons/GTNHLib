@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.UUID;
 
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -23,7 +22,6 @@ import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.util.NBTJson;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 
 @EventBusSubscriber
 public class TeamDataSaver {
@@ -65,14 +63,6 @@ public class TeamDataSaver {
             if (INSTANCE != null) {
                 INSTANCE.saveToFiles();
             }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onPlayerLogin(PlayerLoggedInEvent event) {
-        if (event.player instanceof EntityPlayerMP player) {
-            Team team = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
-            TeamNetwork.sendPlayerAllTeamData(player, team);
         }
     }
 

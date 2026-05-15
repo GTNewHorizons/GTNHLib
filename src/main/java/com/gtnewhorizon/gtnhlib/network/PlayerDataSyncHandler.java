@@ -10,13 +10,9 @@ public class PlayerDataSyncHandler implements IMessageHandler<PlayerDataSync, IM
 
     @Override
     public IMessage onMessage(PlayerDataSync message, MessageContext ctx) {
-        synchronized (ClientPlayerUtils.clientPlayerMap) {
-            ClientPlayerUtils.clientPlayerMap.clear();
-            ClientPlayerUtils.clientPlayerMap.putAll(message.data);
-        }
         synchronized (ClientPlayerUtils.clientUsernameCache) {
             ClientPlayerUtils.clientUsernameCache.clear();
-            message.data.forEach((name, uuid) -> ClientPlayerUtils.clientUsernameCache.put(uuid, name));
+            ClientPlayerUtils.clientUsernameCache.addAll(message.data);
         }
         return null;
     }

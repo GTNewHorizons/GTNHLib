@@ -7,6 +7,10 @@ import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSync;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSyncHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSyncHandler;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamInviteSync;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamInviteSyncHandler;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamMergeSync;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamMergeSyncHandler;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -28,6 +32,8 @@ public class NetworkHandler {
         instance.registerMessage(MessageTitleHandler.class, MessageTitle.class, 4, Side.CLIENT);
         instance.registerMessage(TeamInfoSyncHandler.class, TeamInfoSync.class, 5, Side.CLIENT);
         instance.registerMessage(TeamDataSyncHandler.class, TeamDataSync.class, 6, Side.CLIENT);
-        instance.registerMessage(PlayerDataSyncHandler.class, PlayerDataSync.class, 7, Side.CLIENT);
+        instance.registerMessage(TeamInviteSyncHandler.class, TeamInviteSync.class, 7, Side.CLIENT);
+        instance.registerMessage(TeamMergeSyncHandler.class, TeamMergeSync.class, 8, Side.CLIENT);
+        instance.registerMessage(PlayerDataSyncHandler.class, PlayerDataSync.class, 9, Side.CLIENT);
     }
 }
