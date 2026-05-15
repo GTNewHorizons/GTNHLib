@@ -18,13 +18,16 @@ import java.util.UUID;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSync;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamMergeSync;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -87,13 +90,16 @@ public class TeamAdminCommand {
     }
 
     private static int executeAdminRename(ICommandSender sender, String oldName, String newName) {
+        if (newName.length() > Team.MAX_TEAM_NAME_LENGTH) {
+            return error(sender, "gtnhlib.chat.teams.message.team_name_too_long");
+        }
         Team team = TeamManager.getTeamByName(oldName);
         if (team == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", oldName);
 
         if (!team.renameTeam(newName)) return error(sender, "gtnhlib.chat.teams.admin.error.name_in_use", newName);
 
-        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket(team);
-        TeamManager.forEachOnlineTeamMember(team, player -> NetworkHandler.instance.sendTo(packet, player));
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(player -> NetworkHandler.instance.sendTo(packet, player));
 
         return success(
                 sender,
@@ -115,9 +121,17 @@ public class TeamAdminCommand {
         ChatComponentText teamComp = colorChatComponent(EnumChatFormatting.GOLD, teamName);
         if (team.isOfficer(uuid)) {
             team.addOwner(uuid);
+
+            TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+            ServerPlayerUtils.forAllOnlinePlayers(player -> NetworkHandler.instance.sendTo(packet, player));
+
             return success(sender, "gtnhlib.chat.teams.admin.message.promoted_to_owner", playerComp, teamComp);
         } else {
             team.addOfficer(uuid);
+
+            TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+            ServerPlayerUtils.forAllOnlinePlayers(player -> NetworkHandler.instance.sendTo(packet, player));
+
             return success(sender, "gtnhlib.chat.teams.admin.message.promoted_to_officer", playerComp, teamComp);
         }
     }
@@ -137,9 +151,17 @@ public class TeamAdminCommand {
         ChatComponentText teamComp = colorChatComponent(EnumChatFormatting.GOLD, teamName);
         if (team.isOwner(uuid)) {
             team.removeOwner(uuid);
+
+            TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+            ServerPlayerUtils.forAllOnlinePlayers(player -> NetworkHandler.instance.sendTo(packet, player));
+
             return success(sender, "gtnhlib.chat.teams.admin.message.demoted_to_officer", playerComp, teamComp);
         } else {
             team.removeOfficer(uuid);
+
+            TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+            ServerPlayerUtils.forAllOnlinePlayers(player -> NetworkHandler.instance.sendTo(packet, player));
+
             return success(sender, "gtnhlib.chat.teams.admin.message.demoted_to_member", playerComp, teamComp);
         }
     }
@@ -170,6 +192,20 @@ public class TeamAdminCommand {
             if (member != null) member.addChatMessage(notification);
         }
 
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(p -> NetworkHandler.instance.sendTo(packet, p));
+        // Sync invited players of the consumed team to its members since those invites would be invalidated
+        TeamManager.forEachOnlineTeamMember(
+                targetTeam,
+                member -> NetworkHandler.instance
+                        .sendTo(TeamNetwork.createPlayerInviteSyncPacket(member.getUniqueID()), member));
+        TeamMergeSync mergePacket = TeamNetwork.createTeamMergeSyncPacket(targetTeam);
+        TeamDataSync dataPacket = TeamNetwork.createCompleteTeamDataSyncPacket(targetTeam);
+        TeamManager.forEachOnlineTeamMember(targetTeam, member -> {
+            NetworkHandler.instance.sendTo(mergePacket, member);
+            NetworkHandler.instance.sendTo(dataPacket, member);
+        });
+
         return success(
                 sender,
                 "gtnhlib.chat.teams.admin.message.merged",
@@ -199,10 +235,14 @@ public class TeamAdminCommand {
 
         for (UUID uuid : members) {
             EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), uuid);
-            String name = member != null ? member.getCommandSenderName() : uuid.toString();
+            String name = ServerPlayerUtils.getPlayerName(uuid);
             Team newTeam = TeamManager.getOrCreateTeam(name, uuid);
             TeamManager.copyTeamData(team, newTeam, uuid, TeamDataCopyReason.JoinedNewTeam);
-            if (member != null) member.addChatMessage(notice);
+
+            if (member != null) {
+                TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) member, newTeam);
+                member.addChatMessage(notice);
+            }
         }
 
         return success(

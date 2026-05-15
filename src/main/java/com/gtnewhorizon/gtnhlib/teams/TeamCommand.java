@@ -25,7 +25,10 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSync;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamInviteSync;
+import com.gtnewhorizon.gtnhlib.network.teams.TeamMergeSync;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -140,6 +143,9 @@ public class TeamCommand {
     }
 
     private static int executeRename(ICommandSender sender, String newName) {
+        if (newName.length() > Team.MAX_TEAM_NAME_LENGTH) {
+            return error(sender, "gtnhlib.chat.teams.message.team_name_too_long");
+        }
         EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
@@ -151,8 +157,8 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.name_in_use");
         }
 
-        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket(team);
-        TeamManager.forEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(p -> NetworkHandler.instance.sendTo(packet, p));
 
         for (UUID memberUuid : team.getMembers()) {
             EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
@@ -182,6 +188,13 @@ public class TeamCommand {
 
         TeamManager.addPendingInvite(target.getUniqueID(), team);
 
+        TeamInviteSync sync = TeamNetwork.createPlayerInviteSyncPacket(target.getUniqueID());
+        NetworkHandler.instance.sendTo(sync, (EntityPlayerMP) target);
+        TeamManager.forEachOnlineTeamMember(
+                team,
+                member -> NetworkHandler.instance
+                        .sendTo(TeamNetwork.createPlayerInviteSyncPacket(member.getUniqueID()), member));
+
         success(
                 sender,
                 "gtnhlib.chat.teams.message.sent_invite",
@@ -207,14 +220,14 @@ public class TeamCommand {
         Set<Team> invites = TeamManager.getPendingInvites(playerId);
         if (invites == null || invites.isEmpty()) return error(sender, "gtnhlib.chat.teams.error.no_invite");
 
-        Team invitedTeam;
+        Team invitingTeam;
         if (invites.size() == 1) {
-            invitedTeam = invites.iterator().next();
+            invitingTeam = invites.iterator().next();
         } else if (teamName.isEmpty()) {
             return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
         } else {
-            invitedTeam = TeamManager.getTeamByName(teamName);
-            if (invitedTeam == null || !invites.contains(invitedTeam))
+            invitingTeam = TeamManager.getTeamByName(teamName);
+            if (invitingTeam == null || !invites.contains(invitingTeam))
                 return error(sender, "gtnhlib.chat.teams.error.no_invite_specific", teamName);
         }
 
@@ -237,14 +250,14 @@ public class TeamCommand {
             }
 
             if (currentTeam.getMembers().isEmpty()) {
-                TeamManager.mergeTeams(invitedTeam, currentTeam);
+                TeamManager.mergeTeams(invitingTeam, currentTeam);
             } else {
-                TeamManager.copyTeamData(currentTeam, invitedTeam, playerId, TeamDataCopyReason.JoinedExistingTeam);
+                TeamManager.copyTeamData(currentTeam, invitingTeam, playerId, TeamDataCopyReason.JoinedExistingTeam);
             }
         }
 
         // Done before player is added to team so that they are not notified of their own join
-        for (UUID memberUuid : invitedTeam.getMembers()) {
+        for (UUID memberUuid : invitingTeam.getMembers()) {
             EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) success(
                     member,
@@ -252,16 +265,23 @@ public class TeamCommand {
                     colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
         }
 
-        invitedTeam.addMember(playerId);
+        invitingTeam.addMember(playerId);
         TeamManager.removeAllPendingInvites(playerId);
-        TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, invitedTeam);
-        TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitedTeam);
-        invitedTeam.markDirty();
+        TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitingTeam);
+        invitingTeam.markDirty();
+
+        TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, invitingTeam);
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(p -> NetworkHandler.instance.sendTo(packet, p));
+        TeamManager.forEachOnlineTeamMember(
+                invitingTeam,
+                member -> NetworkHandler.instance
+                        .sendTo(TeamNetwork.createPlayerInviteSyncPacket(member.getUniqueID()), member));
 
         return success(
                 sender,
                 "gtnhlib.chat.teams.message.joined_team",
-                colorChatComponent(EnumChatFormatting.GOLD, invitedTeam.getTeamName()));
+                colorChatComponent(EnumChatFormatting.GOLD, invitingTeam.getTeamName()));
     }
 
     private static int executeDeny(ICommandSender sender, String teamName) {
@@ -283,6 +303,10 @@ public class TeamCommand {
         }
 
         TeamManager.removePendingInvite(player.getUniqueID(), specificTeam);
+        TeamManager.forEachOnlineTeamMember(
+                specificTeam,
+                member -> NetworkHandler.instance
+                        .sendTo(TeamNetwork.createPlayerInviteSyncPacket(member.getUniqueID()), member));
 
         return success(
                 sender,
@@ -326,6 +350,10 @@ public class TeamCommand {
         Team newTeam = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
         TeamManager.copyTeamData(team, newTeam, playerId, TeamDataCopyReason.JoinedNewTeam);
 
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(p -> NetworkHandler.instance.sendTo(packet, p));
+        TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, newTeam);
+
         return success(
                 sender,
                 "gtnhlib.chat.teams.message.left_team",
@@ -363,6 +391,10 @@ public class TeamCommand {
                         colorChatComponent(EnumChatFormatting.GOLD, targetName));
             }
         }
+
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(p -> NetworkHandler.instance.sendTo(packet, p));
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -399,6 +431,10 @@ public class TeamCommand {
                         colorChatComponent(EnumChatFormatting.GOLD, targetName));
             }
         }
+
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(p -> NetworkHandler.instance.sendTo(packet, p));
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -452,6 +488,12 @@ public class TeamCommand {
             if (owner != null) owner.addChatMessage(notification);
         }
 
+        TeamMergeSync sourcePacket = TeamNetwork.createTeamMergeSyncPacket(source);
+        TeamManager.forEachOnlineTeamMember(source, member -> NetworkHandler.instance.sendTo(sourcePacket, member));
+
+        TeamMergeSync targetPacket = TeamNetwork.createTeamMergeSyncPacket(target);
+        TeamManager.forEachOnlineTeamMember(target, member -> NetworkHandler.instance.sendTo(targetPacket, member));
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -500,6 +542,20 @@ public class TeamCommand {
             if (member != null) member.addChatMessage(notification);
         }
 
+        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket();
+        ServerPlayerUtils.forAllOnlinePlayers(p -> NetworkHandler.instance.sendTo(packet, p));
+        // Sync invited players of the consumed team to its members since those invites would be invalidated
+        TeamManager.forEachOnlineTeamMember(
+                target,
+                member -> NetworkHandler.instance
+                        .sendTo(TeamNetwork.createPlayerInviteSyncPacket(member.getUniqueID()), member));
+        TeamMergeSync mergePacket = TeamNetwork.createTeamMergeSyncPacket(target);
+        TeamDataSync dataPacket = TeamNetwork.createCompleteTeamDataSyncPacket(target);
+        TeamManager.forEachOnlineTeamMember(target, member -> {
+            NetworkHandler.instance.sendTo(mergePacket, member);
+            NetworkHandler.instance.sendTo(dataPacket, member);
+        });
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -528,6 +584,12 @@ public class TeamCommand {
         }
 
         TeamManager.removePendingMergeRequest(source, target);
+
+        TeamMergeSync sourcePacket = TeamNetwork.createTeamMergeSyncPacket(source);
+        TeamManager.forEachOnlineTeamMember(source, member -> NetworkHandler.instance.sendTo(sourcePacket, member));
+
+        TeamMergeSync targetPacket = TeamNetwork.createTeamMergeSyncPacket(target);
+        TeamManager.forEachOnlineTeamMember(target, member -> NetworkHandler.instance.sendTo(targetPacket, member));
 
         ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
         sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
