@@ -27,6 +27,7 @@ public class DirectTessellator extends Tessellator {
 
     protected VertexFormat format;
 
+    @Deprecated // Idk what to do with this, this has caused me too much headache
     protected VertexFormat preDefinedFormat;
 
     protected final ByteBuffer baseBuffer; // never resized, only freed if deleteAfter is true
@@ -64,20 +65,57 @@ public class DirectTessellator extends Tessellator {
         return this.vertexCount * 32;
     }
 
-    protected int interceptDraw(Tessellator tessellator) {
-        this.vertexCount = tessellator.vertexCount;
-        this.hasColor = tessellator.hasColor;
-        this.hasTexture = tessellator.hasTexture;
-        this.hasBrightness = tessellator.hasBrightness;
-        this.hasNormals = tessellator.hasNormals;
-        this.isColorDisabled = tessellator.isColorDisabled;
-        this.drawMode = tessellator.drawMode;
+    public final void syncVanillaTessellator() {
+        syncTessellator(TessellatorManager.getVanillaTessellator());
+    }
+
+    public final void syncTessellator(Tessellator other) {
+        if (!other.isDrawing || other.vertexCount == 0) return; // Not drawing, nothing to sync
+
+        // Cannot merge when both tessellators are drawing with different draw mode
+        if (this.isDrawing && other.drawMode != this.drawMode) {
+            TessellatorManager.LOGGER.error(
+                    "Failed draw merging between 2 Tessellators due to mismatching draw mode! Discarding data.",
+                    new IllegalStateException());
+            return;
+        }
+
+        // If this tessellator has emitted a vertex, try to merge their data together
+        // Really scuffed, but should cover some rare edge-cases
+
+        this.isDrawing = true;
+        this.vertexCount = this.vertexCount + other.vertexCount;
+        this.isColorDisabled = other.isColorDisabled;
+
+        if (other.hasColor) {
+            this.setColorRGBA_I(other.color, other.color >> 24);
+        }
+        if (other.hasTexture) {
+            this.setTextureUV(other.textureU, other.textureV);
+        }
+        if (other.hasBrightness) {
+            this.setBrightness(other.brightness);
+        }
+        if (other.hasNormals) {
+            final int normal = other.normal;
+            byte b0 = (byte) (normal & 0xFF);
+            byte b1 = (byte) ((normal >> 8) & 0xFF);
+            byte b2 = (byte) ((normal >> 16) & 0xFF);
+            this.setNormal(b0, b1, b2);
+        }
+
         this.format = preDefinedFormat != null ? preDefinedFormat : getOptimalVertexFormat();
 
-        ensureCapacity(tessellator.vertexCount * format.getVertexSize());
+        ensureCapacity(other.vertexCount * format.getVertexSize());
 
-        writePtr = writeVertexData(format, tessellator.rawBuffer, tessellator.rawBufferIndex);
+        writePtr = writeVertexData(format, other.rawBuffer, other.rawBufferIndex);
 
+        TessellatorManager.discardTessellator(other);
+
+    }
+
+    protected int interceptDraw(Tessellator tessellator) {
+        syncTessellator(tessellator);
         return draw();
     }
 
@@ -99,7 +137,6 @@ public class DirectTessellator extends Tessellator {
         this.isColorDisabled = false;
 
         this.format = null;
-        this.preDefinedFormat = null;
 
         if (isResized()) {
             nmemFree(startPtr);
@@ -111,15 +148,16 @@ public class DirectTessellator extends Tessellator {
     }
 
     @Override
-    public final void startDrawing(int p_78371_1_) {
+    public void startDrawing(int p_78371_1_) {
         if (this.isDrawing) {
             throw new IllegalStateException("Already tesselating!");
         }
+        reset();
         this.isDrawing = true;
         this.drawMode = p_78371_1_;
     }
 
-    private void ensureCapacity(int bytes) {
+    protected final void ensureCapacity(int bytes) {
         if (bufferRemaining() >= bytes) {
             return;
         }
@@ -153,17 +191,20 @@ public class DirectTessellator extends Tessellator {
 
         ensureCapacity(this.format.getVertexSize());
 
-        writePtr = format.writeToBuffer0(
-                writePtr,
-                this,
-                (float) (x + this.xOffset),
-                (float) (y + this.yOffset),
-                (float) (z + this.zOffset));
+        writeVertex((float) (x + xOffset), (float) (y + yOffset), (float) (z + zOffset));
         this.vertexCount++;
     }
 
+    public final void writeVertex(float x, float y, float z) {
+        writePtr = format.writeToBuffer0(writePtr, this, x, y, z);
+    }
+
+    public final void writeVertex(double x, double y, double z) {
+        writeVertex((float) x, (float) y, (float) z);
+    }
+
     @Override
-    public final void setTextureUV(double p_78385_1_, double p_78385_3_) {
+    public void setTextureUV(double u, double v) {
         if (!hasTexture) {
             if (preDefinedFormat != null) return;
 
@@ -174,12 +215,16 @@ public class DirectTessellator extends Tessellator {
             }
         }
 
-        this.textureU = p_78385_1_;
-        this.textureV = p_78385_3_;
+        writeTextureUV(u, v);
+    }
+
+    public final void writeTextureUV(double u, double v) {
+        this.textureU = u;
+        this.textureV = v;
     }
 
     @Override
-    public final void setNormal(float nx, float ny, float nz) {
+    public void setNormal(float nx, float ny, float nz) {
         if (!hasNormals) {
             if (preDefinedFormat != null) return;
 
@@ -190,14 +235,18 @@ public class DirectTessellator extends Tessellator {
             }
         }
 
+        writeNormal(nx, ny, nz);
+    }
+
+    public final void writeNormal(float nx, float ny, float nz) {
         byte b0 = (byte) ((int) (nx * 127.0F));
         byte b1 = (byte) ((int) (ny * 127.0F));
         byte b2 = (byte) ((int) (nz * 127.0F));
-        this.normal = b0 & 255 | (b1 & 255) << 8 | (b2 & 255) << 16;
+        this.normal = (b0 & 255 | (b1 & 255) << 8 | (b2 & 255) << 16);
     }
 
     @Override
-    public final void setColorRGBA(int red, int green, int blue, int alpha) {
+    public void setColorRGBA(int red, int green, int blue, int alpha) {
         if (this.isColorDisabled) return;
 
         if (!this.hasColor) {
@@ -234,7 +283,15 @@ public class DirectTessellator extends Tessellator {
             alpha = 0;
         }
 
+        writeColor(red, green, blue, alpha);
+    }
+
+    public final void writeColor(int red, int green, int blue, int alpha) {
         this.color = alpha << 24 | blue << 16 | green << 8 | red;
+    }
+
+    public final void writeColor(int color) {
+        this.color = color;
     }
 
     @Override
@@ -346,10 +403,11 @@ public class DirectTessellator extends Tessellator {
         this.format = newFormat;
     }
 
-    private VertexFormat getOptimalVertexFormat() {
+    protected final VertexFormat getOptimalVertexFormat() {
         return VertexFlags.getFormat(this);
     }
 
+    @Deprecated // Idk what to do with this, this has caused me too much headache
     public final void setVertexFormat(VertexFormat format) {
         if (this.format != null) {
             throw new IllegalStateException("Cannot call setVertexFormat() after a vertex has already been emitted!");
@@ -421,6 +479,7 @@ public class DirectTessellator extends Tessellator {
     }
 
     protected void onRemovedFromStack() {
+        this.preDefinedFormat = null;
         reset();
         if (this.deleteAfter) {
             delete();
@@ -453,7 +512,7 @@ public class DirectTessellator extends Tessellator {
         return TessellatorManager.startCapturingDirect(format);
     }
 
-    @Beta // Not a stable API. May change in the future.
+    @Deprecated
     public static CallbackTessellator startCapturing(DirectDrawCallback callback) {
         return TessellatorManager.startCapturingDirect(callback);
     }

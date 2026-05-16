@@ -13,6 +13,7 @@ import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.*;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -186,9 +187,13 @@ public class DirectTessellatorTest {
         AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
         final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
-        tess.setDrawCallback(t -> {
-            callbackCalled.set(true);
-            return true; // request reset
+        VertexCallbackManager.pushCallback(new TessellatorCallback() {
+
+            @Override
+            public boolean onDraw(CallbackTessellator tessellator) {
+                callbackCalled.set(true);
+                return true; // request reset
+            }
         });
 
         tess.startDrawing(0);
@@ -200,13 +205,20 @@ public class DirectTessellatorTest {
         assertEquals(0, tess.vertexCount);
         assertEquals(tess.startPtr, tess.writePtr);
         assertTrue(bytes > 0);
+        VertexCallbackManager.popCallback();
     }
 
     @Test
     void testInterceptDrawCopiesVertices() {
         Tessellator vanilla = Tessellator.instance;
         final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
-        tess.setDrawCallback((t) -> false);
+        VertexCallbackManager.pushCallback(new TessellatorCallback() {
+
+            @Override
+            public boolean onDraw(CallbackTessellator tessellator) {
+                return false;
+            }
+        });
         vanilla.startDrawing(0);
         vanilla.addVertex(1, 2, 3);
         vanilla.addVertex(4, 5, 6);
@@ -214,7 +226,7 @@ public class DirectTessellatorTest {
         int bytes = tess.interceptDraw(vanilla);
 
         assertEquals(2, tess.vertexCount);
-        assertTrue(bytes > 0);
+        assertEquals(0, bytes);
 
         long ptr = tess.startPtr;
 
@@ -227,6 +239,7 @@ public class DirectTessellatorTest {
         assertEquals(4f, memGetFloat(ptr), 0.0001f);
         assertEquals(5f, memGetFloat(ptr + 4), 0.0001f);
         assertEquals(6f, memGetFloat(ptr + 8), 0.0001f);
+        VertexCallbackManager.popCallback();
     }
 
     @Test
@@ -265,6 +278,7 @@ public class DirectTessellatorTest {
 
     @Test
     void testPreDefinedVertexFormat() {
+        assertFalse(tess.hasColor);
         tess.setVertexFormat(DefaultVertexFormat.POSITION);
         tess.startDrawing(0);
         tess.setColorRGBA(255, 255, 255, 255);

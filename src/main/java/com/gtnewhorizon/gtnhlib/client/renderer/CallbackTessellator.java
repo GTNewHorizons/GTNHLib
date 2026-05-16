@@ -1,22 +1,12 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager.callback;
+
 import java.nio.ByteBuffer;
 
-import net.minecraft.client.renderer.Tessellator;
+import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
 
 public final class CallbackTessellator extends DirectTessellator {
-
-    private DirectDrawCallback drawCallback;
-
-    public CallbackTessellator(DirectDrawCallback callback) {
-        super(Tessellator.byteBuffer);
-        this.drawCallback = callback;
-    }
-
-    public CallbackTessellator(ByteBuffer initial, DirectDrawCallback callback) {
-        super(initial);
-        this.drawCallback = callback;
-    }
 
     public CallbackTessellator(ByteBuffer initial) {
         super(initial);
@@ -32,14 +22,122 @@ public final class CallbackTessellator extends DirectTessellator {
 
     @Override
     public int draw() {
-        final int result = super.draw();
-        if (drawCallback.onDraw(this)) {
-            this.reset();
+        if (callback.onDraw(this)) {
+            final int result = super.draw();
+            reset();
+            return result;
         }
-        return result;
+
+        return 0; // onDraw returns false -> no draw happening
     }
 
-    public void setDrawCallback(DirectDrawCallback drawCallback) {
-        this.drawCallback = drawCallback;
+    @Override
+    public void startDrawing(int drawMode) {
+        if (callback.onStartDrawing(this, drawMode)) {
+            reset();
+            this.isDrawing = true;
+            this.drawMode = drawMode;
+        }
+    }
+
+    @Override
+    public void addVertex(double x, double y, double z) {
+        if (format == null) {
+            this.format = getOptimalVertexFormat();
+        }
+
+        ensureCapacity(this.format.getVertexSize());
+
+        callback.onVertex(this, x, y, z);
+        this.vertexCount++;
+    }
+
+    @Override
+    public void setTextureUV(double u, double v) {
+        if (!hasTexture) {
+            if (preDefinedFormat != null) return;
+
+            this.hasTexture = true;
+
+            if (format != null) {
+                fixBufferFormat();
+            }
+        }
+
+        callback.onTextureUV(this, u, v);
+    }
+
+    @Override
+    public void setNormal(float nx, float ny, float nz) {
+        if (!hasNormals) {
+            if (preDefinedFormat != null) return;
+
+            this.hasNormals = true;
+
+            if (format != null) {
+                fixBufferFormat();
+            }
+        }
+
+        callback.onNormal(this, nx, ny, nz);
+    }
+
+    @Override
+    public void setColorRGBA(int red, int green, int blue, int alpha) {
+        if (this.isColorDisabled) return;
+
+        if (!this.hasColor) {
+            if (preDefinedFormat != null) return;
+
+            this.hasColor = true;
+
+            if (format != null) {
+                fixBufferFormat();
+            }
+        }
+
+        if (red > 255) {
+            red = 255;
+        } else if (red < 0) {
+            red = 0;
+        }
+
+        if (green > 255) {
+            green = 255;
+        } else if (green < 0) {
+            green = 0;
+        }
+
+        if (blue > 255) {
+            blue = 255;
+        } else if (blue < 0) {
+            blue = 0;
+        }
+
+        if (alpha > 255) {
+            alpha = 255;
+        } else if (alpha < 0) {
+            alpha = 0;
+        }
+
+        callback.onColor(this, red, green, blue, alpha);
+    }
+
+    @Override
+    protected void onRemovedFromStack() {
+        super.onRemovedFromStack();
+        VertexCallbackManager.popCallback();
+    }
+
+    public double getXOffset() {
+        return this.xOffset;
+    }
+
+    public double getYOffset() {
+        return this.yOffset;
+    }
+
+    public double getZOffset() {
+        return this.zOffset;
     }
 }
