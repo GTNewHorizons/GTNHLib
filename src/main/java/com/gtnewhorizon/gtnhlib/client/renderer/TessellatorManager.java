@@ -26,7 +26,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 @SuppressWarnings("unused")
 public class TessellatorManager {
 
-    private static final Logger LOGGER = LogManager.getLogger("TessellatorManager");
+    public static final Logger LOGGER = LogManager.getLogger("TessellatorManager");
 
     private enum CaptureMode {
         CAPTURING, // startCapturing() - batch mode until explicit stop
@@ -583,8 +583,7 @@ public class TessellatorManager {
             final DirectTessellator tessellator = getDirectTessellator();
             final int result = tessellator.interceptDraw(tess);
 
-            tess.isDrawing = false;
-            tess.reset();
+            discardTessellator(tess);
             return result;
         }
 
@@ -854,6 +853,20 @@ public class TessellatorManager {
         tess.clearQuads();
         tess.discard();
         tess.restoreTranslation();
+    }
+
+    public static void discardTessellator(Tessellator tessellator) {
+        tessellator.reset();
+        tessellator.isDrawing = false;
+        tessellator.hasNormals = false;
+        tessellator.hasColor = false;
+        tessellator.hasTexture = false;
+        tessellator.hasBrightness = false;
+        tessellator.isColorDisabled = false;
+    }
+
+    public static Tessellator getVanillaTessellator() {
+        return Tessellator.instance;
     }
 
 }

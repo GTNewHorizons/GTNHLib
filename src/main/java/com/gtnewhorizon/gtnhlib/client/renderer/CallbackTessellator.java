@@ -23,10 +23,12 @@ public final class CallbackTessellator extends DirectTessellator {
     @Override
     public int draw() {
         if (callback.onDraw(this)) {
-            return super.draw();
+            final int result = super.draw();
+            reset();
+            return result;
         }
-        reset();
-        return 0;
+
+        return 0; // onDraw returns false -> no draw happening
     }
 
     @Override

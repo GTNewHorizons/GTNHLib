@@ -230,9 +230,13 @@ public class VertexFormat {
         return (vertexFlags & BRIGHTNESS_BIT) != 0;
     }
 
+    public final VertexFormat getSharedFormat(VertexFormat other) {
+        return VertexFlags.getFormat(this.hasTexture() || other.hasTexture(), this.hasColor() || other.hasColor(), this.hasNormals() || other.hasNormals(), this.hasBrightness() || other.hasBrightness());
+    }
+
     @Override
     public String toString() {
-        return getClass().getName() + "[size="
+        return "VertexFormat[size="
                 + vertexSize
                 + " hasTexture="
                 + hasTexture()
