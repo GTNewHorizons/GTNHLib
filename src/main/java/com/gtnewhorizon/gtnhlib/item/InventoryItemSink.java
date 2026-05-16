@@ -19,6 +19,7 @@ public class InventoryItemSink implements ItemSink {
     private final ForgeDirection side;
 
     private int[] allowedSlots;
+    private int slotStackLimit = Integer.MAX_VALUE;
 
     public InventoryItemSink(IInventory inv, ForgeDirection side) {
         this.inv = inv;
@@ -37,11 +38,17 @@ public class InventoryItemSink implements ItemSink {
     public void resetSink() {
         ItemSink.super.resetSink();
         allowedSlots = null;
+        slotStackLimit = Integer.MAX_VALUE;
     }
 
     @Override
     public void setAllowedSinkSlots(int @Nullable [] slots) {
         this.allowedSlots = slots;
+    }
+
+    @Override
+    public void setSlotStackLimit(int limit) {
+        this.slotStackLimit = limit;
     }
 
     @Override
@@ -98,11 +105,14 @@ public class InventoryItemSink implements ItemSink {
 
         int existingMaxStack = stack == null ? 64 : stack.getMaxStackSize();
 
+        int baseLimit;
         if (invStackLimit > 64) {
-            return invStackLimit / 64 * existingMaxStack;
+            baseLimit = invStackLimit / 64 * existingMaxStack;
         } else {
-            return Math.min(invStackLimit, existingMaxStack);
+            baseLimit = Math.min(invStackLimit, existingMaxStack);
         }
+
+        return Math.min(baseLimit, slotStackLimit);
     }
 
     @Override

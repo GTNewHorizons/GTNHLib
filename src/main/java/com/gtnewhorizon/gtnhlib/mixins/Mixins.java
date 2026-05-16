@@ -32,6 +32,8 @@ public enum Mixins implements IMixins {
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
+    MODEL_BLOCK_CRACKS(new MixinBuilder("Fix crack texture appearance for modeled blocks")
+            .addClientMixins("models.MixinRenderGlobal").setPhase(Phase.EARLY)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
             .addCommonMixins(
                     "block_sounds.MixinEntity",
@@ -56,7 +58,9 @@ public enum Mixins implements IMixins {
             "Allow Thaumcraft Infusion Recipes to transform items instead of consuming them in an EnhancedInfusionRecipe")
                     .setPhase(Phase.LATE).addCommonMixins("MixinEnhancedInfusionRecipe")
                     .addRequiredMod(TargetMods.THAUMCRAFT)),
-    CONFIG_ORDER(Side.CLIENT, "fml.MixinGuiConfig")
+    CONFIG_ORDER(Side.CLIENT, "fml.MixinGuiConfig"),
+    TITLE_OVERLAY(Side.CLIENT, "MixinGuiIngameForge_TitleRender", "MixinGuiIngame_TitleTick"),
+    WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld")
     //
     ;
 
