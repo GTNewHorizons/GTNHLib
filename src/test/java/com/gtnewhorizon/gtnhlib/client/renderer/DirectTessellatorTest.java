@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
 import net.minecraft.client.renderer.Tessellator;
 
 import org.joml.Matrix4f;
@@ -14,6 +13,7 @@ import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.*;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -188,6 +188,7 @@ public class DirectTessellatorTest {
 
         final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
         VertexCallbackManager.pushCallback(new TessellatorCallback() {
+
             @Override
             public boolean onDraw(CallbackTessellator tessellator) {
                 callbackCalled.set(true);
@@ -212,6 +213,7 @@ public class DirectTessellatorTest {
         Tessellator vanilla = Tessellator.instance;
         final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
         VertexCallbackManager.pushCallback(new TessellatorCallback() {
+
             @Override
             public boolean onDraw(CallbackTessellator tessellator) {
                 return false;

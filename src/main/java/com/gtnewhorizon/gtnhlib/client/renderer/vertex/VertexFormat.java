@@ -231,13 +231,16 @@ public class VertexFormat {
     }
 
     public final VertexFormat getSharedFormat(VertexFormat other) {
-        return VertexFlags.getFormat(this.hasTexture() || other.hasTexture(), this.hasColor() || other.hasColor(), this.hasNormals() || other.hasNormals(), this.hasBrightness() || other.hasBrightness());
+        return VertexFlags.getFormat(
+                this.hasTexture() || other.hasTexture(),
+                this.hasColor() || other.hasColor(),
+                this.hasNormals() || other.hasNormals(),
+                this.hasBrightness() || other.hasBrightness());
     }
 
     @Override
     public String toString() {
-        return "VertexFormat[size="
-                + vertexSize
+        return "VertexFormat[size=" + vertexSize
                 + " hasTexture="
                 + hasTexture()
                 + " hasColor="

@@ -72,11 +72,11 @@ public class DirectTessellator extends Tessellator {
     public final void syncTessellator(Tessellator other) {
         if (!other.isDrawing || other.vertexCount == 0) return; // Not drawing, nothing to sync
 
-
         // Cannot merge when both tessellators are drawing with different draw mode
         if (this.isDrawing && other.drawMode != this.drawMode) {
             TessellatorManager.LOGGER.error(
-                "Failed draw merging between 2 Tessellators due to mismatching draw mode! Discarding data.", new IllegalStateException());
+                    "Failed draw merging between 2 Tessellators due to mismatching draw mode! Discarding data.",
+                    new IllegalStateException());
             return;
         }
 
