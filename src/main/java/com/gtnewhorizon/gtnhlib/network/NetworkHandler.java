@@ -18,6 +18,7 @@ public class NetworkHandler {
         instance.toClient(new MessageTitle());
         instance.toClient(new TeamInfoSync());
         instance.toClient(new TeamDataSync());
+        instance.toClient(new PlayerDataSync());
 
         instance.toServer(new PacketKeyDown());
     }
