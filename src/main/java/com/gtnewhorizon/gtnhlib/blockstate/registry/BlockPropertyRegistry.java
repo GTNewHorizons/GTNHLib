@@ -187,21 +187,31 @@ public class BlockPropertyRegistry {
         while (!queue.isEmpty()) {
             Type curr = queue.removeFirst();
 
-            IFACE_PROPERTIES.copyAll(curr, cache);
+            try {
+                IFACE_PROPERTIES.copyAll(curr, cache);
 
-            if (curr instanceof Class<?>clazz2) {
-                for (Type iface : clazz2.getGenericInterfaces()) {
-                    queue.addAndMoveToFirst(iface);
-                }
+                if (curr instanceof Class<?>clazz2) {
+                    try {
+                        for (Type iface : clazz2.getGenericInterfaces()) {
+                            queue.addAndMoveToFirst(iface);
+                        }
+                    } catch (TypeNotPresentException | LinkageError ignore) {}
 
-                for (Type iface : clazz2.getInterfaces()) {
-                    queue.addAndMoveToFirst(iface);
-                }
+                    try {
+                        for (Type iface : clazz2.getInterfaces()) {
+                            queue.addAndMoveToFirst(iface);
+                        }
+                    } catch (TypeNotPresentException | LinkageError ignore) {}
 
-                if (clazz2.getSuperclass() != null && clazz2.getSuperclass() != Object.class) {
-                    queue.add(clazz2.getGenericSuperclass());
-                    queue.add(clazz2.getSuperclass());
+                    if (clazz2.getSuperclass() != null && clazz2.getSuperclass() != Object.class) {
+                        try {
+                            queue.add(clazz2.getGenericSuperclass());
+                            queue.add(clazz2.getSuperclass());
+                        } catch (TypeNotPresentException | LinkageError ignore) {}
+                    }
                 }
+            } catch (TypeNotPresentException | LinkageError ignore) {
+
             }
         }
 
