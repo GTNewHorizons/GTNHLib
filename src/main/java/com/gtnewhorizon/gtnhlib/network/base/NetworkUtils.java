@@ -52,6 +52,22 @@ public final class NetworkUtils {
         return FluidStack.loadFluidStackFromNBT(buffer.readNBTTagCompoundFromBuffer());
     }
 
+    public static void writeString(PacketBuffer buffer, String string) {
+        try {
+            buffer.writeStringToBuffer(string);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write string: " + string, e);
+        }
+    }
+
+    public static String readString(PacketBuffer buffer) {
+        try {
+            return buffer.readStringFromBuffer(MAX_STRING_BYTES);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read string", e);
+        }
+    }
+
     public static void writeEnumValue(PacketBuffer buffer, Enum<?> value) {
         buffer.writeVarIntToBuffer(value.ordinal());
     }
