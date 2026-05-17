@@ -17,7 +17,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class BlockTest extends Block {
 
     /// This default blockstate
-    private final AbstractDirectionBlockProperty FACING_PROP = (AbstractDirectionBlockProperty) DirectionBlockProperty
+    public final AbstractDirectionBlockProperty FACING_PROP = (AbstractDirectionBlockProperty) DirectionBlockProperty
             .facing();
 
     public BlockTest() {

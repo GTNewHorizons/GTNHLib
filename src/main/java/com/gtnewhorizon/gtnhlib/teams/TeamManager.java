@@ -115,8 +115,16 @@ public class TeamManager {
         TEAMS.remove(consumed);
         TEAM_MAP.remove(consumed.getTeamId());
         PENDING_MERGE_REQUESTS.remove(consumed);
+        PENDING_MERGE_REQUESTS.forEach((target, sourceSet) -> sourceSet.remove(consumed));
         surviving.markDirty();
         consumed.markRemoved();
+
+        PENDING_INVITES.forEach((player, teamSet) -> {
+            if (teamSet.contains(consumed)) {
+                // adding more code here for UI later
+                teamSet.remove(consumed);
+            }
+        });
     }
 
     public static void copyTeamData(Team prevTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {

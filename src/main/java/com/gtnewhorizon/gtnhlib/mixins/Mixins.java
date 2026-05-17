@@ -32,6 +32,8 @@ public enum Mixins implements IMixins {
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
+    MODEL_BLOCK_CRACKS(new MixinBuilder("Fix crack texture appearance for modeled blocks")
+            .addClientMixins("models.MixinRenderGlobal").setPhase(Phase.EARLY)),
     DYNAMIC_BLOCK_SOUNDS(new MixinBuilder("Dynamic block sounds")
             .addCommonMixins(
                     "block_sounds.MixinEntity",

@@ -41,4 +41,8 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart
     public static boolean enableTestItems;
+
+    @Config.Comment("Swaps out the block crack texture on modeled blocks, to make it easier to see the rotation.")
+    @Config.DefaultBoolean(false)
+    public static boolean testCrackTexture;
 }

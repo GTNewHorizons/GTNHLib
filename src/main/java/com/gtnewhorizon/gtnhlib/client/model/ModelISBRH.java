@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.model;
 
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.*;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.*;
+import static java.lang.Float.intBitsToFloat;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
@@ -33,6 +34,7 @@ import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
@@ -126,15 +128,82 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
-        // TODO: Respect overrideIcon
+        final var overrideTex = overrideIcon != null;
+        float u, v;
         for (int i = 0; i < 4; ++i) {
-            tessellator.addVertexWithUV(
-                    quad.getX(i) + x,
-                    quad.getY(i) + y,
-                    quad.getZ(i) + z,
-                    quad.getTexU(i),
-                    quad.getTexV(i));
+            if (overrideTex) {
+                final long pUV = getOverrideUV(quad, i);
+                u = intBitsToFloat((int) (pUV >> 32));
+                v = intBitsToFloat((int) pUV);
+            } else {
+                u = quad.getTexU(i);
+                v = quad.getTexV(i);
+            }
+
+            tessellator.addVertexWithUV(quad.getX(i) + x, quad.getY(i) + y, quad.getZ(i) + z, u, v);
         }
+    }
+
+    /// This returns u,v packed in a long bitwise, because Java doesn't have tuple returns. This isn't for performance,
+    /// just clarity so I can set u and v in the same function.
+    private long getOverrideUV(ModelQuadView quad, int idx) {
+        ModelQuadFacing side = quad.getNormalFace();
+        float x = quad.getX(idx);
+        float y = quad.getY(idx);
+        float z = quad.getZ(idx);
+
+        if (side == ModelQuadFacing.UNASSIGNED) {
+            int packedNormal = quad.getComputedFaceNormal();
+            float nx = NormI8.unpackX(packedNormal);
+            float ny = NormI8.unpackY(packedNormal);
+            float nz = NormI8.unpackZ(packedNormal);
+
+            float ax = Math.abs(nx);
+            float ay = Math.abs(ny);
+            float az = Math.abs(nz);
+
+            if (ay >= ax && ay >= az) {
+                side = (ny > 0) ? ModelQuadFacing.POS_Y : ModelQuadFacing.NEG_Y;
+            } else if (az >= ax && az >= ay) {
+                side = (nz > 0) ? ModelQuadFacing.POS_Z : ModelQuadFacing.NEG_Z;
+            } else {
+                side = (nx > 0) ? ModelQuadFacing.POS_X : ModelQuadFacing.NEG_X;
+            }
+        }
+
+        float u, v;
+        switch (side) {
+            case POS_X -> { // EAST
+                u = 1.0f - z;
+                v = y;
+            }
+            case NEG_X -> { // WEST
+                u = z;
+                v = y;
+            }
+            case POS_Y -> { // UP
+                u = x;
+                v = z;
+            }
+            case NEG_Y -> { // DOWN
+                u = x;
+                v = 1.0f - z;
+            }
+            case POS_Z -> { // SOUTH
+                u = x;
+                v = y;
+            }
+            case NEG_Z -> { // NORTH
+                u = 1.0f - x;
+                v = y;
+            }
+            default -> { // Fallback
+                u = x;
+                v = y;
+            }
+        }
+
+        return ((long) Float.floatToIntBits(u) << 32) | (Float.floatToIntBits(v) & 0xFFFFFFFFL);
     }
 
     public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,

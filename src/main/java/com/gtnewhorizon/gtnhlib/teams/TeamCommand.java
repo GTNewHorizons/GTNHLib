@@ -26,6 +26,7 @@ import net.minecraft.util.EnumChatFormatting;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
+import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -139,7 +140,7 @@ public class TeamCommand {
     }
 
     private static int executeRename(ICommandSender sender, String newName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -154,7 +155,7 @@ public class TeamCommand {
         TeamManager.forEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
 
         for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) success(
                     member,
                     "gtnhlib.chat.teams.message.renamed_team",
@@ -165,7 +166,7 @@ public class TeamCommand {
     }
 
     private static int executeInvite(ICommandSender sender, String targetName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -199,7 +200,7 @@ public class TeamCommand {
     }
 
     private static int executeAccept(ICommandSender sender, String teamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
         UUID playerId = player.getUniqueID();
 
@@ -228,11 +229,11 @@ public class TeamCommand {
             currentTeam.removeMember(playerId);
 
             for (UUID memberUuid : currentTeam.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.other_left_team",
-                        colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+                        colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
             }
 
             if (currentTeam.getMembers().isEmpty()) {
@@ -244,11 +245,11 @@ public class TeamCommand {
 
         // Done before player is added to team so that they are not notified of their own join
         for (UUID memberUuid : invitedTeam.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) success(
                     member,
                     "gtnhlib.chat.teams.message.other_joined_team",
-                    colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
         }
 
         invitedTeam.addMember(playerId);
@@ -264,7 +265,7 @@ public class TeamCommand {
     }
 
     private static int executeDeny(ICommandSender sender, String teamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Set<Team> invites = TeamManager.getPendingInvites(player.getUniqueID());
@@ -290,7 +291,7 @@ public class TeamCommand {
     }
 
     private static int executeLeave(ICommandSender sender) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
         UUID playerId = player.getUniqueID();
 
@@ -314,11 +315,11 @@ public class TeamCommand {
         }
 
         for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) success(
                     member,
                     "gtnhlib.chat.teams.message.other_left_team",
-                    colorChatComponent(EnumChatFormatting.GOLD, player.getDisplayName()));
+                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
         }
 
         // Create a new solo team for the player
@@ -332,7 +333,7 @@ public class TeamCommand {
     }
 
     private static int executePromote(ICommandSender sender, String targetName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -346,7 +347,7 @@ public class TeamCommand {
         if (team.isOfficer(targetUuid)) {
             team.addOwner(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.promoted_to_owner",
@@ -355,7 +356,7 @@ public class TeamCommand {
         } else {
             team.addOfficer(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.promoted_to_officer",
@@ -366,7 +367,7 @@ public class TeamCommand {
     }
 
     private static int executeDemote(ICommandSender sender, String targetName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -382,7 +383,7 @@ public class TeamCommand {
         if (team.isOwner(targetUuid)) {
             team.removeOwner(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.demoted_to_officer",
@@ -391,7 +392,7 @@ public class TeamCommand {
         } else {
             team.removeOfficer(targetUuid);
             for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
                 if (member != null) success(
                         member,
                         "gtnhlib.chat.teams.message.demoted_to_member",
@@ -402,7 +403,7 @@ public class TeamCommand {
     }
 
     private static int executeInfo(ICommandSender sender) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -414,7 +415,7 @@ public class TeamCommand {
     }
 
     private static int executeMergeRequest(ICommandSender sender, String targetTeamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team source = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -447,7 +448,7 @@ public class TeamCommand {
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID ownerUuid : target.getOwners()) {
-            EntityPlayer owner = sender.getEntityWorld().func_152378_a(ownerUuid); // getPlayerByUUID
+            EntityPlayer owner = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), ownerUuid);
             if (owner != null) owner.addChatMessage(notification);
         }
 
@@ -455,7 +456,7 @@ public class TeamCommand {
     }
 
     private static int executeMergeAccept(ICommandSender sender, String sourceTeamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -495,7 +496,7 @@ public class TeamCommand {
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID memberUuid : allMembers) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) member.addChatMessage(notification);
         }
 
@@ -503,7 +504,7 @@ public class TeamCommand {
     }
 
     private static int executeMergeDeny(ICommandSender sender, String sourceTeamName) {
-        EntityPlayer player = asPlayer(sender);
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
         Team target = TeamManager.getTeamByPlayer(player.getUniqueID());
@@ -556,7 +557,7 @@ public class TeamCommand {
         if (team == null) return builder.buildFuture();
 
         for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = sender.getEntityWorld().func_152378_a(memberUuid); // getPlayerByUUID
+            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
             if (member != null) builder.suggest(member.getCommandSenderName());
         }
         return builder.buildFuture();
@@ -601,11 +602,4 @@ public class TeamCommand {
         sender.addChatMessage(msg);
     }
 
-    private static EntityPlayer asPlayer(ICommandSender sender) {
-        if (!(sender instanceof EntityPlayer player)) {
-            sender.addChatMessage(new ChatComponentText("This command can only be used by a player."));
-            return null;
-        }
-        return player;
-    }
 }

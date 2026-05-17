@@ -4,11 +4,9 @@ import static cpw.mods.fml.relauncher.Side.CLIENT;
 
 import net.minecraftforge.client.model.IModelCustom;
 
-import com.google.common.annotations.Beta;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
-
 import cpw.mods.fml.relauncher.SideOnly;
 
+@Deprecated // Replaced in favor for WavefrontVBOBuilder. Will be migrated into Angelica for internal use later on.
 public interface IModelCustomExt extends IModelCustom {
 
     // There's no reason for another mod to call this, it should only be used internally.
@@ -22,13 +20,4 @@ public interface IModelCustomExt extends IModelCustom {
     @Deprecated // Same as renderAllVBO
     @SideOnly(CLIENT)
     void renderAllVAO();
-
-    // These will likely get removed/changed sooner or later
-    @Beta
-    @SideOnly(CLIENT)
-    void setVertexFormat(VertexFormat format);
-
-    @Beta
-    @SideOnly(CLIENT)
-    void setVertexFormat(VertexFormat format, boolean vao);
 }
