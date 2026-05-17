@@ -1,14 +1,14 @@
-package com.gtnewhorizon.gtnhlib.client.renderer.tessellator;
+package com.gtnewhorizon.gtnhlib.client.renderer;
 
 import static com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager.DIRECT_TESSELLATOR_STACK_DEPTH;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorCallback;
+import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.TessellatorCallback;
 
 public final class VertexCallbackManager {
 
     public static final TessellatorCallback DEFAULT = new TessellatorCallback() {};
 
-    public static TessellatorCallback callback;
+    static TessellatorCallback callback;
 
     private static final TessellatorCallback[] tessellatorCallbacks;
     private static int callbackIndex = 0; // Points to the TessellatorCallback in the stack
@@ -23,9 +23,13 @@ public final class VertexCallbackManager {
         callback = tessellatorCallbacks[callbackIndex];
     }
 
-    public static void pushCallback(TessellatorCallback callback) {
+    public static void pushCallback(CallbackTessellator parent, TessellatorCallback callback) {
         if (++callbackIndex >= DIRECT_TESSELLATOR_STACK_DEPTH) {
+            callbackIndex--;
             throw new IllegalStateException("VertexCallbackManager stack overflow");
+        }
+        if (parent != null) {
+            parent.needsPopCallback = true;
         }
         tessellatorCallbacks[callbackIndex] = callback;
         updateCallback();

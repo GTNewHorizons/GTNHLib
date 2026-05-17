@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.client.renderer;
 
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -9,7 +10,7 @@ import com.gtnewhorizon.gtnhlib.client.model.NormalHelper;
 
 public final class MatrixHelper {
 
-    private static final Matrix4f IDENTITY = new Matrix4f();
+    private static final Matrix4fc IDENTITY = new Matrix4f();
 
     public static boolean isIdentity(Matrix4f m) {
         return (m.properties() & Matrix4f.PROPERTY_IDENTITY) != 0 || m.equals(IDENTITY, 1e-6f);

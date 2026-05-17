@@ -32,6 +32,9 @@ public final class GlyphReplacements {
         return replacement;
     }
 
+    /**
+     * Gets a replacement glyph from the Map. If the char does not have a replacement glyph, it'll return 0 instead.
+     */
     public static char getReplacementGlyph(char ch) {
         return customGlyphsNew.get(ch);
     }

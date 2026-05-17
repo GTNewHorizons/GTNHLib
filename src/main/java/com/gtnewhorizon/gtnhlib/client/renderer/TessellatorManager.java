@@ -16,7 +16,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.line.ModelLine;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.tri.ModelTriangle;
-import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.TessellatorCallback;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VAOManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
@@ -350,9 +350,9 @@ public class TessellatorManager {
     }
 
     public static CallbackTessellator startCapturingDirect(TessellatorCallback callback) {
-        VertexCallbackManager.pushCallback(callback);
         final CallbackTessellator tessellator = mainInstanceInStack ? new CallbackTessellator(DEFAULT_BUFFER_SIZE)
                 : mainCallbackInstance;
+        VertexCallbackManager.pushCallback(tessellator, callback);
         setDirectTessellator(tessellator);
         return tessellator;
     }

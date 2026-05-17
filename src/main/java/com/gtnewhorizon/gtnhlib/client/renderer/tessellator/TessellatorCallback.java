@@ -1,4 +1,6 @@
-package com.gtnewhorizon.gtnhlib.client.renderer;
+package com.gtnewhorizon.gtnhlib.client.renderer.tessellator;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.CallbackTessellator;
 
 public interface TessellatorCallback {
 

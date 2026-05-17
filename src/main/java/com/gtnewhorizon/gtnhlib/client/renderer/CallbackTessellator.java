@@ -1,12 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager.callback;
+import static com.gtnewhorizon.gtnhlib.client.renderer.VertexCallbackManager.callback;
 
 import java.nio.ByteBuffer;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
-
 public final class CallbackTessellator extends DirectTessellator {
+
+    // Controls whether the Tessellator will call popCallback() afte it has been removed from the stack.
+    boolean needsPopCallback;
 
     public CallbackTessellator(ByteBuffer initial) {
         super(initial);
@@ -33,6 +34,9 @@ public final class CallbackTessellator extends DirectTessellator {
 
     @Override
     public void startDrawing(int drawMode) {
+        if (this.isDrawing) {
+            throw new IllegalStateException("Already tesselating!");
+        }
         if (callback.onStartDrawing(this, drawMode)) {
             reset();
             this.isDrawing = true;
@@ -126,7 +130,10 @@ public final class CallbackTessellator extends DirectTessellator {
     @Override
     protected void onRemovedFromStack() {
         super.onRemovedFromStack();
-        VertexCallbackManager.popCallback();
+        if (needsPopCallback) {
+            VertexCallbackManager.popCallback();
+            needsPopCallback = false;
+        }
     }
 
     public double getXOffset() {

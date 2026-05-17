@@ -7,7 +7,6 @@ import org.joml.Vector4f;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.CallbackTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.MatrixHelper;
-import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorCallback;
 
 public abstract class VertexTransformCallback implements TessellatorCallback {
 

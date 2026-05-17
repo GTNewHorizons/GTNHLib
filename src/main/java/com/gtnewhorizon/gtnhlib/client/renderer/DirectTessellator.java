@@ -84,6 +84,7 @@ public class DirectTessellator extends Tessellator {
         // Really scuffed, but should cover some rare edge-cases
 
         this.isDrawing = true;
+        this.drawMode = other.drawMode;
         this.vertexCount = this.vertexCount + other.vertexCount;
         this.isColorDisabled = other.isColorDisabled;
 
@@ -101,7 +102,11 @@ public class DirectTessellator extends Tessellator {
             byte b0 = (byte) (normal & 0xFF);
             byte b1 = (byte) ((normal >> 8) & 0xFF);
             byte b2 = (byte) ((normal >> 16) & 0xFF);
-            this.setNormal(b0, b1, b2);
+
+            float nx = b0 / 127.0f;
+            float ny = b1 / 127.0f;
+            float nz = b2 / 127.0f;
+            this.setNormal(nx, ny, nz);
         }
 
         this.format = preDefinedFormat != null ? preDefinedFormat : getOptimalVertexFormat();
@@ -407,7 +412,9 @@ public class DirectTessellator extends Tessellator {
         return VertexFlags.getFormat(this);
     }
 
-    @Deprecated // Idk what to do with this, this has caused me too much headache
+    // Method may change/get removed in the future.
+    // For future-proof use, use TessellatorManager#startCapturingDirect(VertexFormat)
+    @Deprecated
     public final void setVertexFormat(VertexFormat format) {
         if (this.format != null) {
             throw new IllegalStateException("Cannot call setVertexFormat() after a vertex has already been emitted!");

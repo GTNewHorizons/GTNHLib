@@ -13,7 +13,7 @@ import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.*;
 
-import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.VertexCallbackManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.tessellator.TessellatorCallback;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
@@ -187,7 +187,7 @@ public class DirectTessellatorTest {
         AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
         final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
-        VertexCallbackManager.pushCallback(new TessellatorCallback() {
+        VertexCallbackManager.pushCallback(tess, new TessellatorCallback() {
 
             @Override
             public boolean onDraw(CallbackTessellator tessellator) {
@@ -212,7 +212,7 @@ public class DirectTessellatorTest {
     void testInterceptDrawCopiesVertices() {
         Tessellator vanilla = Tessellator.instance;
         final CallbackTessellator tess = new CallbackTessellator(initialBuffer);
-        VertexCallbackManager.pushCallback(new TessellatorCallback() {
+        VertexCallbackManager.pushCallback(tess, new TessellatorCallback() {
 
             @Override
             public boolean onDraw(CallbackTessellator tessellator) {
