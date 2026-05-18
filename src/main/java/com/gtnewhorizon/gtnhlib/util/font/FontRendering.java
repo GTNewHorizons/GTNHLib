@@ -101,7 +101,8 @@ public class FontRendering {
                 || cl == 'x'
                 || cl == 'q'
                 || cl == 'z'
-                || cl == 'v';
+                || cl == 'v'
+                || cl == 'u';
         // Note: 'g' excluded — &g only valid as part of &g&#RRGGBB&#RRGGBB (handled by isAmpGradient)
     }
 
