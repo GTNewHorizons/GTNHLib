@@ -87,14 +87,10 @@ public class DirectTessellator extends Tessellator {
         this.drawMode = other.drawMode;
         this.isColorDisabled = other.isColorDisabled;
 
-        // If the other Tessellator has offsets set, copy them over
-        if (other.xOffset != 0) {
+        // If the other Tessellator has offsets set, use those instead
+        if (other.xOffset != 0 || other.yOffset != 0 || other.zOffset != 0) {
             this.xOffset = other.xOffset;
-        }
-        if (other.yOffset != 0) {
             this.yOffset = other.yOffset;
-        }
-        if (other.zOffset != 0) {
             this.zOffset = other.zOffset;
         }
 
