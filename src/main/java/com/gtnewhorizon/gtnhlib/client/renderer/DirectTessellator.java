@@ -85,8 +85,18 @@ public class DirectTessellator extends Tessellator {
 
         this.isDrawing = true;
         this.drawMode = other.drawMode;
-        this.vertexCount = this.vertexCount + other.vertexCount;
         this.isColorDisabled = other.isColorDisabled;
+
+        // If the other Tessellator has offsets set, copy them over
+        if (other.xOffset != 0) {
+            this.xOffset = other.xOffset;
+        }
+        if (other.yOffset != 0) {
+            this.yOffset = other.yOffset;
+        }
+        if (other.zOffset != 0) {
+            this.zOffset = other.zOffset;
+        }
 
         if (other.hasColor) {
             this.setColorRGBA_I(other.color, other.color >> 24);
@@ -108,6 +118,9 @@ public class DirectTessellator extends Tessellator {
             float nz = b2 / 127.0f;
             this.setNormal(nx, ny, nz);
         }
+
+        // Set vertexCount afterward (to not mess with fixBufferFormat())
+        this.vertexCount = this.vertexCount + other.vertexCount;
 
         this.format = preDefinedFormat != null ? preDefinedFormat : getOptimalVertexFormat();
 
@@ -488,6 +501,9 @@ public class DirectTessellator extends Tessellator {
     protected void onRemovedFromStack() {
         this.preDefinedFormat = null;
         reset();
+        this.xOffset = 0;
+        this.yOffset = 0;
+        this.zOffset = 0;
         if (this.deleteAfter) {
             delete();
         }

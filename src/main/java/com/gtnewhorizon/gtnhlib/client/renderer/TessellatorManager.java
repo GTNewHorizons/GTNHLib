@@ -306,6 +306,7 @@ public class TessellatorManager {
 
     private static void setDirectTessellator(DirectTessellator tessellator) {
         if (++directTessellatorIndex >= DIRECT_TESSELLATOR_STACK_DEPTH) {
+            directTessellatorIndex--;
             throw new IllegalStateException("DirectTessellator stack overflow");
         }
         mainInstanceInStack = mainInstanceInStack || tessellator.baseBuffer == Tessellator.byteBuffer;
