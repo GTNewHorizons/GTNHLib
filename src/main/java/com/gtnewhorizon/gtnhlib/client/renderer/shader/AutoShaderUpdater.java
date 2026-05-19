@@ -160,17 +160,21 @@ public class AutoShaderUpdater {
                     runnable.run(shader, vertexPath, fragmentPath);
                     ShaderProgram.clear();
                 }
-                Minecraft.getMinecraft().thePlayer.addChatMessage(
-                        new ChatComponentText("Updated Shaders " + rawVertexPath + " and " + rawFragmentPath));
+                if (Minecraft.getMinecraft().thePlayer != null) {
+                    Minecraft.getMinecraft().thePlayer.addChatMessage(
+                            new ChatComponentText("Updated Shaders " + rawVertexPath + " and " + rawFragmentPath));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
-                Minecraft.getMinecraft().thePlayer.addChatMessage(
-                        new ChatComponentText(
-                                EnumChatFormatting.RED + "Failed to update "
-                                        + rawVertexPath
-                                        + " or "
-                                        + rawFragmentPath
-                                        + ". See logs for more info."));
+                if (Minecraft.getMinecraft().thePlayer != null) {
+                    Minecraft.getMinecraft().thePlayer.addChatMessage(
+                            new ChatComponentText(
+                                    EnumChatFormatting.RED + "Failed to update "
+                                            + rawVertexPath
+                                            + " or "
+                                            + rawFragmentPath
+                                            + ". See logs for more info."));
+                }
             }
         }
     }
