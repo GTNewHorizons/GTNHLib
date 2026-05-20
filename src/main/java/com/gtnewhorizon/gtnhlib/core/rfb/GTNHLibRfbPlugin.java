@@ -5,6 +5,7 @@ import net.minecraft.launchwrapper.Launch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.falsepattern.deploader.DeploaderStub;
 import com.gtnewhorizon.gtnhlib.core.rfb.transformers.RFBTessellatorRedirectorWrapper;
 import com.gtnewhorizon.gtnhlib.core.rfb.transformers.RFBTessellatorTransformerWrapper;
 import com.gtnewhorizons.retrofuturabootstrap.api.PluginContext;
@@ -13,6 +14,20 @@ import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformer;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbPlugin;
 
 public class GTNHLibRfbPlugin implements RfbPlugin {
+
+    static {
+        try {
+            // Delegate to/trigger GTNHExtLib to handle if present
+            Class.forName(
+                    "com.gtnewhorizons.gtnhextlib.core.rfb.GTNHExtLibRfbPlugin",
+                    true,
+                    GTNHLibRfbPlugin.class.getClassLoader());
+        } catch (ClassNotFoundException notExtLib) {
+            // Otherwise handle it ourselves
+            DeploaderStub.bootstrap(true);
+            DeploaderStub.runDepLoader();
+        }
+    }
 
     @Override
     public void onConstruction(@NotNull PluginContext ctx) {

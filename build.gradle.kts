@@ -37,24 +37,10 @@ tasks.processResources {
     filesMatching("META-INF/rfb-plugin/*") {
         expand("version" to projectVersion)
     }
-}
-
-// Shadow source jars too
-val shadowSources = configurations.getByName("shadowSources")
-tasks.sourcesJar {
-    from(shadowSources.map { zipTree(it) })
-    exclude("META-INF/versions/9/module-info.class")
-    exclude("META-INF/versions/9/module-info.java")
-}
-
-val jvmdgDowngraded17 = configurations.named("jvmdgDowngraded17").get()
-
-tasks.shadowJar {
-    into("META-INF/versions/17") {
-        from(main17.output)
-        from(zipTree(provider { jvmdgDowngraded17.files.single() }))
+    // Embed the FalsePatternLib DepLoader bootstrap jar for the static-block bootstrap.
+    from(configurations["deploader"]) {
+        rename { "fplib_deploader.jar" }
     }
-    exclude("META-INF/versions/9/module-info.class")
 }
 
 tasks.test {
@@ -73,6 +59,13 @@ tasks.test {
     }
     dependsOn(tasks.extractNatives2)
     jvmArgs("-Djava.library.path=${tasks.extractNatives2.get().destinationFolder.asFile.get().path}")
+}
+
+tasks.shadowJar {
+    into("META-INF/versions/17") {
+        from(main17.output)
+    }
+    exclude("META-INF/versions/9/module-info.class")
 }
 
 for (jarTask in listOf(tasks.jar, tasks.shadowJar, tasks.sourcesJar)) {

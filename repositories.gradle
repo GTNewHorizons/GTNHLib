@@ -1,6 +1,11 @@
 // Add any additional repositories for your dependencies here
 
 repositories {
+    mavenLocal {
+        content {
+            includeGroup 'com.github.GTNewHorizons'
+        }
+    }
     maven {
         name = 'mavenpattern'
         url = 'https://mvn.falsepattern.com/releases'
