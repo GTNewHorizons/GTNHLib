@@ -154,10 +154,11 @@ public class AutoShaderUpdater {
         public void run() {
             try {
                 shader.close();
-                shader.reload(vertexPath, fragmentPath);
+                IShaderDefinesWriter[] defines = runnable != null ? runnable.getDefines() : null;
+                shader.reload(vertexPath, fragmentPath, defines);
                 if (runnable != null) {
                     shader.use();
-                    runnable.run(shader, vertexPath, fragmentPath);
+                    runnable.run(shader);
                     ShaderProgram.clear();
                 }
                 if (Minecraft.getMinecraft().thePlayer != null) {

@@ -17,15 +17,16 @@ import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
-@SuppressWarnings("unused")
 public class ShaderProgram implements AutoCloseable {
 
     protected int program;
 
-    public ShaderProgram(String domain, String vertShaderFilename, String fragShaderFilename) {
+    public ShaderProgram(String domain, String vertShaderFilename, String fragShaderFilename, IShaderDefinesWriter... defines) {
         int program;
         try {
-            program = createProgram(domain, vertShaderFilename, fragShaderFilename);
+            final String vsh = loadShaderSource(domain, vertShaderFilename, defines);
+            final String fsh = loadShaderSource(domain, fragShaderFilename, defines);
+            program = createProgramFromSource(vsh, fsh);
         } catch (Exception e) {
             GTNHLib.LOG.error("Could not initialize shader program!", e);
             program = 0;
@@ -34,10 +35,12 @@ public class ShaderProgram implements AutoCloseable {
     }
 
     // ONLY WORKS IN DEV ENV
-    protected void reload(Path vertexFile, Path fragmentFile) {
+    protected final void reload(Path vertexFile, Path fragmentFile, IShaderDefinesWriter[] defines) {
         int program;
         try {
-            program = createProgramFromPath(vertexFile, fragmentFile);
+            final String vsh = loadShaderSource(vertexFile, defines);
+            final String fsh = loadShaderSource(fragmentFile, defines);
+            program = createProgramFromSource(vsh, fsh);
         } catch (Exception e) {
             GTNHLib.LOG.error("Could not initialize shader program!", e);
             program = 0;
@@ -53,50 +56,11 @@ public class ShaderProgram implements AutoCloseable {
         return GL20.glGetShaderInfoLog(obj, GL20.glGetShaderi(obj, GL20.GL_INFO_LOG_LENGTH));
     }
 
-    private static int createProgram(String domain, String vertShaderFilename, String fragShaderFilename) {
+    public static int createProgramFromSource(String vertSource, String fragSource) {
         final int program = GL20.glCreateProgram();
 
-        final int vertShader = loadAndCompileShader(program, domain, vertShaderFilename, GL20.GL_VERTEX_SHADER);
-        final int fragShader = loadAndCompileShader(program, domain, fragShaderFilename, GL20.GL_FRAGMENT_SHADER);
-
-        return linkValidateShader(program, vertShader, fragShader);
-    }
-
-    private static int loadAndCompileShader(int program, String domain, String filename, int shaderType) {
-        if (filename == null) {
-            return 0;
-        }
-
-        final int shader = GL20.glCreateShader(shaderType);
-
-        if (shader == 0) {
-            GTNHLib.LOG.error(
-                    "Could not create shader of type {} from {}: {}",
-                    shaderType,
-                    filename,
-                    getProgramLogInfo(program));
-            return 0;
-        }
-
-        final String code = loadFile(new ResourceLocation(domain, filename));
-        if (code == null) {
-            GL20.glDeleteShader(shader);
-            return 0;
-        }
-
-        GL20.glShaderSource(shader, code);
-        GL20.glCompileShader(shader);
-
-        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            GTNHLib.LOG.error("Could not compile shader {}: {}", filename, getShaderLogInfo(shader));
-            GL20.glDeleteShader(shader);
-            return 0;
-        }
-
-        return shader;
-    }
-
-    private static int linkValidateShader(int program, int vertShader, int fragShader) {
+        final int vertShader = loadShaderFromSource(program, vertSource, GL20.GL_VERTEX_SHADER);
+        final int fragShader = loadShaderFromSource(program, fragSource, GL20.GL_FRAGMENT_SHADER);
 
         if (vertShader != 0) GL20.glAttachShader(program, vertShader);
         if (fragShader != 0) GL20.glAttachShader(program, fragShader);
@@ -123,31 +87,22 @@ public class ShaderProgram implements AutoCloseable {
         return program;
     }
 
-    // ONLY WORKS IN DEV ENV
-    private static int createProgramFromPath(Path vertexPath, Path fragmentPath) {
-        final int program = GL20.glCreateProgram();
-
-        final int vertShader = loadAndCompileShader(program, vertexPath, GL20.GL_VERTEX_SHADER);
-        final int fragShader = loadAndCompileShader(program, fragmentPath, GL20.GL_FRAGMENT_SHADER);
-
-        return linkValidateShader(program, vertShader, fragShader);
-    }
-
-    // ONLY WORKS IN DEV ENV
-    private static int loadAndCompileShader(int program, Path path, int shaderType) {
+    private static int loadShaderFromSource(int program, String source, int shaderType) {
         final int shader = GL20.glCreateShader(shaderType);
 
-        final String code = loadFileFromPath(path);
-        if (code == null) {
-            GL20.glDeleteShader(shader);
+        if (shader == 0) {
+            GTNHLib.LOG.error(
+                "Could not create shader of type " + shaderType + ": " + getProgramLogInfo(program),
+                new IllegalStateException()
+            );
             return 0;
         }
 
-        GL20.glShaderSource(shader, code);
+        GL20.glShaderSource(shader, source);
         GL20.glCompileShader(shader);
 
         if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            GTNHLib.LOG.error("Could not compile shader {}: {}", path.toString(), getShaderLogInfo(shader));
+            GTNHLib.LOG.error("Could not compile shader: " + getShaderLogInfo(shader), new IllegalStateException());
             GL20.glDeleteShader(shader);
             return 0;
         }
@@ -155,21 +110,15 @@ public class ShaderProgram implements AutoCloseable {
         return shader;
     }
 
-    private static String loadFile(ResourceLocation resourceLocation) {
+    public static String loadShaderSource(String domain, String path, IShaderDefinesWriter... defines) {
+        return loadShaderSource(new ResourceLocation(domain, path), defines);
+    }
+
+    public static String loadShaderSource(ResourceLocation resourceLocation, IShaderDefinesWriter... defines) {
         try {
-            final StringBuilder code = new StringBuilder();
             final InputStream inputStream = Minecraft.getMinecraft().getResourceManager().getResource(resourceLocation)
                     .getInputStream();
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                code.append(line);
-                code.append('\n');
-            }
-            reader.close();
-
-            return code.toString();
+            return loadShaderSource(inputStream, defines);
         } catch (Exception e) {
             GTNHLib.LOG.error("Could not load shader file!", e);
         }
@@ -177,19 +126,40 @@ public class ShaderProgram implements AutoCloseable {
         return null;
     }
 
-    private static String loadFileFromPath(Path path) {
-        try (BufferedReader reader = Files.newBufferedReader(path)) {
-            StringBuilder code = new StringBuilder();
+    public static String loadShaderSource(InputStream inputStream, IShaderDefinesWriter... defines) {
+        try {
+            final StringBuilder code = new StringBuilder();
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
             String line;
             while ((line = reader.readLine()) != null) {
-                code.append(line).append('\n');
+                code.append(line);
+                code.append('\n');
+                if (line.startsWith("#version") && defines != null) {
+                    for (IShaderDefinesWriter writer : defines) {
+                        writer.writeDefines(code);
+                    }
+                }
             }
+            reader.close();
+
             return code.toString();
+        } catch (Exception e) {
+            GTNHLib.LOG.error("Could not load shader file!", e);
+        }
+        return null;
+    }
+
+    // ONLY WORKS IN DEV ENV
+    private static String loadShaderSource(Path path, IShaderDefinesWriter[] defines) {
+        try {
+            return loadShaderSource(Files.newInputStream(path), defines);
         } catch (IOException e) {
             GTNHLib.LOG.error("Could not load shader file: " + path, e);
         }
         return null;
     }
+
 
     public int getProgram() {
         return this.program;
