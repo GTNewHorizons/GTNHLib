@@ -2,9 +2,12 @@ package com.gtnewhorizon.gtnhlib.network.base;
 
 import java.io.IOException;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.PacketBuffer;
+
+import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -21,10 +24,30 @@ public interface IPacket extends IMessage, IMessageHandler<IPacket, IMessage> {
 
     @Override
     default IPacket onMessage(IPacket message, MessageContext ctx) {
-        return switch (ctx.side) {
-            case CLIENT -> message.executeClient(ctx.getClientHandler());
-            case SERVER -> message.executeServer(ctx.getServerHandler());
-        };
+        switch (ctx.side) {
+            case CLIENT: {
+                NetHandlerPlayClient handler = ctx.getClientHandler();
+                Minecraft mc = Minecraft.getMinecraft();
+                // isCallingFromMinecraftThread
+                if (mc.func_152345_ab()) {
+                    return message.executeClient(handler);
+                } else {
+                    // addScheduledTask
+                    mc.func_152344_a(() -> message.executeClient(handler));
+                }
+                break;
+            }
+            case SERVER: {
+                NetHandlerPlayServer handler = ctx.getServerHandler();
+                if (ServerThreadUtil.isCallingFromMinecraftThread()) {
+                    return message.executeServer(handler);
+                } else {
+                    ServerThreadUtil.addScheduledTask(() -> message.executeServer(handler));
+                }
+                break;
+            }
+        }
+        return null;
     }
 
     @Override
