@@ -43,7 +43,7 @@ public class TeamManager {
     }
 
     public static Map<UUID, Team> getTeamMap() {
-        return TEAM_MAP;
+        return Collections.unmodifiableMap(TEAM_MAP);
     }
 
     public static Team getTeamByPlayer(UUID playerUuid) {

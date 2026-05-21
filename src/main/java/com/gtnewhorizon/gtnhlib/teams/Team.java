@@ -148,6 +148,16 @@ public class Team {
         }
     }
 
+    public TeamRole getRole(UUID player) {
+        if (owners.contains(player)) {
+            return TeamRole.OWNER;
+        }
+        if (officers.contains(player)) {
+            return TeamRole.OFFICER;
+        }
+        return TeamRole.MEMBER;
+    }
+
     void putData(String key, ITeamData data) {
         teamData.put(key, data);
     }
