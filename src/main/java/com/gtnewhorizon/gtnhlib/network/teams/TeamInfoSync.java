@@ -6,11 +6,10 @@ import java.util.UUID;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.PacketBuffer;
 
-import com.gtnewhorizon.gtnhlib.teams.TeamRole;
-
 import com.gtnewhorizon.gtnhlib.network.base.IPacket;
 import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
 import com.gtnewhorizon.gtnhlib.teams.TeamManagerClient;
+import com.gtnewhorizon.gtnhlib.teams.TeamRole;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
