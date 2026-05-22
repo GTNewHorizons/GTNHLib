@@ -1,13 +1,15 @@
 package com.gtnewhorizon.gtnhlib.network;
 
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.PacketBuffer;
+
 import com.gtnewhorizon.gtnhlib.ClientProxy;
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import io.netty.buffer.ByteBuf;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class PacketViewDistance implements IMessage {
+public class PacketViewDistance implements IPacket {
 
     private int viewDistance;
 
@@ -18,21 +20,20 @@ public class PacketViewDistance implements IMessage {
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
+    public void encode(PacketBuffer buf) {
+        buf.writeInt(viewDistance);
+    }
+
+    @Override
+    public void decode(PacketBuffer buf) {
         viewDistance = buf.readInt();
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(viewDistance);
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        ClientProxy.currentServerViewDistance = viewDistance;
+        return null;
     }
 
-    public static class Handler implements IMessageHandler<PacketViewDistance, IMessage> {
-
-        @Override
-        public IMessage onMessage(PacketViewDistance message, MessageContext ctx) {
-            ClientProxy.currentServerViewDistance = message.viewDistance;
-            return null;
-        }
-    }
 }

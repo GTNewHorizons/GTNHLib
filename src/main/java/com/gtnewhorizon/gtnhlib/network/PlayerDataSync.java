@@ -1,35 +1,54 @@
 package com.gtnewhorizon.gtnhlib.network;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.PacketBuffer;
 
-public class PlayerDataSync implements IMessage {
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
+import com.gtnewhorizon.gtnhlib.util.ClientPlayerUtils;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+public class PlayerDataSync implements IPacket {
 
     public Map<String, UUID> data = new HashMap<>();
 
     public PlayerDataSync() {}
 
     @Override
-    public void toBytes(ByteBuf buf) {
+    public void encode(PacketBuffer buf) throws IOException {
         buf.writeInt(data.size());
         data.forEach((name, uuid) -> {
-            ByteBufUtils.writeUTF8String(buf, name);
-            buf.writeLong(uuid.getMostSignificantBits());
-            buf.writeLong(uuid.getLeastSignificantBits());
+            NetworkUtils.writeString(buf, name);
+            NetworkUtils.writeUUID(buf, uuid);
         });
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
+    public void decode(PacketBuffer buf) throws IOException {
         int length = buf.readInt();
         for (int i = 0; i < length; i++) {
-            data.put(ByteBufUtils.readUTF8String(buf), new UUID(buf.readLong(), buf.readLong()));
+            data.put(NetworkUtils.readString(buf), NetworkUtils.readUUID(buf));
         }
     }
 
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        synchronized (ClientPlayerUtils.clientPlayerMap) {
+            ClientPlayerUtils.clientPlayerMap.clear();
+            ClientPlayerUtils.clientPlayerMap.putAll(data);
+        }
+        synchronized (ClientPlayerUtils.clientUsernameCache) {
+            ClientPlayerUtils.clientUsernameCache.clear();
+            data.forEach((name, uuid) -> ClientPlayerUtils.clientUsernameCache.put(uuid, name));
+        }
+        return null;
+    }
 }

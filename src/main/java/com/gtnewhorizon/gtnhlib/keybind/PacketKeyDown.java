@@ -1,14 +1,16 @@
 package com.gtnewhorizon.gtnhlib.keybind;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import cpw.mods.fml.relauncher.Side;
-import io.netty.buffer.ByteBuf;
+import java.io.IOException;
+
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.PacketBuffer;
+
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 
-public class PacketKeyDown implements IMessage {
+public class PacketKeyDown implements IPacket {
 
     private Int2BooleanMap updateKeys;
 
@@ -20,16 +22,7 @@ public class PacketKeyDown implements IMessage {
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
-        this.updateKeys = new Int2BooleanOpenHashMap();
-        int size = buf.readInt();
-        for (int i = 0; i < size; i++) {
-            updateKeys.put(buf.readInt(), buf.readBoolean());
-        }
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
+    public void encode(PacketBuffer buf) throws IOException {
         buf.writeInt(updateKeys.size());
         for (var entry : updateKeys.int2BooleanEntrySet()) {
             buf.writeInt(entry.getIntKey());
@@ -37,17 +30,21 @@ public class PacketKeyDown implements IMessage {
         }
     }
 
-    public static class HandlerKeyDown implements IMessageHandler<PacketKeyDown, IMessage> {
-
-        @Override
-        public IMessage onMessage(PacketKeyDown message, MessageContext ctx) {
-            if (ctx.side == Side.SERVER) {
-                for (var entry : message.updateKeys.int2BooleanEntrySet()) {
-                    SyncedKeybind keybind = SyncedKeybind.getFromSyncId(entry.getIntKey());
-                    keybind.serverActivate(entry.getBooleanValue(), ctx.getServerHandler().playerEntity);
-                }
-            }
-            return null;
+    @Override
+    public void decode(PacketBuffer buf) throws IOException {
+        updateKeys = new Int2BooleanOpenHashMap();
+        int size = buf.readInt();
+        for (int i = 0; i < size; i++) {
+            updateKeys.put(buf.readInt(), buf.readBoolean());
         }
+    }
+
+    @Override
+    public IPacket executeServer(NetHandlerPlayServer handler) {
+        for (var entry : updateKeys.int2BooleanEntrySet()) {
+            SyncedKeybind keybind = SyncedKeybind.getFromSyncId(entry.getIntKey());
+            keybind.serverActivate(entry.getBooleanValue(), handler.playerEntity);
+        }
+        return null;
     }
 }
