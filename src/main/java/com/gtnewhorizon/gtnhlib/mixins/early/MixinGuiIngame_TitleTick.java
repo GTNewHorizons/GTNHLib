@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.gtnewhorizon.gtnhlib.client.title.TitleAPI;
+import com.gtnewhorizon.gtnhlib.client.title.TitleParticleSystem;
 
 @Mixin(GuiIngame.class)
 public class MixinGuiIngame_TitleTick {
@@ -15,5 +16,6 @@ public class MixinGuiIngame_TitleTick {
     @Inject(method = "updateTick", at = @At("TAIL"))
     private void gtnhlib$tickTitle(CallbackInfo ci) {
         TitleAPI.tick();
+        TitleParticleSystem.tick();
     }
 }
