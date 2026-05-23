@@ -190,9 +190,11 @@ public class BlockPropertyRegistry {
             IFACE_PROPERTIES.copyAll(curr, cache);
 
             if (curr instanceof Class<?>clazz2) {
-                for (Type iface : clazz2.getGenericInterfaces()) {
-                    queue.addAndMoveToFirst(iface);
-                }
+                try {
+                    for (Type iface : clazz2.getGenericInterfaces()) {
+                        queue.addAndMoveToFirst(iface);
+                    }
+                } catch (TypeNotPresentException ignored) {}
 
                 for (Type iface : clazz2.getInterfaces()) {
                     queue.addAndMoveToFirst(iface);
