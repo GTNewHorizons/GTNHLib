@@ -62,21 +62,23 @@ public class TeamActions {
         UUID playerId = player.getUniqueID();
         Team oldTeam = TeamManager.getTeamByPlayer(playerId);
         assert oldTeam != null;
-        oldTeam.removeMember(playerId);
-        if (oldTeam.getMembers().isEmpty()) {
+        if (oldTeam.getMembers().size() == 1) {
             TeamManager.mergeTeams(invitingTeam, oldTeam);
         } else {
-            TeamManager.copyTeamData(oldTeam, invitingTeam, playerId, TeamDataCopyReason.JoinedExistingTeam);
+            TeamManager.transferTeamData(oldTeam, invitingTeam, playerId, TeamDataTransferReason.JoinedExistingTeam);
+            oldTeam.removeMember(playerId);
             TeamDataSync oldTeamData = TeamNetwork.createCompleteTeamDataSyncPacket(oldTeam);
             TeamManager.forEachOnlineTeamMember(oldTeam, member -> {
+                if (member.getUniqueID().equals(playerId)) return;
                 NetworkHandler.instance.sendTo(oldTeamData, member);
                 success(
                         member,
                         "gtnhlib.chat.teams.message.other_left_team",
                         colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
             });
+            oldTeam.markDirty();
+            invitingTeam.addMember(playerId);
         }
-        invitingTeam.addMember(playerId);
         TeamManager.removeAllPendingInvites(playerId);
         TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitingTeam);
         invitingTeam.markDirty();
@@ -132,7 +134,7 @@ public class TeamActions {
 
         // Create a new solo team for the player
         Team newTeam = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
-        TeamManager.copyTeamData(oldTeam, newTeam, playerId, TeamDataCopyReason.JoinedNewTeam);
+        TeamManager.transferTeamData(oldTeam, newTeam, playerId, TeamDataTransferReason.JoinedNewTeam);
         TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, newTeam);
 
         success(player, "gtnhlib.chat.teams.message.left_team", colorChatComponent(EnumChatFormatting.GOLD, teamName));
@@ -298,7 +300,7 @@ public class TeamActions {
         for (UUID uuid : members) {
             String name = ServerPlayerUtils.getPlayerName(uuid);
             Team newTeam = TeamManager.getOrCreateTeam(name, uuid);
-            TeamManager.copyTeamData(team, newTeam, uuid, TeamDataCopyReason.JoinedNewTeam);
+            TeamManager.transferTeamData(team, newTeam, uuid, TeamDataTransferReason.JoinedNewTeam);
             TeamManager.forEachOnlineTeamMember(newTeam, member -> {
                 NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
                 TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) member, newTeam);

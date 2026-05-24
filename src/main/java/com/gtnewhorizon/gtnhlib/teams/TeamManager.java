@@ -127,9 +127,9 @@ public class TeamManager {
         PENDING_INVITES.forEach((player, teamSet) -> teamSet.remove(consumed));
     }
 
-    public static void copyTeamData(Team prevTeam, Team newTeam, UUID playerId, TeamDataCopyReason reason) {
+    public static void transferTeamData(Team prevTeam, Team newTeam, UUID playerId, TeamDataTransferReason reason) {
         for (Entry<String, ITeamData> entry : newTeam.getAllDataEntries()) {
-            entry.getValue().copyData(prevTeam, newTeam, playerId, prevTeam.getData(entry.getKey()), reason);
+            entry.getValue().transferData(prevTeam, newTeam, playerId, prevTeam.getData(entry.getKey()), reason);
         }
     }
 
