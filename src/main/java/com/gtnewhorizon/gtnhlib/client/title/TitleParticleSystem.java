@@ -168,10 +168,7 @@ public class TitleParticleSystem {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-
         Tessellator t = Tessellator.instance;
-        t.startDrawingQuads();
         for (TitleParticle p : particles) {
             if (p.itemIcon != null) continue;
             float a = p.alpha();
@@ -183,6 +180,10 @@ public class TitleParticleSystem {
             mat4f.translate(px, py, 0);
             mat4f.rotate((float) Math.toRadians(p.rotation + p.rotationSpeed * partialTicks), 0, 0, 1);
 
+            if (!t.isDrawing) {
+                t.startDrawingQuads();
+                GL11.glDisable(GL11.GL_TEXTURE_2D);
+            }
             t.setColorRGBA_F(p.r, p.g, p.b, a);
             float s = p.size;
             VertexTransformer.addVertex(t, -s, -s, 0);
@@ -190,7 +191,9 @@ public class TitleParticleSystem {
             VertexTransformer.addVertex(t, s, s, 0);
             VertexTransformer.addVertex(t, s, -s, 0);
         }
-        t.draw();
+        if (t.isDrawing) {
+            t.draw();
+        }
 
         GL11.glEnable(GL11.GL_TEXTURE_2D);
 
