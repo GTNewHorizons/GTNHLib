@@ -17,16 +17,16 @@ import org.lwjgl.opengl.GL20;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
-public class ShaderProgram implements AutoCloseable {
+public class ShaderProgram {
 
     protected int program;
 
-    public ShaderProgram(String domain, String vertShaderFilename, String fragShaderFilename, IShaderDefinesWriter... defines) {
+    public ShaderProgram(String domain, String vertShaderFilename, String fragShaderFilename, IShaderDefinesInjector... defines) {
         int program;
         try {
             final String vsh = loadShaderSource(domain, vertShaderFilename, defines);
             final String fsh = loadShaderSource(domain, fragShaderFilename, defines);
-            program = createProgramFromSource(vsh, fsh);
+            program = createProgram(vsh, fsh);
         } catch (Exception e) {
             GTNHLib.LOG.error("Could not initialize shader program!", e);
             program = 0;
@@ -34,13 +34,17 @@ public class ShaderProgram implements AutoCloseable {
         this.program = program;
     }
 
+    public ShaderProgram(String vertShaderSource, String fragShaderSource) {
+        this.program = createProgram(vertShaderSource, fragShaderSource);
+    }
+
     // ONLY WORKS IN DEV ENV
-    protected final void reload(Path vertexFile, Path fragmentFile, IShaderDefinesWriter[] defines) {
+    protected final void reload(Path vertexFile, Path fragmentFile, IShaderDefinesInjector[] defines) {
         int program;
         try {
             final String vsh = loadShaderSource(vertexFile, defines);
             final String fsh = loadShaderSource(fragmentFile, defines);
-            program = createProgramFromSource(vsh, fsh);
+            program = createProgram(vsh, fsh);
         } catch (Exception e) {
             GTNHLib.LOG.error("Could not initialize shader program!", e);
             program = 0;
@@ -56,7 +60,7 @@ public class ShaderProgram implements AutoCloseable {
         return GL20.glGetShaderInfoLog(obj, GL20.glGetShaderi(obj, GL20.GL_INFO_LOG_LENGTH));
     }
 
-    public static int createProgramFromSource(String vertSource, String fragSource) {
+    public static int createProgram(String vertSource, String fragSource) {
         final int program = GL20.glCreateProgram();
 
         final int vertShader = loadShaderFromSource(program, vertSource, GL20.GL_VERTEX_SHADER);
@@ -110,11 +114,11 @@ public class ShaderProgram implements AutoCloseable {
         return shader;
     }
 
-    public static String loadShaderSource(String domain, String path, IShaderDefinesWriter... defines) {
+    public static String loadShaderSource(String domain, String path, IShaderDefinesInjector... defines) {
         return loadShaderSource(new ResourceLocation(domain, path), defines);
     }
 
-    public static String loadShaderSource(ResourceLocation resourceLocation, IShaderDefinesWriter... defines) {
+    public static String loadShaderSource(ResourceLocation resourceLocation, IShaderDefinesInjector... defines) {
         try {
             final InputStream inputStream = Minecraft.getMinecraft().getResourceManager().getResource(resourceLocation)
                     .getInputStream();
@@ -126,7 +130,7 @@ public class ShaderProgram implements AutoCloseable {
         return null;
     }
 
-    public static String loadShaderSource(InputStream inputStream, IShaderDefinesWriter... defines) {
+    public static String loadShaderSource(InputStream inputStream, IShaderDefinesInjector... defines) {
         try {
             final StringBuilder code = new StringBuilder();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -136,7 +140,7 @@ public class ShaderProgram implements AutoCloseable {
                 code.append(line);
                 code.append('\n');
                 if (line.startsWith("#version") && defines != null) {
-                    for (IShaderDefinesWriter writer : defines) {
+                    for (IShaderDefinesInjector writer : defines) {
                         writer.writeDefines(code);
                     }
                 }
@@ -151,7 +155,7 @@ public class ShaderProgram implements AutoCloseable {
     }
 
     // ONLY WORKS IN DEV ENV
-    private static String loadShaderSource(Path path, IShaderDefinesWriter[] defines) {
+    private static String loadShaderSource(Path path, IShaderDefinesInjector[] defines) {
         try {
             return loadShaderSource(Files.newInputStream(path), defines);
         } catch (IOException e) {
@@ -177,31 +181,44 @@ public class ShaderProgram implements AutoCloseable {
         unbind();
     }
 
-    public int getUniformLocation(String name) {
+    public final int getUniformLocation(String name) {
         final int index = GL20.glGetUniformLocation(this.program, name);
 
         if (index < 0) {
-            throw new NullPointerException("No uniform exists with name: " + name);
+            GTNHLib.LOG.error("No uniform exists with name: " + name, new IllegalStateException());
         }
 
         return index;
     }
 
-    public int getAttribLocation(String name) {
+    public final int getAttribLocation(String name) {
         final int index = GL20.glGetAttribLocation(this.program, name);
 
         if (index < 0) {
-            throw new NullPointerException("No attribute exists with name: " + name);
+            GTNHLib.LOG.error("No attribute exists with name: " + name, new IllegalStateException());
         }
 
         return index;
     }
 
-    public void bindTextureSlot(String sampler2DName, int index) {
+    public final void bindTextureSlot(String sampler2DName, int index) {
         GL20.glUniform1i(this.getUniformLocation(sampler2DName), index);
     }
 
+    public final void bindTextureSlots(String... sampler2DNames) {
+        GL20.glUseProgram(this.program);
+        for (int i = 0; i < sampler2DNames.length; i++) {
+            bindTextureSlot(sampler2DNames[i], i);
+        }
+        clear();
+    }
+
+    @Deprecated // For clarity, use delete() instead
     public void close() {
+        delete();
+    }
+
+    public void delete() {
         GL20.glDeleteProgram(program);
     }
 

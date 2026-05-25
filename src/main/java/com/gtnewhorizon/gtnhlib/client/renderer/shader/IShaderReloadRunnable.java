@@ -4,5 +4,5 @@ public interface IShaderReloadRunnable {
 
     void run(ShaderProgram shader);
 
-    IShaderDefinesWriter[] getDefines();
+    IShaderDefinesInjector[] getDefines();
 }

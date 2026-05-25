@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.shader;
 
-public interface IShaderDefinesWriter {
+public interface IShaderDefinesInjector {
 
     void writeDefines(StringBuilder out);
 

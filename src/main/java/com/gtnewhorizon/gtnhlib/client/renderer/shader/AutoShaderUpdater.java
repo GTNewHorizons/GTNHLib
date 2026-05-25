@@ -154,7 +154,7 @@ public class AutoShaderUpdater {
         public void run() {
             try {
                 shader.close();
-                IShaderDefinesWriter[] defines = runnable != null ? runnable.getDefines() : null;
+                IShaderDefinesInjector[] defines = runnable != null ? runnable.getDefines() : null;
                 shader.reload(vertexPath, fragmentPath, defines);
                 if (runnable != null) {
                     shader.use();

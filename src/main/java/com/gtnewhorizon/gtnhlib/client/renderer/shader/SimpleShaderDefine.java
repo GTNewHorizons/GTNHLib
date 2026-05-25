@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.shader;
 
-public final class SimpleShaderDefine implements IShaderDefinesWriter {
+public final class SimpleShaderDefine implements IShaderDefinesInjector {
     private final String output;
 
     public SimpleShaderDefine(String name, Object value) {
