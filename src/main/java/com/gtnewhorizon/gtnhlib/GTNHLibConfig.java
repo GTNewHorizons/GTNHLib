@@ -45,4 +45,40 @@ public class GTNHLibConfig {
     @Config.Comment("Swaps out the block crack texture on modeled blocks, to make it easier to see the rotation.")
     @Config.DefaultBoolean(false)
     public static boolean testCrackTexture;
+
+    @Config.Comment("Show the title/subtitle overlay on screen")
+    @Config.DefaultBoolean(true)
+    public static boolean enableTitleOverlay;
+
+    @Config.Comment("Size of the main title text (default 4.0)")
+    @Config.DefaultFloat(4.0f)
+    @Config.RangeFloat(min = 0.5f, max = 8.0f)
+    public static float titleScale;
+
+    @Config.Comment("Size of the subtitle text (default 2.0)")
+    @Config.DefaultFloat(2.0f)
+    @Config.RangeFloat(min = 0.5f, max = 8.0f)
+    public static float subtitleScale;
+
+    @Config.Comment("Show item icons above the title when provided")
+    @Config.DefaultBoolean(true)
+    public static boolean showTitleIcon;
+
+    @Config.Comment("Size of the icon above the title (default 2.0, so 32x32 pixels)")
+    @Config.DefaultFloat(2.0f)
+    @Config.RangeFloat(min = 0.5f, max = 8.0f)
+    public static float titleIconScale;
+
+    @Config.Comment("Vertical offset for the icon relative to the title text, in pixels. Negative = higher, positive = lower.")
+    @Config.DefaultInt(0)
+    @Config.RangeInt(min = -100, max = 100)
+    public static int titleIconOffsetY;
+
+    @Config.Comment("Icon animation style during fade-in: none, fly_in, spin")
+    @Config.DefaultString("fly_in")
+    public static String titleIconAnimation;
+
+    @Config.Comment("Enable particle effects with title displays")
+    @Config.DefaultBoolean(true)
+    public static boolean enableTitleParticles;
 }
