@@ -1,17 +1,26 @@
 package com.gtnewhorizon.gtnhlib.client.title;
 
+import static com.gtnewhorizon.gtnhlib.client.title.TitleRenderer.itemRender;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import com.gtnewhorizon.gtnhlib.client.renderer.MatrixHelper;
+import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.VertexTransformer;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
 
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -31,7 +40,6 @@ public class TitleParticleSystem {
 
     private static final List<TitleParticle> particles = new ArrayList<>();
     private static final Random rand = new Random();
-    private static final RenderItem itemRender = new RenderItem();
 
     private static final float[][] CONFETTI_COLORS = { { 1F, 0.2F, 0.2F }, { 0.2F, 1F, 0.2F }, { 0.3F, 0.3F, 1F },
             { 1F, 1F, 0.2F }, { 1F, 0.3F, 1F }, { 0.3F, 1F, 1F }, { 1F, 0.6F, 0.1F }, };
@@ -163,34 +171,33 @@ public class TitleParticleSystem {
     public static void render(float partialTicks) {
         if (particles.isEmpty()) return;
 
-        GL11.glPushMatrix();
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+        Tessellator t = Tessellator.instance;
+        t.startDrawingQuads();
         for (TitleParticle p : particles) {
             if (p.itemIcon != null) continue;
             float a = p.alpha();
             if (a <= 0) continue;
 
-            GL11.glPushMatrix();
             float px = p.x + p.vx * partialTicks;
             float py = p.y + p.vy * partialTicks;
-            GL11.glTranslatef(px, py, 0);
-            GL11.glRotatef(p.rotation + p.rotationSpeed * partialTicks, 0, 0, 1);
+            final Matrix4f mat4f = VertexTransformer.resetIdentity();
+            mat4f.translate(px, py, 0);
+            mat4f.rotate((float) Math.toRadians(p.rotation + p.rotationSpeed * partialTicks), 0, 0, 1);
 
-            Tessellator t = Tessellator.instance;
-            t.startDrawingQuads();
             t.setColorRGBA_F(p.r, p.g, p.b, a);
             float s = p.size;
-            t.addVertex(-s, -s, 0);
-            t.addVertex(-s, s, 0);
-            t.addVertex(s, s, 0);
-            t.addVertex(s, -s, 0);
-            t.draw();
-
-            GL11.glPopMatrix();
+            VertexTransformer.addVertex(t, -s, -s, 0);
+            VertexTransformer.addVertex(t, -s, s, 0);
+            VertexTransformer.addVertex(t, s, s, 0);
+            VertexTransformer.addVertex(t, s, -s, 0);
         }
+        t.draw();
+
         GL11.glEnable(GL11.GL_TEXTURE_2D);
 
         Minecraft mc = Minecraft.getMinecraft();
@@ -219,14 +226,12 @@ public class TitleParticleSystem {
             } catch (Exception ignored) {}
 
             GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glDisable(GL12.GL_RESCALE_NORMAL);
             RenderHelper.disableStandardItemLighting();
             GL11.glColor4f(1, 1, 1, 1);
             GL11.glPopMatrix();
         }
 
         GL11.glDisable(GL11.GL_BLEND);
-        GL11.glPopMatrix();
     }
 
     public static void clear() {
