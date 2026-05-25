@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.network;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.IChatComponent;
 
 public class TitlePacketHandler {
@@ -23,5 +24,9 @@ public class TitlePacketHandler {
 
     public static void sendReset(EntityPlayerMP player) {
         NetworkHandler.instance.sendTo(MessageTitle.reset(), player);
+    }
+
+    public static void sendIcon(EntityPlayerMP player, ItemStack stack) {
+        NetworkHandler.instance.sendTo(MessageTitle.icon(stack), player);
     }
 }
