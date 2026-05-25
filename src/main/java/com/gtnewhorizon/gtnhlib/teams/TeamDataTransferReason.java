@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
-public enum TeamDataCopyReason {
+public enum TeamDataTransferReason {
     JoinedNewTeam,
     JoinedExistingTeam
 }

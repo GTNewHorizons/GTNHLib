@@ -17,10 +17,12 @@ import cpw.mods.fml.relauncher.Side;
 public class TeamManagerClient {
 
     private static Team TEAM;
+    private static TeamRole currentRole;
 
     @SubscribeEvent
     private static void onDisconnect(ClientDisconnectionFromServerEvent event) {
         TEAM = null;
+        currentRole = null;
     }
 
     public static void onTeamInfoSyncPacket(TeamInfoSync packet) {
@@ -30,6 +32,7 @@ public class TeamManagerClient {
             TEAM = new Team(packet.name, packet.uuid, true);
             TEAM.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
         }
+        currentRole = packet.role;
     }
 
     public static void onTeamDataSyncPacket(TeamDataSync packet) {
@@ -47,6 +50,14 @@ public class TeamManagerClient {
 
     public static Team GetTeam() {
         return TEAM;
+    }
+
+    public static TeamRole getRole() {
+        return currentRole;
+    }
+
+    public static boolean doesPlayerSatisfyTeamRole(TeamRole role) {
+        return currentRole.ordinal() >= role.ordinal();
     }
 
 }
