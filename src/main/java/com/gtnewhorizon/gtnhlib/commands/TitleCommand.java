@@ -7,6 +7,8 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
@@ -22,7 +24,7 @@ public final class TitleCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/title <player> <clear|reset|title|subtitle|times> [args...]";
+        return "/title <player> <clear|reset|title|subtitle|times|icon> [args...]";
     }
 
     @Override
@@ -67,6 +69,17 @@ public final class TitleCommand extends CommandBase {
                         parseInt(sender, args[4]));
                 func_152373_a(sender, this, "commands.title.times.single", player.getCommandSenderName());
                 break;
+            case "icon":
+                if (args.length < 3) throw new WrongUsageException("/title <player> icon <item|clear> [meta]");
+                if (args[2].equalsIgnoreCase("clear")) {
+                    TitlePacketHandler.sendIcon(player, null);
+                } else {
+                    Item item = getItemByText(sender, args[2]);
+                    int meta = args.length >= 4 ? parseIntBounded(sender, args[3], 0, Short.MAX_VALUE) : 0;
+                    TitlePacketHandler.sendIcon(player, new ItemStack(item, 1, meta));
+                }
+                func_152373_a(sender, this, "commands.title.icon.single", player.getCommandSenderName());
+                break;
             default:
                 throw new WrongUsageException(getCommandUsage(sender));
         }
@@ -78,7 +91,7 @@ public final class TitleCommand extends CommandBase {
             return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames());
         }
         if (args.length == 2) {
-            return getListOfStringsMatchingLastWord(args, "clear", "reset", "title", "subtitle", "times");
+            return getListOfStringsMatchingLastWord(args, "clear", "reset", "title", "subtitle", "times", "icon");
         }
         return null;
     }
