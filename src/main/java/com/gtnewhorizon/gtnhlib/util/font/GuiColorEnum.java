@@ -2,8 +2,8 @@ package com.gtnewhorizon.gtnhlib.util.font;
 
 /**
  * Interface for mod GuiColors enums. Provides format code support from lang files via
- * {@link FontRendering#getTextPrefix(String)}. Mods implement {@link #getUnlocalized()} and get {@link #getTextPrefix()}
- * and {@link #format(String)} for free.
+ * {@link FontRendering#getTextPrefix(String)}. Mods implement {@link #getUnlocalized()} and get
+ * {@link #getTextPrefix()} and {@link #format(String)} for free.
  */
 public interface GuiColorEnum {
 
