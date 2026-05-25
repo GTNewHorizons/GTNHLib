@@ -1,12 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.renderer;
 
 import net.minecraft.client.renderer.Tessellator;
+
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 /**
- * Non-thread safe implementation of a zero-allocation Vertex transformer.
- * Uses the matrix returned by getIdentityMatrix() to transform the vertices.
+ * Non-thread safe implementation of a zero-allocation Vertex transformer. Uses the matrix returned by
+ * getIdentityMatrix() to transform the vertices.
  */
 public final class VertexTransformer {
 
@@ -16,8 +17,6 @@ public final class VertexTransformer {
     public static Matrix4f resetIdentity() {
         return scratchMatrix.identity();
     }
-
-
 
     public static Vector4f getScratchVector() {
         return scratchVector;

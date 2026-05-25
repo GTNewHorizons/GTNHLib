@@ -20,7 +20,6 @@ public class TitleRenderer {
 
     private static IChatComponent lastTitle = null;
 
-    @Unique
     public static void render(ScaledResolution res, float partialTicks) {
 
         IChatComponent title = TitleAPI.getTitle();
