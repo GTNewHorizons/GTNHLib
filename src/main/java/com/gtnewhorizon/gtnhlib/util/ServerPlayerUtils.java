@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -39,6 +41,7 @@ public class ServerPlayerUtils {
         return playerMap;
     }
 
+    @Nullable
     public static UUID getPlayerUUID(String name) {
         for (Map.Entry<UUID, String> entry : UsernameCache.getMap().entrySet()) {
             if (entry.getValue().equals(name)) {

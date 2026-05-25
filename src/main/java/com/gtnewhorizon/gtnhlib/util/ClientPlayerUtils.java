@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayer;
 
 public class ClientPlayerUtils {
@@ -21,6 +22,9 @@ public class ClientPlayerUtils {
     }
 
     public static String getCurrentPlayerName() {
-        return Minecraft.getMinecraft().thePlayer.getCommandSenderName();
+        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+        if (player != null) return player.getCommandSenderName();
+
+        return Minecraft.getMinecraft().getSession().getUsername();
     }
 }

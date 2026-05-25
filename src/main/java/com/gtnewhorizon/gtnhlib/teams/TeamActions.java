@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,7 +23,8 @@ import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 
 public class TeamActions {
 
-    public static void onRename(Team team, String oldName, String newName, boolean adminAction, ICommandSender admin) {
+    public static void onRename(Team team, String oldName, String newName, boolean adminAction,
+            @Nullable ICommandSender admin) {
         TeamManager.forEachOnlineTeamMember(team, member -> {
             NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
             success(
@@ -140,7 +143,7 @@ public class TeamActions {
         success(player, "gtnhlib.chat.teams.message.left_team", colorChatComponent(EnumChatFormatting.GOLD, teamName));
     }
 
-    public static void onPromote(Team team, UUID target, boolean adminAction, ICommandSender admin) {
+    public static void onPromote(Team team, UUID target, boolean adminAction, @Nullable ICommandSender admin) {
         ChatComponentText playerComp = colorChatComponent(
                 EnumChatFormatting.GOLD,
                 ServerPlayerUtils.getPlayerName(target));
@@ -177,7 +180,7 @@ public class TeamActions {
         }
     }
 
-    public static void onDemote(Team team, UUID target, boolean adminAction, ICommandSender admin) {
+    public static void onDemote(Team team, UUID target, boolean adminAction, @Nullable ICommandSender admin) {
         ChatComponentText playerComp = colorChatComponent(
                 EnumChatFormatting.GOLD,
                 ServerPlayerUtils.getPlayerName(target));
@@ -239,7 +242,7 @@ public class TeamActions {
         });
     }
 
-    public static void onMergeAccept(Team source, Team target, boolean adminAction, ICommandSender admin) {
+    public static void onMergeAccept(Team source, Team target, boolean adminAction, @Nullable ICommandSender admin) {
         ChatComponentText sourceComponent = colorChatComponent(EnumChatFormatting.GOLD, source.getTeamName());
         ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
 
@@ -278,7 +281,7 @@ public class TeamActions {
         success(player, "gtnhlib.chat.teams.message.merge_denied", sourceComponent);
     }
 
-    public static void onDisband(Team team, boolean adminAction, ICommandSender admin) {
+    public static void onDisband(Team team, boolean adminAction, @Nullable ICommandSender admin) {
         List<UUID> members = new ArrayList<>(team.getMembers());
         String teamName = team.getTeamName();
 
@@ -303,7 +306,7 @@ public class TeamActions {
             TeamManager.transferTeamData(team, newTeam, uuid, TeamDataTransferReason.JoinedNewTeam);
             TeamManager.forEachOnlineTeamMember(newTeam, member -> {
                 NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
-                TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) member, newTeam);
+                TeamNetwork.sendPlayerAllTeamData(member, newTeam);
                 member.addChatMessage(notice);
             });
         }

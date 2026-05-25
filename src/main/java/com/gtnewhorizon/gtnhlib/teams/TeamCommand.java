@@ -378,8 +378,8 @@ public class TeamCommand {
 
     private static int executeDisband(ICommandSender sender) {
         EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
-        UUID playerId = player.getUniqueID();
         if (player == null) return Command.SINGLE_SUCCESS;
+        UUID playerId = player.getUniqueID();
 
         Team team = TeamManager.getTeamByPlayer(playerId);
         if (!team.isOwner(playerId)) {
