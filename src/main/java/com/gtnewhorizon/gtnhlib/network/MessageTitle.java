@@ -136,7 +136,7 @@ public class MessageTitle implements IPacket {
                 break;
             case 4: // RESET
                 TitleAPI.clear();
-                TitleAPI.reset();
+                TitleAPI.resetFade();
                 break;
             case 5: // ICON
                 TitleAPI.setIcon(iconStack);
