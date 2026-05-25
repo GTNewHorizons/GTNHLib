@@ -2,7 +2,14 @@ package com.gtnewhorizon.gtnhlib.client.title;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.MinecraftForge;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
@@ -19,41 +26,43 @@ public class TitleAPI {
     public static final int ICON_ANIM_FLY_IN = 1;
     public static final int ICON_ANIM_SPIN = 2;
 
+    private static final TitleAPI INSTANCE = new TitleAPI();
+
     @Getter
-    private static volatile IChatComponent title;
+    private static IChatComponent title;
     @Getter
-    private static volatile IChatComponent subtitle;
+    private static IChatComponent subtitle;
     @Getter
-    private static volatile int titleTime;
+    private static int titleTime;
     @Getter
-    private static volatile int fadeInTime = 10;
+    private static int fadeInTime = 10;
     @Getter
-    private static volatile int stayTime = 70;
+    private static int stayTime = 70;
     @Getter
-    private static volatile int fadeOutTime = 20;
+    private static int fadeOutTime = 20;
     @Getter
-    private static volatile ItemStack icon;
+    private static ItemStack icon;
     @Getter
-    private static volatile float iconScale;
+    private static float iconScale;
     @Getter
-    private static volatile int iconOffsetY = Integer.MIN_VALUE;
+    private static int iconOffsetY = Integer.MIN_VALUE;
     @Getter
-    private static volatile float titleScale;
+    private static float titleScale;
     @Getter
-    private static volatile float subtitleScale;
+    private static float subtitleScale;
     @Getter
-    private static volatile int iconAnimation = ICON_ANIM_DEFAULT;
+    private static int iconAnimation = ICON_ANIM_DEFAULT;
     @Getter
-    private static volatile int particleEffect;
+    private static int particleEffect;
     @Getter
-    private static volatile ItemStack confettiIcon;
+    private static ItemStack confettiIcon;
     @Getter
-    private static volatile int particleCount = -1;
+    private static int particleCount = -1;
 
     /** Display a title for {@code fadeIn + stay + fadeOut} ticks. */
     public static void setTitle(IChatComponent component) {
         title = component;
-        titleTime = fadeInTime + stayTime + fadeOutTime;
+        refreshTitleTime();
     }
 
     /** Set the subtitle. Only visible while a title is active. */
@@ -112,8 +121,14 @@ public class TitleAPI {
         if (stay >= 0) stayTime = stay;
         if (fadeOut >= 0) fadeOutTime = fadeOut;
         if (titleTime > 0) {
-            titleTime = fadeInTime + stayTime + fadeOutTime;
+            refreshTitleTime();
         }
+    }
+
+    private static void refreshTitleTime() {
+        titleTime = fadeInTime + stayTime + fadeOutTime;
+        MinecraftForge.EVENT_BUS.register(INSTANCE);
+        FMLCommonHandler.instance().bus().register(INSTANCE);
     }
 
     /** Clear title and subtitle and stop the timer. */
@@ -130,10 +145,29 @@ public class TitleAPI {
         confettiIcon = null;
         particleCount = -1;
         titleTime = 0;
+        TitleParticleSystem.clear();
+        FMLCommonHandler.instance().bus().unregister(INSTANCE);
+        MinecraftForge.EVENT_BUS.unregister(INSTANCE);
+    }
+
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        tick();
+        TitleParticleSystem.tick();
+    }
+
+    @SubscribeEvent
+    public void renderTitle(RenderGameOverlayEvent.Post event) {
+        if (event.type != RenderGameOverlayEvent.ElementType.TEXT) {
+            return;
+        }
+        if (!GTNHLibConfig.enableTitleOverlay) return;
+        TitleRenderer.render(event.resolution, event.partialTicks);
     }
 
     /** Reset fade times to defaults (10/70/20). Does not clear the current title. */
-    public static void reset() {
+    public static void resetFade() {
         fadeInTime = 10;
         stayTime = 70;
         fadeOutTime = 20;
@@ -141,21 +175,9 @@ public class TitleAPI {
 
     /** Decrement the timer once per client tick; clears title and subtitle when it reaches zero. */
     public static void tick() {
-        if (titleTime > 0) {
-            titleTime--;
-            if (titleTime <= 0) {
-                title = null;
-                subtitle = null;
-                icon = null;
-                iconScale = 0;
-                iconOffsetY = Integer.MIN_VALUE;
-                titleScale = 0;
-                subtitleScale = 0;
-                iconAnimation = ICON_ANIM_DEFAULT;
-                particleEffect = 0;
-                confettiIcon = null;
-                particleCount = -1;
-            }
+        titleTime--;
+        if (titleTime <= 0) {
+            clear();
         }
     }
 }
