@@ -3,7 +3,10 @@ package com.gtnewhorizon.gtnhlib.util.font;
 import java.util.function.Function;
 
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.StatCollector;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Setter;
 
 // Common font rendering utilities that may be better-behaved than vanilla counterparts
@@ -35,6 +38,28 @@ public class FontRendering {
 
     private static boolean preprocessorHandlesAmpCodes() {
         return textPreprocessor instanceof TextPreprocessor && ((TextPreprocessor) textPreprocessor).handlesAmpCodes();
+    }
+
+    /**
+     * Whether a preprocessor is installed that can convert {@code &}-prefixed format codes ({@code &u}, {@code &q},
+     * {@code &#RRGGBB}, etc.) into their rendered equivalents. Use this to guard call sites that want to prepend format
+     * strings from lang files.
+     */
+    public static boolean canHandleFormatCodes() {
+        return preprocessorHandlesAmpCodes();
+    }
+
+    /**
+     * Resolve a lang key to a format-code prefix string. Returns the translated value if a preprocessor is available
+     * and the translation contains format codes ({@code &} or {@code §}); returns {@code ""} otherwise.
+     */
+    @SideOnly(Side.CLIENT)
+    public static String getTextPrefix(String langKey) {
+        if (!preprocessorHandlesAmpCodes()) return "";
+        String translated = StatCollector.translateToLocal(langKey);
+        if (translated.equals(langKey)) return "";
+        if (translated.indexOf('&') < 0 && translated.indexOf('§') < 0) return "";
+        return translated;
     }
 
     /**
