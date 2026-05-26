@@ -12,6 +12,7 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
     private final int slot;
     private final ItemStack from;
     private final ItemStack to;
+    private final boolean initial;
 
     /**
      * {@link LivingEquipmentChangeEvent} is fired when the Equipment of an Entity changes. <br>
@@ -29,7 +30,7 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
      * </ul>
      * {@link #from} contains the {@link ItemStack} that was equipped previously. <br>
      * {@link #to} contains the {@link ItemStack} that is equipped now. <br>
-     * <br>
+     * {@link #initial} is {@link Boolean#TRUE} if this entity is firing this event through its first tick. <br>
      * This event is not {@link cpw.mods.fml.common.eventhandler.Cancelable}. <br>
      * <br>
      * This event does not have a result. {@link HasResult} <br>
@@ -37,11 +38,22 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
      * This event is fired on the {@link net.minecraftforge.common.MinecraftForge#EVENT_BUS}.
      **/
 
-    public LivingEquipmentChangeEvent(EntityLivingBase entity, int slot, ItemStack from, ItemStack to) {
+    public LivingEquipmentChangeEvent(EntityLivingBase entity, int slot, ItemStack from, ItemStack to,
+            boolean initial) {
         super(entity);
         this.slot = slot;
         this.from = from;
         this.to = to;
+        this.initial = initial;
+    }
+
+    /**
+     * Constructor that always assumes this is not the initial event firing. See
+     * {@link LivingEquipmentChangeEvent#LivingEquipmentChangeEvent(EntityLivingBase, int, ItemStack, ItemStack, boolean)}
+     * for full javadoc.
+     **/
+    public LivingEquipmentChangeEvent(EntityLivingBase entity, int slot, ItemStack from, ItemStack to) {
+        this(entity, slot, from, to, false);
     }
 
     /**
@@ -64,5 +76,9 @@ public class LivingEquipmentChangeEvent extends LivingEvent {
 
     public ItemStack getTo() {
         return this.to;
+    }
+
+    public boolean isInitial() {
+        return initial;
     }
 }
