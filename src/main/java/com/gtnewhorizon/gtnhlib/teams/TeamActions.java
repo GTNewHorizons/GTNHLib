@@ -49,8 +49,12 @@ public class TeamActions {
                 "gtnhlib.chat.teams.message.received_invite",
                 colorChatComponent(EnumChatFormatting.GOLD, source.getCommandSenderName()),
                 colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam accept \"" + team.getTeamName() + "\""),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam deny \"" + team.getTeamName() + "\""));
+                colorChatComponent(
+                        EnumChatFormatting.YELLOW,
+                        TeamCommandsUtils.getCommandRoot() + " accept \"" + team.getTeamName() + "\""),
+                colorChatComponent(
+                        EnumChatFormatting.YELLOW,
+                        TeamCommandsUtils.getCommandRoot() + " deny \"" + team.getTeamName() + "\""));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
         target.addChatMessage(notification);
 
@@ -231,8 +235,10 @@ public class TeamActions {
                 sourceComponent,
                 colorChatComponent(
                         EnumChatFormatting.YELLOW,
-                        "/gtnhteam merge accept \"" + source.getTeamName() + "\""),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam merge deny \"" + source.getTeamName() + "\""));
+                        TeamCommandsUtils.getCommandRoot() + " merge accept \"" + source.getTeamName() + "\""),
+                colorChatComponent(
+                        EnumChatFormatting.YELLOW,
+                        TeamCommandsUtils.getCommandRoot() + " merge deny \"" + source.getTeamName() + "\""));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
         Set<UUID> owners = target.getOwners();
         TeamManager.forEachOnlineTeamMember(target, member -> {
