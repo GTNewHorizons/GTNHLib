@@ -5,28 +5,20 @@ import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_PLAYER;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.ARG_TEAM_NAME;
 import static com.gtnewhorizon.gtnhlib.teams.TeamCommandsUtils.resolveTeamMemberUuid;
 import static com.gtnewhorizon.gtnhlib.util.CommandUtils.argument;
-import static com.gtnewhorizon.gtnhlib.util.CommandUtils.colorChatComponent;
 import static com.gtnewhorizon.gtnhlib.util.CommandUtils.error;
 import static com.gtnewhorizon.gtnhlib.util.CommandUtils.literal;
-import static com.gtnewhorizon.gtnhlib.util.CommandUtils.success;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
-import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
-import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -137,10 +129,15 @@ public class TeamCommand {
                                                                                 StringArgumentType.getString(
                                                                                         ctx,
                                                                                         ARG_TEAM_NAME))))))
+                .then(literal("disband").executes(ctx -> executeDisband(ctx.getSource())))
+
                 .then(literal("help").executes(ctx -> executeHelp(ctx.getSource()))));
     }
 
     private static int executeRename(ICommandSender sender, String newName) {
+        if (newName.length() > Team.MAX_TEAM_NAME_LENGTH) {
+            return error(sender, "gtnhlib.chat.teams.message.team_name_too_long");
+        }
         EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
 
@@ -148,20 +145,12 @@ public class TeamCommand {
         if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
         if (!team.isOwner(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.not_owner_rename");
 
+        String oldName = team.getTeamName();
         if (!team.renameTeam(newName)) {
             return error(sender, "gtnhlib.chat.teams.error.name_in_use");
         }
 
-        TeamInfoSync packet = TeamNetwork.createTeamInfoSyncPacket(team);
-        TeamManager.forEachOnlineTeamMember(team, member -> NetworkHandler.instance.sendTo(packet, member));
-
-        for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-            if (member != null) success(
-                    member,
-                    "gtnhlib.chat.teams.message.renamed_team",
-                    colorChatComponent(EnumChatFormatting.GOLD, newName));
-        }
+        TeamActions.onRename(team, oldName, newName, false, null);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -181,25 +170,7 @@ public class TeamCommand {
         if (target.getUniqueID().equals(player.getUniqueID()))
             return error(sender, "gtnhlib.chat.teams.error.invite_self");
 
-        TeamManager.addPendingInvite(target.getUniqueID(), team);
-
-        success(
-                sender,
-                "gtnhlib.chat.teams.message.sent_invite",
-                colorChatComponent(EnumChatFormatting.GOLD, targetName));
-
-        ChatComponentTranslation notification = new ChatComponentTranslation(
-                "gtnhlib.chat.teams.message.received_invite",
-                colorChatComponent(EnumChatFormatting.GOLD, player.getCommandSenderName()),
-                colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()),
-                colorChatComponent(
-                        EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " accept \"" + team.getTeamName() + "\""),
-                colorChatComponent(
-                        EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " deny \"" + team.getTeamName() + "\""));
-        notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
-        target.addChatMessage(notification);
+        TeamActions.onInvite(team, player, target);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -212,61 +183,28 @@ public class TeamCommand {
         Set<Team> invites = TeamManager.getPendingInvites(playerId);
         if (invites == null || invites.isEmpty()) return error(sender, "gtnhlib.chat.teams.error.no_invite");
 
-        Team invitedTeam;
+        Team invitingTeam;
         if (invites.size() == 1) {
-            invitedTeam = invites.iterator().next();
+            invitingTeam = invites.iterator().next();
         } else if (teamName.isEmpty()) {
             return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite", TeamCommandsUtils.getCommandRoot());
         } else {
-            invitedTeam = TeamManager.getTeamByName(teamName);
-            if (invitedTeam == null || !invites.contains(invitedTeam))
+            invitingTeam = TeamManager.getTeamByName(teamName);
+            if (invitingTeam == null || !invites.contains(invitingTeam))
                 return error(sender, "gtnhlib.chat.teams.error.no_invite_specific", teamName);
         }
 
-        // Leave current team first. If the team would be disbanded, merge it into the new team automatically.
         Team currentTeam = TeamManager.getTeamByPlayer(playerId);
-        if (currentTeam != null) {
-            // Don't allow joining if player is sole owner of their team AND there are other members
-            if (currentTeam.isOwner(playerId) && currentTeam.getOwners().size() == 1
-                    && currentTeam.getMembers().size() > 1) {
-                return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
-            }
-            currentTeam.removeMember(playerId);
-
-            for (UUID memberUuid : currentTeam.getMembers()) {
-                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-                if (member != null) success(
-                        member,
-                        "gtnhlib.chat.teams.message.other_left_team",
-                        colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
-            }
-
-            if (currentTeam.getMembers().isEmpty()) {
-                TeamManager.mergeTeams(invitedTeam, currentTeam);
-            } else {
-                TeamManager.copyTeamData(currentTeam, invitedTeam, playerId, TeamDataCopyReason.JoinedExistingTeam);
-            }
+        assert currentTeam != null;
+        // Don't allow joining if player is sole owner of their team AND there are other members
+        if (currentTeam.isOwner(playerId) && currentTeam.getOwners().size() == 1
+                && currentTeam.getMembers().size() > 1) {
+            return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
         }
 
-        // Done before player is added to team so that they are not notified of their own join
-        for (UUID memberUuid : invitedTeam.getMembers()) {
-            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-            if (member != null) success(
-                    member,
-                    "gtnhlib.chat.teams.message.other_joined_team",
-                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
-        }
+        TeamActions.onAccept(invitingTeam, player);
 
-        invitedTeam.addMember(playerId);
-        TeamManager.removeAllPendingInvites(playerId);
-        TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, invitedTeam);
-        TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitedTeam);
-        invitedTeam.markDirty();
-
-        return success(
-                sender,
-                "gtnhlib.chat.teams.message.joined_team",
-                colorChatComponent(EnumChatFormatting.GOLD, invitedTeam.getTeamName()));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeDeny(ICommandSender sender, String teamName) {
@@ -287,12 +225,9 @@ public class TeamCommand {
                 return error(sender, "gtnhlib.chat.teams.error.no_invite_specific", teamName);
         }
 
-        TeamManager.removePendingInvite(player.getUniqueID(), specificTeam);
+        TeamActions.onDeny(specificTeam, player);
 
-        return success(
-                sender,
-                "gtnhlib.chat.teams.message.declined_invite",
-                colorChatComponent(EnumChatFormatting.GOLD, specificTeam.getTeamName()));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeLeave(ICommandSender sender) {
@@ -310,31 +245,9 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_leave");
         }
 
-        String teamName = team.getTeamName();
+        TeamActions.onLeave(player);
 
-        team.removeMember(playerId);
-        if (team.getMembers().isEmpty()) {
-            TeamManager.TEAMS.remove(team);
-            TeamManager.TEAM_MAP.remove(team.getTeamId());
-            team.markRemoved();
-        }
-
-        for (UUID memberUuid : team.getMembers()) {
-            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-            if (member != null) success(
-                    member,
-                    "gtnhlib.chat.teams.message.other_left_team",
-                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
-        }
-
-        // Create a new solo team for the player
-        Team newTeam = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
-        TeamManager.copyTeamData(team, newTeam, playerId, TeamDataCopyReason.JoinedNewTeam);
-
-        return success(
-                sender,
-                "gtnhlib.chat.teams.message.left_team",
-                colorChatComponent(EnumChatFormatting.GOLD, teamName));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executePromote(ICommandSender sender, String targetName) {
@@ -349,25 +262,8 @@ public class TeamCommand {
         if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
         if (team.isOwner(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.promote_owner", targetName);
 
-        if (team.isOfficer(targetUuid)) {
-            team.addOwner(targetUuid);
-            for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-                if (member != null) success(
-                        member,
-                        "gtnhlib.chat.teams.message.promoted_to_owner",
-                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
-            }
-        } else {
-            team.addOfficer(targetUuid);
-            for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-                if (member != null) success(
-                        member,
-                        "gtnhlib.chat.teams.message.promoted_to_officer",
-                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
-            }
-        }
+        TeamActions.onPromote(team, targetUuid, false, null);
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -385,25 +281,8 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_demote");
         if (!team.isOfficer(targetUuid)) return error(sender, "gtnhlib.chat.teams.error.demote_member", targetName);
 
-        if (team.isOwner(targetUuid)) {
-            team.removeOwner(targetUuid);
-            for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-                if (member != null) success(
-                        member,
-                        "gtnhlib.chat.teams.message.demoted_to_officer",
-                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
-            }
-        } else {
-            team.removeOfficer(targetUuid);
-            for (UUID memberUuid : team.getMembers()) {
-                EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-                if (member != null) success(
-                        member,
-                        "gtnhlib.chat.teams.message.demoted_to_member",
-                        colorChatComponent(EnumChatFormatting.GOLD, targetName));
-            }
-        }
+        TeamActions.onDemote(team, targetUuid, false, null);
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -435,29 +314,7 @@ public class TeamCommand {
         if (TeamManager.hasPendingMergeRequest(source, target))
             return error(sender, "gtnhlib.chat.teams.error.merge_already_requested", targetTeamName);
 
-        TeamManager.addPendingMergeRequest(source, target);
-
-        ChatComponentText sourceComponent = colorChatComponent(EnumChatFormatting.GOLD, source.getTeamName());
-        ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
-
-        success(sender, "gtnhlib.chat.teams.message.merge_request_sent", targetComponent);
-
-        // Notify all online owners of the target team
-        ChatComponentTranslation notification = new ChatComponentTranslation(
-                "gtnhlib.chat.teams.message.merge_request_received",
-                sourceComponent,
-                colorChatComponent(
-                        EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " merge accept \"" + source.getTeamName() + "\""),
-                colorChatComponent(
-                        EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " merge deny \"" + source.getTeamName() + "\""));
-        notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
-
-        for (UUID ownerUuid : target.getOwners()) {
-            EntityPlayer owner = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), ownerUuid);
-            if (owner != null) owner.addChatMessage(notification);
-        }
+        TeamActions.onMergeRequest(player, source, target);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -486,26 +343,7 @@ public class TeamCommand {
                 return error(sender, "gtnhlib.chat.teams.error.no_merge_request_specific", sourceTeamName);
         }
 
-        ChatComponentText sourceComponent = colorChatComponent(EnumChatFormatting.GOLD, source.getTeamName());
-        ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
-
-        // Capture member list before merge for notification purposes
-        List<UUID> allMembers = new ArrayList<>(source.getMembers());
-        allMembers.addAll(target.getMembers());
-
-        TeamManager.removePendingMergeRequest(source, target);
-        TeamManager.mergeTeams(target, source);
-
-        ChatComponentTranslation notification = new ChatComponentTranslation(
-                "gtnhlib.chat.teams.message.merge_complete",
-                sourceComponent,
-                targetComponent);
-        notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
-
-        for (UUID memberUuid : allMembers) {
-            EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-            if (member != null) member.addChatMessage(notification);
-        }
+        TeamActions.onMergeAccept(source, target, false, null);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -534,11 +372,26 @@ public class TeamCommand {
                 return error(sender, "gtnhlib.chat.teams.error.no_merge_request_specific", sourceTeamName);
         }
 
-        TeamManager.removePendingMergeRequest(source, target);
+        TeamActions.onMergeDeny(player, source, target);
 
-        ChatComponentText sourceComponent = new ChatComponentText(source.getTeamName());
-        sourceComponent.getChatStyle().setColor(EnumChatFormatting.GOLD);
-        return success(sender, "gtnhlib.chat.teams.message.merge_denied", sourceComponent);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDisband(ICommandSender sender) {
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+        UUID playerId = player.getUniqueID();
+
+        Team team = TeamManager.getTeamByPlayer(playerId);
+        if (!team.isOwner(playerId)) {
+            return error(sender, "gtnhlib.chat.teams.error.not_owner_disband");
+        }
+        if (team.getMembers().size() == 1) {
+            return error(sender, "gtnhlib.chat.teams.error.last_owner_disband");
+        }
+
+        TeamActions.onDisband(team, false, null);
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeHelp(ICommandSender sender) {
@@ -555,6 +408,7 @@ public class TeamCommand {
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.10", root));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.11", root));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.12", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.13", root));
         return Command.SINGLE_SUCCESS;
     }
 
