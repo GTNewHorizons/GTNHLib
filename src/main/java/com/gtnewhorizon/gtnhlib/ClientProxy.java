@@ -22,12 +22,14 @@ import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -43,6 +45,14 @@ public class ClientProxy extends CommonProxy {
     @Getter
     public static int currentServerViewDistance = 12;
     public static final Minecraft mc = Minecraft.getMinecraft();
+
+    @Override
+    public void construct(FMLConstructionEvent event) {
+        super.construct(event);
+
+        // ConfigChangedEvent is client-only; register handler only on client.
+        FMLCommonHandler.instance().bus().register(new ConfigEventHandler());
+    }
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {

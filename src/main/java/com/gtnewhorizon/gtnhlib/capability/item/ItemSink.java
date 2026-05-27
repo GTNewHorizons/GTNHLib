@@ -73,6 +73,20 @@ public interface ItemSink {
 
     }
 
+    /**
+     * Sets the maximum number of items allowed in any single slot of this sink. This acts as a hard cap on per-slot
+     * occupancy, overriding the normal slot stack limit if it is lower. For example, setting this to 5 means that no
+     * slot will ever contain more than 5 items after an insertion, regardless of the item's max stack size or the
+     * inventory's stack limit.
+     * <p />
+     * If the sink does not have something like a 'slot' (i.e. an ME system), this may be ignored.
+     * <p />
+     * When the value is {@link Integer#MAX_VALUE}, no additional limit is applied beyond the normal slot stack limit.
+     */
+    default void setSlotStackLimit(int limit) {
+
+    }
+
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     OptionalInt ZERO = OptionalInt.of(0);
 

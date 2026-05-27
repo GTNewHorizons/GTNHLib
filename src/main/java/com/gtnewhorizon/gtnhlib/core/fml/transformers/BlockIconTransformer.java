@@ -4,6 +4,7 @@ import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
 import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
 import static org.objectweb.asm.Opcodes.GETFIELD;
 import static org.objectweb.asm.Opcodes.GETSTATIC;
 import static org.objectweb.asm.Opcodes.IFEQ;
@@ -27,6 +28,7 @@ import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 import com.gtnewhorizon.gtnhlib.asm.ByteCodeUtil;
@@ -42,7 +44,9 @@ public class BlockIconTransformer implements IClassTransformer {
     private static final String BLOCK_CLASS = "net/minecraft/block/Block";
     private static final String BLOCK_MODEL_INFO = "com/gtnewhorizon/gtnhlib/api/BlockModelInfo";
     private static final String ISBRH_CLASS = "com/gtnewhorizon/gtnhlib/client/model/ModelISBRH";
-    private static final String ISBRH_DESC = "L" + ISBRH_CLASS + ";";
+    private static final String THREAD_LOCAL_CLASS = "java/lang/ThreadLocal";
+    private static final String THREAD_LOCAL_DESC = "L" + THREAD_LOCAL_CLASS + ";";
+    private static final String THREAD_LOCAL_GET_DESC = "()Ljava/lang/Object;";
     private static final String NEW_WORLD_DESC = "(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraft/util/IIcon;";
     private static final String MISSINGNO_DESC = "()Lnet/minecraft/util/IIcon;";
 
@@ -140,7 +144,9 @@ public class BlockIconTransformer implements IClassTransformer {
         injectedHook.add(new VarInsnNode(ALOAD, 0));
         injectedHook.add(new FieldInsnNode(GETFIELD, cn.name, FIELD_NAME, BOOL_DESC));
         injectedHook.add(new JumpInsnNode(IFEQ, endLabel));
-        injectedHook.add(new FieldInsnNode(GETSTATIC, ISBRH_CLASS, "INSTANCE", ISBRH_DESC));
+        injectedHook.add(new FieldInsnNode(GETSTATIC, ISBRH_CLASS, "INSTANCE", THREAD_LOCAL_DESC));
+        injectedHook.add(new MethodInsnNode(INVOKEVIRTUAL, THREAD_LOCAL_CLASS, "get", THREAD_LOCAL_GET_DESC, false));
+        injectedHook.add(new TypeInsnNode(CHECKCAST, ISBRH_CLASS));
 
         // This call varies based on the node we injected to.
         switch (signature) {

@@ -48,6 +48,7 @@ public class ConfigurationManager {
     private static final Map<Configuration, Set<String>> observedCategories = new HashMap<>();
     private static final Map<ConfigCategory, Class<?>> configEntries = new HashMap<>();
     private static final Map<Class<?>, ConfigNode> configNode = new HashMap<>();
+    private static final Map<Config, Map<String, Set<Runnable>>> reloadables = new HashMap<>();
 
     private final static Path configDir;
 
@@ -115,6 +116,22 @@ public class ConfigurationManager {
         }
 
         savedConfigs.forEach(Configuration::save);
+    }
+
+    public static void reloadConfig(Class<?> configClass, String id) {
+        Config config = getClassOrBaseAnnotation(configClass, Config.class);
+        if (config == null) {
+            throw new ConfigException("Class " + configClass.getName() + " does not have a @Config annotation!");
+        }
+        Map<String, Set<Runnable>> toReload = reloadables.get(config);
+        if (toReload == null) return;
+        Set<Runnable> reloadables = toReload.get(id);
+        Configuration rawConfig = configs.get(getConfigKey(config));
+        if (reloadables == null || rawConfig == null) return;
+        rawConfig.load();
+        for (Runnable runnable : reloadables) {
+            runnable.run();
+        }
     }
 
     private static void save(Class<?> configClass, Object instance, Configuration rawConfig, String category)
@@ -228,21 +245,26 @@ public class ConfigurationManager {
 
             Config.Sync fieldSync = field.getAnnotation(Config.Sync.class);
             if (fieldSync != null && fieldSync.value() || syncCategory && fieldSync == null) {
-                SyncedConfigElement element = new SyncedConfigElement(instance, field, () -> {
-                    try {
-                        ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey);
-                    } catch (ConfigException e) {
-                        LOGGER.error(
-                                "Failed to restore synced field {} in class {}",
-                                fieldName,
-                                field.getDeclaringClass(),
-                                e);
-                    }
-                });
+                SyncedConfigElement element = new SyncedConfigElement(
+                        instance,
+                        field,
+                        () -> ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey));
                 ConfigSyncHandler.syncedElements.put(field.toString(), element);
 
                 if (!requiresWorldRestart) {
                     cat.get(fieldName).setRequiresWorldRestart(true);
+                }
+            }
+
+            Config.Reloadable reloadable = field.getAnnotation(Config.Reloadable.class);
+            if (reloadable != null) {
+                // Uses the config annotation as key since there can be multiple reloadables
+                // with the same id in config class
+                Config configAnno = getClassOrBaseAnnotation(configClass, Config.class);
+                if (configAnno != null) {
+                    reloadables.computeIfAbsent(configAnno, (ignored) -> new HashMap<>())
+                            .computeIfAbsent(reloadable.value(), (ignored) -> new HashSet<>())
+                            .add(() -> ConfigFieldParser.loadField(instance, field, rawConfig, category, langKey));
                 }
             }
 
@@ -392,9 +414,6 @@ public class ConfigurationManager {
 
         ConfigNode rootNode = configNode.get(configClass);
         ConfigNode node = rootNode.children.getOrDefault(element.getName().toLowerCase(), rootNode);
-        Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
-        int order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
-
         return new IConfigElementProxy(element, () -> {
             try {
                 processConfigInternal(configClass, category, rawConfig, null);
@@ -403,7 +422,7 @@ public class ConfigurationManager {
                     | ConfigException e) {
                 e.printStackTrace();
             }
-        }, node, order);
+        }, node);
     }
 
     private static String getLangKey(Class<?> configClass, @Nullable Config.LangKey langKey, @Nullable String fieldName,
@@ -609,18 +628,63 @@ public class ConfigurationManager {
 
     public static class ConfigNode {
 
-        final Map<String, Integer> fieldOrder = new HashMap<>();
-        final Map<String, ConfigNode> children = new HashMap<>();
+        public final int order;
+        public final String[] requiredModsOr;
+        public final String[] requiredModsAnd;
+        public final Map<String, ConfigNode> children = new HashMap<>();
 
         public ConfigNode(Class<?> configClass) {
+            Config.Order orderAnn = configClass.getAnnotation(Config.Order.class);
+            Config.RequiresMod reqAnn = configClass.getAnnotation(Config.RequiresMod.class);
+
+            this.order = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
+
+            if (reqAnn != null && reqAnn.mode() == Config.RequiresMod.Mode.OR) {
+                this.requiredModsOr = reqAnn.value();
+                this.requiredModsAnd = null;
+            } else if (reqAnn != null && reqAnn.mode() == Config.RequiresMod.Mode.AND) {
+                this.requiredModsOr = null;
+                this.requiredModsAnd = reqAnn.value();
+            } else {
+                this.requiredModsOr = null;
+                this.requiredModsAnd = null;
+            }
+
+            buildChildren(configClass);
+        }
+
+        public ConfigNode(int order, @Nullable String[] requiredModsOr, @Nullable String[] requiredModsAnd,
+                @Nullable Class<?> categoryClass) {
+            this.order = order;
+            this.requiredModsOr = requiredModsOr;
+            this.requiredModsAnd = requiredModsAnd;
+            if (categoryClass != null) buildChildren(categoryClass);
+        }
+
+        private void buildChildren(Class<?> configClass) {
             for (Field field : configClass.getDeclaredFields()) {
-                if (shouldSkipField(field)) {
-                    continue;
-                }
+                if (shouldSkipField(field)) continue;
                 String fieldName = ConfigFieldParser.getFieldName(field).toLowerCase();
-                Config.Order ann = field.getAnnotation(Config.Order.class);
-                if (ann != null) fieldOrder.put(fieldName, ann.value());
-                if (ConfigurationManager.isFieldSubCategory(field)) {
+                Config.Order orderAnn = field.getAnnotation(Config.Order.class);
+                int fieldOrder = orderAnn != null ? orderAnn.value() : Integer.MAX_VALUE;
+
+                Config.RequiresMod reqAnn = field.getAnnotation(Config.RequiresMod.class);
+                String[] fieldModsOr = null;
+                String[] fieldModsAnd = null;
+
+                if (reqAnn != null) {
+                    if (reqAnn.mode() == Config.RequiresMod.Mode.OR) {
+                        fieldModsOr = reqAnn.value();
+                    } else if (reqAnn.mode() == Config.RequiresMod.Mode.AND) {
+                        fieldModsAnd = reqAnn.value();
+                    }
+                }
+
+                if (!ConfigurationManager.isFieldSubCategory(field)) {
+                    children.put(fieldName, new ConfigNode(fieldOrder, fieldModsOr, fieldModsAnd, null));
+                } else if (orderAnn != null || reqAnn != null) {
+                    children.put(fieldName, new ConfigNode(fieldOrder, fieldModsOr, fieldModsAnd, field.getType()));
+                } else {
                     children.put(fieldName, new ConfigNode(field.getType()));
                 }
             }
