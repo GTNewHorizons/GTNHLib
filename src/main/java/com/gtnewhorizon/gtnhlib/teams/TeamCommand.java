@@ -23,6 +23,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
@@ -35,7 +36,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 public class TeamCommand {
 
     public static void register() {
-        BrigadierApi.getCommandDispatcher().register(literal("gtnhteam").executes(ctx -> {
+        BrigadierApi.getCommandDispatcher().register(literal(GTNHLibConfig.teamCommandRoot).executes(ctx -> {
             sendUsage(ctx.getSource());
             return Command.SINGLE_SUCCESS;
         }).then(
@@ -191,8 +192,12 @@ public class TeamCommand {
                 "gtnhlib.chat.teams.message.received_invite",
                 colorChatComponent(EnumChatFormatting.GOLD, player.getCommandSenderName()),
                 colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam accept \"" + team.getTeamName() + "\""),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam deny \"" + team.getTeamName() + "\""));
+                colorChatComponent(
+                        EnumChatFormatting.YELLOW,
+                        TeamCommandsUtils.getCommandRoot() + " accept \"" + team.getTeamName() + "\""),
+                colorChatComponent(
+                        EnumChatFormatting.YELLOW,
+                        TeamCommandsUtils.getCommandRoot() + " deny \"" + team.getTeamName() + "\""));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
         target.addChatMessage(notification);
 
@@ -211,7 +216,7 @@ public class TeamCommand {
         if (invites.size() == 1) {
             invitedTeam = invites.iterator().next();
         } else if (teamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite", TeamCommandsUtils.getCommandRoot());
         } else {
             invitedTeam = TeamManager.getTeamByName(teamName);
             if (invitedTeam == null || !invites.contains(invitedTeam))
@@ -275,7 +280,7 @@ public class TeamCommand {
         if (invites.size() == 1) {
             specificTeam = invites.iterator().next();
         } else if (teamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite", TeamCommandsUtils.getCommandRoot());
         } else {
             specificTeam = TeamManager.getTeamByName(teamName);
             if (specificTeam == null || !invites.contains(specificTeam))
@@ -443,8 +448,10 @@ public class TeamCommand {
                 sourceComponent,
                 colorChatComponent(
                         EnumChatFormatting.YELLOW,
-                        "/gtnhteam merge accept \"" + source.getTeamName() + "\""),
-                colorChatComponent(EnumChatFormatting.YELLOW, "/gtnhteam merge deny \"" + source.getTeamName() + "\""));
+                        TeamCommandsUtils.getCommandRoot() + " merge accept \"" + source.getTeamName() + "\""),
+                colorChatComponent(
+                        EnumChatFormatting.YELLOW,
+                        TeamCommandsUtils.getCommandRoot() + " merge deny \"" + source.getTeamName() + "\""));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
 
         for (UUID ownerUuid : target.getOwners()) {
@@ -472,7 +479,7 @@ public class TeamCommand {
         if (pendingMerges.size() == 1) {
             source = pendingMerges.iterator().next();
         } else if (sourceTeamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge", TeamCommandsUtils.getCommandRoot());
         } else {
             source = TeamManager.getTeamByName(sourceTeamName);
             if (source == null || !pendingMerges.contains(source))
@@ -520,7 +527,7 @@ public class TeamCommand {
         if (pendingMerges.size() == 1) {
             source = pendingMerges.iterator().next();
         } else if (sourceTeamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge", TeamCommandsUtils.getCommandRoot());
         } else {
             source = TeamManager.getTeamByName(sourceTeamName);
             if (source == null || !pendingMerges.contains(source))
@@ -535,18 +542,19 @@ public class TeamCommand {
     }
 
     private static int executeHelp(ICommandSender sender) {
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.3"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.4"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.5"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.6"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.7"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.8"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.9"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.10"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.11"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.12"));
+        String root = TeamCommandsUtils.getCommandRoot();
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1", GTNHLibConfig.teamSystemName));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.3", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.4", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.5", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.6", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.7", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.8", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.9", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.10", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.11", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.12", root));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -597,7 +605,9 @@ public class TeamCommand {
     }
 
     private static void sendUsage(ICommandSender sender) {
-        ChatComponentTranslation msg = new ChatComponentTranslation("gtnhlib.chat.teams.message.usage");
+        ChatComponentTranslation msg = new ChatComponentTranslation(
+                "gtnhlib.chat.teams.message.usage",
+                GTNHLibConfig.teamSystemName);
         msg.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(msg);
     }
