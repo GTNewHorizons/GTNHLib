@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.baked;
 
+import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.ModelDisplay.DEFAULT;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_X;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Z;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position.ModelDisplay;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
@@ -26,17 +28,17 @@ import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 public final class PileOfQuads implements BakedModel {
 
     private final SidedQuadStore sidedQuadStore;
-    private final Map<Position, Position.ModelDisplay> display;
+    private final Map<Position, ModelDisplay> display;
     private final IIcon particle;
 
-    public PileOfQuads(SidedQuadStore sidedQuadStore, Map<Position, Position.ModelDisplay> display, IIcon particle) {
+    public PileOfQuads(SidedQuadStore sidedQuadStore, Map<Position, ModelDisplay> display, IIcon particle) {
         this.sidedQuadStore = sidedQuadStore;
         this.display = display;
         this.particle = particle;
     }
 
     public PileOfQuads(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore,
-            Map<Position, Position.ModelDisplay> display, IIcon particle) {
+            Map<Position, ModelDisplay> display, IIcon particle) {
         this(new SidedQuadStore(sidedQuadStore), display, particle);
     }
 
@@ -46,8 +48,9 @@ public final class PileOfQuads implements BakedModel {
     }
 
     @Override
-    public Position.ModelDisplay getDisplay(Position pos, BakedModelQuadContext context) {
-        return display.getOrDefault(pos, Position.ModelDisplay.DEFAULT);
+    public ModelDisplay getDisplay(Position pos, BakedModelQuadContext context) {
+        if (display == null) return DEFAULT;
+        return display.getOrDefault(pos, DEFAULT);
     }
 
     @Override
