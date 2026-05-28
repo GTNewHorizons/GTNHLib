@@ -1,20 +1,25 @@
 // Add your dependencies here
 configurations {
-    shadowSources
-    jvmdgDowngraded17
+    deploader
 }
 
 def jvmDgVersion = "1.3.5"
+def fplibVersion = "1.11.0"
 
 dependencies {
-    shadowImplementation("it.unimi.dsi:fastutil:8.5.15") // Apache 2.0
-    shadowImplementation("org.joml:joml:1.10.8") { transitive = false } // MIT
-    shadowImplementation("com.mojang:brigadier:1.0.18") // MIT
-    shadowImplementation("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false } // LGPL 2.1
-    jvmdgDowngraded17("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-17") { transitive = false } // LGPL 2.1
-    shadowSources("it.unimi.dsi:fastutil:8.5.15:sources")
-    shadowSources("org.joml:joml:1.10.8:sources") { transitive = false }
-    shadowSources("com.mojang:brigadier:1.0.18")
+    deploader("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader") // LGPL 3.0
+    shadowImplementation("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader_stub") // LGPL 3.0
+
+    api("it.unimi.dsi:fastutil:8.5.15") // Apache 2.0
+    api("org.joml:joml:1.10.8") { transitive = false } // MIT
+    api("com.mojang:brigadier:1.0.18") // MIT
+    compileOnly("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false } // LGPL 2.1
+
+    // Slow-moving fat lib holding external deps
+    api("com.github.GTNewHorizons:GTNHExtLib:1.0.0") { transitive = false }
+
+    // Tests run outside the DepLoader bootstrap; compileOnly does not reach test runtime.
+    testRuntimeOnly("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false }
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")

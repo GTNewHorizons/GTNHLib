@@ -1,14 +1,17 @@
 package com.gtnewhorizon.gtnhlib.core;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.falsepattern.deploader.DeploaderStub;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -24,6 +27,18 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.core", "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
+
+    static {
+        try {
+            // Delegate to GTNHExtLib if present. Should be safe to class load since it would have been loaded by FML
+            // earlier based on alphabetical naming/coremods being on the class path
+            Class.forName("com.gtnewhorizons.gtnhextlib.core.GTNHExtLibCore", true, Launch.classLoader);
+        } catch (ClassNotFoundException notExtLib) {
+            // Otherwise do that work ourselves
+            removeBrigadierClassLoaderException();
+            loadDependencies();
+        }
+    }
 
     /// Lifted here so we can safely use it in Mixins. This class should be loaded by the time Mixins fire.
     public static final Logger MODEL_LOGGER = LogManager.getLogger("GTNHLib|Models");
@@ -44,6 +59,24 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
             throw new RuntimeException(
                     "UniMixins is outdated: GTNHLib requires UniMixins 0.1.23 or newer! Download the unimixins-all jar (not -dev) from: https://github.com/LegacyModdingMC/UniMixins/releases");
         }
+    }
+
+    private static void removeBrigadierClassLoaderException() {
+        try {
+            Field cleF = LaunchClassLoader.class.getDeclaredField("classLoaderExceptions");
+            cleF.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Set<String> cle = (Set<String>) cleF.get(Launch.classLoader);
+            // for Brigadier
+            cle.remove("com.mojang.");
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void loadDependencies() {
+        DeploaderStub.bootstrap(false);
+        DeploaderStub.runDepLoader();
     }
 
     @Override
