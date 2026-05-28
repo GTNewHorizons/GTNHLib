@@ -284,23 +284,23 @@ public class JSONModel implements UnbakedModel {
         }
     }
 
-    public void resolveParents(Function<ModelLoc, JSONModel> modelLoader) {
+    /// @return A JSON model which is the result of model resolution. Note that while this is *usually* the caller, it's
+    /// not always - missing parents, for example, will propogate a missing model down.
+    public JSONModel resolveParents(Function<ModelLoc, JSONModel> modelLoader) {
 
         if (this.parentId == null || this.parent != null) {
-            return;
+            return this;
         }
 
-        final JSONModel p = modelLoader.apply(this.parentId);
-        p.resolveParents(modelLoader);
-
         // Inherit properties
-        this.parent = p;
+        this.parent = modelLoader.apply(this.parentId).resolveParents(modelLoader);
+        if (parent instanceof MissingModel) return parent;
+
         if (this.elements.isEmpty()) this.elements = this.parent.elements;
 
         // Resolve texture variables
         // Add parent texture mappings, but prioritize ours.
         for (Map.Entry<String, String> e : this.parent.textures.entrySet()) {
-
             this.textures.putIfAbsent(e.getKey(), e.getValue());
         }
 
@@ -327,11 +327,12 @@ public class JSONModel implements UnbakedModel {
         }
 
         if (this.parent != null && this.parent.display != null) {
-
             for (Map.Entry<Position, ModelDisplay> e : this.parent.display.entrySet()) {
                 this.display.putIfAbsent(e.getKey(), e.getValue());
             }
         }
+
+        return this;
     }
 
     protected IIcon getParticle() {
