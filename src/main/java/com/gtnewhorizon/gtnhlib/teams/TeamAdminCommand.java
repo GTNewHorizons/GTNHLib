@@ -15,6 +15,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -22,20 +23,19 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 public class TeamAdminCommand {
 
     public static void register() {
+        String commandName = GTNHLibConfig.teamCommandRoot + "_admin";
         BrigadierApi.getCommandDispatcher().register(
-                literal("gtnhteam_admin").requires(src -> src.canCommandSenderUseCommand(2, "gtnhteam_admin"))
-                        .executes(ctx -> {
-                            sendUsage(ctx.getSource());
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(
-                                literal("rename").then(
-                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
-                                                argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
-                                                        ctx -> executeAdminRename(
-                                                                ctx.getSource(),
-                                                                StringArgumentType.getString(ctx, ARG_TEAM_NAME),
-                                                                StringArgumentType.getString(ctx, ARG_NEW_NAME))))))
+                literal(commandName).requires(src -> src.canCommandSenderUseCommand(2, commandName)).executes(ctx -> {
+                    sendUsage(ctx.getSource());
+                    return Command.SINGLE_SUCCESS;
+                }).then(
+                        literal("rename").then(
+                                argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
+                                        argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
+                                                ctx -> executeAdminRename(
+                                                        ctx.getSource(),
+                                                        StringArgumentType.getString(ctx, ARG_TEAM_NAME),
+                                                        StringArgumentType.getString(ctx, ARG_NEW_NAME))))))
                         .then(
                                 literal("promote").then(
                                         argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
@@ -154,18 +154,22 @@ public class TeamAdminCommand {
     }
 
     private static int executeAdminHelp(ICommandSender sender) {
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.1"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.2"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.3"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.4"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.5"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.6"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.7"));
+        String root = TeamCommandsUtils.getCommandAdminRoot();
+        sender.addChatMessage(
+                new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.1", GTNHLibConfig.teamSystemName));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.2", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.3", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.4", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.5", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.6", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.7", root));
         return Command.SINGLE_SUCCESS;
     }
 
     private static void sendUsage(ICommandSender sender) {
-        ChatComponentTranslation msg = new ChatComponentTranslation("gtnhlib.chat.teams.admin.message.usage");
+        ChatComponentTranslation msg = new ChatComponentTranslation(
+                "gtnhlib.chat.teams.admin.message.usage",
+                GTNHLibConfig.teamSystemName);
         msg.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(msg);
     }
