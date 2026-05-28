@@ -1,7 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
+import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
+
 import java.util.Map;
 import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
@@ -24,7 +28,7 @@ public class MonopartState implements StateModelMap {
     }
 
     @Override
-    public UnbakedModel selectModel(BlockState state) {
+    public @NotNull UnbakedModel selectModel(BlockState state) {
         Map<String, String> properties = state.toMap();
 
         final var iter = Object2ObjectMaps.fastIterator(variants);
@@ -34,7 +38,7 @@ public class MonopartState implements StateModelMap {
             if (match.matches(properties)) return new MonopartDough(e.getValue());
         }
 
-        return null;
+        return MISSING_MODEL;
     }
 
     static class StateMatch {
