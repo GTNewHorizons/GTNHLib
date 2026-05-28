@@ -216,6 +216,11 @@ public class JSONModel implements UnbakedModel {
                 // Set the sprite
                 var texKey = f.texture();
                 var texName = textures.get(texKey);
+                if (texName == null) {
+                    MODEL_LOGGER.warn("Model {} has no texture for variable {}!", this, texKey);
+                    texName = "minecraft:missing";
+                }
+
                 if (texName.startsWith("#")) {
                     MODEL_LOGGER.warn("Model {} has unflattened texture variable {} when baking!", this, texName);
                     textures.put(texKey, "minecraft:missing");
