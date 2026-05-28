@@ -55,12 +55,14 @@ public class JSONModel implements UnbakedModel {
     protected final Map<Position, ModelDisplay> display;
     @NotNull
     protected final Object2ObjectMap<String, String> textures;
+    @NotNull
     protected List<ModelDeserializer.ModelElement> elements;
 
     protected static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
     public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
-            @NotNull Object2ObjectMap<String, String> textures, List<ModelDeserializer.ModelElement> elements) {
+            @NotNull Object2ObjectMap<String, String> textures,
+            @NotNull List<ModelDeserializer.ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
         this.display = display;
