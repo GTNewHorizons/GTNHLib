@@ -1,7 +1,10 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.*;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.*;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.VALUES;
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
@@ -18,7 +21,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
@@ -66,22 +68,15 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
             RenderBlocks renderer) {
-        final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
         final Tessellator tesselator = TessellatorManager.get();
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
 
-        worldContext.world = world;
-        worldContext.x = x;
-        worldContext.y = y;
-        worldContext.z = z;
-        worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
-        worldContext.random = random;
-
+        worldContext.set(world, x, y, z, RAND);
         final BakedModel model = ModelRegistry.getBakedModel(worldContext);
 
-        int color = model.getColor(world, x, y, z, block, meta, random);
+        int color = model.getColor(world, x, y, z, block, meta, RAND);
 
         var rendered = false;
         for (var dir : VALUES) {
