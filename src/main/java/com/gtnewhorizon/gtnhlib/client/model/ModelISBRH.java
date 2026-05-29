@@ -225,7 +225,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         // The face is inset to some degree, pick self light (if transparent)
-        if (block.getLightOpacity(world, x, y, z) != 0) {
+        if (block.getLightOpacity(world, x, y, z) < 255) {
             return getBrightness(block, quad, world, x, y, z);
         }
 
