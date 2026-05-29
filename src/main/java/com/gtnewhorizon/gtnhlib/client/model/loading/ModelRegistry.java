@@ -113,9 +113,7 @@ public class ModelRegistry {
     }
 
     private static JSONModel loadAndResolveJSONModel(ResourceLoc.ModelLoc loc) {
-        final var m = loc.load(() -> MISSING_MODEL, GSON);
-        m.resolveParents(JSON_MODEL_CACHE::get);
-        return m;
+        return loc.load(() -> MISSING_MODEL, GSON).resolveParents(JSON_MODEL_CACHE::get);
     }
 
     private static final class BlockName {
