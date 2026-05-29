@@ -3,7 +3,10 @@ package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.fromForgeDir;
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
+import static com.gtnewhorizon.gtnhlib.util.DirectionUtil.rotateFacing;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.joml.Math.fma;
@@ -39,7 +42,6 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
-import com.gtnewhorizon.gtnhlib.client.renderer.cel.util.MathUtil;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -180,11 +182,10 @@ public class JSONModel implements UnbakedModel {
                     Z = max(Z, vert.z);
                 }
 
-                // Set shading and lighting
+                // Set shading properties
                 quad.setEmissiveness(e.lightEmission());
                 quad.setDirectionalShading(e.shade());
                 quad.setHasAmbientOcclusion(this.useAO);
-                quad.setLightFace(ModelQuadFacing.fromForgeDir(f.name()));
 
                 // Set UV
                 Vector4f uv = Objects.firstNonNull(f.uv(), DEFAULT_UV);
@@ -231,35 +232,13 @@ public class JSONModel implements UnbakedModel {
                 // Set the tint index
                 quad.setColorIndex(f.tintIndex());
 
-                // Bake and add it
+                // Rotate the cull face and lighting face
+                final var cullFace = rotateFacing(fromForgeDir(f.cullFace()), vRot);
+                final var lightFace = rotateFacing(fromForgeDir(f.name()), vRot);
+                // Light face may not be unassigned
+                quad.setLightFace(lightFace == UNASSIGNED ? POS_Y : lightFace);
 
-                ModelQuadFacing cullFace = ModelQuadFacing.fromForgeDir(f.cullFace());
-                if (cullFace.isDirection()) {
-                    // If cullface is not unassigned, we rotate it by the affine matrix, so that way the direction we
-                    // check for culling also is rotated.
-                    Vector3f facing = new Vector3f(cullFace.getStepX(), cullFace.getStepY(), cullFace.getStepZ())
-                            .mulDirection(vRot);
-                    // Only one of these three vector coordinates should be a value other than 0. Error handling should
-                    // be done where the vRot's data is serialized.
-                    if (MathUtil.roughlyEqual(facing.x, 1)) {
-                        cullFace = ModelQuadFacing.POS_X;
-                    }
-                    if (MathUtil.roughlyEqual(facing.x, -1)) {
-                        cullFace = ModelQuadFacing.NEG_X;
-                    }
-                    if (MathUtil.roughlyEqual(facing.y, 1)) {
-                        cullFace = ModelQuadFacing.POS_Y;
-                    }
-                    if (MathUtil.roughlyEqual(facing.y, -1)) {
-                        cullFace = ModelQuadFacing.NEG_Y;
-                    }
-                    if (MathUtil.roughlyEqual(facing.z, 1)) {
-                        cullFace = ModelQuadFacing.POS_Z;
-                    }
-                    if (MathUtil.roughlyEqual(facing.z, -1)) {
-                        cullFace = ModelQuadFacing.NEG_Z;
-                    }
-                }
+                // Add the quad to the sided store
                 sidedQuadStore.computeIfAbsent(cullFace, d -> new ArrayList<>()).add(quad);
             }
         }
