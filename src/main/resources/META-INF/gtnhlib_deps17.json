@@ -8,7 +8,9 @@
         "always": {
             "common": [
                 "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:1.3.5:downgraded-17"
-            ]
+            ],
+            "client": [],
+            "server": []
         }
     }
 }
