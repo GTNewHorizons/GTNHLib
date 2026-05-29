@@ -16,7 +16,7 @@ dependencies {
     compileOnly("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false } // LGPL 2.1
 
     // Slow-moving fat lib holding external deps
-    api("com.github.GTNewHorizons:GTNHExtLib:1.0.0") { transitive = false }
+    api("com.github.GTNewHorizons:GTNHExtLib:1.0.1") { transitive = false }
 
     // Tests run outside the DepLoader bootstrap; compileOnly does not reach test runtime.
     testRuntimeOnly("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false }
