@@ -30,6 +30,7 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.core", "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
+
     private static final String JVMDG_SYSCL_MARKER = "gtnhlib.jvmdg.systemClassLoader";
     private static final String JVMDG_ARTIFACT = "jvmdowngrader-java-api";
     private static final String RFB_PACKAGE = "com.gtnewhorizons.retrofuturabootstrap";
