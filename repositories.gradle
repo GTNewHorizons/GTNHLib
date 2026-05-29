@@ -40,5 +40,4 @@ repositories {
             includeGroup 'xyz.wagyourtail.jvmdowngrader'
         }
     }
-    mavenLocal()
 }
