@@ -71,8 +71,8 @@ public final class PileOfQuads implements BakedModel {
         private final ObjectImmutableList<ModelQuadView> unknown;
 
         public SidedQuadStore(Map<ModelQuadFacing, ArrayList<ModelQuadView>> sidedQuadStore) {
-            up = lockList(sidedQuadStore.get(POS_Y));
             down = lockList(sidedQuadStore.get(NEG_Y));
+            up = lockList(sidedQuadStore.get(POS_Y));
             north = lockList(sidedQuadStore.get(NEG_Z));
             south = lockList(sidedQuadStore.get(POS_Z));
             west = lockList(sidedQuadStore.get(NEG_X));
@@ -82,8 +82,8 @@ public final class PileOfQuads implements BakedModel {
 
         public List<ModelQuadView> getQuads(ModelQuadFacing dir) {
             return switch (dir) {
-                case POS_Y -> up;
                 case NEG_Y -> down;
+                case POS_Y -> up;
                 case NEG_Z -> north;
                 case POS_Z -> south;
                 case NEG_X -> west;
