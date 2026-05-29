@@ -1,6 +1,9 @@
 package com.gtnewhorizon.gtnhlib.core;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +30,9 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.core", "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
+    private static final String JVMDG_SYSCL_MARKER = "gtnhlib.jvmdg.systemClassLoader";
+    private static final String JVMDG_ARTIFACT = "jvmdowngrader-java-api";
+    private static final String RFB_PACKAGE = "com.gtnewhorizons.retrofuturabootstrap";
 
     static {
         try {
@@ -77,6 +83,39 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
     private static void loadDependencies() {
         DeploaderStub.bootstrap(false);
         DeploaderStub.runDepLoader();
+        mirrorJvmdgStubToSystemClassLoader();
+    }
+
+    private static void mirrorJvmdgStubToSystemClassLoader() {
+        final Logger log = LogManager.getLogger("GTNHLib");
+        if (Launch.blackboard.get(JVMDG_SYSCL_MARKER) != null) {
+            return;
+        }
+        final ClassLoader scl = ClassLoader.getSystemClassLoader();
+        if (!(scl instanceof URLClassLoader) || scl.getClass().getName().startsWith(RFB_PACKAGE)) {
+            return;
+        }
+        try {
+            final Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+            addURL.setAccessible(true);
+            int mirrored = 0;
+            for (URL url : Launch.classLoader.getSources()) {
+                final String path = url.getPath();
+                if (path == null || !path.contains(JVMDG_ARTIFACT)) {
+                    continue;
+                }
+                addURL.invoke(scl, url);
+                mirrored++;
+                log.info("Mirrored jvmdg stub {} onto system classloader", url);
+            }
+            if (mirrored == 0) {
+                log.warn("jvmdg stub not found on LaunchClassLoader sources; system-classloader mirror skipped");
+            } else {
+                Launch.blackboard.put(JVMDG_SYSCL_MARKER, Boolean.TRUE);
+            }
+        } catch (ReflectiveOperationException e) {
+            log.error("Failed to mirror jvmdg stub onto system classloader", e);
+        }
     }
 
     @Override
