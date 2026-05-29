@@ -40,6 +40,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
+import com.gtnewhorizon.gtnhlib.util.StdLCG;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -55,7 +56,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// implement {@link BlockModelInfo} instead, and simply always return true.
     public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
-    private final Random RAND = new Random();
+    private final Random RAND = new StdLCG();
 
     private final WorldContext worldContext = new WorldContext();
     private final ItemContext itemContext = new ItemContext();
