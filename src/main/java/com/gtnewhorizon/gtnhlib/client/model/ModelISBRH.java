@@ -302,6 +302,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         itemContext.stack = stack;
         itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
         itemContext.random = RAND;
+        // I mean, I *could* pack 0, 0, 0. But that seems like a waste when I know the answer...
+        RAND.setSeed(0);
 
         final BakedModel model = ModelRegistry.getBakedModel(itemContext);
 
