@@ -16,16 +16,16 @@ public final class Weighted<T> {
     }
 
     public static <T> T selectOne(ObjectList<Weighted<T>> heavyThings, Random rand) {
+        var maxWeight = 0;
+        for (var v : heavyThings) {
+            maxWeight += v.weight();
+        }
+
+        final var selector = rand.nextInt(maxWeight) + 1;
         var weight = 0;
         for (var v : heavyThings) {
             weight += v.weight();
-        }
-
-        final var selector = rand.nextInt(weight);
-        weight = 0;
-        for (var v : heavyThings) {
             if (selector <= weight) return v.thing();
-            weight += v.weight();
         }
 
         throw new IllegalStateException("Randomly selected beyond the list!");
