@@ -16,10 +16,13 @@ public abstract class MixinBoreVisFrequencyReduction {
     @Shadow
     public abstract boolean gettingPower();
 
+    @Shadow
+    private float speedyTime;
+
     @Unique
     private short gTNHLib$cooldown = 0;
 
-    // Add a Sleep and a check if machine is on to the if statement.
+    // Add a cooldown to the if statement.
     @ModifyExpressionValue(
             method = "updateEntity",
             at = @At(
@@ -35,16 +38,20 @@ public abstract class MixinBoreVisFrequencyReduction {
 
         boolean powered = this.gettingPower();
         if (powered) {
-            if (gTNHLib$cooldown-- == 0) {
+            if (gTNHLib$cooldown-- <= 0) {
                 // Do a cvis check, sleep 10s
                 gTNHLib$cooldown = 10 * 20;
                 return false;
             }
-        } else if (gTNHLib$cooldown-- == 0) {
+        } else if (gTNHLib$cooldown-- <= 0) {
             // Block isn't powered, so do cvis thing but choke to 30s instead
             gTNHLib$cooldown = 30 * 20;
             return false;
         }
+
+        // if it has any cached speedyTime, slash cooldown by 20.
+        // Speedy time can be exhaused in 1 second by a constantly-digging bore.
+        if (this.speedyTime > 1) gTNHLib$cooldown /= 20;
 
         // Cooldown's not up, don't do cvis thing.
         return true;
