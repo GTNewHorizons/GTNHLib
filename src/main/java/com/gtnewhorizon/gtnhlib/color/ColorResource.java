@@ -16,14 +16,17 @@ import net.minecraft.util.StatCollector;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
+
 /**
  * An ARGB color constant with resource pack override and caching support.
  * <p>
- * Declare public static final fields in any class; the field name and declaring class are discovered automatically:
+ * Declare public static final fields in any class; the mod ID, field name and declaring class are all discovered
+ * automatically:
  *
  * <pre>
  * <code>
- * &#64;ColorResource.Mod("mymod")
  * public class MyColors {
  *     public static final ColorResource
  *         background = new ColorResource("FF202020"),
@@ -42,7 +45,10 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  */
 public class ColorResource {
 
-    /** Sets the namespace used in the lang key. Defaults to the declaring class's simple name. */
+    /**
+     * Optional override for the mod namespace used in the lang key. Only needed if FML package detection does not
+     * resolve the correct mod ID.
+     */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface Mod {
@@ -82,11 +88,22 @@ public class ColorResource {
         return null;
     }
 
-    /** Returns the mod namespace from {@link Mod} if present, otherwise the declaring class's simple name. */
+    /**
+     * Returns the mod ID by checking {@link Mod} first, then asking FML which mod owns the declaring class's package.
+     * Falls back to the declaring class's simple name if neither resolves.
+     */
     public String getModId() {
         if (declaringClass == null) return "unknown";
         Mod mod = declaringClass.getAnnotation(Mod.class);
-        return mod != null ? mod.value() : declaringClass.getSimpleName();
+        if (mod != null) return mod.value();
+        String pkg = declaringClass.getPackage() != null ? declaringClass.getPackage().getName() : "";
+        for (ModContainer mc : Loader.instance().getModList()) {
+            if (mc.getOwnedPackages().contains(pkg)) return mc.getModId();
+        }
+        GTNHLib.LOG.warn(
+                "[ColorResource] Could not determine mod ID for {}, using class name.",
+                declaringClass.getSimpleName());
+        return declaringClass.getSimpleName();
     }
 
     /** Lang key used to look up a resource pack override. */
@@ -118,7 +135,7 @@ public class ColorResource {
      * Result is cached until the next resource reload (F3+T).
      * <p>
      * Example usage:
-     * 
+     *
      * <pre>
      * <code>
      * GuiDraw.drawRect(x, y, w, h, MyColors.background.getColor());
