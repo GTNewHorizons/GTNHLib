@@ -20,7 +20,7 @@ public abstract class MixinBoreVisFrequencyReduction {
     private float speedyTime;
 
     @Unique
-    private short gTNHLib$cooldown = 0;
+    private int gTNHLib$cooldown = 0;
 
     // Add a cooldown to the if statement.
     @ModifyExpressionValue(
@@ -36,22 +36,22 @@ public abstract class MixinBoreVisFrequencyReduction {
         // Client thread, return
         if (isRemote) return true;
 
-        boolean powered = this.gettingPower();
-        if (powered) {
-            if (gTNHLib$cooldown-- <= 0) {
+        // Cooldown expired, do checks
+        if (gTNHLib$cooldown-- <= 0) {
+            if (this.gettingPower()) {
                 // Do a cvis check, sleep 10s
                 gTNHLib$cooldown = 10 * 20;
                 return false;
+            } else {
+                // Block isn't powered, so do cvis thing but choke to 30s instead
+                gTNHLib$cooldown = 30 * 20;
+                return false;
             }
-        } else if (gTNHLib$cooldown-- <= 0) {
-            // Block isn't powered, so do cvis thing but choke to 30s instead
-            gTNHLib$cooldown = 30 * 20;
-            return false;
         }
 
-        // if it has any cached speedyTime, slash cooldown by 20.
+        // if it has any cached speedyTime, but less than the max, lower cooldown max to 20.
         // Speedy time can be exhaused in 1 second by a constantly-digging bore.
-        if (this.speedyTime > 1) gTNHLib$cooldown /= 20;
+        if (this.speedyTime > 1 && this.speedyTime < 20) gTNHLib$cooldown = Math.min(gTNHLib$cooldown, 20);
 
         // Cooldown's not up, don't do cvis thing.
         return true;
