@@ -58,6 +58,10 @@ public enum Mixins implements IMixins {
             "Allow Thaumcraft Infusion Recipes to transform items instead of consuming them in an EnhancedInfusionRecipe")
                     .setPhase(Phase.LATE).addCommonMixins("MixinEnhancedInfusionRecipe")
                     .addRequiredMod(TargetMods.THAUMCRAFT)),
+    THAUM_BORE_VIS_DRAIN_FREQUENCY(new MixinBuilder(
+            "Lower freuqency of Thaumcraft's Arcane Bore calls to drain vis, and therefore calls to find vis nets")
+                    .setPhase(Phase.LATE).addCommonMixins("MixinBoreVisFrequencyReduction")
+                    .addRequiredMod(TargetMods.THAUMCRAFT)),
     CONFIG_ORDER(Side.CLIENT, "fml.MixinGuiConfig"),
     WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld")
     //
