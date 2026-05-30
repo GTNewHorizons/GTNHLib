@@ -107,7 +107,7 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
 
         ItemStack inSlot = getStackInSlot(slotIndex);
 
-        if (!ItemUtil.isStackEmpty(inSlot) && !stack.matches(inSlot)) {
+        if (!ItemUtil.isStackEmpty(inSlot) && (!forced && !inSlot.isStackable() || !stack.matches(inSlot))) {
             return stack.getStackSize();
         }
 
