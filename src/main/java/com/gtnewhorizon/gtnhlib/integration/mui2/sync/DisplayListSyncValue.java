@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import com.gtnewhorizon.gtnhlib.integration.mui2.GuiView;
 import net.minecraft.network.PacketBuffer;
 
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
@@ -33,12 +34,23 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
 
     private static List<DisplayItem> getDisplayListAndResetRefresh(TeamGuiData data) {
         List<DisplayItem> displayItems = new ArrayList<>();
-        Team viewTeam = TeamManager.getTeamById(data.currentView.currentTeam());
+        Team viewTeamTmp = TeamManager.getTeamById(data.currentView.currentTeam());
+        // Team ID can be invalid if a solo player joins a team or their team gets merged while they're in a view,
+        // and then the player returns to a view for their non-existent team.
+        // In such a case, we default to showing the player the view for their current team.
+        final Team viewTeam;
+        if (viewTeamTmp == null) {
+            viewTeam = TeamManager.getTeamByPlayer(data.getPlayer().getUniqueID());
+            assert viewTeam != null;
+            data.currentView = new GuiView(data.currentView.type(), viewTeam.getTeamId());
+        } else {
+            viewTeam = viewTeamTmp;
+        }
+
         UUID currentPlayer = data.getPlayer().getUniqueID();
         Team currentPlayerTeam = TeamManager.getTeamByPlayer(currentPlayer);
         switch (data.currentView.type()) {
             case PLAYER_LIST:
-                if (viewTeam == null) break;
                 viewTeam.getMembers().stream()
                         .sorted(
                                 Comparator.<UUID>comparingInt(id -> viewTeam.getRole(id).ordinal()).reversed()
@@ -50,7 +62,7 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                                                 ServerPlayerUtils.getPlayerName(playerId),
                                                 viewTeam.getRole(playerId),
                                                 playerId,
-                                                false)));
+                                                viewTeam.isOwner(playerId) && viewTeam.getOwners().size() == 1)));
                 break;
             case TEAM_LIST:
                 TeamManager.getTeamMap().forEach(
@@ -82,8 +94,8 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                 displayItems.sort(Comparator.comparing(DisplayItem::flag).thenComparing(DisplayItem::text));
                 break;
             case TEAMS_INVITING_PLAYER:
-                boolean canAcceptInvites = currentPlayerTeam != null
-                        && currentPlayerTeam.canPlayerAcceptInvites(currentPlayer);
+                boolean playerCannotAcceptInvites = currentPlayerTeam == null
+                        || currentPlayerTeam.playerCannotAcceptInvites(currentPlayer);
                 TeamManager.getPendingInvites(currentPlayer).stream().sorted(Comparator.comparing(Team::getTeamName))
                         .forEach(
                                 t -> displayItems.add(
@@ -94,7 +106,7 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                                                         TeamGui.MAX_DISPLAY_STRING_LENGTH),
                                                 null,
                                                 t.getTeamId(),
-                                                canAcceptInvites)));
+                                                playerCannotAcceptInvites)));
                 break;
             case REQUEST_CONSUME:
                 TeamManager.getTeamMap().forEach((teamId, teamObj) -> {

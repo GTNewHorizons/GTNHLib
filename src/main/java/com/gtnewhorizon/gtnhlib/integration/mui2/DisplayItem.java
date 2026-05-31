@@ -15,15 +15,44 @@ import cpw.mods.fml.common.network.ByteBufUtils;
 
 @Desugar
 /**
+ * spotless:off
  * Represents a display item on the ListDisplay flag: Representation changes depending on the ScreenType this
- * displayItem was sent, as follows: PLAYER_LIST, VIEW_CONSUMPTION_REQUESTS: ignored TEAM_LIST: Set to true if team can
- * be disbanded (size > 1) TEAMS_INVITING_PLAYERS: Set to true if the player is unable to accept the invite (eg. last
- * owner of their team with more than one member) INVITE_PLAYERS, REQUEST_MERGE: Set to true if an invite or merge
- * requests to this player/team already exists uuid: represents team or player id depending on what screen this
- * displayitem was sent.
+ * displayItem was sent, as follows:
+ * VIEW_CONSUMPTION_REQUESTS: ignored.
+ * PLAYER_LIST: Set to true if player cannot be demoted or kicked (last owner of team).
+ * TEAM_LIST: Set to true if team can be disbanded (size > 1).
+ * TEAMS_INVITING_PLAYERS: Set to true if the player is unable to accept the invite (eg. last
+ * owner of their team with more than one member.
+ * INVITE_PLAYERS, REQUEST_MERGE: Set to true if an invite or merge requests to this player/team already exists.
+ *
+ * uuid: represents team or player id depending on what screen this displayitem was sent.
+ * spotless:on
  */
-public record DisplayItem(@Nonnull DisplayItemType type, String text, @Nullable TeamRole role, @Nonnull UUID uuid,
-        boolean flag) {
+public record DisplayItem(@Nonnull DisplayItemType type, String text, @Nullable TeamRole role, @Nonnull UUID uuid, boolean flag) {
+    /**
+     * Represents team or player id depending on what screen this displayitem was sent.
+     */
+    @Override
+    public UUID uuid() {
+        return uuid;
+    }
+
+    /**
+     * Represents a display item on the ListDisplay flag: Representation changes depending on the ScreenType this
+     * displayItem was sent, as follows:
+     * <ul>
+     * <li><b>VIEW_CONSUMPTION_REQUESTS</b>: ignored.</li>
+     * <li><b>PLAYER_LIST</b>: Set to true if player cannot be demoted or kicked (last owner of team).</li>
+     * <li><b>TEAM_LIST</b>: Set to true if team can be disbanded (size > 1).</li>
+     * <li><b>TEAMS_INVITING_PLAYERS</b>: Set to true if the player is unable to accept the invite (eg. last
+     * owner of their team with more than one member.</li>
+     * <li><b>INVITE_PLAYERS, REQUEST_MERGE</b>: Set to true if an invite or merge requests to this player/team already exists.</li>
+     * </ul>
+     */
+    @Override
+    public boolean flag() {
+        return flag;
+    }
 
     public static DisplayItem copyOf(DisplayItem other) {
         return new DisplayItem(other.type, other.text, other.role, other.uuid, other.flag);

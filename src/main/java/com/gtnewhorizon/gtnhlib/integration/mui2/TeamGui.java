@@ -258,33 +258,51 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             true);
                                 }
                                 return true;
-                            }).child(Flow.row().child(new TextWidget<>(IKey.dynamic(() -> {
-                                if (index >= displayList.size()) {
-                                    return "";
-                                }
-                                return displayList.get(index).text();
-                            })).marginLeft(4))
+                            }).child(Flow.row()
+                                    .child(Flow.row()
+                                        .collapseDisabledChild()
+                                        .child(new TextWidget<>(IKey.dynamic(() -> {
+                                            if (index >= displayList.size() ||
+                                                displayList.get(index).role() == null) return "";
+                                            return switch (displayList.get(index).role()) {
+                                                case OWNER -> " 2 ";
+                                                case OFFICER -> " 1 ";
+                                                case MEMBER -> " 0 ";
+                                            };}))
+                                            .marginRight(3)
+                                            .setEnabledIf(w -> data.currentView.type() == ScreenType.PLAYER_LIST))
+                                        .child(new TextWidget<>(IKey.dynamic(() -> {
+                                            if (index >= displayList.size()) {
+                                                return "";
+                                            }
+                                            return displayList.get(index).text();}))
+                                                .marginLeft(4)))
                                     // PLAYER_LIST
-                                    .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE).setEnabledIf(w -> {
-                                        if (data.currentView.type() != ScreenType.PLAYER_LIST
-                                                || index >= displayList.size()
-                                                || currentPlayer.equals(displayList.get(index).text()))
-                                            return false;
-                                        TeamRole displayRole = displayList.get(index).role();
-                                        if (displayRole == null) return false;
-                                        return this.playerIsOp || displayRole != TeamRole.MEMBER
-                                                && TeamManagerClient.canPlayerKick(displayRole);
+                                    .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE)
+                                        .setEnabledIf(w -> {
+                                            if (data.currentView.type() != ScreenType.PLAYER_LIST
+                                                    || index >= displayList.size()
+                                                    || currentPlayer.equals(displayList.get(index).text()))
+                                                return false;
+
+                                            TeamRole displayRole = displayList.get(index).role();
+                                            if (displayRole == null) return false;
+
+                                            return !displayList.get(index).flag() &&
+                                                (this.playerIsOp || TeamManagerClient.canPlayerKick(displayRole));
                                     }).onMouseTapped(mouseButton -> {
                                         UUID toKick = displayList.get(index).uuid();
                                         confirmationDialog.setParams(
-                                                StatCollector.translateToLocalFormatted(
-                                                        "gtnhlib.gui.teams.confirm_kick_member",
-                                                        displayList.get(index).text()),
-                                                () -> {
-                                                    syncManager
-                                                            .findSyncHandler("kick_member", UuidActionSyncValue.class)
-                                                            .setValue(toKick);
-                                                });
+                                            StatCollector.translateToLocalFormatted(
+                                                TeamManagerClient.canPlayerKick(displayList.get(index).role()) ?
+                                                    "gtnhlib.gui.teams.confirm_kick_member" :
+                                                    "gtnhlib.gui.teams.admin.confirm_kick_member",
+                                                displayList.get(index).text()),
+                                            () -> {
+                                                syncManager
+                                                    .findSyncHandler("kick_member", UuidActionSyncValue.class)
+                                                    .setValue(toKick);
+                                            });
                                         confirmationPanel.openPanel();
                                         return true;
                                     }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.kick_member")))
@@ -296,12 +314,15 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             return false;
                                         TeamRole displayRole = displayList.get(index).role();
                                         if (displayRole == null) return false;
-                                        return displayRole.ordinal() > TeamRole.MEMBER.ordinal()
-                                                && (this.playerIsOp || TeamManagerClient.canPlayerDemote(displayRole));
+                                        return !displayList.get(index).flag() &&
+                                            displayRole.ordinal() > TeamRole.MEMBER.ordinal() &&
+                                            (this.playerIsOp || TeamManagerClient.canPlayerDemote(displayRole));
                                     }).onMouseTapped(mouseButton -> {
                                         UUID toDemote = displayList.get(index).uuid();
                                         confirmationDialog.setParams(
                                                 StatCollector.translateToLocalFormatted(
+                                                    TeamManagerClient.canPlayerDemote(displayList.get(index).role()) ?
+                                                        "gtnhlib.gui.teams.confirm_demote_member" :
                                                         "gtnhlib.gui.teams.admin.confirm_demote_member",
                                                         displayList.get(index).text()),
                                                 () -> {
@@ -309,11 +330,14 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                             .findSyncHandler("demote_member", UuidActionSyncValue.class)
                                                             .setValue(toDemote);
                                                 });
+                                        confirmationPanel.openPanel();
                                         return true;
                                     }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.demote_member")))
                                             .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
                                             .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(new ButtonWidget<>().overlay(GuiTextures.ARROW_UP).setEnabledIf(w -> {
+                                    .child(new ButtonWidget<>()
+                                        .overlay(GuiTextures.ARROW_UP)
+                                        .setEnabledIf(w -> {
                                         if (data.currentView.type() != ScreenType.PLAYER_LIST
                                                 || index >= displayList.size())
                                             return false;
@@ -326,6 +350,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                         confirmationDialog
                                                 .setParams(
                                                         StatCollector.translateToLocalFormatted(
+                                                            TeamManagerClient.canPlayerPromote(displayList.get(index).role()) ?
+                                                                "gtnhlib.gui.teams.confirm_promote_member" :
                                                                 "gtnhlib.gui.teams.admin.confirm_promote_member",
                                                                 displayList.get(index).text()),
                                                         () -> {
@@ -335,6 +361,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                                             UuidActionSyncValue.class)
                                                                     .setValue(toPromote);
                                                         });
+                                        confirmationPanel.openPanel();
                                         return true;
                                     }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.promote_member")))
                                             .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[2])
@@ -431,7 +458,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                     .setEnabledIf(
                                                             w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
                                                                     && index < displayList.size()
-                                                                    && TeamManagerClient.getRole() == TeamRole.OFFICER
+                                                                    && TeamManagerClient.doesPlayerSatisfyTeamRole(TeamRole.OFFICER)
                                                                     && displayList.get(index).flag())
                                                     .onMouseTapped(mouseButton -> {
                                                         UUID toCancelInvite = displayList.get(index).uuid();
@@ -458,7 +485,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                     .setEnabledIf(
                                                             w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
                                                                     && index < displayList.size()
-                                                                    && TeamManagerClient.getRole() == TeamRole.OFFICER
+                                                                    && TeamManagerClient.doesPlayerSatisfyTeamRole(TeamRole.OFFICER)
                                                                     && !displayList.get(index).flag())
                                                     .onMouseTapped(mouseButton -> {
                                                         UUID toInvite = displayList.get(index).uuid();
@@ -597,7 +624,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.deny_merge_request")))
                                                     .setEnabledIf(
                                                             w -> data.currentView.type()
-                                                                    == ScreenType.TEAMS_INVITING_PLAYER
+                                                                    == ScreenType.VIEW_CONSUMPTION_REQUESTS
                                                                     && index < displayList.size())
                                                     .onMouseTapped(mouseButton -> {
                                                         UUID toDeny = displayList.get(index).uuid();
@@ -623,7 +650,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.accept_merge_request")))
                                                     .setEnabledIf(
                                                             w -> data.currentView.type()
-                                                                    == ScreenType.TEAMS_INVITING_PLAYER
+                                                                    == ScreenType.VIEW_CONSUMPTION_REQUESTS
                                                                     && index < displayList.size()
                                                                     && !displayList.get(index).flag())
                                                     .onMouseTapped(mouseButton -> {
@@ -684,7 +711,10 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                 new BooleanSyncValue(
                         () -> this.playerIsOp,
                         playerIsOp -> this.playerIsOp = playerIsOp,
-                        () -> GuiUtils.isOpServerSideOnly(data.getPlayer()),
+                        () -> {
+                            this.playerIsOp = GuiUtils.isOpServerSideOnly(data.getPlayer());
+                            return this.playerIsOp;
+                        },
                         playerIsOp -> {}));
 
         syncManager.syncValue("team_gui_mode", new GuiViewSyncValue(() -> data.currentView, newView -> {
@@ -697,10 +727,6 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         syncManager.syncValue("team_gui_display", new DisplayListSyncValue(data, newList -> {
             pendingDisplayList.clear();
             pendingDisplayList.addAll(newList.data);
-            GTNHLib.LOG.info(
-                    "received new display list with length {}, forcerefresh = {}",
-                    pendingDisplayList.size(),
-                    newList.forceRefresh);
             forceRefresh = newList.forceRefresh || isFirstRequest;
             isFirstRequest = false;
         }));
@@ -763,7 +789,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         syncManager.syncValue("kick_member", new UuidActionSyncValue(request -> {
             UUID requestingPlayer = data.getPlayer().getUniqueID();
             Team team = TeamManager.getTeamByPlayer(requestingPlayer);
-            if (team == null || !requestingPlayer.equals(request) || !team.getMembers().contains(request)) return;
+            if (team == null || requestingPlayer.equals(request) || !team.getMembers().contains(request)) return;
             if (TeamCommandsUtils.canKick(team.getRole(requestingPlayer), team.getRole(request))) {
                 TeamActions.onKick(team, request, false, null);
             } else if (playerIsOp) {
@@ -828,7 +854,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                 .syncValue("request_disband", new BooleanSyncValue(() -> false, request -> {}, () -> false, request -> {
                     UUID playerId = data.getPlayer().getUniqueID();
                     Team team = TeamManager.getTeamByPlayer(playerId);
-                    if (request && team != null && team.isOwner(playerId)) {
+                    if (request && team != null && team.isOwner(playerId) && team.getMembers().size() > 1) {
                         TeamActions.onDisband(team, false, null);
                     } else {
                         GTNHLib.LOG.warn(
@@ -934,7 +960,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
             Team consumed = TeamManager.getTeamByPlayer(playerId);
 
             if (surviving == null || consumed == null || surviving == consumed) return;
-            if (consumed.isOwner(playerId)) {
+            if (surviving.isOwner(playerId)) {
                 TeamActions.onMergeCancel(data.getPlayer(), consumed, surviving);
             } else {
                 GTNHLib.LOG.warn(
@@ -951,7 +977,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
 
             if (surviving == null || consumed == null || surviving == consumed) return;
             if (!TeamManager.hasPendingMergeRequest(consumed, surviving)) return;
-            if (consumed.isOwner(playerId)) {
+            if (surviving.isOwner(playerId)) {
                 TeamActions.onMergeAccept(consumed, surviving, false, null);
             } else {
                 GTNHLib.LOG.warn(
@@ -967,7 +993,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
 
             if (surviving == null || consumed == null || surviving == consumed) return;
             if (!TeamManager.hasPendingMergeRequest(consumed, surviving)) return;
-            if (consumed.isOwner(playerId)) {
+            if (surviving.isOwner(playerId)) {
                 TeamActions.onMergeDeny(data.getPlayer(), consumed, surviving);
             } else {
                 GTNHLib.LOG.warn(

@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib;
 
+import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGuiFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,6 +48,7 @@ public class GTNHLib {
         if (isMui2Loaded) {
             CustomGuiTextures.init();
             CustomWidgetTheme.init();
+            TeamGuiFactory.init();
         }
 
         proxy.preInit(event);

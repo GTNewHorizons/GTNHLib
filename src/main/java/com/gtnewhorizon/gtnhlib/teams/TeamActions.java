@@ -121,7 +121,7 @@ public class TeamActions {
     public static void onKick(Team team, UUID kicked, boolean adminAction, @Nullable ICommandSender admin) {
         team.removeMember(kicked);
 
-        Team newTeam = TeamManager.getOrCreateTeam(ServerPlayerUtils.getPlayerName(kicked), kicked);
+        Team newTeam = TeamManager.createTeam(ServerPlayerUtils.getPlayerName(kicked), kicked);
         TeamManager.transferTeamData(team, newTeam, kicked, TeamDataTransferReason.JoinedNewTeam);
         team.markDirty();
         newTeam.markDirty();
@@ -178,7 +178,7 @@ public class TeamActions {
         }
 
         // Create a new solo team for the player
-        Team newTeam = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
+        Team newTeam = TeamManager.createTeam(player.getCommandSenderName(), player.getUniqueID());
         TeamManager.transferTeamData(oldTeam, newTeam, playerId, TeamDataTransferReason.JoinedNewTeam);
         if (!oldTeam.getMembers().isEmpty()) oldTeam.markDirty();
         newTeam.markDirty();

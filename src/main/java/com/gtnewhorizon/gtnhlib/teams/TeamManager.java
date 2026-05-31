@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -59,7 +60,8 @@ public class TeamManager {
             }
         }
         PLAYER_TEAM_CACHE.remove(playerUuid);
-        GTNHLib.LOG.error("Unable to find team for player {}", playerUuid);
+        GTNHLib.LOG.error("Unable to find team for player {} ({})", playerUuid,
+            ServerPlayerUtils.getPlayerName(playerUuid));
         return null;
     }
 
@@ -83,6 +85,10 @@ public class TeamManager {
         Team existing = getTeamByPlayer(playerUuid);
         if (existing != null) return existing;
 
+        return createTeam(playerName, playerUuid);
+    }
+
+    public static Team createTeam(String playerName, UUID playerUuid) {
         Team team = new Team(playerName + "'s Team", UUID.randomUUID());
         team.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
         team.addOwner(playerUuid);

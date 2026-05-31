@@ -178,7 +178,7 @@ public class Team {
         return members.size() > 1;
     }
 
-    public boolean canPlayerAcceptInvites(UUID player) {
-        return !(owners.contains(player) && owners.size() == 1 && members.size() > 1);
+    public boolean playerCannotAcceptInvites(UUID player) {
+        return owners.contains(player) && owners.size() == 1 && members.size() > 1;
     }
 }

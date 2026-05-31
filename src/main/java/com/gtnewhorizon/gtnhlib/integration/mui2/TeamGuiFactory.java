@@ -42,7 +42,7 @@ public class TeamGuiFactory extends AbstractUIFactory<TeamGuiData> {
         GuiManager.registerFactory(this);
     }
 
-    public void init() {}
+    public static void init() {}
 
     public void open(EntityPlayerMP player, @Nonnull UUID playerTeam) {
         GuiManager.open(this, new TeamGuiData(player, GuiView.getDefaultView(playerTeam)), player);
