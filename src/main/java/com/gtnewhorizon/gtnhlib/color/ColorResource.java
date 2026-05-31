@@ -31,6 +31,14 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  * </code>
  * </pre>
  * <p>
+ * Then use the color anywhere:
+ * 
+ * <pre>
+ * <code>
+ *  GuiDraw.drawRect(x, y, w, h, MyColors.background.getColor());
+ * </code>
+ * </pre>
+ * <p>
  * Resource packs override colors via a lang file entry: {@code color.resource.mymod.background=80FF20AA}
  * <p>
  * ARGB colors use 8-char hex (AARRGGBB). RGB colors use 6-char hex (RRGGBB), alpha is always FF.
