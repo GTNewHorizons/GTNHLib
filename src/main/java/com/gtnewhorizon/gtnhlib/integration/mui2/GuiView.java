@@ -3,22 +3,22 @@ package com.gtnewhorizon.gtnhlib.integration.mui2;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 import net.minecraft.network.PacketBuffer;
 
-public class GuiView {
+import com.github.bsideup.jabel.Desugar;
 
-    public ScreenType type;
-    public UUID currentTeam;
+@Desugar
+public record GuiView(ScreenType type, UUID currentTeam) {
 
-    public GuiView(ScreenType type, @Nullable UUID currentTeam) {
+    public GuiView(ScreenType type, @Nonnull UUID currentTeam) {
         this.type = type;
         this.currentTeam = currentTeam;
     }
 
-    public static GuiView getDefaultView(@Nullable UUID team) {
-        return new GuiView(ScreenType.PLAYER_LIST, team);
+    public static GuiView getDefaultView(@Nonnull UUID team) {
+        return new GuiView(ScreenType.INVALID, team);
     }
 
     public void writeToBuf(PacketBuffer buffer) {
@@ -41,8 +41,4 @@ public class GuiView {
         return type == guiView.type && Objects.equals(currentTeam, guiView.currentTeam);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, currentTeam);
-    }
 }

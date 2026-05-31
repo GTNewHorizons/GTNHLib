@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import java.util.UUID;
+
 import net.minecraft.nbt.NBTTagCompound;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -50,6 +52,10 @@ public class TeamManagerClient {
 
     public static Team GetTeam() {
         return TEAM;
+    }
+
+    public static UUID GetTeamId() {
+        return TEAM == null ? null : TEAM.getTeamId();
     }
 
     public static TeamRole getRole() {

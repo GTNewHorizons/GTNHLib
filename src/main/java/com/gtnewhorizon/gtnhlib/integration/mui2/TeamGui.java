@@ -19,10 +19,12 @@ import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.api.widget.IWidget;
 import com.cleanroommc.modularui.drawable.GuiTextures;
 import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.ModularScreen;
 import com.cleanroommc.modularui.screen.UISettings;
 import com.cleanroommc.modularui.value.BoolValue;
 import com.cleanroommc.modularui.value.sync.BooleanSyncValue;
 import com.cleanroommc.modularui.value.sync.PanelSyncManager;
+import com.cleanroommc.modularui.value.sync.StringSyncValue;
 import com.cleanroommc.modularui.widgets.ButtonWidget;
 import com.cleanroommc.modularui.widgets.ListWidget;
 import com.cleanroommc.modularui.widgets.TextWidget;
@@ -45,7 +47,7 @@ import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 public class TeamGui implements IGuiHolder<TeamGuiData> {
 
     private static final int MAX_DISPLAY_LIST_SIZE = 256;
-    private static final int MAX_DISPLAY_STRING_LENGTH = 25;
+    public static final int MAX_DISPLAY_STRING_LENGTH = 25;
     private static final int LIST_ITEM_HEIGHT = 16;
     private static final int LIST_ITEM_WIDTH = 158;
     private static final int LIST_ACTION_BUTTON_SIZE = 12;
@@ -57,6 +59,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     private static final int[] PANEL_BUTTONS_POSITIONS_RIGHT = { 8, 26, 44 };
 
     // Client-side only
+    private static String screenTitle = "";
     protected static boolean forceRefresh = true;
     private static Stack<GuiView> windowHistory = new Stack<>();
     private static final List<DisplayItem> pendingDisplayList = new ArrayList<>();
@@ -67,10 +70,15 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     private boolean playerIsOp = false;
 
     @Override
+    public ModularScreen createScreen(TeamGuiData data, ModularPanel mainPanel) {
+        return new ModularScreen(GTNHLib.MODID, mainPanel);
+    }
+
+    @Override
     public ModularPanel buildUI(TeamGuiData data, PanelSyncManager syncManager, UISettings settings) {
         registerSyncValues(data, syncManager);
 
-        FreezablePanel panel = new FreezablePanel("gtnhlib:team_panel", this, syncManager);
+        FreezablePanel panel = new FreezablePanel("gtnhlib:team_panel", this, data, syncManager);
 
         ConfirmationDialog confirmationDialog = new ConfirmationDialog("gtnhlib:confirmation_dialog");
         IPanelHandler confirmationPanel = IPanelHandler.simple(panel, (parent, player) -> confirmationDialog, true);
@@ -98,22 +106,27 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         return Flow.row().child(
                 new ButtonWidget<>().overlay(GuiTextures.EDIT)
                         .tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.edit_team_name")))
+                        .setEnabledIf(
+                                w -> data.currentView.type() == ScreenType.PLAYER_LIST
+                                        && data.currentView.currentTeam().equals(TeamManagerClient.GetTeamId())
+                                        && TeamManagerClient.getRole() == TeamRole.OWNER)
                         .onMouseTapped(mouseButton -> {
                             textDialog.setParams(
                                     StatCollector.translateToLocal("gtnhlib.gui.teams.edit_team_name"),
                                     TeamManagerClient.GetTeam().getTeamName(),
                                     newName -> {
                                         syncManager.findSyncHandler("edit_team_name", UuidStringActionSyncValue.class)
-                                                .setValue(new ImmutablePair<>(data.currentView.currentTeam, newName));
+                                                .setValue(new ImmutablePair<>(null, newName));
                                     });
                             textDialogPanel.openPanel();
                             return true;
                         })
                         .setEnabledIf(
-                                w -> data.currentView.type == ScreenType.PLAYER_LIST
-                                        && data.currentView.currentTeam == TeamManagerClient.GetTeam().getTeamId()
+                                w -> data.currentView.type() == ScreenType.PLAYER_LIST
+                                        && data.currentView.currentTeam().equals(TeamManagerClient.GetTeamId())
                                         && TeamManagerClient.getRole() == TeamRole.OWNER)
-                        .size(14).verticalCenter());
+                        .size(14).marginRight(3).verticalCenter())
+                .child(new TextWidget<>(IKey.dynamic(() -> screenTitle)).verticalCenter()).collapseDisabledChild();
     }
 
     private Flow createPanelButtons(TeamGuiData data, PanelSyncManager syncManager,
@@ -131,31 +144,35 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                 new ButtonWidget<>().overlay(GuiTextures.ADD)
                         .tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.view_member_invites")))
                         .setEnabledIf(
-                                w -> data.currentView.type == ScreenType.PLAYER_LIST
-                                        && data.currentView.currentTeam == TeamManagerClient.GetTeam().getTeamId())
+                                w -> data.currentView.type() == ScreenType.PLAYER_LIST
+                                        && data.currentView.currentTeam().equals(TeamManagerClient.GetTeamId()))
                         .onMouseTapped(mouseButton -> {
-                            switchView(data, syncManager, new GuiView(ScreenType.INVITE_PLAYERS, null));
+                            switchView(
+                                    data,
+                                    syncManager,
+                                    new GuiView(ScreenType.INVITE_PLAYERS, data.currentView.currentTeam()));
                             return true;
                         }).size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[0]))
                 .child(
                         new ButtonWidget<>().overlay(GuiTextures.MINIMIZE)
                                 .tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.merge_team")))
                                 .setEnabledIf(
-                                        w -> data.currentView.type == ScreenType.PLAYER_LIST
-                                                && data.currentView.currentTeam
-                                                        == TeamManagerClient.GetTeam().getTeamId()
+                                        w -> data.currentView.type() == ScreenType.PLAYER_LIST
+                                                && data.currentView.currentTeam().equals(TeamManagerClient.GetTeamId())
                                                 && TeamManagerClient.getRole() == TeamRole.OWNER)
                                 .onMouseTapped(mouseButton -> {
-                                    switchView(data, syncManager, new GuiView(ScreenType.REQUEST_CONSUME, null));
+                                    switchView(
+                                            data,
+                                            syncManager,
+                                            new GuiView(ScreenType.REQUEST_CONSUME, data.currentView.currentTeam()));
                                     return true;
                                 }).size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[1]))
                 .child(
                         new ButtonWidget<>().overlay(GuiTextures.MAXIMIZE)
                                 .tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.disband_team")))
                                 .setEnabledIf(
-                                        w -> data.currentView.type == ScreenType.PLAYER_LIST
-                                                && data.currentView.currentTeam
-                                                        == TeamManagerClient.GetTeam().getTeamId()
+                                        w -> data.currentView.type() == ScreenType.PLAYER_LIST
+                                                && data.currentView.currentTeam().equals(TeamManagerClient.GetTeamId())
                                                 && TeamManagerClient.getRole() == TeamRole.OWNER)
                                 .onMouseTapped(mouseButton -> {
                                     confirmationDialog.setParams(
@@ -174,14 +191,14 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                 .child(
                         createScreenTypeButton(ScreenType.INVITE_PLAYERS, data, syncManager)
                                 .setEnabledIf(
-                                        w -> data.currentView.type == ScreenType.INVITE_PLAYERS
-                                                || data.currentView.type == ScreenType.TEAMS_INVITING_PLAYER)
+                                        w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
+                                                || data.currentView.type() == ScreenType.TEAMS_INVITING_PLAYER)
                                 .size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[0]))
                 .child(
                         createScreenTypeButton(ScreenType.TEAMS_INVITING_PLAYER, data, syncManager)
                                 .setEnabledIf(
-                                        w -> data.currentView.type == ScreenType.INVITE_PLAYERS
-                                                || data.currentView.type == ScreenType.TEAMS_INVITING_PLAYER)
+                                        w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
+                                                || data.currentView.type() == ScreenType.TEAMS_INVITING_PLAYER)
                                 .size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[1]));
     }
 
@@ -190,24 +207,22 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                 .child(
                         createScreenTypeButton(ScreenType.REQUEST_CONSUME, data, syncManager)
                                 .setEnabledIf(
-                                        w -> data.currentView.type == ScreenType.REQUEST_CONSUME
-                                                || data.currentView.type == ScreenType.VIEW_CONSUMPTION_REQUESTS)
+                                        w -> data.currentView.type() == ScreenType.REQUEST_CONSUME
+                                                || data.currentView.type() == ScreenType.VIEW_CONSUMPTION_REQUESTS)
                                 .size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[0]))
                 .child(
                         createScreenTypeButton(ScreenType.VIEW_CONSUMPTION_REQUESTS, data, syncManager)
                                 .setEnabledIf(
-                                        w -> data.currentView.type == ScreenType.REQUEST_CONSUME
-                                                || data.currentView.type == ScreenType.VIEW_CONSUMPTION_REQUESTS)
+                                        w -> data.currentView.type() == ScreenType.REQUEST_CONSUME
+                                                || data.currentView.type() == ScreenType.VIEW_CONSUMPTION_REQUESTS)
                                 .size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[1]));
     }
 
     private ToggleButton createScreenTypeButton(ScreenType type, TeamGuiData data, PanelSyncManager syncManager) {
-        return new SelectButton()
-                .value(
-                        new BoolValue.Dynamic(
-                                () -> data.currentView.type == type,
-                                value -> switchView(data, syncManager, new GuiView(type, null))))
-                .size(16)
+        return new SelectButton().value(new BoolValue.Dynamic(() -> data.currentView.type() == type, value -> {
+            GTNHLib.LOG.info("button for switching to {} pressed", type);
+            switchView(data, syncManager, new GuiView(type, data.currentView.currentTeam()));
+        })).size(16)
                 .overlay(
                         type == ScreenType.INVITE_PLAYERS || type == ScreenType.REQUEST_CONSUME ? GuiTextures.UPLOAD
                                 : GuiTextures.DOWNLOAD)
@@ -221,7 +236,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         String currentPlayer = ServerPlayerUtils.getPlayerName(player);
 
         ListWidget<IWidget, ?> displayListWidget = new ListWidget<>().name("display_list").width(164).height(120)
-                .background(CustomGuiTextures.TEXT_FIELD_BACKGROUND).top(40).child(Flow.row().height(2));
+                .background(CustomGuiTextures.TEXT_FIELD_BACKGROUND).horizontalCenter().top(40)
+                .child(Flow.row().height(2));
 
         for (int i = 0; i < MAX_DISPLAY_LIST_SIZE; i++) {
             final int index = i;
@@ -229,7 +245,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                     new ButtonWidget<>().size(LIST_ITEM_WIDTH, LIST_ITEM_HEIGHT)
                             .background(CustomGuiTextures.LIST_BACKGROUND).setEnabledIf(w -> index < displayList.size())
                             .onMouseTapped(mouseButton -> {
-                                if (data.currentView.type == ScreenType.TEAM_LIST) {
+                                if (data.currentView.type() == ScreenType.TEAM_LIST) {
                                     if (!playerIsOp || displayList.get(index).uuid() == selectedTeam.getTeamId()) {
                                         switchView(
                                                 data,
@@ -249,7 +265,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                             })).marginLeft(4))
                                     // PLAYER_LIST
                                     .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE).setEnabledIf(w -> {
-                                        if (data.currentView.type != ScreenType.PLAYER_LIST
+                                        if (data.currentView.type() != ScreenType.PLAYER_LIST
                                                 || index >= displayList.size()
                                                 || currentPlayer.equals(displayList.get(index).text()))
                                             return false;
@@ -274,7 +290,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
                                             .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
                                     .child(new ButtonWidget<>().overlay(GuiTextures.ARROW_DOWN).setEnabledIf(w -> {
-                                        if (data.currentView.type != ScreenType.PLAYER_LIST
+                                        if (data.currentView.type() != ScreenType.PLAYER_LIST
                                                 || index >= displayList.size())
                                             return false;
                                         TeamRole displayRole = displayList.get(index).role();
@@ -297,7 +313,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
                                             .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
                                     .child(new ButtonWidget<>().overlay(GuiTextures.ARROW_UP).setEnabledIf(w -> {
-                                        if (data.currentView.type != ScreenType.PLAYER_LIST
+                                        if (data.currentView.type() != ScreenType.PLAYER_LIST
                                                 || index >= displayList.size())
                                             return false;
                                         TeamRole displayRole = displayList.get(index).role();
@@ -324,7 +340,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
                                     // TEAM_LIST Buttons
                                     .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE).setEnabledIf(w -> {
-                                        if (data.currentView.type != ScreenType.TEAM_LIST || index >= displayList.size()
+                                        if (data.currentView.type() != ScreenType.TEAM_LIST
+                                                || index >= displayList.size()
                                                 || !displayList.get(index).flag())
                                             return false;
                                         return this.playerIsOp;
@@ -347,7 +364,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
                                             .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
                                     .child(new ButtonWidget<>().overlay(GuiTextures.EDIT).setEnabledIf(w -> {
-                                        if (data.currentView.type != ScreenType.TEAM_LIST
+                                        if (data.currentView.type() != ScreenType.TEAM_LIST
                                                 || index >= displayList.size())
                                             return false;
                                         return this.playerIsOp;
@@ -375,7 +392,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                     t -> t.addLine(
                                                             IKey.lang("gtnhlib.gui.teams.admin.force_merge_into_team")))
                                                     .setEnabledIf(w -> {
-                                                        if (data.currentView.type != ScreenType.TEAM_LIST
+                                                        if (data.currentView.type() != ScreenType.TEAM_LIST
                                                                 || index >= displayList.size())
                                                             return false;
                                                         return playerIsOp && selectedTeam != null
@@ -411,7 +428,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.cancel_invite_member")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type == ScreenType.INVITE_PLAYERS
+                                                            w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
                                                                     && index < displayList.size()
                                                                     && TeamManagerClient.getRole() == TeamRole.OFFICER
                                                                     && displayList.get(index).flag())
@@ -438,7 +455,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             new ButtonWidget<>().overlay(GuiTextures.ADD).tooltip(
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.invite_member")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type == ScreenType.INVITE_PLAYERS
+                                                            w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
                                                                     && index < displayList.size()
                                                                     && TeamManagerClient.getRole() == TeamRole.OFFICER
                                                                     && !displayList.get(index).flag())
@@ -466,7 +483,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.deny_team_invitation")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type
+                                                            w -> data.currentView.type()
                                                                     == ScreenType.TEAMS_INVITING_PLAYER
                                                                     && index < displayList.size())
                                                     .onMouseTapped(mouseButton -> {
@@ -493,7 +510,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                     t -> t.addLine(
                                                             IKey.lang("gtnhlib.gui.teams.accept_team_invitation")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type
+                                                            w -> data.currentView.type()
                                                                     == ScreenType.TEAMS_INVITING_PLAYER
                                                                     && index < displayList.size()
                                                                     && !displayList.get(index).flag())
@@ -521,7 +538,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.cancel_merge_request")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type == ScreenType.REQUEST_CONSUME
+                                                            w -> data.currentView.type() == ScreenType.REQUEST_CONSUME
                                                                     && index < displayList.size()
                                                                     && TeamManagerClient
                                                                             .doesPlayerSatisfyTeamRole(TeamRole.OWNER)
@@ -549,7 +566,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             new ButtonWidget<>().overlay(GuiTextures.ADD).tooltip(
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.request_merge")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type == ScreenType.REQUEST_CONSUME
+                                                            w -> data.currentView.type() == ScreenType.REQUEST_CONSUME
                                                                     && index < displayList.size()
                                                                     && TeamManagerClient
                                                                             .doesPlayerSatisfyTeamRole(TeamRole.OWNER)
@@ -578,7 +595,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.deny_merge_request")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type
+                                                            w -> data.currentView.type()
                                                                     == ScreenType.TEAMS_INVITING_PLAYER
                                                                     && index < displayList.size())
                                                     .onMouseTapped(mouseButton -> {
@@ -604,7 +621,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             new ButtonWidget<>().overlay(GuiTextures.FAVORITE).tooltip(
                                                     t -> t.addLine(IKey.lang("gtnhlib.gui.teams.accept_merge_request")))
                                                     .setEnabledIf(
-                                                            w -> data.currentView.type
+                                                            w -> data.currentView.type()
                                                                     == ScreenType.TEAMS_INVITING_PLAYER
                                                                     && index < displayList.size()
                                                                     && !displayList.get(index).flag())
@@ -647,6 +664,20 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     }
 
     private void registerSyncValues(TeamGuiData data, PanelSyncManager syncManager) {
+        syncManager.syncValue("screen_title", new StringSyncValue(() -> screenTitle, newScreenTitle -> {
+            screenTitle = GuiUtils.clampString(
+                    data.currentView.type() == ScreenType.PLAYER_LIST ? newScreenTitle
+                            : StatCollector.translateToLocal(newScreenTitle),
+                    MAX_DISPLAY_STRING_LENGTH);
+        }, () -> {
+            if (data.currentView.type() == ScreenType.PLAYER_LIST) {
+                Team team = TeamManager.getTeamById(data.currentView.currentTeam());
+                if (team == null) return "";
+                return team.getTeamName();
+            }
+            return data.currentView.type().langKey;
+        }, newScreenTitle -> {}));
+
         syncManager.syncValue(
                 "player_is_op",
                 new BooleanSyncValue(
@@ -655,14 +686,20 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                         () -> GuiUtils.isOpServerSideOnly(data.getPlayer()),
                         playerIsOp -> {}));
 
-        syncManager.syncValue("team_gui_mode", new GuiViewSyncValue(() -> data.currentView, newView -> {
-            data.currentView = newView;
-            if (!data.isClient()) data.forceRefreshWithNextUpdate = true;
-        }));
+        syncManager.syncValue(
+                "team_gui_mode",
+                new GuiViewSyncValue(() -> data.currentView, newView -> {
+                    data.currentView = newView;
+                    if (!data.isClient()) {
+                        data.forceRefreshWithNextUpdate = true;
+                    }
+                }));
 
         syncManager.syncValue("team_gui_display", new DisplayListSyncValue(data, newList -> {
             pendingDisplayList.clear();
             pendingDisplayList.addAll(newList.data);
+            GTNHLib.LOG.info("received new display list with length {}, forcerefresh = {}", pendingDisplayList.size(),
+                newList.forceRefresh);
             forceRefresh = newList.forceRefresh;
         }));
 
@@ -689,6 +726,10 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                             ServerPlayerUtils.getPlayerName(player),
                             target.getTeamName());
                 }
+            } else {
+                GTNHLib.LOG.error(
+                        "Received admin team name change request from non-admin player {}",
+                        ServerPlayerUtils.getPlayerName(data.getPlayer().getUniqueID()));
             }
         }));
 
@@ -792,7 +833,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                 "Player {} failed to disband their team",
                                 ServerPlayerUtils.getPlayerName(data.getPlayer()));
                     }
-                }));
+                })
+                    .allowC2S());
 
         syncManager.syncValue("force_request_disband", new UuidActionSyncValue(request -> {
             Team team = TeamManager.getTeamById(request);
@@ -945,22 +987,27 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     }
 
     public void switchView(TeamGuiData data, PanelSyncManager syncManager, GuiView newView) {
-        if (newView.type == data.currentView.type
-                && (newView.type != ScreenType.PLAYER_LIST || newView.currentTeam == data.currentView.currentTeam)) {
+        GTNHLib.LOG.info("switchview to {} request", newView.type());
+        if (newView.type() == data.currentView.type() && (newView.type() != ScreenType.PLAYER_LIST
+                || newView.currentTeam() == data.currentView.currentTeam())) {
             return;
         }
-        if (!windowHistory.isEmpty() && data.currentView.type.isViewToggleOf(newView.type)) {
-            restoreView(syncManager);
+        if (!windowHistory.isEmpty() && windowHistory.peek().equals(newView)) {
+            restoreView(data, syncManager);
             return;
         }
-        windowHistory.push(newView);
+        if (data.currentView.type() != ScreenType.INVALID) {
+            windowHistory.push(data.currentView);
+        }
+        data.currentView = newView;
         syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(newView);
         selectedTeam = null;
     }
 
-    public void restoreView(PanelSyncManager syncManager) {
+    public void restoreView(TeamGuiData data, PanelSyncManager syncManager) {
         if (windowHistory.isEmpty()) return;
-        syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(windowHistory.pop());
+        data.currentView = windowHistory.pop();
+        syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(data.currentView);
         selectedTeam = null;
     }
 

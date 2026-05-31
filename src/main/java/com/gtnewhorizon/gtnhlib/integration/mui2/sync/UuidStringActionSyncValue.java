@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
 import com.gtnewhorizon.gtnhlib.teams.Team;
 
-public class UuidStringActionSyncValue extends AbstractGenericSyncValue<Pair<UUID, String>> {
+public class UuidStringActionSyncValue extends AbstractGenericSyncValue<Pair<UUID, String>, UuidStringActionSyncValue> {
 
     public UuidStringActionSyncValue(@Nullable Consumer<Pair<UUID, String>> serverSetter) {
         super(
@@ -22,6 +22,7 @@ public class UuidStringActionSyncValue extends AbstractGenericSyncValue<Pair<UUI
                 clientSetValue -> {},
                 () -> null,
                 serverSetter);
+        this.allowC2S();
     }
 
     @Override

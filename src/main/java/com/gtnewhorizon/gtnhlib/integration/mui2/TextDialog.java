@@ -22,7 +22,7 @@ public class TextDialog extends Dialog<String> {
         this.size(140, 90).child(
                 Flow.column().child(
                         new TextWidget<>(IKey.dynamic(() -> this.message)).size(120, 40).top(10).horizontalCenter())
-                        .child(this.field.width(100).height(14).horizontalCenter().bottom(25)).child(
+                        .child(this.field.width(120).height(14).horizontalCenter().bottom(25)).child(
                                 Flow.row().bottom(5).size(110, 16).horizontalCenter()
                                         .child(
                                                 new ButtonWidget<>().size(45, 16).left(5)

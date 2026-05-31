@@ -21,15 +21,14 @@ public class DisplayListSync {
         this.data = data;
     }
 
-    public static DisplayListSync copyOfIgnoreRefresh(DisplayListSync other) {
+    public static DisplayListSync copyOf(DisplayListSync other) {
         List<DisplayItem> copy = other.data.stream().map(DisplayItem::copyOf).collect(Collectors.toList());
-        return new DisplayListSync(false, copy);
+        return new DisplayListSync(other.forceRefresh, copy);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public boolean equalsIgnoreUnsetForceRefresh(Object o) {
         if (!(o instanceof DisplayListSync that)) return false;
-        return forceRefresh == that.forceRefresh && data.equals(that.data);
+        return data.equals(that.data) && !that.forceRefresh;
     }
 
     @Override

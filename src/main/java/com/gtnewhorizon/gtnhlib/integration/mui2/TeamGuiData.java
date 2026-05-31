@@ -14,6 +14,6 @@ public class TeamGuiData extends GuiData {
     public TeamGuiData(@NotNull EntityPlayer player, GuiView currentView) {
         super(player);
         this.currentView = currentView;
-        this.forceRefreshWithNextUpdate = false;
+        this.forceRefreshWithNextUpdate = true;
     }
 }

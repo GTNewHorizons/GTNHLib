@@ -12,14 +12,16 @@ public class FreezablePanel extends ModularPanel {
     public boolean shiftHeld = false;
 
     private final TeamGui gui;
+    private final TeamGuiData data;
     private final PanelSyncManager syncManager;
     private int ticksSinceRefresh = 0;
 
-    public FreezablePanel(@NotNull String name, TeamGui gui, PanelSyncManager syncManager) {
+    public FreezablePanel(@NotNull String name, TeamGui gui, TeamGuiData data, PanelSyncManager syncManager) {
         super(name);
         this.size(176, 166);
 
         this.gui = gui;
+        this.data = data;
         this.syncManager = syncManager;
     }
 
@@ -30,7 +32,7 @@ public class FreezablePanel extends ModularPanel {
         }
 
         if (keyCode == Keyboard.KEY_BACK) {
-            gui.restoreView(this.syncManager);
+            gui.restoreView(this.data, this.syncManager);
         }
 
         return super.onKeyPressed(typedChar, keyCode);

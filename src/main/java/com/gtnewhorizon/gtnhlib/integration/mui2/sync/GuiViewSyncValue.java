@@ -4,17 +4,16 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.network.PacketBuffer;
 
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
 import com.gtnewhorizon.gtnhlib.integration.mui2.GuiView;
 
-public class GuiViewSyncValue extends AbstractGenericSyncValue<GuiView> {
+public class GuiViewSyncValue extends AbstractGenericSyncValue<GuiView, GuiViewSyncValue> {
 
-    public GuiViewSyncValue(@Nullable Supplier<GuiView> getter, @Nullable Consumer<GuiView> setter) {
+    public GuiViewSyncValue(Supplier<GuiView> getter, Consumer<GuiView> setter) {
         super(GuiView.class, getter, setter);
+        this.allowC2S();
     }
 
     @Override
@@ -24,6 +23,7 @@ public class GuiViewSyncValue extends AbstractGenericSyncValue<GuiView> {
 
     @Override
     protected boolean areEqual(GuiView a, GuiView b) {
+        if (a == null || b == null) return a == b;
         return a.equals(b);
     }
 

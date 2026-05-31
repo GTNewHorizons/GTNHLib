@@ -8,33 +8,37 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import net.minecraft.network.PacketBuffer;
 
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
 import com.gtnewhorizon.gtnhlib.integration.mui2.DisplayItem;
 import com.gtnewhorizon.gtnhlib.integration.mui2.DisplayItemType;
+import com.gtnewhorizon.gtnhlib.integration.mui2.GuiUtils;
+import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGui;
 import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGuiData;
 import com.gtnewhorizon.gtnhlib.teams.Team;
 import com.gtnewhorizon.gtnhlib.teams.TeamManager;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 
-public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSync> {
+public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSync, DisplayListSyncValue> {
 
     public DisplayListSyncValue(TeamGuiData data, Consumer<DisplayListSync> clientSetter) {
         super(
                 DisplayListSync.class,
                 () -> null,
-                ignored -> {},
+                clientSetter,
                 () -> new DisplayListSync(data.forceRefreshWithNextUpdate, getDisplayListAndResetRefresh(data)),
-                clientSetter);
+                newValue -> {});
     }
 
     private static List<DisplayItem> getDisplayListAndResetRefresh(TeamGuiData data) {
+        GTNHLib.LOG.info("run getdisplaylist");
         List<DisplayItem> displayItems = new ArrayList<>();
-        Team viewTeam = TeamManager.getTeamById(data.currentView.currentTeam);
+        Team viewTeam = TeamManager.getTeamById(data.currentView.currentTeam());
         UUID currentPlayer = data.getPlayer().getUniqueID();
         Team currentPlayerTeam = TeamManager.getTeamByPlayer(currentPlayer);
-        switch (data.currentView.type) {
+        switch (data.currentView.type()) {
             case PLAYER_LIST:
                 if (viewTeam == null) break;
                 viewTeam.getMembers().stream()
@@ -55,7 +59,7 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                         (teamId, teamObj) -> displayItems.add(
                                 new DisplayItem(
                                         DisplayItemType.TEAM,
-                                        teamObj.getTeamName(),
+                                        GuiUtils.clampString(teamObj.getTeamName(), TeamGui.MAX_DISPLAY_STRING_LENGTH),
                                         null,
                                         teamId,
                                         teamObj.canBeDisbanded())));
@@ -69,7 +73,9 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                         displayItems.add(
                                 new DisplayItem(
                                         DisplayItemType.PLAYER,
-                                        ServerPlayerUtils.getPlayerName(playerId),
+                                        GuiUtils.clampString(
+                                                ServerPlayerUtils.getPlayerName(playerId),
+                                                TeamGui.MAX_DISPLAY_STRING_LENGTH),
                                         null,
                                         playerId,
                                         TeamManager.getPendingInvites(playerId).contains(viewTeam)));
@@ -85,7 +91,9 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                                 t -> displayItems.add(
                                         new DisplayItem(
                                                 DisplayItemType.TEAM,
-                                                t.getTeamName(),
+                                                GuiUtils.clampString(
+                                                        t.getTeamName(),
+                                                        TeamGui.MAX_DISPLAY_STRING_LENGTH),
                                                 null,
                                                 t.getTeamId(),
                                                 canAcceptInvites)));
@@ -95,7 +103,7 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                         (teamId, teamObj) -> displayItems.add(
                                 new DisplayItem(
                                         DisplayItemType.TEAM,
-                                        teamObj.getTeamName(),
+                                        GuiUtils.clampString(teamObj.getTeamName(), TeamGui.MAX_DISPLAY_STRING_LENGTH),
                                         null,
                                         teamId,
                                         TeamManager.getPendingMergeRequests(teamObj).contains(currentPlayerTeam))));
@@ -107,7 +115,9 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                                 t -> displayItems.add(
                                         new DisplayItem(
                                                 DisplayItemType.TEAM,
-                                                t.getTeamName(),
+                                                GuiUtils.clampString(
+                                                        t.getTeamName(),
+                                                        TeamGui.MAX_DISPLAY_STRING_LENGTH),
                                                 null,
                                                 t.getTeamId(),
                                                 false)));
@@ -122,15 +132,13 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
 
     @Override
     protected DisplayListSync createDeepCopyOf(DisplayListSync value) {
-        // We cache the value but with forceRefresh = false permanently, since if the field
-        // was set to true, it would be set to false immediately in the next tick and most likely
-        // sending the same data to the client.
-        return DisplayListSync.copyOfIgnoreRefresh(value);
+        return DisplayListSync.copyOf(value);
     }
 
     @Override
-    protected boolean areEqual(DisplayListSync a, DisplayListSync b) {
-        return a.equals(b);
+    protected boolean areEqual(DisplayListSync cachedValue, DisplayListSync newValue) {
+        if (cachedValue == null || newValue == null) return cachedValue == newValue;
+        return cachedValue.equalsIgnoreUnsetForceRefresh(newValue);
     }
 
     @Override

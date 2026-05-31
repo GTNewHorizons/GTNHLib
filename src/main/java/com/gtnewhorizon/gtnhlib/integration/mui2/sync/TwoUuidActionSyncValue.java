@@ -13,7 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
 
-public class TwoUuidActionSyncValue extends AbstractGenericSyncValue<Pair<UUID, UUID>> {
+public class TwoUuidActionSyncValue extends AbstractGenericSyncValue<Pair<UUID, UUID>, TwoUuidActionSyncValue> {
 
     public TwoUuidActionSyncValue(@Nullable Consumer<Pair<UUID, UUID>> serverSetter) {
         super(
@@ -22,6 +22,7 @@ public class TwoUuidActionSyncValue extends AbstractGenericSyncValue<Pair<UUID, 
                 clientSetValue -> {},
                 () -> null,
                 serverSetter);
+        this.allowC2S();
     }
 
     @Override
@@ -45,6 +46,7 @@ public class TwoUuidActionSyncValue extends AbstractGenericSyncValue<Pair<UUID, 
         // SyncValueIsNull, LeftUUIDIsNull, LeftUUID, RightUUIDIsNull, RightUUID
         if (value == null) {
             buffer.writeBoolean(true);
+            return;
         }
         buffer.writeBoolean(false);
         buffer.writeBoolean(value.getLeft() == null);

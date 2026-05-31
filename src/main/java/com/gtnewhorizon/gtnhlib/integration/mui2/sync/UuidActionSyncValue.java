@@ -10,10 +10,11 @@ import net.minecraft.network.PacketBuffer;
 
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
 
-public class UuidActionSyncValue extends AbstractGenericSyncValue<UUID> {
+public class UuidActionSyncValue extends AbstractGenericSyncValue<UUID, UuidActionSyncValue> {
 
     public UuidActionSyncValue(@Nullable Consumer<UUID> serverSetter) {
         super(UUID.class, () -> null, clientSetValue -> {}, () -> null, serverSetter);
+        this.allowC2S();
     }
 
     @Override
@@ -23,6 +24,7 @@ public class UuidActionSyncValue extends AbstractGenericSyncValue<UUID> {
 
     @Override
     protected boolean areEqual(UUID a, UUID b) {
+        if (a == null || b == null) return a == b;
         return a.equals(b);
     }
 
