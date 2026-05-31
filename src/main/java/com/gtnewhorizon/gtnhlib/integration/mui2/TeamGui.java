@@ -687,20 +687,20 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                         () -> GuiUtils.isOpServerSideOnly(data.getPlayer()),
                         playerIsOp -> {}));
 
-        syncManager.syncValue(
-                "team_gui_mode",
-                new GuiViewSyncValue(() -> data.currentView, newView -> {
-                    data.currentView = newView;
-                    if (!data.isClient()) {
-                        data.forceRefreshWithNextUpdate = true;
-                    }
-                }));
+        syncManager.syncValue("team_gui_mode", new GuiViewSyncValue(() -> data.currentView, newView -> {
+            data.currentView = newView;
+            if (!data.isClient()) {
+                data.forceRefreshWithNextUpdate = true;
+            }
+        }));
 
         syncManager.syncValue("team_gui_display", new DisplayListSyncValue(data, newList -> {
             pendingDisplayList.clear();
             pendingDisplayList.addAll(newList.data);
-            GTNHLib.LOG.info("received new display list with length {}, forcerefresh = {}", pendingDisplayList.size(),
-                newList.forceRefresh);
+            GTNHLib.LOG.info(
+                    "received new display list with length {}, forcerefresh = {}",
+                    pendingDisplayList.size(),
+                    newList.forceRefresh);
             forceRefresh = newList.forceRefresh || isFirstRequest;
             isFirstRequest = false;
         }));
@@ -835,8 +835,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                 "Player {} failed to disband their team",
                                 ServerPlayerUtils.getPlayerName(data.getPlayer()));
                     }
-                })
-                    .allowC2S());
+                }).allowC2S());
 
         syncManager.syncValue("force_request_disband", new UuidActionSyncValue(request -> {
             Team team = TeamManager.getTeamById(request);

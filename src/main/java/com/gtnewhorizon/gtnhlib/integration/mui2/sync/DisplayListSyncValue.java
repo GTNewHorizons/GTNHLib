@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import net.minecraft.network.PacketBuffer;
 
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
@@ -98,17 +97,16 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                                                 canAcceptInvites)));
                 break;
             case REQUEST_CONSUME:
-                TeamManager.getTeamMap().forEach(
-                        (teamId, teamObj) -> {
-                        if (teamObj.equals(currentPlayerTeam)) return;
-                        displayItems.add(
+                TeamManager.getTeamMap().forEach((teamId, teamObj) -> {
+                    if (teamObj.equals(currentPlayerTeam)) return;
+                    displayItems.add(
                             new DisplayItem(
                                     DisplayItemType.TEAM,
                                     GuiUtils.clampString(teamObj.getTeamName(), TeamGui.MAX_DISPLAY_STRING_LENGTH),
                                     null,
                                     teamId,
                                     TeamManager.getPendingMergeRequests(teamObj).contains(currentPlayerTeam)));
-                        });
+                });
                 displayItems.sort(Comparator.comparing(DisplayItem::flag).reversed().thenComparing(DisplayItem::text));
                 break;
             case VIEW_CONSUMPTION_REQUESTS:
