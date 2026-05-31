@@ -65,6 +65,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     private static final List<DisplayItem> pendingDisplayList = new ArrayList<>();
     private static final List<DisplayItem> displayList = new ArrayList<>();
     private Team selectedTeam = null;
+    private static boolean isFirstRequest = true;
 
     // Synced with server
     private boolean playerIsOp = false;
@@ -700,7 +701,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
             pendingDisplayList.addAll(newList.data);
             GTNHLib.LOG.info("received new display list with length {}, forcerefresh = {}", pendingDisplayList.size(),
                 newList.forceRefresh);
-            forceRefresh = newList.forceRefresh;
+            forceRefresh = newList.forceRefresh || isFirstRequest;
+            isFirstRequest = false;
         }));
 
         syncManager.syncValue("edit_team_name", new UuidStringActionSyncValue(request -> {
@@ -996,9 +998,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
             restoreView(data, syncManager);
             return;
         }
-        if (data.currentView.type() != ScreenType.INVALID) {
-            windowHistory.push(data.currentView);
-        }
+        windowHistory.push(data.currentView);
         data.currentView = newView;
         syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(newView);
         selectedTeam = null;

@@ -33,7 +33,6 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
     }
 
     private static List<DisplayItem> getDisplayListAndResetRefresh(TeamGuiData data) {
-        GTNHLib.LOG.info("run getdisplaylist");
         List<DisplayItem> displayItems = new ArrayList<>();
         Team viewTeam = TeamManager.getTeamById(data.currentView.currentTeam());
         UUID currentPlayer = data.getPlayer().getUniqueID();
@@ -100,13 +99,16 @@ public class DisplayListSyncValue extends AbstractGenericSyncValue<DisplayListSy
                 break;
             case REQUEST_CONSUME:
                 TeamManager.getTeamMap().forEach(
-                        (teamId, teamObj) -> displayItems.add(
-                                new DisplayItem(
-                                        DisplayItemType.TEAM,
-                                        GuiUtils.clampString(teamObj.getTeamName(), TeamGui.MAX_DISPLAY_STRING_LENGTH),
-                                        null,
-                                        teamId,
-                                        TeamManager.getPendingMergeRequests(teamObj).contains(currentPlayerTeam))));
+                        (teamId, teamObj) -> {
+                        if (teamObj.equals(currentPlayerTeam)) return;
+                        displayItems.add(
+                            new DisplayItem(
+                                    DisplayItemType.TEAM,
+                                    GuiUtils.clampString(teamObj.getTeamName(), TeamGui.MAX_DISPLAY_STRING_LENGTH),
+                                    null,
+                                    teamId,
+                                    TeamManager.getPendingMergeRequests(teamObj).contains(currentPlayerTeam)));
+                        });
                 displayItems.sort(Comparator.comparing(DisplayItem::flag).reversed().thenComparing(DisplayItem::text));
                 break;
             case VIEW_CONSUMPTION_REQUESTS:

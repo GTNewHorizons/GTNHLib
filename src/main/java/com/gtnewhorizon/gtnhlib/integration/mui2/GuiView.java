@@ -18,7 +18,7 @@ public record GuiView(ScreenType type, UUID currentTeam) {
     }
 
     public static GuiView getDefaultView(@Nonnull UUID team) {
-        return new GuiView(ScreenType.INVALID, team);
+        return new GuiView(ScreenType.PLAYER_LIST, team);
     }
 
     public void writeToBuf(PacketBuffer buffer) {
