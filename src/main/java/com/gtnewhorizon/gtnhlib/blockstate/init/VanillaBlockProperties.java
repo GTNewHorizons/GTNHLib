@@ -344,8 +344,34 @@ class VanillaBlockProperties {
 
         registerProperty(Blocks.redstone_wire, IntegerBlockProperty.meta("power", 0b1111, 0));
 
-        registerProperty(BlockFurnace.class, DirectionBlockProperty.facing());
-        registerProperty(BlockFurnace.class, BooleanBlockProperty.blocks("lit", Blocks.furnace, Blocks.lit_furnace));
+        class FurnaceLitProperty implements BooleanBlockProperty {
+
+            @Override
+            public String getName() {
+                return "lit";
+            }
+
+            @Override
+            public boolean hasTrait(BlockPropertyTrait trait) {
+                return switch (trait) {
+                    case SupportsWorld -> true;
+                    default -> false;
+                };
+            }
+
+            @Override
+            public Boolean getValue(IBlockAccess world, int x, int y, int z) {
+                return world.getBlock(x, y, z) == Blocks.lit_furnace;
+            }
+
+            @Override
+            public void setValue(World world, int x, int y, int z, Boolean lit) {
+                BlockFurnace.updateFurnaceBlockState(lit, world, x, y, z);
+            }
+        }
+
+        registerProperty(Arrays.asList(Blocks.furnace, Blocks.lit_furnace), DirectionBlockProperty.facing());
+        registerProperty(Arrays.asList(Blocks.furnace, Blocks.lit_furnace), new FurnaceLitProperty());
 
         class StandingSignRotationProperty
                 implements FloatBlockProperty, MetaBlockProperty<Float>, VectorTransformableProperty<Float> {
