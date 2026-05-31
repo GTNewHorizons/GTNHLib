@@ -16,14 +16,20 @@ import org.joml.Vector4f;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Face;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 
 public class MissingModel extends JSONModel {
 
+    private static final Object2ObjectArrayMap<String, String> TEXTURES = new Object2ObjectArrayMap<>();
+    static {
+        TEXTURES.put("missingno", "minecraft:missingno");
+    }
+
+    /// This has to be after [#TEXTURES] to make sure the former is initialized.
     public static final MissingModel MISSING_MODEL = new MissingModel();
 
     public MissingModel() {
-        super(null, true, null, Object2ObjectMaps.emptyMap(), new ArrayList<>());
+        super(null, true, null, TEXTURES, new ArrayList<>());
 
         final var uv = new Vector4f(0, 0, 16, 16);
         final var faces = new ArrayList<Face>();
