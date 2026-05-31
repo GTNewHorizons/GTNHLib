@@ -20,11 +20,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 
 public class MissingModel extends JSONModel {
 
-    public static final MissingModel MISSING_MODEL = new MissingModel();
     private static final Object2ObjectArrayMap<String, String> TEXTURES = new Object2ObjectArrayMap<>();
     static {
         TEXTURES.put("missingno", "minecraft:missingno");
     }
+
+    /// This has to be after [#TEXTURES] to make sure the former is initialized.
+    public static final MissingModel MISSING_MODEL = new MissingModel();
 
     public MissingModel() {
         super(null, true, null, TEXTURES, new ArrayList<>());
