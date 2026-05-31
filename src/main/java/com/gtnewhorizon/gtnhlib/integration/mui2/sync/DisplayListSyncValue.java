@@ -8,13 +8,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import com.gtnewhorizon.gtnhlib.integration.mui2.GuiView;
 import net.minecraft.network.PacketBuffer;
 
 import com.cleanroommc.modularui.value.sync.AbstractGenericSyncValue;
 import com.gtnewhorizon.gtnhlib.integration.mui2.DisplayItem;
 import com.gtnewhorizon.gtnhlib.integration.mui2.DisplayItemType;
 import com.gtnewhorizon.gtnhlib.integration.mui2.GuiUtils;
+import com.gtnewhorizon.gtnhlib.integration.mui2.GuiView;
 import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGui;
 import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGuiData;
 import com.gtnewhorizon.gtnhlib.teams.Team;

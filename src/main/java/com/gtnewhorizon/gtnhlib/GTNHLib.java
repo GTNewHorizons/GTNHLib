@@ -1,11 +1,11 @@
 package com.gtnewhorizon.gtnhlib;
 
-import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGuiFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.gtnewhorizon.gtnhlib.integration.mui2.CustomGuiTextures;
 import com.gtnewhorizon.gtnhlib.integration.mui2.CustomWidgetTheme;
+import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGuiFactory;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;

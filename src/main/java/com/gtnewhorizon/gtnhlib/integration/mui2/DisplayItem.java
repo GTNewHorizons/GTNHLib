@@ -28,7 +28,9 @@ import cpw.mods.fml.common.network.ByteBufUtils;
  * uuid: represents team or player id depending on what screen this displayitem was sent.
  * spotless:on
  */
-public record DisplayItem(@Nonnull DisplayItemType type, String text, @Nullable TeamRole role, @Nonnull UUID uuid, boolean flag) {
+public record DisplayItem(@Nonnull DisplayItemType type, String text, @Nullable TeamRole role, @Nonnull UUID uuid,
+        boolean flag) {
+
     /**
      * Represents team or player id depending on what screen this displayitem was sent.
      */
@@ -44,9 +46,10 @@ public record DisplayItem(@Nonnull DisplayItemType type, String text, @Nullable 
      * <li><b>VIEW_CONSUMPTION_REQUESTS</b>: ignored.</li>
      * <li><b>PLAYER_LIST</b>: Set to true if player cannot be demoted or kicked (last owner of team).</li>
      * <li><b>TEAM_LIST</b>: Set to true if team can be disbanded (size > 1).</li>
-     * <li><b>TEAMS_INVITING_PLAYERS</b>: Set to true if the player is unable to accept the invite (eg. last
-     * owner of their team with more than one member.</li>
-     * <li><b>INVITE_PLAYERS, REQUEST_MERGE</b>: Set to true if an invite or merge requests to this player/team already exists.</li>
+     * <li><b>TEAMS_INVITING_PLAYERS</b>: Set to true if the player is unable to accept the invite (eg. last owner of
+     * their team with more than one member.</li>
+     * <li><b>INVITE_PLAYERS, REQUEST_MERGE</b>: Set to true if an invite or merge requests to this player/team already
+     * exists.</li>
      * </ul>
      */
     @Override

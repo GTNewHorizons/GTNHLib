@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -19,6 +18,7 @@ import net.minecraftforge.common.MinecraftForge;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamCreateEvent;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamMergeEvent;
+import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
@@ -60,8 +60,10 @@ public class TeamManager {
             }
         }
         PLAYER_TEAM_CACHE.remove(playerUuid);
-        GTNHLib.LOG.error("Unable to find team for player {} ({})", playerUuid,
-            ServerPlayerUtils.getPlayerName(playerUuid));
+        GTNHLib.LOG.error(
+                "Unable to find team for player {} ({})",
+                playerUuid,
+                ServerPlayerUtils.getPlayerName(playerUuid));
         return null;
     }
 

@@ -258,125 +258,149 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             true);
                                 }
                                 return true;
-                            }).child(Flow.row()
-                                    .child(Flow.row()
-                                        .collapseDisabledChild()
-                                        .child(new TextWidget<>(IKey.dynamic(() -> {
-                                            if (index >= displayList.size() ||
-                                                displayList.get(index).role() == null) return "";
-                                            return switch (displayList.get(index).role()) {
-                                                case OWNER -> " 2 ";
-                                                case OFFICER -> " 1 ";
-                                                case MEMBER -> " 0 ";
-                                            };}))
-                                            .marginRight(3)
-                                            .setEnabledIf(w -> data.currentView.type() == ScreenType.PLAYER_LIST))
-                                        .child(new TextWidget<>(IKey.dynamic(() -> {
-                                            if (index >= displayList.size()) {
-                                                return "";
-                                            }
-                                            return displayList.get(index).text();}))
-                                                .marginLeft(4)))
-                                    // PLAYER_LIST
-                                    .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE)
-                                        .setEnabledIf(w -> {
-                                            if (data.currentView.type() != ScreenType.PLAYER_LIST
-                                                    || index >= displayList.size()
-                                                    || currentPlayer.equals(displayList.get(index).text()))
-                                                return false;
+                            }).child(
+                                    Flow.row()
+                                            .child(
+                                                    Flow.row().collapseDisabledChild()
+                                                            .child(new TextWidget<>(IKey.dynamic(() -> {
+                                                                if (index >= displayList.size()
+                                                                        || displayList.get(index).role() == null)
+                                                                    return "";
+                                                                return switch (displayList.get(index).role()) {
+                                                                    case OWNER -> " 2 ";
+                                                                    case OFFICER -> " 1 ";
+                                                                    case MEMBER -> " 0 ";
+                                                                };
+                                                            })).marginRight(3).setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.PLAYER_LIST))
+                                                            .child(new TextWidget<>(IKey.dynamic(() -> {
+                                                                if (index >= displayList.size()) {
+                                                                    return "";
+                                                                }
+                                                                return displayList.get(index).text();
+                                                            })).marginLeft(4)))
+                                            // PLAYER_LIST
+                                            .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE).setEnabledIf(w -> {
+                                                if (data.currentView.type() != ScreenType.PLAYER_LIST
+                                                        || index >= displayList.size()
+                                                        || currentPlayer.equals(displayList.get(index).text()))
+                                                    return false;
 
-                                            TeamRole displayRole = displayList.get(index).role();
-                                            if (displayRole == null) return false;
+                                                TeamRole displayRole = displayList.get(index).role();
+                                                if (displayRole == null) return false;
 
-                                            return !displayList.get(index).flag() &&
-                                                (this.playerIsOp || TeamManagerClient.canPlayerKick(displayRole));
-                                    }).onMouseTapped(mouseButton -> {
-                                        UUID toKick = displayList.get(index).uuid();
-                                        confirmationDialog.setParams(
-                                            StatCollector.translateToLocalFormatted(
-                                                TeamManagerClient.canPlayerKick(displayList.get(index).role()) ?
-                                                    "gtnhlib.gui.teams.confirm_kick_member" :
-                                                    "gtnhlib.gui.teams.admin.confirm_kick_member",
-                                                displayList.get(index).text()),
-                                            () -> {
-                                                syncManager
-                                                    .findSyncHandler("kick_member", UuidActionSyncValue.class)
-                                                    .setValue(toKick);
-                                            });
-                                        confirmationPanel.openPanel();
-                                        return true;
-                                    }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.kick_member")))
-                                            .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
-                                            .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(new ButtonWidget<>().overlay(GuiTextures.ARROW_DOWN).setEnabledIf(w -> {
-                                        if (data.currentView.type() != ScreenType.PLAYER_LIST
-                                                || index >= displayList.size())
-                                            return false;
-                                        TeamRole displayRole = displayList.get(index).role();
-                                        if (displayRole == null) return false;
-                                        return !displayList.get(index).flag() &&
-                                            displayRole.ordinal() > TeamRole.MEMBER.ordinal() &&
-                                            (this.playerIsOp || TeamManagerClient.canPlayerDemote(displayRole));
-                                    }).onMouseTapped(mouseButton -> {
-                                        UUID toDemote = displayList.get(index).uuid();
-                                        confirmationDialog.setParams(
-                                                StatCollector.translateToLocalFormatted(
-                                                    TeamManagerClient.canPlayerDemote(displayList.get(index).role()) ?
-                                                        "gtnhlib.gui.teams.confirm_demote_member" :
-                                                        "gtnhlib.gui.teams.admin.confirm_demote_member",
-                                                        displayList.get(index).text()),
-                                                () -> {
-                                                    syncManager
-                                                            .findSyncHandler("demote_member", UuidActionSyncValue.class)
-                                                            .setValue(toDemote);
-                                                });
-                                        confirmationPanel.openPanel();
-                                        return true;
-                                    }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.demote_member")))
-                                            .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
-                                            .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(new ButtonWidget<>()
-                                        .overlay(GuiTextures.ARROW_UP)
-                                        .setEnabledIf(w -> {
-                                        if (data.currentView.type() != ScreenType.PLAYER_LIST
-                                                || index >= displayList.size())
-                                            return false;
-                                        TeamRole displayRole = displayList.get(index).role();
-                                        if (displayRole == null) return false;
-                                        return displayRole.ordinal() < TeamRole.OWNER.ordinal()
-                                                && (this.playerIsOp || TeamManagerClient.canPlayerPromote(displayRole));
-                                    }).onMouseTapped(mouseButton -> {
-                                        UUID toPromote = displayList.get(index).uuid();
-                                        confirmationDialog
-                                                .setParams(
+                                                return !displayList.get(index).flag() && (this.playerIsOp
+                                                        || TeamManagerClient.canPlayerKick(displayRole));
+                                            }).onMouseTapped(mouseButton -> {
+                                                UUID toKick = displayList.get(index).uuid();
+                                                confirmationDialog.setParams(
                                                         StatCollector.translateToLocalFormatted(
-                                                            TeamManagerClient.canPlayerPromote(displayList.get(index).role()) ?
-                                                                "gtnhlib.gui.teams.confirm_promote_member" :
-                                                                "gtnhlib.gui.teams.admin.confirm_promote_member",
+                                                                TeamManagerClient
+                                                                        .canPlayerKick(displayList.get(index).role())
+                                                                                ? "gtnhlib.gui.teams.confirm_kick_member"
+                                                                                : "gtnhlib.gui.teams.admin.confirm_kick_member",
                                                                 displayList.get(index).text()),
                                                         () -> {
-                                                            syncManager
-                                                                    .findSyncHandler(
-                                                                            "promote_member",
-                                                                            UuidActionSyncValue.class)
-                                                                    .setValue(toPromote);
+                                                            syncManager.findSyncHandler(
+                                                                    "kick_member",
+                                                                    UuidActionSyncValue.class).setValue(toKick);
                                                         });
-                                        confirmationPanel.openPanel();
-                                        return true;
-                                    }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.promote_member")))
-                                            .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[2])
-                                            .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
-                                    // TEAM_LIST Buttons
-                                    .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE).setEnabledIf(w -> {
-                                        if (data.currentView.type() != ScreenType.TEAM_LIST
-                                                || index >= displayList.size()
-                                                || !displayList.get(index).flag())
-                                            return false;
-                                        return this.playerIsOp;
-                                    }).onMouseTapped(mouseButton -> {
-                                        UUID toDisband = displayList.get(index).uuid();
-                                        confirmationDialog
-                                                .setParams(
+                                                confirmationPanel.openPanel();
+                                                return true;
+                                            }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.kick_member")))
+                                                    .size(LIST_ACTION_BUTTON_SIZE)
+                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
+                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                    .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.ARROW_DOWN)
+                                                            .setEnabledIf(w -> {
+                                                                if (data.currentView.type() != ScreenType.PLAYER_LIST
+                                                                        || index >= displayList.size())
+                                                                    return false;
+                                                                TeamRole displayRole = displayList.get(index).role();
+                                                                if (displayRole == null) return false;
+                                                                return !displayList.get(index).flag()
+                                                                        && displayRole.ordinal()
+                                                                                > TeamRole.MEMBER.ordinal()
+                                                                        && (this.playerIsOp || TeamManagerClient
+                                                                                .canPlayerDemote(displayRole));
+                                                            }).onMouseTapped(mouseButton -> {
+                                                                UUID toDemote = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                TeamManagerClient.canPlayerDemote(
+                                                                                        displayList.get(index).role())
+                                                                                                ? "gtnhlib.gui.teams.confirm_demote_member"
+                                                                                                : "gtnhlib.gui.teams.admin.confirm_demote_member",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "demote_member",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toDemote);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            })
+                                                            .tooltip(
+                                                                    t -> t.addLine(
+                                                                            IKey.lang(
+                                                                                    "gtnhlib.gui.teams.demote_member")))
+                                                            .size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.ARROW_UP)
+                                                            .setEnabledIf(w -> {
+                                                                if (data.currentView.type() != ScreenType.PLAYER_LIST
+                                                                        || index >= displayList.size())
+                                                                    return false;
+                                                                TeamRole displayRole = displayList.get(index).role();
+                                                                if (displayRole == null) return false;
+                                                                return displayRole.ordinal() < TeamRole.OWNER.ordinal()
+                                                                        && (this.playerIsOp || TeamManagerClient
+                                                                                .canPlayerPromote(displayRole));
+                                                            }).onMouseTapped(mouseButton -> {
+                                                                UUID toPromote = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                TeamManagerClient.canPlayerPromote(
+                                                                                        displayList.get(index).role())
+                                                                                                ? "gtnhlib.gui.teams.confirm_promote_member"
+                                                                                                : "gtnhlib.gui.teams.admin.confirm_promote_member",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "promote_member",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toPromote);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            })
+                                                            .tooltip(
+                                                                    t -> t.addLine(
+                                                                            IKey.lang(
+                                                                                    "gtnhlib.gui.teams.promote_member")))
+                                                            .size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[2])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            // TEAM_LIST Buttons
+                                            .child(new ButtonWidget<>().overlay(GuiTextures.CLOSE).setEnabledIf(w -> {
+                                                if (data.currentView.type() != ScreenType.TEAM_LIST
+                                                        || index >= displayList.size()
+                                                        || !displayList.get(index).flag())
+                                                    return false;
+                                                return this.playerIsOp;
+                                            }).onMouseTapped(mouseButton -> {
+                                                UUID toDisband = displayList.get(index).uuid();
+                                                confirmationDialog.setParams(
                                                         StatCollector.translateToLocalFormatted(
                                                                 "gtnhlib.gui.teams.admin.confirm_disband_team",
                                                                 displayList.get(index).text()),
@@ -387,291 +411,323 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                                             UuidActionSyncValue.class)
                                                                     .setValue(toDisband);
                                                         });
-                                        return true;
-                                    }).tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.admin.force_disband_team")))
-                                            .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
-                                            .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(new ButtonWidget<>().overlay(GuiTextures.EDIT).setEnabledIf(w -> {
-                                        if (data.currentView.type() != ScreenType.TEAM_LIST
-                                                || index >= displayList.size())
-                                            return false;
-                                        return this.playerIsOp;
-                                    }).onMouseTapped(mouseButton -> {
-                                        textDialog.setParams(
-                                                StatCollector.translateToLocal(
-                                                        "gtnhlib.gui.teams.admin.force_edit_team_name"),
-                                                displayList.get(index).text(),
-                                                newName -> {
-                                                    syncManager.findSyncHandler(
-                                                            "force_edit_team_name",
-                                                            UuidStringActionSyncValue.class).setValue(
-                                                                    new ImmutablePair<>(
-                                                                            displayList.get(index).uuid(),
-                                                                            newName));
-                                                });
-                                        textDialogPanel.openPanel();
-                                        return true;
-                                    }).tooltip(
-                                            t -> t.addLine(IKey.lang("gtnhlib.gui.teams.admin.force_edit_team_name")))
-                                            .size(LIST_ACTION_BUTTON_SIZE).right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
-                                            .top(LIST_ACTION_BUTTON_POSITION_TOP).padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.MINIMIZE).tooltip(
+                                                return true;
+                                            }).tooltip(
                                                     t -> t.addLine(
-                                                            IKey.lang("gtnhlib.gui.teams.admin.force_merge_into_team")))
-                                                    .setEnabledIf(w -> {
-                                                        if (data.currentView.type() != ScreenType.TEAM_LIST
-                                                                || index >= displayList.size())
-                                                            return false;
-                                                        return playerIsOp && selectedTeam != null
-                                                                && selectedTeam.getTeamId()
-                                                                        != displayList.get(index).uuid();
-                                                    }).onMouseTapped(mouseButton -> {
-                                                        UUID surviving = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.admin.force_merge_confirmation",
-                                                                        selectedTeam.getTeamName(),
-                                                                        displayList.get(index).text(),
-                                                                        selectedTeam.getTeamName()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
+                                                            IKey.lang("gtnhlib.gui.teams.admin.force_disband_team")))
+                                                    .size(LIST_ACTION_BUTTON_SIZE)
+                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
+                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                    .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(new ButtonWidget<>().overlay(GuiTextures.EDIT).setEnabledIf(w -> {
+                                                if (data.currentView.type() != ScreenType.TEAM_LIST
+                                                        || index >= displayList.size())
+                                                    return false;
+                                                return this.playerIsOp;
+                                            }).onMouseTapped(mouseButton -> {
+                                                textDialog.setParams(
+                                                        StatCollector.translateToLocal(
+                                                                "gtnhlib.gui.teams.admin.force_edit_team_name"),
+                                                        displayList.get(index).text(),
+                                                        newName -> {
+                                                            syncManager
+                                                                    .findSyncHandler(
+                                                                            "force_edit_team_name",
+                                                                            UuidStringActionSyncValue.class)
+                                                                    .setValue(
+                                                                            new ImmutablePair<>(
+                                                                                    displayList.get(index).uuid(),
+                                                                                    newName));
+                                                        });
+                                                textDialogPanel.openPanel();
+                                                return true;
+                                            }).tooltip(
+                                                    t -> t.addLine(
+                                                            IKey.lang("gtnhlib.gui.teams.admin.force_edit_team_name")))
+                                                    .size(LIST_ACTION_BUTTON_SIZE)
+                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
+                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                    .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.MINIMIZE).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang(
+                                                                            "gtnhlib.gui.teams.admin.force_merge_into_team")))
+                                                            .setEnabledIf(w -> {
+                                                                if (data.currentView.type() != ScreenType.TEAM_LIST
+                                                                        || index >= displayList.size())
+                                                                    return false;
+                                                                return playerIsOp && selectedTeam != null
+                                                                        && selectedTeam.getTeamId()
+                                                                                != displayList.get(index).uuid();
+                                                            }).onMouseTapped(mouseButton -> {
+                                                                UUID surviving = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.admin.force_merge_confirmation",
+                                                                                selectedTeam.getTeamName(),
+                                                                                displayList.get(index).text(),
+                                                                                selectedTeam.getTeamName()),
+                                                                        () -> {
+                                                                            syncManager.findSyncHandler(
                                                                                     "request_force_merge",
                                                                                     TwoUuidActionSyncValue.class)
-                                                                            .setValue(
-                                                                                    new ImmutablePair<>(
-                                                                                            selectedTeam.getTeamId(),
-                                                                                            surviving));
-                                                                    selectedTeam = null;
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[2])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    // INVITE_PLAYERS Buttons
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
-                                                    t -> t.addLine(IKey.lang("gtnhlib.gui.teams.cancel_invite_member")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
-                                                                    && index < displayList.size()
-                                                                    && TeamManagerClient.doesPlayerSatisfyTeamRole(TeamRole.OFFICER)
-                                                                    && displayList.get(index).flag())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID toCancelInvite = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_cancel_invite_player",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "cancel_invite_player",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(toCancelInvite);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.ADD).tooltip(
-                                                    t -> t.addLine(IKey.lang("gtnhlib.gui.teams.invite_member")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type() == ScreenType.INVITE_PLAYERS
-                                                                    && index < displayList.size()
-                                                                    && TeamManagerClient.doesPlayerSatisfyTeamRole(TeamRole.OFFICER)
-                                                                    && !displayList.get(index).flag())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID toInvite = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_invite_player",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "invite_player",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(toInvite);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    // TEAMS_INVITING_PLAYER Buttons
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
-                                                    t -> t.addLine(IKey.lang("gtnhlib.gui.teams.deny_team_invitation")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type()
-                                                                    == ScreenType.TEAMS_INVITING_PLAYER
-                                                                    && index < displayList.size())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID toDeny = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_deny_team_invitation",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "deny_team_invitation",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(toDeny);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.FAVORITE).tooltip(
-                                                    t -> t.addLine(
-                                                            IKey.lang("gtnhlib.gui.teams.accept_team_invitation")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type()
-                                                                    == ScreenType.TEAMS_INVITING_PLAYER
-                                                                    && index < displayList.size()
-                                                                    && !displayList.get(index).flag())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID toAccept = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_accept_team_invitation",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "accept_team_invitation",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(toAccept);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    // REQUEST_CONSUME buttons
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
-                                                    t -> t.addLine(IKey.lang("gtnhlib.gui.teams.cancel_merge_request")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type() == ScreenType.REQUEST_CONSUME
-                                                                    && index < displayList.size()
-                                                                    && TeamManagerClient
-                                                                            .doesPlayerSatisfyTeamRole(TeamRole.OWNER)
-                                                                    && displayList.get(index).flag())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID toCancelMerge = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_cancel_merge_request",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "cancel_merge_request",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(toCancelMerge);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.ADD).tooltip(
-                                                    t -> t.addLine(IKey.lang("gtnhlib.gui.teams.request_merge")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type() == ScreenType.REQUEST_CONSUME
-                                                                    && index < displayList.size()
-                                                                    && TeamManagerClient
-                                                                            .doesPlayerSatisfyTeamRole(TeamRole.OWNER)
-                                                                    && !displayList.get(index).flag())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID mergeTarget = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_merge_request",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "request_merge",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(mergeTarget);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    // VIEW_CONSUMPTION_REQUESTS Buttons
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
-                                                    t -> t.addLine(IKey.lang("gtnhlib.gui.teams.deny_merge_request")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type()
-                                                                    == ScreenType.VIEW_CONSUMPTION_REQUESTS
-                                                                    && index < displayList.size())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID toDeny = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_deny_merge_request",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "deny_merge_request",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(toDeny);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
-                                    .child(
-                                            new ButtonWidget<>().overlay(GuiTextures.FAVORITE).tooltip(
-                                                    t -> t.addLine(IKey.lang("gtnhlib.gui.teams.accept_merge_request")))
-                                                    .setEnabledIf(
-                                                            w -> data.currentView.type()
-                                                                    == ScreenType.VIEW_CONSUMPTION_REQUESTS
-                                                                    && index < displayList.size()
-                                                                    && !displayList.get(index).flag())
-                                                    .onMouseTapped(mouseButton -> {
-                                                        UUID toAccept = displayList.get(index).uuid();
-                                                        confirmationDialog.setParams(
-                                                                StatCollector.translateToLocalFormatted(
-                                                                        "gtnhlib.gui.teams.confirm_accept_merge_request",
-                                                                        displayList.get(index).text()),
-                                                                () -> {
-                                                                    syncManager
-                                                                            .findSyncHandler(
-                                                                                    "accept_merge_request",
-                                                                                    UuidActionSyncValue.class)
-                                                                            .setValue(toAccept);
-                                                                });
-                                                        confirmationPanel.openPanel();
-                                                        return true;
-                                                    }).size(LIST_ACTION_BUTTON_SIZE)
-                                                    .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
-                                                    .top(LIST_ACTION_BUTTON_POSITION_TOP)
-                                                    .padding(LIST_ACTION_BUTTON_PADDING))
+                                                                                    .setValue(
+                                                                                            new ImmutablePair<>(
+                                                                                                    selectedTeam
+                                                                                                            .getTeamId(),
+                                                                                                    surviving));
+                                                                            selectedTeam = null;
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[2])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            // INVITE_PLAYERS Buttons
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang(
+                                                                            "gtnhlib.gui.teams.cancel_invite_member")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.INVITE_PLAYERS
+                                                                            && index < displayList.size()
+                                                                            && TeamManagerClient
+                                                                                    .doesPlayerSatisfyTeamRole(
+                                                                                            TeamRole.OFFICER)
+                                                                            && displayList.get(index).flag())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID toCancelInvite = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_cancel_invite_player",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "cancel_invite_player",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toCancelInvite);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.ADD).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang("gtnhlib.gui.teams.invite_member")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.INVITE_PLAYERS
+                                                                            && index < displayList.size()
+                                                                            && TeamManagerClient
+                                                                                    .doesPlayerSatisfyTeamRole(
+                                                                                            TeamRole.OFFICER)
+                                                                            && !displayList.get(index).flag())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID toInvite = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_invite_player",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "invite_player",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toInvite);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            // TEAMS_INVITING_PLAYER Buttons
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang(
+                                                                            "gtnhlib.gui.teams.deny_team_invitation")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.TEAMS_INVITING_PLAYER
+                                                                            && index < displayList.size())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID toDeny = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_deny_team_invitation",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "deny_team_invitation",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toDeny);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.FAVORITE).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang(
+                                                                            "gtnhlib.gui.teams.accept_team_invitation")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.TEAMS_INVITING_PLAYER
+                                                                            && index < displayList.size()
+                                                                            && !displayList.get(index).flag())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID toAccept = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_accept_team_invitation",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "accept_team_invitation",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toAccept);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            // REQUEST_CONSUME buttons
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang(
+                                                                            "gtnhlib.gui.teams.cancel_merge_request")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.REQUEST_CONSUME
+                                                                            && index < displayList.size()
+                                                                            && TeamManagerClient
+                                                                                    .doesPlayerSatisfyTeamRole(
+                                                                                            TeamRole.OWNER)
+                                                                            && displayList.get(index).flag())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID toCancelMerge = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_cancel_merge_request",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "cancel_merge_request",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toCancelMerge);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.ADD).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang("gtnhlib.gui.teams.request_merge")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.REQUEST_CONSUME
+                                                                            && index < displayList.size()
+                                                                            && TeamManagerClient
+                                                                                    .doesPlayerSatisfyTeamRole(
+                                                                                            TeamRole.OWNER)
+                                                                            && !displayList.get(index).flag())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID mergeTarget = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_merge_request",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "request_merge",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(mergeTarget);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            // VIEW_CONSUMPTION_REQUESTS Buttons
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.CROSS).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang("gtnhlib.gui.teams.deny_merge_request")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.VIEW_CONSUMPTION_REQUESTS
+                                                                            && index < displayList.size())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID toDeny = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_deny_merge_request",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "deny_merge_request",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toDeny);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[0])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
+                                            .child(
+                                                    new ButtonWidget<>().overlay(GuiTextures.FAVORITE).tooltip(
+                                                            t -> t.addLine(
+                                                                    IKey.lang(
+                                                                            "gtnhlib.gui.teams.accept_merge_request")))
+                                                            .setEnabledIf(
+                                                                    w -> data.currentView.type()
+                                                                            == ScreenType.VIEW_CONSUMPTION_REQUESTS
+                                                                            && index < displayList.size()
+                                                                            && !displayList.get(index).flag())
+                                                            .onMouseTapped(mouseButton -> {
+                                                                UUID toAccept = displayList.get(index).uuid();
+                                                                confirmationDialog.setParams(
+                                                                        StatCollector.translateToLocalFormatted(
+                                                                                "gtnhlib.gui.teams.confirm_accept_merge_request",
+                                                                                displayList.get(index).text()),
+                                                                        () -> {
+                                                                            syncManager
+                                                                                    .findSyncHandler(
+                                                                                            "accept_merge_request",
+                                                                                            UuidActionSyncValue.class)
+                                                                                    .setValue(toAccept);
+                                                                        });
+                                                                confirmationPanel.openPanel();
+                                                                return true;
+                                                            }).size(LIST_ACTION_BUTTON_SIZE)
+                                                            .right(LIST_ACTION_BUTTONS_POSITIONS_RIGHT[1])
+                                                            .top(LIST_ACTION_BUTTON_POSITION_TOP)
+                                                            .padding(LIST_ACTION_BUTTON_PADDING))
 
                             ));
         }
@@ -708,14 +764,10 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
 
         syncManager.syncValue(
                 "player_is_op",
-                new BooleanSyncValue(
-                        () -> this.playerIsOp,
-                        playerIsOp -> this.playerIsOp = playerIsOp,
-                        () -> {
-                            this.playerIsOp = GuiUtils.isOpServerSideOnly(data.getPlayer());
-                            return this.playerIsOp;
-                        },
-                        playerIsOp -> {}));
+                new BooleanSyncValue(() -> this.playerIsOp, playerIsOp -> this.playerIsOp = playerIsOp, () -> {
+                    this.playerIsOp = GuiUtils.isOpServerSideOnly(data.getPlayer());
+                    return this.playerIsOp;
+                }, playerIsOp -> {}));
 
         syncManager.syncValue("team_gui_mode", new GuiViewSyncValue(() -> data.currentView, newView -> {
             data.currentView = newView;
