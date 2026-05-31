@@ -354,7 +354,7 @@ class VanillaBlockProperties {
             @Override
             public boolean hasTrait(BlockPropertyTrait trait) {
                 return switch (trait) {
-                    case SupportsWorld -> true;
+                    case SupportsWorld, WorldMutable -> true;
                     default -> false;
                 };
             }
