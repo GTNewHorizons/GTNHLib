@@ -17,12 +17,16 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  * 
  * <pre>
  * <code>
- *  public class MyColors {
+ *  public static class MyColors {
  *      private static final ColorResource.Factory color = new ColorResource.Factory("mymod");
  *
  *      public static final ColorResource
- *          background = color.argb("background", "FF202020"),
- *          text       = color.rgb("text",        "FFFFFF");
+ *      // spotless:off
+ *          background      = color.rgb("background",       "202020"),
+ * 
+ *          guiOverlayWhite = color.argb("guiOverlayWhite", "80FFFFFF")
+ *          text            = color.argb("text",            "FFFFFFFF");
+ *      // spotless:on
  *  }
  * </code>
  * </pre>
