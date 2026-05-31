@@ -37,21 +37,24 @@ public abstract class MixinFolderResourcePack extends AbstractResourcePack imple
         final var models = new ArrayList<String>();
 
         try (var files = walk(resourcePackFile.toPath(), FileVisitOption.FOLLOW_LINKS)) {
-
-            final var jsons = files.filter(p -> {
+            // This does two things while walking the files:
+            // 1) Enumerate blockstate files and store their names
+            // 2) Collect InputStreams from the model files, and pass those on for further analysis
+            final var jsons = files.filter(path -> {
                 // Get the relative path
-                final var path = resourcePackFile.toPath().relativize(p);
+                final var relPath = resourcePackFile.toPath().relativize(path);
 
-                // Make sure it's long enough (<domain>/<subdomain>/something.json), make sure the subdomain is
+                // Make sure it's long enough (assets/<namespace>/models/something.json), make sure the subnamespace is
                 // "models", make sure it's a file, and make sure it's a JSON
-                if (path.getNameCount() != 3) return false;
+                if (relPath.getNameCount() < 4) return false;
                 if (!path.toFile().isFile()) return false;
 
                 final var filename = path.getFileName().toString();
                 if (!filename.endsWith(".json")) return false;
-                final var subdomain = path.getName(1).toString();
+
+                final var subdomain = relPath.getName(2).toString();
                 if (subdomain.equals("blockstates")) {
-                    models.add(path.getName(0) + ":" + filename.split("\\.")[0]);
+                    models.add(relPath.getName(1) + ":" + filename.split("\\.")[0]);
                     return false;
                 } else return subdomain.equals("models");
             }).map(p -> {
@@ -62,6 +65,7 @@ public abstract class MixinFolderResourcePack extends AbstractResourcePack imple
                 }
             });
 
+            // This is the "further analysis". We read the files and scrape them for textures to load.
             textures = nhlib$getReferencedTextures(jsons, jsonParser);
         } catch (Exception e) {
             MODEL_LOGGER.warn("Failed to walk resource pack {}", this);

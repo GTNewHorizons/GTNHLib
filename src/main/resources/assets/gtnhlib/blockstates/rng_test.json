@@ -1,0 +1,15 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "gtnhlib:blocks/test_one"
+      },
+      {
+        "model": "gtnhlib:blocks/test_two"
+      },
+      {
+        "model": "gtnhlib:blocks/test_three"
+      }
+    ]
+  }
+}

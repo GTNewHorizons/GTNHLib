@@ -29,10 +29,12 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
+import com.gtnewhorizon.gtnhlib.test.block.BlockWeightedRngTest;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
@@ -66,6 +68,8 @@ public class CommonProxy {
             BlockTestLectern.register();
             BlockTestTint.register();
             BlockTestTintMul.register();
+            BlockRngTest.register();
+            BlockWeightedRngTest.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
@@ -107,8 +111,10 @@ public class CommonProxy {
 
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         BrigadierApi.init();
-        TeamCommand.register();
-        TeamAdminCommand.register();
+        if (GTNHLibConfig.enableTeamCommands) {
+            TeamCommand.register();
+            TeamAdminCommand.register();
+        }
     }
 
     public void serverStarting(FMLServerStartingEvent event) {

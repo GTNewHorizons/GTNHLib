@@ -32,6 +32,18 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(true)
     public static boolean enableResourcePackUpdateCheck;
 
+    @Config.Comment("Enable GTNH Team commands")
+    @Config.DefaultBoolean(true)
+    public static boolean enableTeamCommands;
+
+    @Config.Comment("Root name for GTNH Team commands")
+    @Config.DefaultString("gtnhteam")
+    public static String teamCommandRoot;
+
+    @Config.Comment("The public-facing name for the team system")
+    @Config.DefaultString("GTNHTeams")
+    public static String teamSystemName;
+
     @Config.Comment("If you're not a dev, you don't need this")
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart

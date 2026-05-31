@@ -19,6 +19,7 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGuiFactory;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
@@ -30,7 +31,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 public class TeamCommand {
 
     public static void register() {
-        BrigadierApi.getCommandDispatcher().register(literal("gtnhteam").executes(ctx -> {
+        BrigadierApi.getCommandDispatcher().register(literal(GTNHLibConfig.teamCommandRoot).executes(ctx -> {
             sendUsage(ctx.getSource());
             return Command.SINGLE_SUCCESS;
         }).then(literal("gui").executes(ctx -> executeGui(ctx.getSource())))
@@ -224,7 +225,7 @@ public class TeamCommand {
         if (invites.size() == 1) {
             invitingTeam = invites.iterator().next();
         } else if (teamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite", TeamCommandsUtils.getCommandRoot());
         } else {
             invitingTeam = TeamManager.getTeamByName(teamName);
             if (invitingTeam == null || !invites.contains(invitingTeam))
@@ -255,7 +256,7 @@ public class TeamCommand {
         if (invites.size() == 1) {
             specificTeam = invites.iterator().next();
         } else if (teamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_invite", TeamCommandsUtils.getCommandRoot());
         } else {
             specificTeam = TeamManager.getTeamByName(teamName);
             if (specificTeam == null || !invites.contains(specificTeam))
@@ -406,7 +407,7 @@ public class TeamCommand {
         if (pendingMerges.size() == 1) {
             source = pendingMerges.iterator().next();
         } else if (sourceTeamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge", TeamCommandsUtils.getCommandRoot());
         } else {
             source = TeamManager.getTeamByName(sourceTeamName);
             if (source == null || !pendingMerges.contains(source))
@@ -435,7 +436,7 @@ public class TeamCommand {
         if (pendingMerges.size() == 1) {
             source = pendingMerges.iterator().next();
         } else if (sourceTeamName.isEmpty()) {
-            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge");
+            return error(sender, "gtnhlib.chat.teams.error.disambiguate_merge", TeamCommandsUtils.getCommandRoot());
         } else {
             source = TeamManager.getTeamByName(sourceTeamName);
             if (source == null || !pendingMerges.contains(source))
@@ -468,21 +469,21 @@ public class TeamCommand {
         if (GTNHLib.isMui2Loaded) {
             sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.gui"));
         }
-
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.3"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.4"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.5"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.6"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.7"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.8"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.9"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.10"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.11"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.12"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.13"));
-        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.14"));
+        String root = TeamCommandsUtils.getCommandRoot();
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1", GTNHLibConfig.teamSystemName));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.3", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.4", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.5", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.6", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.7", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.8", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.9", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.10", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.11", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.12", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.13", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.14", root));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -533,7 +534,9 @@ public class TeamCommand {
     }
 
     private static void sendUsage(ICommandSender sender) {
-        ChatComponentTranslation msg = new ChatComponentTranslation("gtnhlib.chat.teams.message.usage");
+        ChatComponentTranslation msg = new ChatComponentTranslation(
+                "gtnhlib.chat.teams.message.usage",
+                GTNHLibConfig.teamSystemName);
         msg.getChatStyle().setColor(EnumChatFormatting.YELLOW);
         sender.addChatMessage(msg);
     }

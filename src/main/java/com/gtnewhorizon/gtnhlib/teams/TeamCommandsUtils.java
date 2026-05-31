@@ -16,6 +16,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.UsernameCache;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.util.CommandUtils;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 
@@ -113,6 +114,14 @@ public abstract class TeamCommandsUtils {
 
     public static boolean canKick(TeamRole kicker, TeamRole toKick) {
         return kicker == TeamRole.OWNER || kicker.ordinal() > toKick.ordinal();
+    }
+
+    static String getCommandRoot() {
+        return "/" + GTNHLibConfig.teamCommandRoot;
+    }
+
+    static String getCommandAdminRoot() {
+        return "/" + GTNHLibConfig.teamCommandRoot + "_admin";
     }
 
 }

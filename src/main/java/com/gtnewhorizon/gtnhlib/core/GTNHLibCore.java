@@ -1,14 +1,20 @@
 package com.gtnewhorizon.gtnhlib.core;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.falsepattern.deploader.DeploaderStub;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -24,6 +30,22 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
         "com.gtnewhorizon.gtnhlib.core", "com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager",
         "com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator" })
 public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
+
+    private static final String JVMDG_SYSCL_MARKER = "gtnhlib.jvmdg.systemClassLoader";
+    private static final String JVMDG_ARTIFACT = "jvmdowngrader-java-api";
+    private static final String RFB_PACKAGE = "com.gtnewhorizons.retrofuturabootstrap";
+
+    static {
+        try {
+            // Delegate to GTNHExtLib if present. Should be safe to class load since it would have been loaded by FML
+            // earlier based on alphabetical naming/coremods being on the class path
+            Class.forName("com.gtnewhorizons.gtnhextlib.core.GTNHExtLibCore", true, Launch.classLoader);
+        } catch (ClassNotFoundException notExtLib) {
+            // Otherwise do that work ourselves
+            removeBrigadierClassLoaderException();
+            loadDependencies();
+        }
+    }
 
     /// Lifted here so we can safely use it in Mixins. This class should be loaded by the time Mixins fire.
     public static final Logger MODEL_LOGGER = LogManager.getLogger("GTNHLib|Models");
@@ -43,6 +65,57 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
         if (GTNHLibCore.class.getResource("/com/llamalad7/mixinextras/expression/Expression.class") == null) {
             throw new RuntimeException(
                     "UniMixins is outdated: GTNHLib requires UniMixins 0.1.23 or newer! Download the unimixins-all jar (not -dev) from: https://github.com/LegacyModdingMC/UniMixins/releases");
+        }
+    }
+
+    private static void removeBrigadierClassLoaderException() {
+        try {
+            Field cleF = LaunchClassLoader.class.getDeclaredField("classLoaderExceptions");
+            cleF.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Set<String> cle = (Set<String>) cleF.get(Launch.classLoader);
+            // for Brigadier
+            cle.remove("com.mojang.");
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void loadDependencies() {
+        DeploaderStub.bootstrap(false);
+        DeploaderStub.runDepLoader();
+        mirrorJvmdgStubToSystemClassLoader();
+    }
+
+    private static void mirrorJvmdgStubToSystemClassLoader() {
+        final Logger log = LogManager.getLogger("GTNHLib");
+        if (Launch.blackboard.get(JVMDG_SYSCL_MARKER) != null) {
+            return;
+        }
+        final ClassLoader scl = ClassLoader.getSystemClassLoader();
+        if (!(scl instanceof URLClassLoader) || scl.getClass().getName().startsWith(RFB_PACKAGE)) {
+            return;
+        }
+        try {
+            final Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+            addURL.setAccessible(true);
+            int mirrored = 0;
+            for (URL url : Launch.classLoader.getSources()) {
+                final String path = url.getPath();
+                if (path == null || !path.contains(JVMDG_ARTIFACT)) {
+                    continue;
+                }
+                addURL.invoke(scl, url);
+                mirrored++;
+                log.info("Mirrored jvmdg stub {} onto system classloader", url);
+            }
+            if (mirrored == 0) {
+                log.warn("jvmdg stub not found on LaunchClassLoader sources; system-classloader mirror skipped");
+            } else {
+                Launch.blackboard.put(JVMDG_SYSCL_MARKER, Boolean.TRUE);
+            }
+        } catch (ReflectiveOperationException e) {
+            log.error("Failed to mirror jvmdg stub onto system classloader", e);
         }
     }
 
