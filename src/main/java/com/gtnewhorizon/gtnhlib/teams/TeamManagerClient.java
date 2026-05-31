@@ -60,4 +60,16 @@ public class TeamManagerClient {
         return currentRole.ordinal() >= role.ordinal();
     }
 
+    public static boolean canPlayerPromote(TeamRole role) {
+        return TeamCommandsUtils.canPromote(currentRole, role);
+    }
+
+    public static boolean canPlayerDemote(TeamRole role) {
+        return TeamCommandsUtils.canDemote(currentRole, role);
+    }
+
+    public static boolean canPlayerKick(TeamRole role) {
+        return TeamCommandsUtils.canKick(currentRole, role);
+    }
+
 }

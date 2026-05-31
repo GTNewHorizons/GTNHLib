@@ -25,6 +25,7 @@ public class TeamActions {
 
     public static void onRename(Team team, String oldName, String newName, boolean adminAction,
             @Nullable ICommandSender admin) {
+        team.markDirty();
         TeamManager.forEachOnlineTeamMember(team, member -> {
             NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
             success(
@@ -60,6 +61,10 @@ public class TeamActions {
                 colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(target)));
     }
 
+    public static void onCancelInvite(Team team, UUID target) {
+        TeamManager.removePendingInvite(target, team);
+    }
+
     public static void onAccept(Team invitingTeam, EntityPlayer player) {
         // Leave current team first. If the team would be disbanded, merge it into the new team automatically.
         UUID playerId = player.getUniqueID();
@@ -70,6 +75,7 @@ public class TeamActions {
         } else {
             TeamManager.transferTeamData(oldTeam, invitingTeam, playerId, TeamDataTransferReason.JoinedExistingTeam);
             oldTeam.removeMember(playerId);
+            oldTeam.markDirty();
             TeamDataSync oldTeamData = TeamNetwork.createCompleteTeamDataSyncPacket(oldTeam);
             TeamManager.forEachOnlineTeamMember(oldTeam, member -> {
                 if (member.getUniqueID().equals(playerId)) return;
@@ -79,7 +85,6 @@ public class TeamActions {
                         "gtnhlib.chat.teams.message.other_left_team",
                         colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(player)));
             });
-            oldTeam.markDirty();
             invitingTeam.addMember(playerId);
         }
         TeamManager.removeAllPendingInvites(playerId);
@@ -113,6 +118,43 @@ public class TeamActions {
                 colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()));
     }
 
+    public static void onKick(Team team, UUID kicked, boolean adminAction, @Nullable ICommandSender admin) {
+        team.removeMember(kicked);
+
+        Team newTeam = TeamManager.getOrCreateTeam(ServerPlayerUtils.getPlayerName(kicked), kicked);
+        TeamManager.transferTeamData(team, newTeam, kicked, TeamDataTransferReason.JoinedNewTeam);
+        team.markDirty();
+        newTeam.markDirty();
+        TeamDataSync teamData = TeamNetwork.createCompleteTeamDataSyncPacket(team);
+        TeamManager.forEachOnlineTeamMember(team, member -> {
+            NetworkHandler.instance.sendTo(teamData, member);
+            success(
+                    member,
+                    adminAction ? "gtnhlib.chat.teams.message.admin_other_kicked_from_team"
+                            : "gtnhlib.chat.teams.message.other_kicked_from_team",
+                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(kicked)));
+        });
+
+        TeamManager.forEachOnlineTeamMember(newTeam, member -> {
+            if (member.getUniqueID().equals(kicked)) {
+                TeamNetwork.sendPlayerAllTeamData(member, newTeam);
+                success(
+                        member,
+                        adminAction ? "gtnhlib.chat.teams.message.admin_kicked_from_team"
+                                : "gtnhlib.chat.teams.message.kicked_from_team",
+                        colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()));
+            }
+        });
+
+        if (adminAction && admin != null) {
+            success(
+                    admin,
+                    "gtnhlib.chat.admin.message.kicked",
+                    colorChatComponent(EnumChatFormatting.GOLD, ServerPlayerUtils.getPlayerName(kicked)),
+                    colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()));
+        }
+    }
+
     public static void onLeave(EntityPlayer player) {
         UUID playerId = player.getUniqueID();
         Team oldTeam = TeamManager.getTeamByPlayer(playerId);
@@ -138,6 +180,8 @@ public class TeamActions {
         // Create a new solo team for the player
         Team newTeam = TeamManager.getOrCreateTeam(player.getCommandSenderName(), player.getUniqueID());
         TeamManager.transferTeamData(oldTeam, newTeam, playerId, TeamDataTransferReason.JoinedNewTeam);
+        if (!oldTeam.getMembers().isEmpty()) oldTeam.markDirty();
+        newTeam.markDirty();
         TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, newTeam);
 
         success(player, "gtnhlib.chat.teams.message.left_team", colorChatComponent(EnumChatFormatting.GOLD, teamName));
@@ -242,6 +286,13 @@ public class TeamActions {
         });
     }
 
+    public static void onMergeCancel(EntityPlayer player, Team source, Team target) {
+        TeamManager.removePendingMergeRequest(source, target);
+
+        ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
+        success(player, "gtnhlib.chat.teams.message.merge_request_cancelled", targetComponent);
+    }
+
     public static void onMergeAccept(Team source, Team target, boolean adminAction, @Nullable ICommandSender admin) {
         ChatComponentText sourceComponent = colorChatComponent(EnumChatFormatting.GOLD, source.getTeamName());
         ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
@@ -304,6 +355,7 @@ public class TeamActions {
             String name = ServerPlayerUtils.getPlayerName(uuid);
             Team newTeam = TeamManager.getOrCreateTeam(name, uuid);
             TeamManager.transferTeamData(team, newTeam, uuid, TeamDataTransferReason.JoinedNewTeam);
+            newTeam.markDirty();
             TeamManager.forEachOnlineTeamMember(newTeam, member -> {
                 NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
                 TeamNetwork.sendPlayerAllTeamData(member, newTeam);

@@ -3,6 +3,9 @@ package com.gtnewhorizon.gtnhlib;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.gtnewhorizon.gtnhlib.integration.mui2.CustomGuiTextures;
+import com.gtnewhorizon.gtnhlib.integration.mui2.CustomWidgetTheme;
+
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
@@ -27,6 +30,7 @@ public class GTNHLib {
 
     public static boolean isMFRLoaded;
     public static boolean isCoFHCoreLoaded;
+    public static boolean isMui2Loaded;
 
     @Mod.EventHandler
     public void construct(FMLConstructionEvent event) {
@@ -37,6 +41,13 @@ public class GTNHLib {
     public void preInit(FMLPreInitializationEvent event) {
         isMFRLoaded = Loader.isModLoaded("MineFactoryReloaded");
         isCoFHCoreLoaded = Loader.isModLoaded("CoFHCore");
+        isMui2Loaded = Loader.isModLoaded("modularui2");
+
+        LOG.info("GTNHLib MUI2 integration enabled (for teams UI): {}", isMui2Loaded);
+        if (isMui2Loaded) {
+            CustomGuiTextures.init();
+            CustomWidgetTheme.init();
+        }
 
         proxy.preInit(event);
     }

@@ -34,7 +34,7 @@ public class Team {
         this(teamName, teamId, false);
     }
 
-    Team(String teamName, UUID teamId, boolean clientSide) {
+    public Team(String teamName, UUID teamId, boolean clientSide) {
         this.teamName = teamName;
         this.teamId = teamId;
         this.clientSide = clientSide;
@@ -172,5 +172,13 @@ public class Team {
 
     public Set<Map.Entry<String, ITeamData>> getAllDataEntries() {
         return teamData.entrySet();
+    }
+
+    public boolean canBeDisbanded() {
+        return members.size() > 1;
+    }
+
+    public boolean canPlayerAcceptInvites(UUID player) {
+        return !(owners.contains(player) && owners.size() == 1 && members.size() > 1);
     }
 }
