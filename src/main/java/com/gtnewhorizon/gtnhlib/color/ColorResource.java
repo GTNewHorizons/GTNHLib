@@ -1,11 +1,5 @@
 package com.gtnewhorizon.gtnhlib.color;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -16,118 +10,67 @@ import net.minecraft.util.StatCollector;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.ModContainer;
-
 /**
- * An ARGB color constant with resource pack override and caching support.
+ * A color constant supporting both ARGB and RGB formats, with resource pack override and per-instance caching.
  * <p>
- * Declare public static final fields in any class; the mod ID, field name and declaring class are all discovered
- * automatically:
- *
+ * Use {@link Factory} to avoid repeating the mod ID on every line:
+ * 
  * <pre>
  * <code>
- * public class MyColors {
- *     public static final ColorResource
- *         background = new ColorResource("FF202020"),
- *         blue       = new ColorResource("FF0000FF"),
- *         title      = new ColorResource("FFFFFFFF");
- * }
+ *  public class MyColors {
+ *      private static final ColorResource.Factory color = new ColorResource.Factory("mymod");
+ *
+ *      public static final ColorResource
+ *          background = color.argb("background", "FF202020"),
+ *          text       = color.rgb("text",        "FFFFFF");
+ *  }
  * </code>
  * </pre>
- *
  * <p>
- * Resource packs override colors via a lang file entry (AARRGGBB hex, no prefix):
- * {@code gui.color.mymod.background=80FF20AA}
+ * Resource packs override colors via a lang file entry: {@code color.resource.mymod.background=80FF20AA}
+ * <p>
+ * ARGB colors use 8-char hex (AARRGGBB). RGB colors use 6-char hex (RRGGBB), alpha is always FF.
  * <p>
  * The color cache is cleared automatically on F3+T via {@link CacheReloadListener}, registered by GTNHLib's client
  * proxy.
  */
 public class ColorResource {
 
-    /**
-     * Optional override for the mod namespace used in the lang key. Only needed if FML package detection does not
-     * resolve the correct mod ID.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    public @interface Mod {
+    private static final Set<ColorResource> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
 
-        String value();
-    }
-
-    private static final Set<ColorResource> INSTANCES = Collections
-            .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
-
+    private final String langKey;
     private final int defaultColor;
-    private final Class<?> declaringClass;
-    private volatile String langKey;
+    private final boolean argb;
     private volatile long cachedColor = -1L;
 
-    public ColorResource(String hex) {
-        int parsed;
-        try {
-            parsed = (int) Long.parseLong(hex.trim(), 16);
-        } catch (NumberFormatException e) {
-            GTNHLib.LOG.warn("[ColorResource] Invalid default hex '{}', using opaque white.", hex);
-            parsed = 0xFFFFFFFF;
-        }
-        this.defaultColor = parsed;
-        this.declaringClass = captureDeclaringClass();
-        INSTANCES.add(this);
-    }
-
-    private static Class<?> captureDeclaringClass() {
-        for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
-            if ("<clinit>".equals(frame.getMethodName())) {
-                try {
-                    return Class.forName(frame.getClassName());
-                } catch (ClassNotFoundException ignored) {}
-            }
-        }
-        return null;
-    }
-
     /**
-     * Returns the mod ID by checking {@link Mod} first, then asking FML which mod owns the declaring class's package.
-     * Falls back to the declaring class's simple name if neither resolves.
+     * @param modId the mod ID used as the namespace in the lang key
+     * @param name  the color name used in the lang key
+     * @param hex   default color — AARRGGBB if {@code argb} is true, RRGGBB otherwise
+     * @param argb  true to include the alpha channel, false to force alpha to FF
      */
-    public String getModId() {
-        if (declaringClass == null) return "unknown";
-        Mod mod = declaringClass.getAnnotation(Mod.class);
-        if (mod != null) return mod.value();
-        String pkg = declaringClass.getPackage() != null ? declaringClass.getPackage().getName() : "";
-        for (ModContainer mc : Loader.instance().getModList()) {
-            if (mc.getOwnedPackages().contains(pkg)) return mc.getModId();
+    public ColorResource(String modId, String name, String hex, boolean argb) {
+        this.langKey = "color.resource." + modId + "." + name;
+        this.argb = argb;
+        this.defaultColor = parseHex(hex, argb);
+        synchronized (INSTANCES) {
+            INSTANCES.add(this);
         }
-        GTNHLib.LOG.warn(
-                "[ColorResource] Could not determine mod ID for {}, using class name.",
-                declaringClass.getSimpleName());
-        return declaringClass.getSimpleName();
+    }
+
+    private static int parseHex(String hex, boolean argb) {
+        try {
+            long value = Long.parseLong(hex.trim(), 16);
+            return argb ? (int) value : (int) (0xFF000000L | value);
+        } catch (NumberFormatException e) {
+            GTNHLib.LOG.warn("[ColorResource] Invalid hex '{}', using opaque white.", hex);
+            return 0xFFFFFFFF;
+        }
     }
 
     /** Lang key used to look up a resource pack override. */
     public String getLangKey() {
-        if (langKey != null) return langKey;
-        if (declaringClass == null) {
-            GTNHLib.LOG.warn("[ColorResource] Could not determine declaring class for a ColorResource instance.");
-            return langKey = "gui.color.unknown.unknown";
-        }
-        String name = "unknown";
-        for (Field f : declaringClass.getDeclaredFields()) {
-            if (!Modifier.isStatic(f.getModifiers()) || f.getType() != ColorResource.class) continue;
-            f.setAccessible(true);
-            try {
-                if (f.get(null) == this) {
-                    name = f.getName();
-                    break;
-                }
-            } catch (IllegalAccessException ignored) {}
-        }
-        if ("unknown".equals(name)) {
-            GTNHLib.LOG.warn("[ColorResource] Could not resolve field name in {}.", declaringClass.getSimpleName());
-        }
-        return langKey = "gui.color." + getModId() + "." + name;
+        return langKey;
     }
 
     /**
@@ -135,24 +78,25 @@ public class ColorResource {
      * Result is cached until the next resource reload (F3+T).
      * <p>
      * Example usage:
-     *
+     * 
      * <pre>
      * <code>
-     * GuiDraw.drawRect(x, y, w, h, MyColors.background.getColor());
+     *  GuiDraw.drawRect(x, y, w, h, MyColors.background.getColor());
      * </code>
      * </pre>
      */
+
     public int getColor() {
         if (cachedColor != -1L) return (int) cachedColor;
 
-        String key = getLangKey();
         int color;
-        if (StatCollector.canTranslate(key)) {
-            String value = StatCollector.translateToLocal(key).trim();
+        if (StatCollector.canTranslate(langKey)) {
+            String value = StatCollector.translateToLocal(langKey).trim();
             try {
-                color = (int) Long.parseLong(value, 16);
+                long parsed = Long.parseLong(value, 16);
+                color = argb ? (int) parsed : (int) (0xFF000000L | parsed);
             } catch (NumberFormatException e) {
-                GTNHLib.LOG.warn("[ColorResource] Invalid hex '{}' for lang key '{}', using default.", value, key);
+                GTNHLib.LOG.warn("[ColorResource] Invalid hex '{}' for lang key '{}', using default.", value, langKey);
                 color = defaultColor;
             }
         } else {
@@ -161,6 +105,39 @@ public class ColorResource {
 
         cachedColor = color;
         return color;
+    }
+
+    /**
+     * Factory that holds a mod ID so it does not need to be repeated on every color declaration.
+     * <p>
+     * Example usage:
+     * 
+     * <pre>
+     * <code>
+     *  private static final ColorResource.Factory colors = new ColorResource.Factory("mymod");
+     *  public static final ColorResource
+     *      background = colors.argb("background", "FF202020"),
+     *      text       = colors.rgb("text",        "FFFFFF");
+     * </code>
+     * </pre>
+     */
+    public static class Factory {
+
+        private final String modId;
+
+        public Factory(String modId) {
+            this.modId = modId;
+        }
+
+        /** Creates an ARGB color (AARRGGBB hex). */
+        public ColorResource argb(String name, String hex) {
+            return new ColorResource(modId, name, hex, true);
+        }
+
+        /** Creates an RGB color (RRGGBB hex), alpha is always FF. */
+        public ColorResource rgb(String name, String hex) {
+            return new ColorResource(modId, name, hex, false);
+        }
     }
 
     /** Clears the color cache on resource reload (F3+T). Registered by GTNHLib's client proxy. */
