@@ -24,7 +24,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  *      // spotless:off
  *          background      = color.rgb("background",       "202020"),
  *
- *          guiOverlayWhite = color.argb("guiOverlayWhite", "80FFFFFF")
+ *          guiOverlayWhite = color.argb("guiOverlayWhite", "80FFFFFF"),
  *          text            = color.argb("text",            "FFFFFFFF");
  *      // spotless:on
  *  }
@@ -71,8 +71,15 @@ public class ColorResource {
         }
     }
 
+    private static String stripPrefix(String hex) {
+        String s = hex.trim();
+        if (s.startsWith("0x") || s.startsWith("0X")) return s.substring(2);
+        if (s.startsWith("#")) return s.substring(1);
+        return s;
+    }
+
     private static int parseHex(String hex, boolean argb) {
-        long value = Long.parseLong(hex.trim(), 16);
+        long value = Long.parseLong(stripPrefix(hex), 16);
         return argb ? (int) value : (int) (0xFF000000L | value);
     }
 
@@ -99,7 +106,7 @@ public class ColorResource {
 
     private int resolveColor() {
         if (StatCollector.canTranslate(langKey)) {
-            String value = StatCollector.translateToLocal(langKey).trim();
+            String value = stripPrefix(StatCollector.translateToLocal(langKey));
             try {
                 if (!argb && value.length() > 6) {
                     GTNHLib.LOG.warn(
