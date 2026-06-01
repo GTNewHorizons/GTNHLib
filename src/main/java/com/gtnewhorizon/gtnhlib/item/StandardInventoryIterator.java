@@ -114,7 +114,7 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
         if (!ItemUtil.isStackEmpty(inSlot)) {
             if (!forced) {
                 // Skip expensive NBT check if the stack is full.
-                if (inSlot.stackSize >= maxStack) {
+                if (inSlot.stackSize >= maxStack || !inSlot.isStackable()) {
                     return stack.getStackSize();
                 }
             }
