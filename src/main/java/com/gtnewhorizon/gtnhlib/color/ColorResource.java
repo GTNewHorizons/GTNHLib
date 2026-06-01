@@ -17,7 +17,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  *
  * <pre>
  * <code>
- *  public static class MyColors {
+ *  public static class ColorUtils {
  *      private static final ColorResource.Factory color = new ColorResource.Factory("mymod");
  *
  *      public static final ColorResource
@@ -35,7 +35,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  * 
  * <pre>
  * <code>
- *  GuiDraw.drawRect(x, y, w, h, MyColors.background.getColor());
+ *  GuiDraw.drawRect(x, y, w, h, ColorUtils.background.getColor());
  * </code>
  * </pre>
  * <p>
@@ -96,7 +96,7 @@ public class ColorResource {
      * 
      * <pre>
      * <code>
-     *  GuiDraw.drawRect(x, y, w, h, MyColors.background.getColor());
+     *  GuiDraw.drawRect(x, y, w, h, ColorUtils.background.getColor());
      * </code>
      * </pre>
      */
