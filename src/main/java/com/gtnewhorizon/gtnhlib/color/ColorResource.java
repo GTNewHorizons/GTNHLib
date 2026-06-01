@@ -22,10 +22,10 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  *
  *      public static final ColorResource
  *      // spotless:off
- *          background      = color.rgb("background",       "202020"),
+ *          background      = color.rgb("background",       "0x202020"),
  *
- *          guiOverlayWhite = color.argb("guiOverlayWhite", "80FFFFFF"),
- *          text            = color.argb("text",            "FFFFFFFF");
+ *          guiOverlayWhite = color.argb("guiOverlayWhite", "0x80FFFFFF"),
+ *          text            = color.argb("text",            "0xFFFFFFFF");
  *      // spotless:on
  *  }
  * </code>
@@ -133,8 +133,8 @@ public class ColorResource {
      * <code>
      *  private static final ColorResource.Factory colors = new ColorResource.Factory("mymod");
      *  public static final ColorResource
-     *      background = colors.argb("background", "FF202020"),
-     *      text       = colors.rgb("text",        "FFFFFF");
+     *      background = colors.argb("background", "0xFF202020"),
+     *      text       = colors.rgb("text",        "0xFFFFFF");
      * </code>
      * </pre>
      */
