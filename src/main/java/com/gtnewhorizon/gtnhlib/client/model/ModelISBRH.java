@@ -5,7 +5,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.VALUES;
-import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack;
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
@@ -83,7 +82,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         var rendered = false;
         for (var dir : VALUES) {
             worldContext.quadFacing = dir;
-            worldContext.random.setSeed(pack(x, y, z));
+            worldContext.seedRNG(x, y, z);
 
             final var quads = model.getQuads(worldContext);
             if (quads.isEmpty()) continue;

@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.pack;
-
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -39,7 +37,14 @@ public class WorldContext implements BakedModelQuadContext.World {
         this.z = z;
         this.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
         this.random = random;
-        random.setSeed(pack(x, y, z));
+        seedRNG(x, y, z);
+    }
+
+    /// Don't ask me why the magic numbers work, because I don't know. Something something hash function...
+    public void seedRNG(int x, int y, int z) {
+        long h = x * 3129871L ^ y * 116129781L ^ z;
+        h = h * h * 42317861L + h * 11L;
+        random.setSeed(h ^ (h >>> 16));
     }
 
     @Override
@@ -81,4 +86,5 @@ public class WorldContext implements BakedModelQuadContext.World {
     public @Nullable Supplier<ModelQuadViewMutable> getQuadPool() {
         return quadPool;
     }
+
 }
