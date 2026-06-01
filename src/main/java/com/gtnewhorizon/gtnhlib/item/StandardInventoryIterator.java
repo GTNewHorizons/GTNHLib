@@ -107,17 +107,25 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
 
         ItemStack inSlot = getStackInSlot(slotIndex);
 
-        if (!ItemUtil.isStackEmpty(inSlot) && (!forced && !inSlot.isStackable() || !stack.matches(inSlot))) {
-            return stack.getStackSize();
-        }
-
         ItemStack partialCopy = stack.toStackFast();
+
+        int maxStack = getSlotStackLimit(slotIndex, partialCopy);
+
+        if (!ItemUtil.isStackEmpty(inSlot)) {
+            if (!forced) {
+                // Skip NBT check if the item is not stackable or is a full stack
+                if (!inSlot.isStackable() || inSlot.stackSize >= maxStack) {
+                    return stack.getStackSize();
+                }
+            }
+            if (!stack.matches(inSlot)) {
+                return stack.getStackSize();
+            }
+        }
 
         if (!forced && !canInsert(partialCopy, slotIndex)) {
             return stack.getStackSize();
         }
-
-        int maxStack = getSlotStackLimit(slotIndex, partialCopy);
 
         if (!ItemUtil.isStackEmpty(inSlot)) {
             int toInsert = forced ? stack.getStackSize() : Math.min(maxStack - inSlot.stackSize, stack.getStackSize());
