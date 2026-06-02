@@ -144,10 +144,17 @@ public class DirectTessellator extends Tessellator {
     public void reset() {
         this.vertexCount = 0;
         this.isDrawing = false;
-        this.hasNormals = false;
-        this.hasColor = false;
-        this.hasTexture = false;
-        this.hasBrightness = false;
+        if (preDefinedFormat != null) {
+            this.hasNormals = preDefinedFormat.hasNormals();
+            this.hasColor = preDefinedFormat.hasColor();
+            this.hasTexture = preDefinedFormat.hasTexture();
+            this.hasBrightness = preDefinedFormat.hasBrightness();
+        } else {
+            this.hasNormals = false;
+            this.hasColor = false;
+            this.hasTexture = false;
+            this.hasBrightness = false;
+        }
         this.isColorDisabled = false;
 
         this.format = null;

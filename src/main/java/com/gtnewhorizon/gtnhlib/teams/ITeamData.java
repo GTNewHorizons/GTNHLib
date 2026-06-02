@@ -24,8 +24,8 @@ public interface ITeamData {
      * @param playerId     UUID of the player who is moving teams
      * @param prevTeamData ITeamData of the previous team
      */
-    default void copyData(Team prevTeam, Team newTeam, UUID playerId, ITeamData prevTeamData,
-            TeamDataCopyReason reason) {}
+    default void transferData(Team prevTeam, Team newTeam, UUID playerId, ITeamData prevTeamData,
+            TeamDataTransferReason reason) {}
 
     ITeamData UNIMPLEMENTED = new ITeamData() {
 

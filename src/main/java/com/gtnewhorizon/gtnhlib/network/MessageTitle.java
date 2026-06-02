@@ -1,15 +1,23 @@
 package com.gtnewhorizon.gtnhlib.network;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import io.netty.buffer.ByteBuf;
+import com.gtnewhorizon.gtnhlib.client.title.TitleAPI;
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
 
-public class MessageTitle implements IMessage {
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-    /** 0=TITLE, 1=SUBTITLE, 2=TIMES, 3=CLEAR, 4=RESET */
+public class MessageTitle implements IPacket {
+
+    /** 0=TITLE, 1=SUBTITLE, 2=TIMES, 3=CLEAR, 4=RESET, 5=ICON */
     public int action;
 
     /** For TITLE/SUBTITLE: the IChatComponent JSON */
@@ -17,6 +25,9 @@ public class MessageTitle implements IMessage {
 
     /** For TIMES: fadeIn, stay, fadeOut ticks */
     public int fadeIn, stay, fadeOut;
+
+    /** For ICON: the item stack (null = clear icon) */
+    public ItemStack iconStack;
 
     public MessageTitle() {}
 
@@ -55,40 +66,92 @@ public class MessageTitle implements IMessage {
         return msg;
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        action = buf.readByte();
-        switch (action) {
-            case 0:
-            case 1:
-                int len = buf.readShort();
-                byte[] bytes = new byte[len];
-                buf.readBytes(bytes);
-                componentJson = new String(bytes, StandardCharsets.UTF_8);
-                break;
-            case 2:
-                fadeIn = buf.readInt();
-                stay = buf.readInt();
-                fadeOut = buf.readInt();
-                break;
-        }
+    public static MessageTitle icon(ItemStack stack) {
+        MessageTitle msg = new MessageTitle();
+        msg.action = 5;
+        msg.iconStack = stack;
+        return msg;
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
+    public void encode(PacketBuffer buf) throws IOException {
         buf.writeByte(action);
         switch (action) {
             case 0:
             case 1:
-                byte[] bytes = componentJson.getBytes(StandardCharsets.UTF_8);
-                buf.writeShort(bytes.length);
-                buf.writeBytes(bytes);
+                buf.writeStringToBuffer(componentJson);
                 break;
             case 2:
                 buf.writeInt(fadeIn);
                 buf.writeInt(stay);
                 buf.writeInt(fadeOut);
                 break;
+            case 5:
+                buf.writeBoolean(iconStack != null);
+                if (iconStack != null) {
+                    buf.writeItemStackToBuffer(iconStack);
+                }
+                break;
         }
     }
+
+    @Override
+    public void decode(PacketBuffer buf) throws IOException {
+        action = buf.readByte();
+        switch (action) {
+            case 0:
+            case 1:
+                componentJson = buf.readStringFromBuffer(NetworkUtils.MAX_STRING_BYTES);
+                break;
+            case 2:
+                fadeIn = buf.readInt();
+                stay = buf.readInt();
+                fadeOut = buf.readInt();
+                break;
+            case 5:
+                if (buf.readBoolean()) {
+                    iconStack = buf.readItemStackFromBuffer();
+                } else {
+                    iconStack = null;
+                }
+                break;
+        }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        switch (action) {
+            case 0: // TITLE
+                TitleAPI.setTitle(deserialize(componentJson));
+                break;
+            case 1: // SUBTITLE
+                TitleAPI.setSubtitle(deserialize(componentJson));
+                break;
+            case 2: // TIMES
+                TitleAPI.setTimes(fadeIn, stay, fadeOut);
+                break;
+            case 3: // CLEAR
+                TitleAPI.clear();
+                break;
+            case 4: // RESET
+                TitleAPI.clear();
+                TitleAPI.resetFade();
+                break;
+            case 5: // ICON
+                TitleAPI.setIcon(iconStack);
+                break;
+        }
+        return null;
+    }
+
+    private static IChatComponent deserialize(String json) {
+        if (json == null || json.isEmpty()) return new ChatComponentText("");
+        try {
+            return IChatComponent.Serializer.func_150699_a(json);
+        } catch (Exception e) {
+            return new ChatComponentText(json);
+        }
+    }
+
 }

@@ -283,6 +283,15 @@ public class DirectTessellatorTest {
         tess.startDrawing(0);
         tess.setColorRGBA(255, 255, 255, 255);
         assertFalse(tess.hasColor);
+        tess.reset();
+        assertEquals(DefaultVertexFormat.POSITION, tess.preDefinedFormat);
+        tess.setVertexFormat(DefaultVertexFormat.POSITION_TEXTURE_COLOR);
+        tess.startDrawing(0);
+        tess.setBrightness(15);
+        tess.reset();
+        assertTrue(tess.hasColor);
+        assertTrue(tess.hasTexture);
+        assertFalse(tess.hasBrightness);
     }
 
     @Test

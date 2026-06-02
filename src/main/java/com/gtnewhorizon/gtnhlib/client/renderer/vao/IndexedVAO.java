@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.renderer.vao;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.vao.IndexBuffer.*;
-
 import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IVertexBuffer;
@@ -29,17 +27,17 @@ public class IndexedVAO extends BaseVAO {
 
     @Override
     public void draw() {
-        GL11.glDrawElements(vbo.getDrawMode(), vbo.getVertexCount(), EBO_DATA_TYPE, 0);
+        GL11.glDrawElements(vbo.getDrawMode(), vbo.getVertexCount(), ebo.getDataType(), 0);
     }
 
     @Override
     public void draw(int first, int count) {
-        GL11.glDrawElements(vbo.getDrawMode(), count, EBO_DATA_TYPE, first * EBO_DATA_SIZE);
+        GL11.glDrawElements(vbo.getDrawMode(), count, ebo.getDataType(), (long) first * ebo.getDataSize());
     }
 
     @Override
     public void draw(int drawMode, int first, int count) {
-        GL11.glDrawElements(drawMode, count, EBO_DATA_TYPE, first * EBO_DATA_SIZE);
+        GL11.glDrawElements(drawMode, count, ebo.getDataType(), (long) first * ebo.getDataSize());
     }
 
     public final IndexBuffer getEBO() {

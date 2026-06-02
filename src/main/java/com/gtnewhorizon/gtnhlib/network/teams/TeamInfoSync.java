@@ -1,34 +1,52 @@
 package com.gtnewhorizon.gtnhlib.network.teams;
 
+import java.io.IOException;
 import java.util.UUID;
 
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.PacketBuffer;
 
-public class TeamInfoSync implements IMessage {
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
+import com.gtnewhorizon.gtnhlib.teams.TeamManagerClient;
+import com.gtnewhorizon.gtnhlib.teams.TeamRole;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+public class TeamInfoSync implements IPacket {
 
     public UUID uuid;
     public String name;
+    public TeamRole role;
 
     public TeamInfoSync() {}
 
-    public TeamInfoSync(UUID uuid, String name) {
+    public TeamInfoSync(UUID uuid, String name, TeamRole role) {
         this.uuid = uuid;
         this.name = name;
+        this.role = role;
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeLong(uuid.getMostSignificantBits());
-        buf.writeLong(uuid.getLeastSignificantBits());
-        ByteBufUtils.writeUTF8String(buf, name);
+    public void encode(PacketBuffer buf) throws IOException {
+        NetworkUtils.writeUUID(buf, uuid);
+        buf.writeStringToBuffer(name);
+        buf.writeShort((short) role.ordinal());
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) {
-        uuid = new UUID(buf.readLong(), buf.readLong());
-        name = ByteBufUtils.readUTF8String(buf);
+    public void decode(PacketBuffer buf) throws IOException {
+        uuid = NetworkUtils.readUUID(buf);
+        name = buf.readStringFromBuffer(NetworkUtils.MAX_STRING_BYTES);
+        role = TeamRole.values()[buf.readShort()];
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        TeamManagerClient.onTeamInfoSyncPacket(this);
+        return null;
     }
 
 }

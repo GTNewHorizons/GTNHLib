@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.teams;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -15,13 +16,15 @@ import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
 
 public class TeamNetwork {
 
-    protected static void sendPlayerAllTeamData(EntityPlayerMP player, Team team) {
-        NetworkHandler.instance.sendTo(createTeamInfoSyncPacket(team), player);
+    public static void sendPlayerAllTeamData(EntityPlayerMP player, Team team) {
+        NetworkHandler.instance.sendTo(createTeamInfoSyncPacket(player.getUniqueID()), player);
         NetworkHandler.instance.sendTo(createCompleteTeamDataSyncPacket(team), player);
     }
 
-    protected static TeamInfoSync createTeamInfoSyncPacket(Team team) {
-        return new TeamInfoSync(team.getTeamId(), team.getTeamName());
+    protected static TeamInfoSync createTeamInfoSyncPacket(UUID player) {
+        Team playerTeam = TeamManager.getTeamByPlayer(player);
+        assert playerTeam != null;
+        return new TeamInfoSync(playerTeam.getTeamId(), playerTeam.getTeamName(), playerTeam.getRole(player));
     }
 
     protected static TeamDataSync createCompleteTeamDataSyncPacket(Team team) {

@@ -107,8 +107,10 @@ public class CommonProxy {
 
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
         BrigadierApi.init();
-        TeamCommand.register();
-        TeamAdminCommand.register();
+        if (GTNHLibConfig.enableTeamCommands) {
+            TeamCommand.register();
+            TeamAdminCommand.register();
+        }
     }
 
     public void serverStarting(FMLServerStartingEvent event) {

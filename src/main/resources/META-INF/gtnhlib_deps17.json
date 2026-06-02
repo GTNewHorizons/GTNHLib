@@ -1,0 +1,14 @@
+{
+    "identifier": "falsepatternlib_dependencies",
+    "minJava": 17,
+    "repositories": [
+        "https://maven.wagyourtail.xyz/releases/"
+    ],
+    "dependencies": {
+        "always": {
+            "common": [
+                "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:1.3.5:downgraded-17"
+            ]
+        }
+    }
+}
