@@ -647,6 +647,8 @@ public final class ItemStackNBT {
     /// Enchants the item with the given enchantment and level. Unlike Minecraft, it doesn't cast the level to a byte.
     /// If the enchantment already exists on the item, the level will be set to the given level.
     ///
+    /// This does *not* check if the enchantment is valid for the item, it just applies it.
+    ///
     /// @throws IllegalStateException if any of the enchantments on the item are ill-formed.
     public static void enchant(@NotNull ItemStack stack, short enchantmentId, short level) {
         ensureInitialized(stack);
@@ -656,17 +658,23 @@ public final class ItemStackNBT {
             ItemStackNBT.setTagList(stack, "ench", enchantmentList);
         }
 
+        // Search for an existing enchantment with the same ID
         for (var tag : enchantmentList.tagList) {
             if (!(tag instanceof NBTTagCompound tagCompound))
                 throw new IllegalStateException("Ill-formed enchantment! Not an NBTTagCompound!");
+            // This check is necessary because the default id, if not found, would otherwise be 0. Which is a valid
+            // enchantment ID. If a corrupt enchantment tag is present, crashing is preferable to silently eating
+            // Protection applied to the item...
             if (!tagCompound.hasKey("id")) throw new IllegalStateException("Ill-formed enchantment! No ID found!");
 
+            // And modify it, if present.
             if (tagCompound.getShort("id") == enchantmentId) {
                 tagCompound.setShort("lvl", level);
                 return;
             }
         }
 
+        // The tag wasn't present already, add it.
         var enchantmentTag = new NBTTagCompound();
         enchantmentTag.setShort("id", enchantmentId);
         enchantmentTag.setShort("lvl", level);
