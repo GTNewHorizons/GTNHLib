@@ -14,85 +14,56 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Utility class for safe and convenient manipulation of {@link ItemStack} NBT data.
- *
- * <p>
- * This class provides two complementary APIs:
- * </p>
- *
- * <ul>
- * <li><b>Static methods</b> – allocation-free, ideal for singular operations or performance-critical code paths</li>
- * <li><b>Instance methods</b> – allocates one object, ideal for multiple chainable operations for more readable
- * code</li>
- * </ul>
- *
- * <h2>Key Features</h2>
- * <ul>
- * <li>Automatically initializes {@link NBTTagCompound} only when needed (on write)</li>
- * <li>Prevents unnecessary empty NBT compounds on {@link ItemStack}s</li>
- * <li>Provides safe default values when reading from missing tags</li>
- * <li>Supports all common NBT types (primitives, arrays, compounds, lists)</li>
- * </ul>
- *
- * <h2>Static vs Instance Usage</h2>
- *
- * <h3>Static API</h3>
- * <p>
- * The static methods avoid any additional object allocation and should be preferred in performance-sensitive contexts
- * such as ticking logic, inventory iteration, or rendering.
- * </p>
- *
- * <pre>
- * {@code
- * ItemStack stack = ...;
- *
- * // Write values
- * ItemStackNBT.setInteger(stack, "energy", 1000);
- * ItemStackNBT.setBoolean(stack, "active", true);
- *
- * // Read values
- * int energy = ItemStackNBT.getInteger(stack, "energy");
- * boolean active = ItemStackNBT.getBoolean(stack, "active");
- * }
- * </pre>
- *
- * <h3>Instance API</h3>
- * <p>
- * The instance API wraps an {@link ItemStack} and allows method chaining for improved readability. This is slightly
- * less efficient due to object allocation, but often negligible outside hot loops.
- * </p>
- *
- * <pre>
- * {@code
- * ItemStack stack = ...;
- *
- * ItemStackNBT.of(stack)
- *     .setInteger("energy", 1000)
- *     .setInteger("bla", 87)
- *     .setInteger("ducks", 55)
- *     .setBoolean("active", true);
- *
- * int energy = ItemStackNBT.of(stack).getInteger("energy");
- * }
- * </pre>
- *
- * <h2>Behavior Notes</h2>
- * <ul>
- * <li>Getter methods return safe default values when the stack has no NBT data or the key is missing:
- * <ul>
- * <li>Numeric types → {@code 0}</li>
- * <li>Boolean → {@code false}</li>
- * <li>String → empty string</li>
- * <li>Arrays → empty arrays</li>
- * <li>Objects → {@code null} (e.g. {@link NBTBase})</li>
- * </ul>
- * </li>
- * <li>Setter methods automatically create the underlying {@link NBTTagCompound} if it does not exist.</li>
- * <li>{@link #removeTag(ItemStack, String)} and its instance counterpart will automatically remove the entire compound
- * from the stack if it becomes empty, preventing unnecessary NBT data.</li>
- * </ul>
- */
+/// Utility class for safe and convenient manipulation of [ItemStack] NBT data.
+///
+/// This class provides two complementary APIs:
+/// - **Static methods** – allocation-free, ideal for singular operations or performance-critical code paths
+/// - **Instance methods** – allocates one object, ideal for multiple chainable operations for more readable
+///   code
+///
+/// ## Key Features
+/// - Automatically initializes [NBTTagCompound] only when needed (on write)
+/// - Prevents unnecessary empty NBT compounds on [ItemStack]s
+/// - Provides safe default values when reading from missing tags
+/// - Supports all common NBT types (primitives, arrays, compounds, lists)
+///
+/// ## Static vs Instance Usage
+/// ### Static API
+/// The static methods avoid any additional object allocation and should be preferred in performance-sensitive contexts
+/// such as ticking logic, inventory iteration, or rendering.
+/// ```java
+/// ItemStack stack = ...;
+/// // Write values
+/// ItemStackNBT.setInteger(stack, "energy", 1000);
+/// ItemStackNBT.setBoolean(stack, "active", true);
+/// // Read values
+/// int energy = ItemStackNBT.getInteger(stack, "energy");
+/// boolean active = ItemStackNBT.getBoolean(stack, "active");
+/// ```
+///
+/// ### Instance API
+/// The instance API wraps an [ItemStack] and allows method chaining for improved readability. This is slightly
+/// less efficient due to object allocation, but often negligible outside hot loops.
+/// ```java
+/// ItemStack stack = ...;
+/// ItemStackNBT.of(stack)
+///     .setInteger("energy", 1000)
+///     .setInteger("bla", 87)
+///     .setInteger("ducks", 55)
+///     .setBoolean("active", true);
+/// int energy = ItemStackNBT.of(stack).getInteger("energy");
+/// ```
+///
+/// ## Behavior Notes
+/// - Getter methods return safe default values when the stack has no NBT data or the key is missing:
+///   - Numeric types → `0`
+///   - Boolean → `false`
+///   - String → empty string
+///   - Arrays → empty arrays
+///   - Objects → `null` (e.g. [NBTBase])
+/// - Setter methods automatically create the underlying [NBTTagCompound] if it does not exist.
+/// - [#removeTag(ItemStack, String)] and its instance counterpart will automatically remove the entire compound
+///   from the stack if it becomes empty, preventing unnecessary NBT data.
 public final class ItemStackNBT {
 
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
