@@ -56,7 +56,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     private static final int[] LIST_ACTION_BUTTONS_POSITIONS_RIGHT = { 2, 14, 26 };
     private static final int PANEL_BUTTONS_ROW_POSITION_TOP = 20;
     private static final int PANEL_BUTTONS_SIZE = 16;
-    private static final int[] PANEL_BUTTONS_POSITIONS_RIGHT = { 8, 26, 44 };
+    private static final int[] PANEL_BUTTONS_POSITIONS_RIGHT = { 8, 26, 44, 62 };
 
     // Client-side only
     private static String screenTitle = "";
@@ -184,7 +184,23 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                             });
                                     confirmationPanel.openPanel();
                                     return true;
-                                }).size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[2]));
+                                }).size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[2]))
+                .child(
+                        new ButtonWidget<>().overlay(GuiTextures.STOP)
+                                .tooltip(t -> t.addLine(IKey.lang("gtnhlib.gui.teams.leave_team")))
+                                .setEnabledIf(
+                                        w -> data.currentView.type() == ScreenType.PLAYER_LIST
+                                                && data.currentView.currentTeam().equals(TeamManagerClient.GetTeamId()))
+                                .onMouseTapped(mouseButton -> {
+                                    confirmationDialog.setParams(
+                                            StatCollector.translateToLocal("gtnhlib.gui.teams.confirm_leave_team"),
+                                            () -> {
+                                                syncManager.findSyncHandler("leave_team", BooleanSyncValue.class)
+                                                        .setValue(true);
+                                            });
+                                    confirmationPanel.openPanel();
+                                    return true;
+                                }).size(PANEL_BUTTONS_SIZE).right(PANEL_BUTTONS_POSITIONS_RIGHT[3]));
     }
 
     private void addInviteButtons(Flow buttonFlow, TeamGuiData data, PanelSyncManager syncManager) {
@@ -914,6 +930,15 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                 ServerPlayerUtils.getPlayerName(data.getPlayer()));
                     }
                 }).allowC2S());
+
+        syncManager.syncValue("leave_team", new BooleanSyncValue(() -> false, request -> {}, () -> false, request -> {
+            UUID playerId = data.getPlayer().getUniqueID();
+            Team team = TeamManager.getTeamByPlayer(playerId);
+            if (!request || team == null || team.getMembers().size() == 1) return;
+            if (team.isOwner(playerId) && team.getOwners().size() == 1) return;
+
+            TeamActions.onLeave(data.getPlayer());
+        }).allowC2S());
 
         syncManager.syncValue("force_request_disband", new UuidActionSyncValue(request -> {
             Team team = TeamManager.getTeamById(request);
