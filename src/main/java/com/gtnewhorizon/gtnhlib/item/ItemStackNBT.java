@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// spotless:off
 /// Utility class for safe and convenient manipulation of [ItemStack] NBT data.
 ///
 /// This class provides two complementary APIs:
@@ -65,6 +66,7 @@ import org.jetbrains.annotations.Nullable;
 /// - [#removeTag(ItemStack, String)] and its instance counterpart will automatically remove the entire compound
 ///   from the stack if it becomes empty, preventing unnecessary NBT data.
 public final class ItemStackNBT {
+// spotless:on
 
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     private static final int[] EMPTY_INT_ARRAY = new int[0];
