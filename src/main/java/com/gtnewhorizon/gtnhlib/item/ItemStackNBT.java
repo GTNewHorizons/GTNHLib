@@ -633,6 +633,35 @@ public final class ItemStackNBT {
         return b;
     }
 
+    /// Enchants the item with the given enchantment and level. Unlike Minecraft, it doesn't cast the level to a byte.
+    /// If the enchantment already exists on the item, the level will be set to the given level.
+    ///
+    /// @throws IllegalStateException if any of the enchantments on the item are ill-formed.
+    public static void enchant(@NotNull ItemStack stack, short enchantmentId, short level) {
+        ensureInitialized(stack);
+        var enchantmentList = ItemStackNBT.getTagList(stack, "ench", NBT.TAG_COMPOUND);
+        if (enchantmentList == null) {
+            enchantmentList = new NBTTagList();
+            ItemStackNBT.setTagList(stack, "ench", enchantmentList);
+        }
+
+        for (var tag : enchantmentList.tagList) {
+            if (!(tag instanceof NBTTagCompound tagCompound))
+                throw new IllegalStateException("Ill-formed enchantment! Not an NBTTagCompound!");
+            if (!tagCompound.hasKey("id")) throw new IllegalStateException("Ill-formed enchantment! No ID found!");
+
+            if (tagCompound.getShort("id") == enchantmentId) {
+                tagCompound.setShort("lvl", level);
+                return;
+            }
+        }
+
+        var enchantmentTag = new NBTTagCompound();
+        enchantmentTag.setShort("id", enchantmentId);
+        enchantmentTag.setShort("lvl", level);
+        enchantmentList.appendTag(enchantmentTag);
+    }
+
     /**
      * This method returns the NBTTagCompound attached to the ItemStack, if it is not present it creates one and returns
      * it. This method defeats the whole point of the api, only use if you absolutely need the NBTTagCompound to exist.
