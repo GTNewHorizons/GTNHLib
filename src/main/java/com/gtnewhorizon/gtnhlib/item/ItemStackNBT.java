@@ -11,6 +11,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -356,6 +357,14 @@ public final class ItemStackNBT {
         final boolean b = !stack.getTagCompound().getBoolean(key);
         stack.getTagCompound().setBoolean(key, b);
         return b;
+    }
+
+    /// Non-static version of [#enchant(ItemStack, short, short)]
+    /// @return this, for chaining
+    @Contract("_, _ -> this")
+    public ItemStackNBT enchant(short enchantmentId, short level) {
+        enchant(this.stack, enchantmentId, level);
+        return this;
     }
 
     private void ensureInitialized() {
