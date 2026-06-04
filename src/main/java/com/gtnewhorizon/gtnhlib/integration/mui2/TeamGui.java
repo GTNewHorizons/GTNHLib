@@ -1058,7 +1058,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
             Team consumed = TeamManager.getTeamByPlayer(playerId);
 
             if (surviving == null || consumed == null || surviving == consumed) return;
-            if (surviving.isOwner(playerId)) {
+            if (consumed.isOwner(playerId)) {
                 TeamActions.onMergeCancel(data.getPlayer(), consumed, surviving);
             } else {
                 GTNHLib.LOG.warn(
