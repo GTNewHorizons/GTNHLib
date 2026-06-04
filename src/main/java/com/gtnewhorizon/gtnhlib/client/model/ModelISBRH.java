@@ -1,7 +1,10 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.*;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.*;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.VALUES;
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
@@ -18,7 +21,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
@@ -38,6 +40,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
+import com.gtnewhorizon.gtnhlib.util.StdLCG;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -53,7 +56,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// implement {@link BlockModelInfo} instead, and simply always return true.
     public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
-    private final Random RAND = new Random();
+    private final Random RAND = new StdLCG();
 
     private final WorldContext worldContext = new WorldContext();
     private final ItemContext itemContext = new ItemContext();
@@ -66,26 +69,21 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
             RenderBlocks renderer) {
-        final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
         final Tessellator tesselator = TessellatorManager.get();
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
 
-        worldContext.world = world;
-        worldContext.x = x;
-        worldContext.y = y;
-        worldContext.z = z;
-        worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
-        worldContext.random = random;
-
+        worldContext.set(world, x, y, z, RAND);
         final BakedModel model = ModelRegistry.getBakedModel(worldContext);
 
-        int color = model.getColor(world, x, y, z, block, meta, random);
+        int color = model.getColor(world, x, y, z, block, meta, RAND);
 
         var rendered = false;
         for (var dir : VALUES) {
             worldContext.quadFacing = dir;
+            worldContext.seedRNG(x, y, z);
+
             final var quads = model.getQuads(worldContext);
             if (quads.isEmpty()) continue;
             if (dir.isDirection() && !renderer.renderAllFaces
@@ -230,7 +228,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         // The face is inset to some degree, pick self light (if transparent)
-        if (block.getLightOpacity(world, x, y, z) != 0) {
+        if (block.getLightOpacity(world, x, y, z) < 255) {
             return getBrightness(block, quad, world, x, y, z);
         }
 
@@ -306,6 +304,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         itemContext.stack = stack;
         itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
         itemContext.random = RAND;
+        // I mean, I *could* pack 0, 0, 0. But that seems like a waste when I know the answer...
+        itemContext.random.setSeed(0);
 
         final BakedModel model = ModelRegistry.getBakedModel(itemContext);
 
@@ -318,6 +318,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
 
         for (ModelQuadFacing dir : VALUES) {
+            // I don't *like* reseeding the RNG before each quad get, but it seems like the only way to ensure a
+            // consistent RNG state for each side.
+            itemContext.random.setSeed(0);
             itemContext.quadFacing = dir;
 
             final var quads = model.getQuads(itemContext);

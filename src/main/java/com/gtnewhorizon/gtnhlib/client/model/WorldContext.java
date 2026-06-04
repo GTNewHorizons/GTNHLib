@@ -8,6 +8,7 @@ import net.minecraft.world.IBlockAccess;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
@@ -27,6 +28,23 @@ public class WorldContext implements BakedModelQuadContext.World {
         this.quadFacing = null;
         this.random = null;
         this.quadPool = null;
+    }
+
+    public void set(IBlockAccess world, int x, int y, int z, Random random) {
+        this.world = world;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
+        this.random = random;
+        seedRNG(x, y, z);
+    }
+
+    /// Don't ask me why the magic numbers work, because I don't know. Something something hash function...
+    public void seedRNG(int x, int y, int z) {
+        long h = x * 3129871L ^ y * 116129781L ^ z;
+        h = h * h * 42317861L + h * 11L;
+        random.setSeed(h ^ (h >>> 16));
     }
 
     @Override
@@ -68,4 +86,5 @@ public class WorldContext implements BakedModelQuadContext.World {
     public @Nullable Supplier<ModelQuadViewMutable> getQuadPool() {
         return quadPool;
     }
+
 }
