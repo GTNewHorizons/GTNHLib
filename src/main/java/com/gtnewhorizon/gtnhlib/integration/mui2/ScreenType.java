@@ -19,13 +19,4 @@ public enum ScreenType {
         this.langKey = langKey;
     }
 
-    public boolean isViewToggleOf(ScreenType other) {
-        return switch (this) {
-            case INVITE_PLAYERS -> other == TEAMS_INVITING_PLAYER;
-            case TEAMS_INVITING_PLAYER -> other == INVITE_PLAYERS;
-            case REQUEST_CONSUME -> other == VIEW_CONSUMPTION_REQUESTS;
-            case VIEW_CONSUMPTION_REQUESTS -> other == REQUEST_CONSUME;
-            default -> false;
-        };
-    }
 }

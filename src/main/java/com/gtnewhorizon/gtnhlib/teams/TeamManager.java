@@ -94,6 +94,7 @@ public class TeamManager {
         Team team = new Team(playerName + "'s Team", UUID.randomUUID());
         team.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
         team.addOwner(playerUuid);
+        PLAYER_TEAM_CACHE.put(playerUuid, team);
         MinecraftForge.EVENT_BUS.post(new TeamCreateEvent(team, playerUuid));
         TEAMS.add(team);
         TEAM_MAP.put(team.getTeamId(), team);

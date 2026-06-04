@@ -341,6 +341,7 @@ public class TeamActions {
     public static void onDisband(Team team, boolean adminAction, @Nullable ICommandSender admin) {
         List<UUID> members = new ArrayList<>(team.getMembers());
         String teamName = team.getTeamName();
+        members.forEach(team::removeMember);
 
         TeamManager.TEAMS.remove(team);
         TeamManager.TEAM_MAP.remove(team.getTeamId());
@@ -359,7 +360,7 @@ public class TeamActions {
 
         for (UUID uuid : members) {
             String name = ServerPlayerUtils.getPlayerName(uuid);
-            Team newTeam = TeamManager.getOrCreateTeam(name, uuid);
+            Team newTeam = TeamManager.createTeam(name, uuid);
             TeamManager.transferTeamData(team, newTeam, uuid, TeamDataTransferReason.JoinedNewTeam);
             newTeam.markDirty();
             TeamManager.forEachOnlineTeamMember(newTeam, member -> {
