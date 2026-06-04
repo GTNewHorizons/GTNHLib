@@ -8,10 +8,19 @@ import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.client.resources.FallbackResourceManager;
 import net.minecraft.client.resources.IResource;
 
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.client.resources.SimpleReloadableResourceManager;
+import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -22,7 +31,7 @@ import com.gtnewhorizon.gtnhlib.core.GTNHLibCore;
  * A utility class that helps with loading textures. <br>
  * This class is subject to change.
  */
-@Beta
+@SideOnly(Side.CLIENT)
 public class TextureLoader {
 
     public static final IntBuffer dataBuffer;
@@ -130,5 +139,29 @@ public class TextureLoader {
             buffer = GLAllocation.createDirectIntBuffer(4194304);
         }
         dataBuffer = buffer;
+    }
+
+    public static boolean resourceExists(@NotNull ResourceLocation resLoc) {
+        final IResourceManager resMan = Minecraft.getMinecraft()
+            .getResourceManager();
+        if (resMan instanceof SimpleReloadableResourceManager simple) {
+            FallbackResourceManager fallback = simple.domainResourceManagers.get(resLoc.getResourceDomain());
+            if (fallback != null) {
+                for (IResourcePack rp : fallback.resourcePacks) {
+                    if (rp != null && rp.resourceExists(resLoc)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        // Fallback in case some mod changed how the resource manager stores ResourcePacks
+        try {
+            resMan.getResource(resLoc);
+            return true;
+        } catch (IOException ignored) {
+            return false;
+        }
     }
 }

@@ -139,10 +139,8 @@ public class ShaderProgram {
             while ((line = reader.readLine()) != null) {
                 code.append(line);
                 code.append('\n');
-                if (line.startsWith("#version") && defines != null) {
-                    for (IShaderDefinesInjector writer : defines) {
-                        writer.writeDefines(code);
-                    }
+                if (line.startsWith("#version")) {
+                    appendDefines(code, defines);
                 }
             }
             reader.close();
@@ -152,6 +150,51 @@ public class ShaderProgram {
             GTNHLib.LOG.error("Could not load shader file!", e);
         }
         return null;
+    }
+
+    public static String loadUnmodifiedSource(InputStream inputStream) {
+        try {
+            final StringBuilder code = new StringBuilder();
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                code.append(line);
+                code.append('\n');
+            }
+            reader.close();
+
+            return code.toString();
+        } catch (Exception e) {
+            GTNHLib.LOG.error("Could not load shader file!", e);
+        }
+        return null;
+    }
+
+    public static String injectDefines(String source, IShaderDefinesInjector... defines) {
+        final int versionPos = source.indexOf("#version");
+
+        final int insertPos = source.indexOf('\n', versionPos) + 1;
+
+        final StringBuilder result = new StringBuilder(source.length() + 256);
+
+        result.append(source, 0, insertPos);
+
+        appendDefines(result, defines);
+
+        result.append(source, insertPos, source.length());
+
+        return result.toString();
+    }
+
+    private static void appendDefines(StringBuilder code, IShaderDefinesInjector[] defines) {
+        if (defines != null) {
+            for (IShaderDefinesInjector writer : defines) {
+                if (writer != null) {
+                    writer.writeDefines(code);
+                }
+            }
+        }
     }
 
     // ONLY WORKS IN DEV ENV

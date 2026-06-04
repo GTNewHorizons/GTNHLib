@@ -7,6 +7,10 @@ public final class SimpleShaderDefine implements IShaderDefinesInjector {
         this.output = "#define " + name + ' ' + value;
     }
 
+    public SimpleShaderDefine(String name) {
+        this.output = "#define " + name;
+    }
+
     @Override
     public void writeDefines(StringBuilder out) {
         writeLine(out, output);
