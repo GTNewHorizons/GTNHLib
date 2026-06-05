@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.blockstate.command;
 
+import static com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ import net.minecraft.util.Vec3;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -75,7 +78,7 @@ public class BlockStateCommand extends CommandBase {
 
                 sendErrorToPlayer(sender, "Property not found.");
             } else {
-                sendChatToPlayer(player, "Properties:");
+                sendChatToPlayer(player, "-- Properties:");
 
                 if (properties.isEmpty()) {
                     sendChatToPlayer(player, "None");
@@ -88,21 +91,35 @@ public class BlockStateCommand extends CommandBase {
 
                     Object v = prop.getValue(player.worldObj, hit.blockX, hit.blockY, hit.blockZ);
 
+                    EnumChatFormatting nameColor = EnumChatFormatting.RESET;
                     EnumChatFormatting valueColor = EnumChatFormatting.RESET;
+
+                    if (!prop.hasTrait(WorldMutable) && !prop.hasTrait(SupportsWorld))
+                        nameColor = EnumChatFormatting.DARK_PURPLE;
+                    else if (!prop.hasTrait(WorldMutable)) nameColor = EnumChatFormatting.DARK_RED;
+
                     if (v instanceof Integer) valueColor = EnumChatFormatting.YELLOW;
                     else if (v instanceof Float) valueColor = EnumChatFormatting.LIGHT_PURPLE;
                     else if (v instanceof String) valueColor = EnumChatFormatting.AQUA;
+                    else if (v instanceof Enum<?>) valueColor = EnumChatFormatting.DARK_AQUA;
                     else if (v instanceof Boolean)
                         valueColor = (boolean) v ? EnumChatFormatting.GREEN : EnumChatFormatting.RED;
 
                     if (prop.getName() == "meta") sendChatToPlayer(
                             player,
-                            String.format("meta: %d (0b%s)", (int) v, Integer.toBinaryString((int) v)));
+                            String.format(
+                                    "%smeta: %d (0b%s)%s",
+                                    EnumChatFormatting.YELLOW,
+                                    (int) v,
+                                    NumberFormatUtil.toBinaryString((int) v, 4),
+                                    EnumChatFormatting.RESET));
                     else sendChatToPlayer(
                             player,
                             String.format(
-                                    "%s: %s%s%s",
+                                    "%s%s%s: %s%s%s",
+                                    nameColor,
                                     prop.getName(),
+                                    EnumChatFormatting.RESET,
                                     valueColor,
                                     prop.stringify(v),
                                     EnumChatFormatting.RESET));
