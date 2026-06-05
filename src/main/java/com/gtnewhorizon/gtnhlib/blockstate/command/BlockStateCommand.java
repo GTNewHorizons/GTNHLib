@@ -19,6 +19,7 @@ import net.minecraft.util.Vec3;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
@@ -130,6 +131,13 @@ public class BlockStateCommand extends CommandBase {
             BlockProperty<Object> prop = (BlockProperty<Object>) properties.get(name);
 
             if (prop != null) {
+                if (!prop.hasTrait(BlockPropertyTrait.WorldMutable)) {
+                    sendErrorToPlayer(
+                            player,
+                            "Property '" + prop.getName() + "' is not world mutable: cannot update value");
+                    return;
+                }
+
                 try {
                     Object v = prop.parse(value);
 

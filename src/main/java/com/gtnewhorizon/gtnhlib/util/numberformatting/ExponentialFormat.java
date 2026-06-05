@@ -54,7 +54,7 @@ public enum ExponentialFormat {
 
         int fractionalDigits = Math.max(1, options.getDecimalPlaces());
 
-        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        Locale locale = NumberFormatConfig.getActiveLocale();
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
         symbols.setExponentSeparator("e");
 
@@ -99,7 +99,7 @@ public enum ExponentialFormat {
         int exponent = rounded.precision() - 1 - rounded.scale();
         BigDecimal mantissa = rounded.movePointLeft(exponent);
 
-        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        Locale locale = NumberFormatConfig.getActiveLocale();
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
 
         DecimalFormat df = new DecimalFormat();

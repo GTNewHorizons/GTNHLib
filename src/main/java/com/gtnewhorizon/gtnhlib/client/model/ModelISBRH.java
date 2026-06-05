@@ -1,7 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.*;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.*;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackX;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackY;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
+import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.VALUES;
+import static java.lang.Float.intBitsToFloat;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;
@@ -17,7 +21,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
@@ -33,9 +36,11 @@ import com.gtnewhorizon.gtnhlib.client.model.color.BlockColor;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
+import com.gtnewhorizon.gtnhlib.util.StdLCG;
 import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -44,14 +49,14 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
-    public static final ModelISBRH INSTANCE = new ModelISBRH();
+    public static final ThreadLocal<ModelISBRH> INSTANCE = ThreadLocal.withInitial(ModelISBRH::new);
 
     /// Any blocks using a JSON model may return this for [Block#getRenderType()]. However, models are primarily
     /// identified via the presence of a blockstate -> model map for the block. If you don't have such a file, you can
     /// implement {@link BlockModelInfo} instead, and simply always return true.
     public static final int JSON_ISBRH_ID = RenderingRegistry.getNextAvailableRenderId();
 
-    private final Random RAND = new Random();
+    private final Random RAND = new StdLCG();
 
     private final WorldContext worldContext = new WorldContext();
     private final ItemContext itemContext = new ItemContext();
@@ -64,26 +69,21 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
             RenderBlocks renderer) {
-        final Random random = world instanceof World worldIn ? worldIn.rand : RAND;
         final Tessellator tesselator = TessellatorManager.get();
 
         // Get the model!
         final int meta = world.getBlockMetadata(x, y, z);
 
-        worldContext.world = world;
-        worldContext.x = x;
-        worldContext.y = y;
-        worldContext.z = z;
-        worldContext.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
-        worldContext.random = random;
-
+        worldContext.set(world, x, y, z, RAND);
         final BakedModel model = ModelRegistry.getBakedModel(worldContext);
 
-        int color = model.getColor(world, x, y, z, block, meta, random);
+        int color = model.getColor(world, x, y, z, block, meta, RAND);
 
         var rendered = false;
         for (var dir : VALUES) {
             worldContext.quadFacing = dir;
+            worldContext.seedRNG(x, y, z);
+
             final var quads = model.getQuads(worldContext);
             if (quads.isEmpty()) continue;
             if (dir.isDirection() && !renderer.renderAllFaces
@@ -126,15 +126,82 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
             @Nullable IIcon overrideIcon) {
-        // TODO: Respect overrideIcon
+        final var overrideTex = overrideIcon != null;
+        float u, v;
         for (int i = 0; i < 4; ++i) {
-            tessellator.addVertexWithUV(
-                    quad.getX(i) + x,
-                    quad.getY(i) + y,
-                    quad.getZ(i) + z,
-                    quad.getTexU(i),
-                    quad.getTexV(i));
+            if (overrideTex) {
+                final long pUV = getOverrideUV(quad, i);
+                u = intBitsToFloat((int) (pUV >> 32));
+                v = intBitsToFloat((int) pUV);
+            } else {
+                u = quad.getTexU(i);
+                v = quad.getTexV(i);
+            }
+
+            tessellator.addVertexWithUV(quad.getX(i) + x, quad.getY(i) + y, quad.getZ(i) + z, u, v);
         }
+    }
+
+    /// This returns u,v packed in a long bitwise, because Java doesn't have tuple returns. This isn't for performance,
+    /// just clarity so I can set u and v in the same function.
+    private long getOverrideUV(ModelQuadView quad, int idx) {
+        ModelQuadFacing side = quad.getNormalFace();
+        float x = quad.getX(idx);
+        float y = quad.getY(idx);
+        float z = quad.getZ(idx);
+
+        if (side == ModelQuadFacing.UNASSIGNED) {
+            int packedNormal = quad.getComputedFaceNormal();
+            float nx = NormI8.unpackX(packedNormal);
+            float ny = NormI8.unpackY(packedNormal);
+            float nz = NormI8.unpackZ(packedNormal);
+
+            float ax = Math.abs(nx);
+            float ay = Math.abs(ny);
+            float az = Math.abs(nz);
+
+            if (ay >= ax && ay >= az) {
+                side = (ny > 0) ? ModelQuadFacing.POS_Y : ModelQuadFacing.NEG_Y;
+            } else if (az >= ax && az >= ay) {
+                side = (nz > 0) ? ModelQuadFacing.POS_Z : ModelQuadFacing.NEG_Z;
+            } else {
+                side = (nx > 0) ? ModelQuadFacing.POS_X : ModelQuadFacing.NEG_X;
+            }
+        }
+
+        float u, v;
+        switch (side) {
+            case POS_X -> { // EAST
+                u = 1.0f - z;
+                v = y;
+            }
+            case NEG_X -> { // WEST
+                u = z;
+                v = y;
+            }
+            case POS_Y -> { // UP
+                u = x;
+                v = z;
+            }
+            case NEG_Y -> { // DOWN
+                u = x;
+                v = 1.0f - z;
+            }
+            case POS_Z -> { // SOUTH
+                u = x;
+                v = y;
+            }
+            case NEG_Z -> { // NORTH
+                u = 1.0f - x;
+                v = y;
+            }
+            default -> { // Fallback
+                u = x;
+                v = y;
+            }
+        }
+
+        return ((long) Float.floatToIntBits(u) << 32) | (Float.floatToIntBits(v) & 0xFFFFFFFFL);
     }
 
     public int getLightMap(Block block, ModelQuadView quad, ModelQuadFacing dir, IBlockAccess world, int x, int y,
@@ -161,7 +228,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         }
 
         // The face is inset to some degree, pick self light (if transparent)
-        if (block.getLightOpacity(world, x, y, z) != 0) {
+        if (block.getLightOpacity(world, x, y, z) < 255) {
             return getBrightness(block, quad, world, x, y, z);
         }
 
@@ -237,6 +304,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         itemContext.stack = stack;
         itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
         itemContext.random = RAND;
+        // I mean, I *could* pack 0, 0, 0. But that seems like a waste when I know the answer...
+        itemContext.random.setSeed(0);
 
         final BakedModel model = ModelRegistry.getBakedModel(itemContext);
 
@@ -249,6 +318,9 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
 
         for (ModelQuadFacing dir : VALUES) {
+            // I don't *like* reseeding the RNG before each quad get, but it seems like the only way to ensure a
+            // consistent RNG state for each side.
+            itemContext.random.setSeed(0);
             itemContext.quadFacing = dir;
 
             final var quads = model.getQuads(itemContext);

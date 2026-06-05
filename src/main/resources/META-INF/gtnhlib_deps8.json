@@ -1,0 +1,16 @@
+{
+    "identifier": "falsepatternlib_dependencies",
+    "maxJava": 16,
+    "repositories": [
+        "https://maven.wagyourtail.xyz/releases/"
+    ],
+    "dependencies": {
+        "always": {
+            "common": [
+                "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:1.3.5:downgraded-8"
+            ],
+            "client": [],
+            "server": []
+        }
+    }
+}

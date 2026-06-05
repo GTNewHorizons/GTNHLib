@@ -5,9 +5,9 @@
     "north": "gtnhlib:block/test",
     "south": "gtnhlib:block/test",
     "east":  "gtnhlib:block/test",
-    "west":  "gtnhlib:block/test",
-    "up":    "gtnhlib:block/test",
-    "down":  "gtnhlib:block/test"
+    "west":  "gtnhlib:blocks/test",
+    "up":    "gtnhlib:blocks/test",
+    "down":  "gtnhlib:blocks/test"
   },
   "elements": [
     {

@@ -29,7 +29,7 @@ public class MixinEffectRenderer_FixParticleIcons {
             @Local(ordinal = 0, argsOnly = true) int x, @Local(ordinal = 1, argsOnly = true) int y,
             @Local(ordinal = 2, argsOnly = true) int z) {
         if (((BlockModelInfo) block).nhlib$isModeled())
-            original.setParticleIcon(ModelISBRH.INSTANCE.getParticleIcon(worldObj, x, y, z));
+            original.setParticleIcon(ModelISBRH.INSTANCE.get().getParticleIcon(worldObj, x, y, z));
         return original;
     }
 
@@ -42,7 +42,7 @@ public class MixinEffectRenderer_FixParticleIcons {
             @Local(ordinal = 0, argsOnly = true) int x, @Local(ordinal = 1, argsOnly = true) int y,
             @Local(ordinal = 2, argsOnly = true) int z) {
         if (((BlockModelInfo) block).nhlib$isModeled())
-            original.setParticleIcon(ModelISBRH.INSTANCE.getParticleIcon(worldObj, x, y, z));
+            original.setParticleIcon(ModelISBRH.INSTANCE.get().getParticleIcon(worldObj, x, y, z));
         return original;
     }
 }

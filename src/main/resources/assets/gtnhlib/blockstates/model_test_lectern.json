@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "minecraft:block/lectern", "y": 270, "uvlock": true },
+    "facing=south": { "model": "minecraft:block/lectern", "y": 90, "uvlock": true },
+    "facing=west": { "model": "minecraft:block/lectern", "y": 0, "uvlock": true },
+    "facing=east": { "model": "minecraft:block/lectern", "y": 180, "uvlock": true }
+  }
+}

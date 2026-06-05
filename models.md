@@ -8,11 +8,10 @@ default, to match 7.10 conventions. However, textures specified by
 `domain:block/whatever` are remapped to `domain:whatever`, to support
 importing models from modern.
 
-Resource packs can't replace any block. It has to return
-`ModelISBRH.JSON_ISBRH_ID` as the render type. This is a fairly
-trivial mixin, but the requirement is still there to avoid
-spurious lookups on the vast majority of blocks that (currently)
-don't have models. This may change in the future.
+Resource packs can now replace most blocks, similarly to modern.
+Note that this primarily works on blocks with ISBRHS - if the block
+has a TESR registered in code, that should result in *both* the model and
+the TESR rendering.
 
 ## Examples
 ### BlockColor

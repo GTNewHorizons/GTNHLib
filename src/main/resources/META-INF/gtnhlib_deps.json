@@ -1,0 +1,18 @@
+{
+    "identifier": "falsepatternlib_dependencies",
+    "repositories": [
+        "https://repo1.maven.org/maven2/",
+        "https://libraries.minecraft.net/"
+    ],
+    "dependencies": {
+        "always": {
+            "common": [
+                "it.unimi.dsi:fastutil:8.5.15",
+                "org.joml:joml:1.10.8",
+                "com.mojang:brigadier:1.0.18"
+            ],
+            "client": [],
+            "server": []
+        }
+    }
+}

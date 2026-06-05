@@ -230,7 +230,9 @@ public final class NumberFormatUtil {
     }
 
     private static DecimalFormat getDefaultDecimalFormatter(NumberOptionsBase<?> options) {
-        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        // Use custom locale from config if set, otherwise use system default
+        Locale locale = NumberFormatConfig.getActiveLocale();
+
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
         df.setDecimalFormatSymbols(symbols);
@@ -261,7 +263,7 @@ public final class NumberFormatUtil {
     }
 
     public static void postConfiguration() {
-        EXPONENTIAL_FORMAT = ExponentialFormat.parse(formatPattern);
+        NumberFormatConfig.syncNumberFormatting();
     }
 
     public static BigDecimal bigDecimalConverter(Number number) {

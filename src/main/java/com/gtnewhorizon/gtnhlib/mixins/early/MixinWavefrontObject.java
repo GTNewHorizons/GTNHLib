@@ -14,9 +14,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import com.gtnewhorizon.gtnhlib.client.renderer.vbo.IModelCustomExt;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
-import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
-// TODO Sisyphus: get rid of renderAllVBO
 @Mixin(value = WavefrontObject.class, remap = false)
 public abstract class MixinWavefrontObject implements IModelCustomExt {
 
@@ -29,22 +27,16 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     @Shadow
     public abstract void tessellateAll(Tessellator tessellator);
 
-    @Unique
-    private VertexFormat format = DefaultVertexFormat.POSITION_TEXTURE_NORMAL;
-
     @Override
     public void rebuildVBO() {
-        rebuild();
-    }
-
-    private void rebuild() {
         if (currentGroupObject == null) {
             throw new RuntimeException("No group object selected");
         }
         if (this.vertexBuffer != null) {
             this.vertexBuffer.delete();
         }
-        final DirectTessellator tess = TessellatorManager.startCapturingDirect(format);
+        final DirectTessellator tess = TessellatorManager
+                .startCapturingDirect(DefaultVertexFormat.POSITION_TEXTURE_NORMAL);
         tess.startDrawing(currentGroupObject.glDrawingMode);
         tessellateAll(tess);
 
@@ -54,7 +46,7 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     @Override
     public void renderAllVBO() {
         if (vertexBuffer == null) {
-            rebuild();
+            rebuildVBO();
         }
         vertexBuffer.render();
     }
@@ -62,18 +54,5 @@ public abstract class MixinWavefrontObject implements IModelCustomExt {
     @Override
     public void renderAllVAO() {
         renderAllVBO();
-    }
-
-    @Override
-    public void setVertexFormat(VertexFormat format) {
-        setVertexFormat(format, false);
-    }
-
-    @Override
-    public void setVertexFormat(VertexFormat format, boolean vao) {
-        this.format = format;
-        if (this.vertexBuffer != null && this.vertexBuffer.getVBO().getVertexFormat() != format) {
-            rebuild();
-        }
     }
 }

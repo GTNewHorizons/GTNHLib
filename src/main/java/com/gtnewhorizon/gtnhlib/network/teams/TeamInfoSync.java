@@ -1,0 +1,52 @@
+package com.gtnewhorizon.gtnhlib.network.teams;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.PacketBuffer;
+
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.base.NetworkUtils;
+import com.gtnewhorizon.gtnhlib.teams.TeamManagerClient;
+import com.gtnewhorizon.gtnhlib.teams.TeamRole;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+public class TeamInfoSync implements IPacket {
+
+    public UUID uuid;
+    public String name;
+    public TeamRole role;
+
+    public TeamInfoSync() {}
+
+    public TeamInfoSync(UUID uuid, String name, TeamRole role) {
+        this.uuid = uuid;
+        this.name = name;
+        this.role = role;
+    }
+
+    @Override
+    public void encode(PacketBuffer buf) throws IOException {
+        NetworkUtils.writeUUID(buf, uuid);
+        buf.writeStringToBuffer(name);
+        buf.writeShort((short) role.ordinal());
+    }
+
+    @Override
+    public void decode(PacketBuffer buf) throws IOException {
+        uuid = NetworkUtils.readUUID(buf);
+        name = buf.readStringFromBuffer(NetworkUtils.MAX_STRING_BYTES);
+        role = TeamRole.values()[buf.readShort()];
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPacket executeClient(NetHandlerPlayClient handler) {
+        TeamManagerClient.onTeamInfoSyncPacket(this);
+        return null;
+    }
+
+}
