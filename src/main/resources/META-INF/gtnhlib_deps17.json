@@ -11,6 +11,16 @@
             ],
             "client": [],
             "server": []
+        },
+        "obf": {
+            "common": [],
+            "client": [],
+            "server": []
+        },
+        "dev": {
+            "common": [],
+            "client": [],
+            "server": []
         }
     }
 }
