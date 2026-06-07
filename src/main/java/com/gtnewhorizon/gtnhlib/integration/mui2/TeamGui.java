@@ -987,6 +987,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                 GTNHLib.LOG.warn(
                         "player {} does not have permissions to invite others to their team",
                         ServerPlayerUtils.getPlayerName(invitingPlayer));
+                return;
             }
             TeamActions.onInvite(team, data.getPlayer(), invitedPlayer);
         }));
@@ -1004,6 +1005,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                 GTNHLib.LOG.warn(
                         "player {} does not have permissions to cancel player invites",
                         ServerPlayerUtils.getPlayerName(invitingPlayer));
+                return;
             }
             TeamActions.onCancelInvite(team, request);
         }));
@@ -1013,7 +1015,9 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
             Team currentTeam = TeamManager.getTeamByPlayer(invitedPlayer);
             Team invitingTeam = TeamManager.getTeamById(request);
             if (currentTeam == null || invitingTeam == null || currentTeam == invitingTeam) return;
-            if (currentTeam.getOwners().size() == 1 && currentTeam.getMembers().size() > 1) return;
+            if (currentTeam.getOwners().contains(invitedPlayer) && currentTeam.getOwners().size() == 1
+                    && currentTeam.getMembers().size() > 1)
+                return;
             if (!TeamManager.getPendingInvites(invitedPlayer).contains(invitingTeam)) {
                 ModularUI.LOGGER.info(
                         "No pending invite to player {} from team {}, cannot accept invitation",
@@ -1026,7 +1030,9 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
 
         syncManager.syncValue("deny_team_invitation", new UuidActionSyncValue(request -> {
             UUID invitedPlayer = data.getPlayer().getUniqueID();
+            Team currentTeam = TeamManager.getTeamByPlayer(invitedPlayer);
             Team invitingTeam = TeamManager.getTeamById(request);
+            if (currentTeam == null || invitingTeam == null || currentTeam == invitingTeam) return;
             if (!TeamManager.getPendingInvites(invitedPlayer).contains(invitingTeam)) {
                 ModularUI.LOGGER.info(
                         "No pending invite to player {} from team {}, cannot deny invitation",
@@ -1104,7 +1110,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
             if (request != null && request.getRight() != null && request.getLeft() != null && playerIsOp) {
                 Team surviving = TeamManager.getTeamById(request.getRight());
                 Team consumed = TeamManager.getTeamById(request.getLeft());
-
+                if (surviving == null || consumed == null || surviving == consumed) return;
                 TeamActions.onMergeAccept(consumed, surviving, true, data.getPlayer());
             }
         }));

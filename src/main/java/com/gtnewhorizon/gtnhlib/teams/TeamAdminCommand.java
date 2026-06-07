@@ -138,7 +138,7 @@ public class TeamAdminCommand {
         if (team.isOwner(uuid) && team.getOwners().size() == 1)
             return error(sender, "gtnhlib.chat.teams.admin.error.kick_last_owner", playerName, teamName);
 
-        TeamActions.onDemote(team, uuid, true, sender);
+        TeamActions.onKick(team, uuid, true, sender);
 
         return Command.SINGLE_SUCCESS;
     }
