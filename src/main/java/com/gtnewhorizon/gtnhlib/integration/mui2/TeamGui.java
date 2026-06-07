@@ -282,7 +282,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                             .onMouseTapped(mouseButton -> {
                                 if (data.currentView.type() == ScreenType.TEAM_LIST) {
                                     if (!playerIsOp || selectedTeam != null
-                                            && displayList.get(index).uuid() == selectedTeam.getTeamId()) {
+                                            && displayList.get(index).uuid().equals(selectedTeam.getTeamId())) {
                                         switchView(
                                                 data,
                                                 syncManager,
@@ -495,8 +495,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                                                         || index >= displayList.size())
                                                                     return false;
                                                                 return playerIsOp && selectedTeam != null
-                                                                        && selectedTeam.getTeamId()
-                                                                                != displayList.get(index).uuid();
+                                                                        && !selectedTeam.getTeamId()
+                                                                                .equals(displayList.get(index).uuid());
                                                             }).onMouseTapped(mouseButton -> {
                                                                 UUID surviving = displayList.get(index).uuid();
                                                                 confirmationDialog.setParams(
