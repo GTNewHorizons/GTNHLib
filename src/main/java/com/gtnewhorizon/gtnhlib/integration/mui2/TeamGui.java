@@ -79,6 +79,11 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     public ModularPanel buildUI(TeamGuiData data, PanelSyncManager syncManager, UISettings settings) {
         registerSyncValues(data, syncManager);
 
+        if (data.isClient()) {
+            isFirstRequest = true;
+            windowHistory.clear();
+        }
+
         FreezablePanel panel = new FreezablePanel("gtnhlib:team_panel", this, data, syncManager);
 
         ConfirmationDialog confirmationDialog = new ConfirmationDialog("gtnhlib:confirmation_dialog");
