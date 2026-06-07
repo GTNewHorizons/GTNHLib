@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.teams;
 
+import java.util.UUID;
+
 import net.minecraft.nbt.NBTTagCompound;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -52,12 +54,28 @@ public class TeamManagerClient {
         return TEAM;
     }
 
+    public static UUID GetTeamId() {
+        return TEAM == null ? null : TEAM.getTeamId();
+    }
+
     public static TeamRole getRole() {
         return currentRole;
     }
 
     public static boolean doesPlayerSatisfyTeamRole(TeamRole role) {
         return currentRole.ordinal() >= role.ordinal();
+    }
+
+    public static boolean canPlayerPromote(TeamRole role) {
+        return TeamCommandsUtils.canPromote(currentRole, role);
+    }
+
+    public static boolean canPlayerDemote(TeamRole role) {
+        return TeamCommandsUtils.canDemote(currentRole, role);
+    }
+
+    public static boolean canPlayerKick(TeamRole role) {
+        return TeamCommandsUtils.canKick(currentRole, role);
     }
 
 }
