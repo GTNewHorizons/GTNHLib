@@ -4,13 +4,12 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.StatCollector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A color constant supporting both ARGB and RGB formats, with resource pack override and per-instance caching.
