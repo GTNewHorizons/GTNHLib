@@ -44,6 +44,9 @@ import com.gtnewhorizon.gtnhlib.teams.TeamManagerClient;
 import com.gtnewhorizon.gtnhlib.teams.TeamRole;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class TeamGui implements IGuiHolder<TeamGuiData> {
 
     private static final int MAX_DISPLAY_LIST_SIZE = 256;
@@ -64,7 +67,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     private static Stack<GuiView> windowHistory = new Stack<>();
     private static final List<DisplayItem> pendingDisplayList = new ArrayList<>();
     private static final List<DisplayItem> displayList = new ArrayList<>();
-    private Team selectedTeam = null;
+    private static Team selectedTeam = null;
     private static boolean isFirstRequest = true;
 
     // Synced with server
@@ -80,8 +83,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         registerSyncValues(data, syncManager);
 
         if (data.isClient()) {
-            isFirstRequest = true;
-            windowHistory.clear();
+            resetDisplayState();
         }
 
         FreezablePanel panel = new FreezablePanel("gtnhlib:team_panel", this, data, syncManager);
@@ -105,6 +107,17 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
                                 confirmationPanel))
                 .child(ButtonWidget.panelCloseButton());
         return panel;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void resetDisplayState() {
+        screenTitle = "";
+        forceRefresh = true;
+        windowHistory.clear();
+        pendingDisplayList.clear();
+        displayList.clear();
+        selectedTeam = null;
+        isFirstRequest = true;
     }
 
     private Flow createTitleBar(TeamGuiData data, PanelSyncManager syncManager, TextDialog textDialog,
