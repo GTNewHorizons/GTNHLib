@@ -262,6 +262,23 @@ public class ModelQuad implements ModelQuadViewMutable {
         setLightFace(ModelQuadUtil.findLightFace(getComputedFaceNormal()));
     }
 
+    @ApiStatus.Internal
+    public void setState(int[] rawBuffer, int srcOffset, int drawMode, boolean hasColor, boolean hasNormals,
+            boolean hasBrightness) {
+        System.arraycopy(rawBuffer, srcOffset, data, 0, data.length);
+
+        this.normal = 0;
+
+        if (!hasColor) clearColors();
+        if (!hasNormals) this.clearNormals();
+        if (!hasBrightness) this.clearLightmap();
+        setHasAmbientOcclusion(hasBrightness);
+
+        if (drawMode == GL_TRIANGLES) quadrangulate();
+
+        setLightFace(ModelQuadUtil.findLightFace(getComputedFaceNormal()));
+    }
+
     /// Copies the third vertex to the fourth, turning this into a degenerate quad. Useful for faking triangle support.
     private void quadrangulate() {
         System.arraycopy(data, vertexOffset(2), data, vertexOffset(3), VERTEX_SIZE);
