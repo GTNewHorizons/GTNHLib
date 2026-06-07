@@ -86,11 +86,26 @@ public class GTNHLibConfig {
     @Config.RangeInt(min = -100, max = 100)
     public static int titleIconOffsetY;
 
-    @Config.Comment("Icon animation style during fade-in: none, fly_in, spin")
+    @Config.Comment("Icon animation style: none, fly_in, rise, slide, zoom, pop, spin, spin_reverse, bounce, wobble, swing, slam, tada")
     @Config.DefaultString("fly_in")
     public static String titleIconAnimation;
 
     @Config.Comment("Enable particle effects with title displays")
     @Config.DefaultBoolean(true)
     public static boolean enableTitleParticles;
+
+    @Config.Comment("Cinematic completion effect tier: 0 = none, 3 = hyperspace, 4 = singularity, 5 = warp, 6 = lightspeed")
+    @Config.DefaultInt(0)
+    @Config.RangeInt(min = 0, max = 6)
+    public static int titleEffectTier;
+
+    @Config.Comment("Horizontal offset of the title block from screen center, in pixels. Negative = left, positive = right.")
+    @Config.DefaultInt(0)
+    @Config.RangeInt(min = -1000, max = 1000)
+    public static int titleOffsetX;
+
+    @Config.Comment("Vertical offset of the title block from screen center, in pixels. Negative = higher, positive = lower.")
+    @Config.DefaultInt(0)
+    @Config.RangeInt(min = -1000, max = 1000)
+    public static int titleOffsetY;
 }
