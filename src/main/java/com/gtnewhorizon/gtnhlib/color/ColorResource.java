@@ -4,11 +4,13 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.StatCollector;
 
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 
 /**
  * A color constant supporting both ARGB and RGB formats, with resource pack override and per-instance caching.
@@ -48,6 +50,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
  */
 public class ColorResource {
 
+    private static final Logger LOG = LogManager.getLogger(ColorResource.class);
     private static final Set<ColorResource> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
 
     private final String langKey;
@@ -109,7 +112,7 @@ public class ColorResource {
             String value = stripPrefix(StatCollector.translateToLocal(langKey));
             try {
                 if (!argb && value.length() > 6) {
-                    GTNHLib.LOG.warn(
+                    LOG.warn(
                             "[ColorResource] Lang key '{}' received ARGB hex '{}' but this color is RGB-only — alpha will be ignored.",
                             langKey,
                             value);
@@ -117,7 +120,7 @@ public class ColorResource {
                 long parsed = Long.parseLong(value, 16);
                 return argb ? (int) parsed : (int) (0xFF000000L | parsed);
             } catch (NumberFormatException e) {
-                GTNHLib.LOG.warn("[ColorResource] Invalid hex '{}' for lang key '{}', using default.", value, langKey);
+                LOG.warn("[ColorResource] Invalid hex '{}' for lang key '{}', using default.", value, langKey);
                 return defaultColor;
             }
         }
