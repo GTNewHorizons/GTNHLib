@@ -963,7 +963,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
 
         syncManager.syncValue("force_request_disband", new UuidActionSyncValue(request -> {
             Team team = TeamManager.getTeamById(request);
-            if (playerIsOp && team != null) {
+            if (playerIsOp && team != null && team.canBeDisbanded()) {
                 TeamActions.onDisband(team, true, data.getPlayer());
             } else {
                 GTNHLib.LOG.warn(
