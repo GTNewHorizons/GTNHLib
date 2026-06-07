@@ -25,6 +25,16 @@ public class TitleAPI {
     public static final int ICON_ANIM_NONE = 0;
     public static final int ICON_ANIM_FLY_IN = 1;
     public static final int ICON_ANIM_SPIN = 2;
+    public static final int ICON_ANIM_RISE = 3;
+    public static final int ICON_ANIM_SLIDE = 4;
+    public static final int ICON_ANIM_ZOOM = 5;
+    public static final int ICON_ANIM_POP = 6;
+    public static final int ICON_ANIM_BOUNCE = 7;
+    public static final int ICON_ANIM_WOBBLE = 8;
+    public static final int ICON_ANIM_SWING = 9;
+    public static final int ICON_ANIM_SLAM = 10;
+    public static final int ICON_ANIM_TADA = 11;
+    public static final int ICON_ANIM_SPIN_REVERSE = 12;
 
     private static final TitleAPI INSTANCE = new TitleAPI();
 
@@ -53,7 +63,13 @@ public class TitleAPI {
     @Getter
     private static int iconAnimation = ICON_ANIM_DEFAULT;
     @Getter
+    private static int titleOffsetX = Integer.MIN_VALUE;
+    @Getter
+    private static int titleOffsetY = Integer.MIN_VALUE;
+    @Getter
     private static int particleEffect;
+    @Getter
+    private static int effectTier;
     @Getter
     private static ItemStack confettiIcon;
     @Getter
@@ -100,9 +116,20 @@ public class TitleAPI {
         iconAnimation = animation;
     }
 
+    /** Offset the whole title block from screen center, in pixels. {@code Integer.MIN_VALUE} = use client config. */
+    public static void setTitlePosition(int x, int y) {
+        titleOffsetX = x;
+        titleOffsetY = y;
+    }
+
     /** Set particle effect. Use {@code TitleParticleSystem.PARTICLE_*} constants. */
     public static void setParticleEffect(int effect) {
         particleEffect = effect;
+    }
+
+    /** Set the cinematic effect tier (0 = none .. 5 = warp). Use {@code TitleEffectSystem.EFFECT_*} constants. */
+    public static void setEffectTier(int t) {
+        effectTier = t;
     }
 
     /** Set the item used for item confetti particles. Null = use main title icon. */
@@ -141,11 +168,15 @@ public class TitleAPI {
         titleScale = 0;
         subtitleScale = 0;
         iconAnimation = ICON_ANIM_DEFAULT;
+        titleOffsetX = Integer.MIN_VALUE;
+        titleOffsetY = Integer.MIN_VALUE;
         particleEffect = 0;
+        effectTier = 0;
         confettiIcon = null;
         particleCount = -1;
         titleTime = 0;
         TitleParticleSystem.clear();
+        TitleEffectSystem.clear();
         FMLCommonHandler.instance().bus().unregister(INSTANCE);
         MinecraftForge.EVENT_BUS.unregister(INSTANCE);
     }

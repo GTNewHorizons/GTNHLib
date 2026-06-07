@@ -14,11 +14,14 @@ import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import com.gtnewhorizon.gtnhlib.integration.mui2.TeamGuiFactory;
 import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -31,12 +34,14 @@ public class TeamCommand {
         BrigadierApi.getCommandDispatcher().register(literal(GTNHLibConfig.teamCommandRoot).executes(ctx -> {
             sendUsage(ctx.getSource());
             return Command.SINGLE_SUCCESS;
-        }).then(
-                literal("rename").then(
-                        argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
-                                ctx -> executeRename(
-                                        ctx.getSource(),
-                                        StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
+        }).then(literal("gui").executes(ctx -> executeGui(ctx.getSource())))
+
+                .then(
+                        literal("rename").then(
+                                argument(ARG_NEW_NAME, StringArgumentType.string()).executes(
+                                        ctx -> executeRename(
+                                                ctx.getSource(),
+                                                StringArgumentType.getString(ctx, ARG_NEW_NAME)))))
 
                 .then(
                         literal("invite")
@@ -87,6 +92,14 @@ public class TeamCommand {
                                                 ctx -> executeDemote(
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, ARG_PLAYER)))))
+                .then(
+                        literal("kick").then(
+                                argument(ARG_PLAYER, StringArgumentType.word())
+                                        .suggests((ctx, builder) -> suggestTeamMembers(ctx.getSource(), builder))
+                                        .executes(
+                                                ctx -> executeKick(
+                                                        ctx.getSource(),
+                                                        StringArgumentType.getString(ctx, ARG_PLAYER)))))
 
                 .then(literal("info").executes(ctx -> executeInfo(ctx.getSource())))
 
@@ -98,6 +111,15 @@ public class TeamCommand {
                                                         (ctx, builder) -> suggestOtherTeams(ctx.getSource(), builder))
                                                         .executes(
                                                                 ctx -> executeMergeRequest(
+                                                                        ctx.getSource(),
+                                                                        StringArgumentType
+                                                                                .getString(ctx, ARG_TEAM_NAME)))))
+                                .then(
+                                        literal("cancel").then(
+                                                argument(ARG_TEAM_NAME, StringArgumentType.string()).suggests(
+                                                        (ctx, builder) -> suggestOtherTeams(ctx.getSource(), builder))
+                                                        .executes(
+                                                                ctx -> executeMergeCancel(
                                                                         ctx.getSource(),
                                                                         StringArgumentType
                                                                                 .getString(ctx, ARG_TEAM_NAME)))))
@@ -132,6 +154,22 @@ public class TeamCommand {
                 .then(literal("disband").executes(ctx -> executeDisband(ctx.getSource())))
 
                 .then(literal("help").executes(ctx -> executeHelp(ctx.getSource()))));
+    }
+
+    private static int executeGui(ICommandSender sender) {
+        if (!GTNHLib.isMui2Loaded) {
+            return error(sender, "gtnhlib.chat.teams.error.mui2_not_loaded");
+        }
+
+        EntityPlayerMP player = TeamCommandsUtils.asPlayerMP(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
+        if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
+
+        TeamGuiFactory.INSTANCE.open(player, team.getTeamId());
+
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int executeRename(ICommandSender sender, String newName) {
@@ -286,6 +324,21 @@ public class TeamCommand {
         return Command.SINGLE_SUCCESS;
     }
 
+    private static int executeKick(ICommandSender sender, String targetName) {
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+        Team team = TeamManager.getTeamByPlayer(player.getUniqueID());
+        if (team == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
+
+        UUID targetUuid = resolveTeamMemberUuid(team, targetName);
+        if (targetUuid == null) return error(sender, "gtnhlib.chat.teams.error.other_not_in_team", targetName);
+        if (targetUuid.equals(player.getUniqueID())) return error(sender, "gtnhlib.chat.teams.error.cannot_kick_self");
+        if (!TeamCommandsUtils.canKick(team.getRole(player.getUniqueID()), team.getRole(targetUuid)))
+            return error(sender, "gtnhlib.chat.teams.error.kick_not_allowed");
+        TeamActions.onKick(team, targetUuid, false, null);
+        return Command.SINGLE_SUCCESS;
+    }
+
     private static int executeInfo(ICommandSender sender) {
         EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
         if (player == null) return Command.SINGLE_SUCCESS;
@@ -315,6 +368,24 @@ public class TeamCommand {
             return error(sender, "gtnhlib.chat.teams.error.merge_already_requested", targetTeamName);
 
         TeamActions.onMergeRequest(player, source, target);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeMergeCancel(ICommandSender sender, String targetTeamName) {
+        EntityPlayer player = TeamCommandsUtils.asPlayer(sender);
+        if (player == null) return Command.SINGLE_SUCCESS;
+
+        Team source = TeamManager.getTeamByPlayer(player.getUniqueID());
+        if (source == null) return error(sender, "gtnhlib.chat.teams.error.not_in_team");
+        if (!source.isOwner(player.getUniqueID()))
+            return error(sender, "gtnhlib.chat.teams.error.not_owner_merge_request");
+        Team target = TeamManager.getTeamByName(targetTeamName);
+        if (target == null) return error(sender, "gtnhlib.chat.teams.error.team_not_found", targetTeamName);
+        if (!TeamManager.hasPendingMergeRequest(source, target))
+            return error(sender, "gtnhlib.chat.teams.error.no_such_merge_request", targetTeamName);
+
+        TeamActions.onMergeCancel(player, source, target);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -386,7 +457,7 @@ public class TeamCommand {
         if (!team.isOwner(playerId)) {
             return error(sender, "gtnhlib.chat.teams.error.not_owner_disband");
         }
-        if (team.getMembers().size() == 1) {
+        if (!team.canBeDisbanded()) {
             return error(sender, "gtnhlib.chat.teams.error.last_owner_disband");
         }
 
@@ -395,6 +466,9 @@ public class TeamCommand {
     }
 
     private static int executeHelp(ICommandSender sender) {
+        if (GTNHLib.isMui2Loaded) {
+            sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.gui"));
+        }
         String root = TeamCommandsUtils.getCommandRoot();
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.1", GTNHLibConfig.teamSystemName));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.2", root));
@@ -409,6 +483,7 @@ public class TeamCommand {
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.11", root));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.12", root));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.13", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.help.14", root));
         return Command.SINGLE_SUCCESS;
     }
 
