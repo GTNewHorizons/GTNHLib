@@ -10,16 +10,19 @@ dependencies {
     deploader("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader") // LGPL 3.0
     shadowImplementation("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader_stub") // LGPL 3.0
 
-    api("it.unimi.dsi:fastutil:8.5.15") // Apache 2.0
-    api("org.joml:joml:1.10.8") { transitive = false } // MIT
-    api("com.mojang:brigadier:1.0.18") // MIT
-    compileOnly("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false } // LGPL 2.1
+    compileOnlyApi("it.unimi.dsi:fastutil:8.5.18") // Apache 2.0
+    compileOnlyApi("org.joml:joml:1.10.8") { transitive = false } // MIT
+    compileOnlyApi("com.mojang:brigadier:1.0.18") // MIT
+    compileOnlyApi("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false } // LGPL 2.1
 
     // Slow-moving fat lib holding external deps
-    api("com.github.GTNewHorizons:GTNHExtLib:1.0.1") { transitive = false }
+    api("com.github.GTNewHorizons:GTNHExtLib:1.0.2") { transitive = false }
 
     // Tests run outside the DepLoader bootstrap; compileOnly does not reach test runtime.
     testRuntimeOnly("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false }
+    testRuntimeOnly("it.unimi.dsi:fastutil:8.5.18")
+    testRuntimeOnly("org.joml:joml:1.10.8") { transitive = false }
+    testRuntimeOnly("com.mojang:brigadier:1.0.18")
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
