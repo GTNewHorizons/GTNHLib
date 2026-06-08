@@ -112,7 +112,7 @@ public class ColorResource {
             try {
                 if (!argb && value.length() > 6) {
                     LOG.warn(
-                            "[ColorResource] Lang key '{}' received ARGB hex '{}' but this color is RGB-only — alpha will be ignored.",
+                            "Lang key '{}' received ARGB hex '{}' but this color is RGB-only — alpha will be ignored.",
                             langKey,
                             value);
                 }
