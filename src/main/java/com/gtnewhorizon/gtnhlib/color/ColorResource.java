@@ -119,7 +119,7 @@ public class ColorResource {
                 long parsed = Long.parseLong(value, 16);
                 return argb ? (int) parsed : (int) (0xFF000000L | parsed);
             } catch (NumberFormatException e) {
-                LOG.warn("[ColorResource] Invalid hex '{}' for lang key '{}', using default.", value, langKey);
+                LOG.warn("Invalid hex '{}' for lang key '{}', using default.", value, langKey);
                 return defaultColor;
             }
         }
