@@ -39,7 +39,7 @@ public final class GlyphReplacements {
         return customGlyphsNew.get(ch);
     }
 
-    public static Char2CharOpenHashMap getCustomGlyphMap() {
+    public static Char2CharOpenHashMap getGlyphReplacementsMap() {
         return customGlyphsNew;
     }
 }
