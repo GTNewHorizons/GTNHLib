@@ -239,6 +239,16 @@ public final class SyncedKeybind {
     }
 
     @SideOnly(Side.CLIENT)
+    public String getKeybindDisplayName() {
+        final int keyCode = this.getKeyCode();
+        if (keyCode < 0) {
+            return Mouse.getButtonName(keyCode + 100);
+        } else {
+            return Keyboard.getKeyName(keyCode);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
     public KeyBinding getKeybinding() {
         return keybinding;
     }
