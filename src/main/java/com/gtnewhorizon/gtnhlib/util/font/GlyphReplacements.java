@@ -38,4 +38,8 @@ public final class GlyphReplacements {
     public static char getReplacementGlyph(char ch) {
         return customGlyphsNew.get(ch);
     }
+
+    public static Char2CharOpenHashMap getGlyphReplacementsMap() {
+        return customGlyphsNew;
+    }
 }
