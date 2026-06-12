@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.item;
 
+import static com.gtnewhorizon.gtnhlib.util.data.ItemId.GENERIC_ITEM_META_NBT_STRATEGY;
+
 import java.util.function.Consumer;
 
 import net.minecraft.item.ItemStack;
@@ -13,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSource;
 import com.gtnewhorizon.gtnhlib.util.ItemUtil;
 
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenCustomHashMap;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -127,24 +130,46 @@ public class ItemTransfer {
         sink.setAllowedSinkSlots(sinkSlots);
         sink.setSlotStackLimit(maxSinkSlotStackSize);
 
-        InventoryIterator iter = source.sourceIterator();
+        // Fast bailouts
+        InventoryIterator sinkIter = sink.sinkIterator();
+        if (sinkIter == null) return 0;
 
-        // Don't bother supporting iterator-less sources, it'll just be a performance and logic nightmare
-        if (iter == null) return 0;
+        InventoryIterator sourceIter = source.sourceIterator();
+        if (sourceIter == null) return 0;
+
+        Object2IntLinkedOpenCustomHashMap<ImmutableItemStack> canAccept = new Object2IntLinkedOpenCustomHashMap<>(
+                GENERIC_ITEM_META_NBT_STRATEGY);
+        canAccept.defaultReturnValue(0);
+        int slotsFree = 0;
+
+        while (sinkIter.hasNext()) {
+            ImmutableItemStack stack = sinkIter.next();
+            if (stack == null) {
+                slotsFree++;
+                continue;
+            }
+            int remainder = stack.toStackFast().getMaxStackSize() - stack.getStackSize();
+            canAccept.addTo(stack, remainder);
+        }
 
         int itemsTransferred = 0, stacksTransferred = 0;
 
         InsertionItemStack insertion = new InsertionItemStack();
 
-        outer: while (iter.hasNext() && stacksTransferred < stacksToTransfer
+        outer: while (sourceIter.hasNext() && stacksTransferred < stacksToTransfer
                 && itemsTransferred < maxTotalTransferred) {
-            ImmutableItemStack available = iter.next();
+            ImmutableItemStack available = sourceIter.next();
 
             if (available == null || available.isEmpty()) continue;
 
             if (filter != null && !filter.test(available)) continue;
 
             int availableCount = available.getStackSize();
+
+            // Best-effort estimation of how many we can still insert to avoid extracting more than needed.
+            int extractCap = canAccept.getInt(available);
+            availableCount = Math
+                    .min(availableCount, extractCap + available.toStackFast().getMaxStackSize() * slotsFree);
 
             // Loop through this slot until we've transferred everything out of it that we can
             while (availableCount > 0) {
@@ -155,7 +180,7 @@ public class ItemTransfer {
 
                 int toTransferThisOP = Math.min(remainingTransferAllowance, maxItemsPerTransfer);
 
-                ItemStack extracted = iter.extract(Math.min(availableCount, toTransferThisOP), false);
+                ItemStack extracted = sourceIter.extract(Math.min(availableCount, toTransferThisOP), false);
 
                 // We couldn't extract anything, even though we should've been able to: go to the next source slot
                 if (ItemUtil.isStackEmpty(extracted)) break;
@@ -170,7 +195,7 @@ public class ItemTransfer {
 
                         // Force insert the stack back into the source. This should only fail if another stack has ended
                         // up in this slot somehow (which is a bug), in which case we just pass it to `rejectedStacks`.
-                        int rejected2 = iter.insert(insertion.set(extracted), true);
+                        int rejected2 = sourceIter.insert(insertion.set(extracted), true);
 
                         // If there isn't a rejectedStacks handler, the player is just SoL and the items are voided
                         if (rejected2 > 0 && rejectedStacks != null) {
@@ -189,7 +214,7 @@ public class ItemTransfer {
 
                     // Force insert the stack back into the source. This should only fail if another stack has ended up
                     // in this slot somehow (which is a bug), in which case we just pass it to `rejectedStacks`.
-                    int rejected2 = iter.insert(insertion.set(extracted, rejected), true);
+                    int rejected2 = sourceIter.insert(insertion.set(extracted, rejected), true);
 
                     // If there isn't a rejectedStacks handler, the player is just SoL and the items are voided
                     if (rejected2 > 0 && rejectedStacks != null) {
