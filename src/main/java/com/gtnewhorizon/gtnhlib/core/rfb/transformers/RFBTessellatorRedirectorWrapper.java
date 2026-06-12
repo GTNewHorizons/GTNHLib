@@ -50,19 +50,28 @@ public class RFBTessellatorRedirectorWrapper implements RfbClassTransformer {
             return false;
         }
         if (!classNode.isOriginal()) {
-            // If a class is already a transformed ClassNode, conservatively continue processing.
+            // If a class is already a transformed ClassNode, it would be faster to run transform
+            // than to scan constant pool entries
             return true;
         }
         return inner.shouldTransform(classNode.getOriginalBytes());
     }
 
     @Override
-    public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
-            @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
+    public boolean transformClassIfNeeded(@NotNull ExtensibleClassLoader classLoader,
+            @NotNull RfbClassTransformer.Context context, @Nullable Manifest manifest, @NotNull String className,
+            @NotNull ClassNodeHandle classNode) {
         final boolean changed = inner.transformClassNode(classNode.getNode());
         if (changed) {
             classNode.computeMaxs();
             GTNHLibClassDump.dumpRFBClass(className, classNode, this);
         }
+        return changed;
+    }
+
+    @Override
+    public void transformClass(@NotNull ExtensibleClassLoader classLoader, @NotNull RfbClassTransformer.Context context,
+            @Nullable Manifest manifest, @NotNull String className, @NotNull ClassNodeHandle classNode) {
+        transformClassIfNeeded(classLoader, context, manifest, className, classNode);
     }
 }

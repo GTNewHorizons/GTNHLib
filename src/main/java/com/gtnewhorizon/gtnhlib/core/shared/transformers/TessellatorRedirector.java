@@ -27,7 +27,7 @@ public final class TessellatorRedirector {
     }
 
     public boolean shouldTransform(byte[] basicClass) {
-        return cstPoolParser.find(basicClass, true);
+        return cstPoolParser.find(basicClass);
     }
 
     /**
@@ -36,7 +36,7 @@ public final class TessellatorRedirector {
     public boolean transformClassNode(ClassNode cn) {
         boolean changed = false;
         for (MethodNode mn : cn.methods) {
-            for (AbstractInsnNode node : mn.instructions.toArray()) {
+            for (AbstractInsnNode node = mn.instructions.getFirst(); node != null; node = node.getNext()) {
                 if (node.getOpcode() == Opcodes.GETSTATIC && node instanceof FieldInsnNode fNode) {
                     if (TessellatorClass.equals(fNode.owner) && fNode.name.equals(Tessellator$instance)) {
                         mn.instructions.set(
