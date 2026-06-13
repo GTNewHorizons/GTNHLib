@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
  * A color constant supporting both ARGB and RGB formats, with resource pack override and per-instance caching.
  * <p>
  * Use {@link Factory} to avoid repeating the mod ID on every line. The string passed to {@link Factory} must be the
- * mod's assets folder name — a plain lowercase string matching the folder under {@code assets/}, e.g.
+ * mod's assets folder name - a plain lowercase string matching the folder under {@code assets/}, e.g.
  * {@code "appliedenergistics2"}, {@code "thaumicenergistics"}.
  *
  * <pre>
@@ -60,10 +60,10 @@ public class ColorResource {
     private volatile int cachedColor;
 
     /**
-     * @param modId the mod's assets folder name (e.g. {@code "appliedenergistics2"}, {@code "thaumicenergistics"}) —
+     * @param modId the mod's assets folder name (e.g. {@code "appliedenergistics2"}, {@code "thaumicenergistics"}) -
      *              must be a plain lowercase string, not a class reference
      * @param name  the color name used in the lang key
-     * @param hex   default color — AARRGGBB if {@code argb} is true, RRGGBB otherwise
+     * @param hex   default color - AARRGGBB if {@code argb} is true, RRGGBB otherwise
      * @param argb  true to include the alpha channel, false to force alpha to FF
      */
     public ColorResource(String modId, String name, String hex, boolean argb) {
@@ -115,7 +115,7 @@ public class ColorResource {
             try {
                 if (!argb && value.length() > 6) {
                     LOG.warn(
-                            "Lang key '{}' received ARGB hex '{}' but this color is RGB-only — alpha will be ignored.",
+                            "Lang key '{}' received ARGB hex '{}' but this color is RGB-only - alpha will be ignored.",
                             langKey,
                             value);
                 }
@@ -148,7 +148,7 @@ public class ColorResource {
         private final String modId;
 
         /**
-         * @param modId the mod's assets folder name — a plain lowercase string matching the folder under
+         * @param modId the mod's assets folder name - a plain lowercase string matching the folder under
          *              {@code assets/}, e.g. {@code "appliedenergistics2"}, {@code "blockrenderer6343"},
          *              {@code "bq_standard"}, {@code "hardcoreenderexpansion"}, {@code "thaumicenergistics"}
          */
