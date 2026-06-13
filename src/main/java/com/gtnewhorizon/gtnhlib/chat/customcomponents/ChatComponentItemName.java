@@ -29,7 +29,8 @@ public class ChatComponentItemName extends AbstractChatComponentBuffer<ChatCompo
 
     @Override
     public String getUnformattedTextForChat() {
-        return stack == null ? "" : stack.getDisplayName();
+        // Wrap in brackets like vanilla func_151000_E(), but resolved client-side in the correct locale.
+        return stack == null ? "" : "[" + stack.getDisplayName() + "]";
     }
 
     @Override
