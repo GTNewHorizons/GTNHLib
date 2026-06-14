@@ -1,6 +1,8 @@
 package com.gtnewhorizon.gtnhlib.color;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -35,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  * </pre>
  * <p>
  * Then use the color anywhere:
- * 
+ *
  * <pre>
  * <code>
  *  GuiDraw.drawRect(x, y, w, h, ColorUtils.background.getColor());
@@ -47,14 +49,23 @@ import org.apache.logging.log4j.Logger;
  * ARGB colors use 8-char hex (AARRGGBB). RGB colors use 6-char hex (RRGGBB), alpha is always FF.
  * <p>
  * Colors are resolved on every resource reload (F3+T) via {@link CacheReloadListener}, registered by GTNHLib's client
- * proxy.
+ * proxy. On the first reload all instances are scanned to find overrides; subsequent reloads only re-check instances
+ * that actually have an override, so mods with no resource pack pay no per-reload cost. Call {@link #invalidate()} to
+ * force a full rescan (e.g. after a resource pack is added at runtime).
  */
 public class ColorResource {
 
     private static final Logger LOG = LogManager.getLogger(ColorResource.class);
-    private static final Set<ColorResource> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
 
-    private final String langKey;
+    // All registered instances. WeakHashMap allows GC if an instance is no longer referenced elsewhere.
+    private static final Set<ColorResource> ALL = Collections.newSetFromMap(new WeakHashMap<>());
+    // Only instances that have a confirmed resource pack override. Rebuilt on each full scan.
+    private static final List<ColorResource> ACTIVE = new ArrayList<>();
+    // Guarded by ALL's monitor. False until the first onResourceManagerReload completes.
+    private static boolean initialized = false;
+
+    private final String modId;
+    private final String name;
     private final int defaultColor;
     private final boolean argb;
     private volatile int cachedColor;
@@ -67,12 +78,13 @@ public class ColorResource {
      * @param argb  true to include the alpha channel, false to force alpha to FF
      */
     public ColorResource(String modId, String name, String hex, boolean argb) {
-        this.langKey = "color.resource." + modId + "." + name;
+        this.modId = modId.intern();
+        this.name = name;
         this.argb = argb;
         this.defaultColor = parseHex(hex, argb);
-        this.cachedColor = resolveColor();
-        synchronized (INSTANCES) {
-            INSTANCES.add(this);
+        this.cachedColor = this.defaultColor;
+        synchronized (ALL) {
+            ALL.add(this);
         }
     }
 
@@ -88,9 +100,9 @@ public class ColorResource {
         return argb ? (int) value : (int) (0xFF000000L | value);
     }
 
-    /** Lang key used to look up a resource pack override. */
+    /** Lang key used to look up a resource pack override, e.g. {@code color.resource.mymod.background}. */
     public String getLangKey() {
-        return langKey;
+        return "color.resource." + modId + "." + name;
     }
 
     /**
@@ -98,7 +110,7 @@ public class ColorResource {
      * Updated on every resource reload (F3+T).
      * <p>
      * Example usage:
-     * 
+     *
      * <pre>
      * <code>
      *  GuiDraw.drawRect(x, y, w, h, ColorUtils.background.getColor());
@@ -110,6 +122,7 @@ public class ColorResource {
     }
 
     private int resolveColor() {
+        String langKey = getLangKey();
         if (StatCollector.canTranslate(langKey)) {
             String value = stripPrefix(StatCollector.translateToLocal(langKey));
             try {
@@ -127,6 +140,16 @@ public class ColorResource {
             }
         }
         return defaultColor;
+    }
+
+    /**
+     * Forces a full rescan of all registered instances on the next resource reload. Call this if a resource pack is
+     * added or removed at runtime so that newly introduced overrides are picked up.
+     */
+    public static void invalidate() {
+        synchronized (ALL) {
+            initialized = false;
+        }
     }
 
     /**
@@ -167,16 +190,46 @@ public class ColorResource {
         }
     }
 
-    /** Resolves all color values on resource reload (F3+T). Registered by GTNHLib's client proxy. */
+    /**
+     * Resolves color values on resource reload (F3+T). Registered by GTNHLib's client proxy.
+     * <p>
+     * On the first reload all instances are scanned (full scan). After that only instances with a confirmed resource
+     * pack override are re-checked, so packs with no overrides pay zero per-reload cost.
+     */
     public static class CacheReloadListener implements IResourceManagerReloadListener {
 
         @Override
         public void onResourceManagerReload(IResourceManager resourceManager) {
-            synchronized (INSTANCES) {
-                for (ColorResource instance : INSTANCES) {
-                    instance.cachedColor = instance.resolveColor();
+            synchronized (ALL) {
+                if (!initialized) {
+                    fullScan();
+                    initialized = true;
+                } else {
+                    partialScan();
                 }
             }
+        }
+
+        private static void fullScan() {
+            ACTIVE.clear();
+            for (ColorResource instance : ALL) {
+                int resolved = instance.resolveColor();
+                instance.cachedColor = resolved;
+                if (resolved != instance.defaultColor) {
+                    ACTIVE.add(instance);
+                }
+            }
+        }
+
+        private static void partialScan() {
+            // Only re-check instances with a confirmed override. If no resource pack provides overrides,
+            // ACTIVE is empty and this loop does nothing.
+            ACTIVE.removeIf(instance -> {
+                int resolved = instance.resolveColor();
+                instance.cachedColor = resolved;
+                // Remove from ACTIVE if the override is gone (e.g. resource pack was unloaded)
+                return resolved == instance.defaultColor;
+            });
         }
     }
 }
