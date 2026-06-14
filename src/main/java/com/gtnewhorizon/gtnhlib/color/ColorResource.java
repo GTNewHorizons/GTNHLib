@@ -123,8 +123,9 @@ public class ColorResource {
 
     private int resolveColor() {
         String langKey = getLangKey();
-        if (StatCollector.canTranslate(langKey)) {
-            String value = stripPrefix(StatCollector.translateToLocal(langKey));
+        String translatedKey = StatCollector.translateToLocal(langKey);
+        if (langKey != translatedKey) {
+            String value = stripPrefix(translatedKey);
             try {
                 if (!argb && value.length() > 6) {
                     LOG.warn(
