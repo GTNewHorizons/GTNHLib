@@ -90,9 +90,15 @@ public class StandardInventoryIterator extends AbstractInventoryIterator {
 
         int toExtract = Math.min(inSlot.stackSize, amount);
 
-        ItemStack extracted = inSlot.splitStack(toExtract);
-
-        setInventorySlotContents(slotIndex, inSlot.stackSize == 0 ? null : inSlot);
+        final ItemStack extracted;
+        if (inSlot.stackSize <= toExtract) {
+            // We can avoid NBT copy by just directly passing the stack here
+            extracted = inSlot;
+            setInventorySlotContents(slotIndex, null);
+        } else {
+            extracted = inSlot.splitStack(toExtract);
+            setInventorySlotContents(slotIndex, inSlot);
+        }
 
         markDirty();
 
