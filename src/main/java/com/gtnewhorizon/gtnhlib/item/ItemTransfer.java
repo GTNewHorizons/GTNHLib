@@ -182,7 +182,8 @@ public class ItemTransfer {
                         }
                     }
 
-                    continue;
+                    // Skip this slot to avoid retrying the same extraction as the previous iteration.
+                    break;
                 }
 
                 // Try to insert the extracted stack
