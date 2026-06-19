@@ -154,8 +154,12 @@ public class ItemTransfer {
                 int remainingTransferAllowance = maxTotalTransferred - itemsTransferred;
 
                 int toTransferThisOP = Math.min(remainingTransferAllowance, maxItemsPerTransfer);
+                int toExtract = Math.min(availableCount, toTransferThisOP);
 
-                ItemStack extracted = iter.extract(Math.min(availableCount, toTransferThisOP), false);
+                // Filters may depend on stack size. Re-check the exact amount about to be extracted.
+                if (filter != null && !filter.test(insertion.set(available, toExtract))) break;
+
+                ItemStack extracted = iter.extract(toExtract, false);
 
                 // We couldn't extract anything, even though we should've been able to: go to the next source slot
                 if (ItemUtil.isStackEmpty(extracted)) break;
