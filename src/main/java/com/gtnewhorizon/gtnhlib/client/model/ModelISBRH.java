@@ -41,12 +41,10 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
 import com.gtnewhorizon.gtnhlib.util.StdLCG;
-import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
-@ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public static final ThreadLocal<ModelISBRH> INSTANCE = ThreadLocal.withInitial(ModelISBRH::new);
