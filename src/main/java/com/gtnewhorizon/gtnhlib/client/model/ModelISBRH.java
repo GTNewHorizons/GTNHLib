@@ -45,6 +45,8 @@ import com.gtnewhorizon.gtnhlib.util.StdLCG;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
+// TODO: Fix thread safety issues in blockstates
+// @ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public static final ThreadLocal<ModelISBRH> INSTANCE = ThreadLocal.withInitial(ModelISBRH::new);
