@@ -5,14 +5,17 @@ package com.gtnewhorizon.gtnhlib.util.font;
  */
 public interface IFontParameters {
 
+    @Deprecated
     default float getGlyphScaleX() {
         return 1;
     }
 
+    @Deprecated
     default float getGlyphScaleY() {
         return 1;
     }
 
+    @Deprecated
     default float getGlyphSpacing() {
         return 0;
     }

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.gtnewhorizons.angelica.glsm.GLStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 
@@ -20,6 +21,8 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 public class ShaderProgram {
 
     protected int program;
+
+    private static final long startTime = System.currentTimeMillis();
 
     public ShaderProgram(String domain, String vertShaderFilename, String fragShaderFilename, IShaderDefinesInjector... defines) {
         int program;
@@ -290,6 +293,12 @@ public class ShaderProgram {
         if (last.x != vec3.x || last.y != vec3.y || last.z != vec3.z) {
             glUniform3f(location, vec3);
             last.set(vec3);
+        }
+    }
+
+    public final void uploadTime(int uTime) {
+        if (uTime != -1) {
+            GL20.glUniform1f(uTime, (System.currentTimeMillis() - startTime) / 1000f);
         }
     }
 }

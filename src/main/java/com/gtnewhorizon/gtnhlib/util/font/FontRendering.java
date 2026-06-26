@@ -5,6 +5,7 @@ import java.util.function.Function;
 import net.minecraft.client.gui.FontRenderer;
 
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 // Common font rendering utilities that may be better-behaved than vanilla counterparts
 public class FontRendering {
@@ -15,18 +16,26 @@ public class FontRendering {
     private static final int SECTION_X_PAYLOAD = 12;
     private static final int SECTION_X_LENGTH = SECTION_X_PAYLOAD + 2;
 
-    @Setter
-    private static Function<String, String> textPreprocessor = null;
+    public static TextPreprocessor textPreprocessor = null; // Dummy test preprocessor
+
+    public static void setTextPreprocessor(TextPreprocessor textPreprocessor) {
+        FontRendering.textPreprocessor = textPreprocessor;
+    }
+
+    @Deprecated
+    public static void setTextPreprocessor(Function<String, String> textPreprocessor) {
+        FontRendering.textPreprocessor = textPreprocessor::apply;
+    }
 
     /**
      * Extension of {@link Function} that lets a preprocessor declare capability metadata. Width calculations
-     * ({@link #sizeStringToWidth(String,int,FontRenderer)},
-     * {@link #trimStringToWidth(String,int,boolean,FontRenderer)}) consult {@link #handlesAmpCodes()} to decide whether
-     * {@code &}-prefixed sequences should be treated as zero-width. A plain {@link Function} preprocessor is still
-     * accepted by {@link #setTextPreprocessor(Function)}; it defaults to {@code handlesAmpCodes() == false}, so
-     * {@code &} is counted as a literal character.
+     * ({@link #sizeStringToWidth(String,int,IFontParameters)},
+     * {@link #trimStringToWidth(String,int,boolean,IFontParameters)}) consult {@link #handlesAmpCodes()} to decide whether
+     * {@code &}-prefixed sequences should be treated as zero-width.
      */
-    public interface TextPreprocessor extends Function<String, String> {
+    public interface TextPreprocessor {
+
+        String apply(String text);
 
         /**
          * Whether this preprocessor converts ampersand color codes (&c, &#RRGGBB, &g gradients) into their §-prefixed
@@ -38,14 +47,14 @@ public class FontRendering {
     }
 
     private static boolean preprocessorHandlesAmpCodes() {
-        return textPreprocessor instanceof TextPreprocessor && ((TextPreprocessor) textPreprocessor).handlesAmpCodes();
+        return textPreprocessor != null && textPreprocessor.handlesAmpCodes();
     }
 
     /**
      * Apply the registered text preprocessor (e.g. &RRGGBB → §x conversion). Returns the input unchanged if no
      * preprocessor is set.
      */
-    public static String preprocessText(String str) {
+    public static String preprocessText(@NotNull String str) {
         return textPreprocessor != null ? textPreprocessor.apply(str) : str;
     }
 
@@ -137,19 +146,15 @@ public class FontRendering {
     /**
      * A getStringWidth implementation that respects formatting rules and works with custom fonts through Angelica.
      */
-    public static int getStringWidth(String str, FontRenderer fr) {
-
+    public static int getStringWidth(String str, final IFontParameters fontParams) {
         if (str == null || str.isEmpty()) {
             return 0;
         }
 
         str = preprocessText(str);
 
-        IFontParameters fontParams = (IFontParameters) fr;
-
         float width = 0;
         boolean curBold = false;
-        boolean spacingOmittedOnce = false;
 
         for (int i = 0; i < str.length(); ++i) {
             char ch = str.charAt(i);
@@ -170,36 +175,29 @@ public class FontRendering {
 
             width += charWidth;
 
-            // Add glyph spacing (n-1) times for n characters
-            if (charWidth > 0) {
-                if (spacingOmittedOnce) {
-                    width += fontParams.getGlyphSpacing();
-                } else {
-                    spacingOmittedOnce = true;
-                }
-            }
-
             if (curBold && charWidth > 0) {
-                width += 1.0f;
+                width++;
             }
         }
 
-        return (int) Math.ceil(width);
+        return fastCeil(width);
+    }
+
+    private static int fastCeil(float x) {
+        int i = (int) x;      // truncates toward 0
+        return (x > i) ? i + 1 : i;
     }
 
     /**
      * Determines how many characters from the string will fit into the specified width.
      */
-    public static int sizeStringToWidth(String str, int wrapWidth, FontRenderer fr) {
+    public static int sizeStringToWidth(String str, int wrapWidth, IFontParameters fontParams) {
 
         int originalStringLength = str.length();
         float width = 0;
         int i = 0;
         int lastBreakSpot = -1;
         boolean curBold = false;
-        boolean spacingOmittedOnce = false;
-
-        IFontParameters fontParams = (IFontParameters) fr;
 
         while (i < originalStringLength) {
             char currentChar = str.charAt(i);
@@ -250,13 +248,6 @@ public class FontRendering {
                 default:
                     width += fontParams.getCharWidthFine(currentChar);
 
-                    // Add glyph spacing (n-1) times for n characters
-                    if (spacingOmittedOnce) {
-                        width += fontParams.getGlyphSpacing();
-                    } else {
-                        spacingOmittedOnce = true;
-                    }
-
                     if (curBold) {
                         width += 1.0f;
                     }
@@ -278,17 +269,14 @@ public class FontRendering {
      * Removes characters from the string to trim its rendered length down to trimWidth, starting either from the end
      * (reverse = 0) or the beginning (reverse = 1).
      */
-    public static String trimStringToWidth(String str, int trimWidth, boolean reverse, FontRenderer fr) {
+    public static String trimStringToWidth(String str, int trimWidth, boolean reverse, IFontParameters fontParams) {
 
         StringBuilder stringbuilder = new StringBuilder();
         float width = 0;
         int startOrEnd = reverse ? str.length() - 1 : 0;
         int increment = reverse ? -1 : 1;
         boolean curBold = false;
-        boolean spacingOmittedOnce = false;
         boolean parsingFormatCode = false;
-
-        IFontParameters fontParams = (IFontParameters) fr;
 
         for (int i = startOrEnd; i >= 0 && i < str.length() && width < trimWidth; i += increment) {
             char ch = str.charAt(i);
@@ -337,24 +325,11 @@ public class FontRendering {
                 // Literal & — fall through to width calculation below
                 width += charWidth;
 
-                if (spacingOmittedOnce) {
-                    width += fontParams.getGlyphSpacing();
-                } else {
-                    spacingOmittedOnce = true;
-                }
-
                 if (curBold) {
                     width += 1.0f;
                 }
             } else {
                 width += charWidth;
-
-                // Add glyph spacing (n-1) times for n characters
-                if (spacingOmittedOnce) {
-                    width += fontParams.getGlyphSpacing();
-                } else {
-                    spacingOmittedOnce = true;
-                }
 
                 if (curBold) {
                     width += 1.0f;

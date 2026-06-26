@@ -27,7 +27,7 @@ public abstract class MixinFontRenderer implements IFontParameters {
      */
     @Overwrite
     public int getStringWidth(String text) {
-        return FontRendering.getStringWidth(text, (FontRenderer) (Object) this);
+        return FontRendering.getStringWidth(text, this);
     }
 
     /**
@@ -37,7 +37,7 @@ public abstract class MixinFontRenderer implements IFontParameters {
     @SuppressWarnings("visibility")
     @Overwrite
     public int sizeStringToWidth(String str, int wrapWidth) {
-        return FontRendering.sizeStringToWidth(str, wrapWidth, (FontRenderer) (Object) this);
+        return FontRendering.sizeStringToWidth(str, wrapWidth, this);
     }
 
     /**
@@ -46,6 +46,6 @@ public abstract class MixinFontRenderer implements IFontParameters {
      */
     @Overwrite
     public String trimStringToWidth(String str, int trimWidth, boolean reverse) {
-        return FontRendering.trimStringToWidth(str, trimWidth, reverse, (FontRenderer) (Object) this);
+        return FontRendering.trimStringToWidth(str, trimWidth, reverse, this);
     }
 }
