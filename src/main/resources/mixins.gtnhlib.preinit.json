@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8.5-GTNH",
+  "refmap": "mixins.gtnhlib.refmap.json",
+  "target": "@env(PREINIT)",
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  },
+  "compatibilityLevel": "JAVA_8",
+  "plugin": "com.gtnewhorizon.gtnhlib.mixins.PreInitMixinPlugin",
+  "package": "com.gtnewhorizon.gtnhlib.mixins.preinit"
+}
