@@ -2,15 +2,12 @@ package com.gtnewhorizon.gtnhlib.api.gui;
 
 import java.util.HashMap;
 
-import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
-
 /**
  * Allows to register more confirmation screens to show before the FML missing mapping warning screen. Specifically
  * designed for world conversion warnings, these will only fire if the currently loading world contains any missing
  * mapping. Fires *after* {@link cpw.mods.fml.common.event.FMLMissingMappingsEvent}s but *before* the warning gui /
  * server message.
  */
-@EventBusSubscriber
 public class WorldConversionWarningManager {
 
     public static final HashMap<String, WorldConversionWarning> WARNINGS = new HashMap<>();

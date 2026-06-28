@@ -18,6 +18,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 @EventBusSubscriber
 public class ClientEventHandler {
 
+    // Put here because WorldConversionWarningManager is common and cannot try to import gui classes
     @SubscribeEvent
     public static void onGuiOpen(GuiOpenEvent event) {
         if (!(event.gui instanceof GuiConfirmation confirmationGui)) return;
