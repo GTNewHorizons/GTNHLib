@@ -3,21 +3,70 @@ GTNHLib
 
 ## About
 
-Shared code library for GTNH mods
+Shared code library for GTNH mods.
 
+## Features
 
-## Events
+### Config
 
-GTNHLib fires `InventoryChangedEvent` on the Forge event bus when a player's net item holdings change, on both client (local player only) and server. Subscribe to the concrete subclasses:
+- Define configs with the `@Config` annotation on a class. Each field becomes a config option.
+- Set defaults, ranges, comments, and lang keys with field annotations like `@DefaultInt`, `@RangeInt`, and `@Comment`.
+- The library reads, writes, and validates the `.cfg` file for you. No manual `Configuration` calls.
+- Mark fields `@Sync` to push server values to clients on connect.
+- Generates a Forge config GUI straight from the annotations.
 
-- `InventoryChangedEvent.ItemAdded` - net gain of an item
-- `InventoryChangedEvent.ItemRemoved` - net loss of an item
+### Events
 
-Each event exposes the representative `ItemStack item`, `getCount()` (absolute amount changed), and `getDelta()` (signed: positive added, negative removed). Items are matched by type and subtype metadata, ignoring NBT, so rearranging or sorting an inventory fires nothing; only crossing an inventory boundary (pickup, drop, chest transfer, crafting) does. Scanned scope: main inventory, armor, the held cursor stack, the 2x2 crafting grid, and Baubles slots when Baubles is installed.
+- Fires `InventoryChangedEvent` when a player's net item holdings change. Subscribe to `ItemAdded` or `ItemRemoved`, which carry the changed `ItemStack` and a signed delta.
+- Items are matched by type and metadata ignoring NBT, so sorting an inventory fires nothing. Scans run every few ticks (configurable).
+- Fires `PickBlockEvent` when a player middle-clicks a block.
+- Mark a class `@EventBusSubscriber` to auto-register its `@SubscribeEvent` methods. Choose the side and load phase in the annotation. No manual registration needed.
 
-Inventories are scanned every `inventoryScanInterval` ticks (default 5, configurable 1-200 in the GTNHLib config).
+### Items
 
-Known limitations: items moved into an external crafting-table grid or other open container slots are out of scope, so placing items there reads as a removal and retrieving them reads as an addition. On joining a world the inventory arrives over a few ticks, so a brief burst of add events is possible before the baseline settles.
+- `ImmutableItemStack` wraps a stack as read-only to prevent accidental mutation.
+- `ItemTransfer` moves items between an `ItemSource` and an `ItemSink` with predicate filters and count limits.
+- Walk any `IInventory` with `InventoryIterator`, including sided slots.
+- The source and sink interfaces abstract pulling and pushing so transfer logic works across any inventory type.
+
+### Rendering
+
+- Render items with multiple stacked texture layers by implementing `ItemWithTextures`. Register with `TexturedItemRenderer`.
+- `CapturingTesselator` captures render quads off the main thread for batched or async rendering.
+- Helpers for animated tooltips and an above-hotbar HUD message.
+
+### Block State
+
+- Register custom block properties: boolean, int, enum, direction, axis, and orientation.
+- Pack and read property values from block metadata, so blocks behave like modern block states on 1.7.
+- Includes a `blockstate` command to inspect state at a position.
+
+### Commands
+
+- Brigadier command API for modern command parsing, completion, and execution on 1.7.
+- Register custom game rules with `GameRuleRegistry`. The library hooks the vanilla game rules system to notify your rules of changes.
+
+### Teams
+
+- Team management system with roles, membership, and admin commands.
+- Register your own data on a team with `TeamDataRegistry`. The library persists it to disk and syncs it to clients.
+
+### Networking
+
+- Send titles, hotbar messages, and view distance to clients.
+- Sync custom player data.
+
+### Utilities
+
+- LWJGL3-style `MemoryUtil` and `MemoryStack` backport in the `bytebuf` package.
+- FNV-1a 32 and 64 bit hashing.
+- Math, NBT, JSON, file, direction, and distance helpers.
+- Color types for RGB and HSV.
+- 3D geometry iterators and transforms.
+- Capability provider helpers.
+- Synced keybinds.
+- ASM and bytecode helpers.
+- Mod compatibility checks (Baubles, FalseTweaks, NEI).
 
 ## Credits
 
