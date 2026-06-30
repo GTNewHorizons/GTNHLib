@@ -67,6 +67,7 @@ Shared code library for GTNH mods.
 - Synced keybinds.
 - ASM and bytecode helpers.
 - Mod compatibility checks (Baubles, FalseTweaks, NEI).
+- FastUtil shadow via https://github.com/GTNewHorizons/GTNHExtLib
 
 ## Credits
 
