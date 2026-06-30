@@ -11,89 +11,63 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Utility class for safe and convenient manipulation of {@link ItemStack} NBT data.
- *
- * <p>
- * This class provides two complementary APIs:
- * </p>
- *
- * <ul>
- * <li><b>Static methods</b> – allocation-free, ideal for singular operations or performance-critical code paths</li>
- * <li><b>Instance methods</b> – allocates one object, ideal for multiple chainable operations for more readable
- * code</li>
- * </ul>
- *
- * <h2>Key Features</h2>
- * <ul>
- * <li>Automatically initializes {@link NBTTagCompound} only when needed (on write)</li>
- * <li>Prevents unnecessary empty NBT compounds on {@link ItemStack}s</li>
- * <li>Provides safe default values when reading from missing tags</li>
- * <li>Supports all common NBT types (primitives, arrays, compounds, lists)</li>
- * </ul>
- *
- * <h2>Static vs Instance Usage</h2>
- *
- * <h3>Static API</h3>
- * <p>
- * The static methods avoid any additional object allocation and should be preferred in performance-sensitive contexts
- * such as ticking logic, inventory iteration, or rendering.
- * </p>
- *
- * <pre>
- * {@code
- * ItemStack stack = ...;
- *
- * // Write values
- * ItemStackNBT.setInteger(stack, "energy", 1000);
- * ItemStackNBT.setBoolean(stack, "active", true);
- *
- * // Read values
- * int energy = ItemStackNBT.getInteger(stack, "energy");
- * boolean active = ItemStackNBT.getBoolean(stack, "active");
- * }
- * </pre>
- *
- * <h3>Instance API</h3>
- * <p>
- * The instance API wraps an {@link ItemStack} and allows method chaining for improved readability. This is slightly
- * less efficient due to object allocation, but often negligible outside hot loops.
- * </p>
- *
- * <pre>
- * {@code
- * ItemStack stack = ...;
- *
- * ItemStackNBT.of(stack)
- *     .setInteger("energy", 1000)
- *     .setInteger("bla", 87)
- *     .setInteger("ducks", 55)
- *     .setBoolean("active", true);
- *
- * int energy = ItemStackNBT.of(stack).getInteger("energy");
- * }
- * </pre>
- *
- * <h2>Behavior Notes</h2>
- * <ul>
- * <li>Getter methods return safe default values when the stack has no NBT data or the key is missing:
- * <ul>
- * <li>Numeric types → {@code 0}</li>
- * <li>Boolean → {@code false}</li>
- * <li>String → empty string</li>
- * <li>Arrays → empty arrays</li>
- * <li>Objects → {@code null} (e.g. {@link NBTBase})</li>
- * </ul>
- * </li>
- * <li>Setter methods automatically create the underlying {@link NBTTagCompound} if it does not exist.</li>
- * <li>{@link #removeTag(ItemStack, String)} and its instance counterpart will automatically remove the entire compound
- * from the stack if it becomes empty, preventing unnecessary NBT data.</li>
- * </ul>
- */
+// spotless:off
+/// Utility class for safe and convenient manipulation of [ItemStack] NBT data.
+///
+/// This class provides two complementary APIs:
+/// - **Static methods** – allocation-free, ideal for singular operations or performance-critical code paths
+/// - **Instance methods** – allocates one object, ideal for multiple chainable operations for more readable
+///   code
+///
+/// ## Key Features
+/// - Automatically initializes [NBTTagCompound] only when needed (on write)
+/// - Prevents unnecessary empty NBT compounds on [ItemStack]s
+/// - Provides safe default values when reading from missing tags
+/// - Supports all common NBT types (primitives, arrays, compounds, lists)
+///
+/// ## Static vs Instance Usage
+/// ### Static API
+/// The static methods avoid any additional object allocation and should be preferred in performance-sensitive contexts
+/// such as ticking logic, inventory iteration, or rendering.
+/// ```java
+/// ItemStack stack = ...;
+/// // Write values
+/// ItemStackNBT.setInteger(stack, "energy", 1000);
+/// ItemStackNBT.setBoolean(stack, "active", true);
+/// // Read values
+/// int energy = ItemStackNBT.getInteger(stack, "energy");
+/// boolean active = ItemStackNBT.getBoolean(stack, "active");
+/// ```
+///
+/// ### Instance API
+/// The instance API wraps an [ItemStack] and allows method chaining for improved readability. This is slightly
+/// less efficient due to object allocation, but often negligible outside hot loops.
+/// ```java
+/// ItemStack stack = ...;
+/// ItemStackNBT.of(stack)
+///     .setInteger("energy", 1000)
+///     .setInteger("bla", 87)
+///     .setInteger("ducks", 55)
+///     .setBoolean("active", true);
+/// int energy = ItemStackNBT.of(stack).getInteger("energy");
+/// ```
+///
+/// ## Behavior Notes
+/// - Getter methods return safe default values when the stack has no NBT data or the key is missing:
+///   - Numeric types → `0`
+///   - Boolean → `false`
+///   - String → empty string
+///   - Arrays → empty arrays
+///   - Objects → `null` (e.g. [NBTBase])
+/// - Setter methods automatically create the underlying [NBTTagCompound] if it does not exist.
+/// - [#removeTag(ItemStack, String)] and its instance counterpart will automatically remove the entire compound
+///   from the stack if it becomes empty, preventing unnecessary NBT data.
 public final class ItemStackNBT {
+// spotless:on
 
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     private static final int[] EMPTY_INT_ARRAY = new int[0];
@@ -385,6 +359,14 @@ public final class ItemStackNBT {
         return b;
     }
 
+    /// Non-static version of [#enchant(ItemStack, short, short)]
+    /// @return this, for chaining
+    @Contract("_, _ -> this")
+    public ItemStackNBT enchant(short enchantmentId, short level) {
+        enchant(this.stack, enchantmentId, level);
+        return this;
+    }
+
     private void ensureInitialized() {
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());
@@ -660,6 +642,43 @@ public final class ItemStackNBT {
         final boolean b = !stack.getTagCompound().getBoolean(key);
         stack.getTagCompound().setBoolean(key, b);
         return b;
+    }
+
+    /// Enchants the item with the given enchantment and level. Unlike Minecraft, it doesn't cast the level to a byte.
+    /// If the enchantment already exists on the item, the level will be set to the given level.
+    ///
+    /// This does *not* check if the enchantment is valid for the item, it just applies it.
+    ///
+    /// @throws IllegalStateException if any of the enchantments on the item are ill-formed.
+    public static void enchant(@NotNull ItemStack stack, short enchantmentId, short level) {
+        ensureInitialized(stack);
+        var enchantmentList = ItemStackNBT.getTagList(stack, "ench", NBT.TAG_COMPOUND);
+        if (enchantmentList == null) {
+            enchantmentList = new NBTTagList();
+            ItemStackNBT.setTagList(stack, "ench", enchantmentList);
+        }
+
+        // Search for an existing enchantment with the same ID
+        for (var tag : enchantmentList.tagList) {
+            if (!(tag instanceof NBTTagCompound tagCompound))
+                throw new IllegalStateException("Ill-formed enchantment! Not an NBTTagCompound!");
+            // This check is necessary because the default id, if not found, would otherwise be 0. Which is a valid
+            // enchantment ID. If a corrupt enchantment tag is present, crashing is preferable to silently eating
+            // Protection applied to the item...
+            if (!tagCompound.hasKey("id")) throw new IllegalStateException("Ill-formed enchantment! No ID found!");
+
+            // And modify it, if present.
+            if (tagCompound.getShort("id") == enchantmentId) {
+                tagCompound.setShort("lvl", level);
+                return;
+            }
+        }
+
+        // The tag wasn't present already, add it.
+        var enchantmentTag = new NBTTagCompound();
+        enchantmentTag.setShort("id", enchantmentId);
+        enchantmentTag.setShort("lvl", level);
+        enchantmentList.appendTag(enchantmentTag);
     }
 
     /**
