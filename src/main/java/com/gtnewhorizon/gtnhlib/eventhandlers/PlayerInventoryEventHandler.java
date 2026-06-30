@@ -37,7 +37,8 @@ public final class PlayerInventoryEventHandler {
 
         final Object2ObjectOpenHashMap<UUID, PlayerInvState> states = client ? CLIENT_STATES : SERVER_STATES;
 
-        // Skip all scanning when nothing listens. Drop baselines so we re-seed (no backlog burst) once a listener returns.
+        // Skip all scanning when nothing listens. Drop baselines so we re-seed (no backlog burst) once a listener
+        // returns.
         if (!InventoryEventListeners.anySubscribed()) {
             if (!states.isEmpty()) states.clear();
             return;
