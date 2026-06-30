@@ -6,9 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 
 /**
- * Isolated, reflection-based access to the Baubles inventory so the library never hard-depends on Baubles. Only
- * touched when {@link Mods#BAUBLES} is true. {@code baubles.api.BaublesApi.getBaubles(EntityPlayer)} returns the
- * full (possibly expanded) bauble inventory.
+ * Reflection-based access to Baubles inventory (no hard dependency). Lazy-init with double-checked locking.
  */
 public final class BaublesCompat {
 

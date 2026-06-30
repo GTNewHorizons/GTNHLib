@@ -5,9 +5,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 /**
- * Pure, Minecraft-free diff between two aggregate item-count snapshots. Keys are packed item identities; values are
- * total counts. Emits one delta per identity whose total changed. Uses fastutil {@code fastIterator} so iteration
- * reuses a single mutable entry instead of allocating one per element.
+ * Diff between two item-count snapshots. Uses fastutil {@code fastIterator} to avoid per-entry allocation.
+ * Maps must use default-return-0 for absent keys.
  */
 public final class InventoryDiffer {
 
@@ -20,10 +19,9 @@ public final class InventoryDiffer {
     private InventoryDiffer() {}
 
     /**
-     * @param previous prior snapshot; MUST use default return value 0 for absent keys (the default for
-     *                 {@code Long2IntOpenHashMap}) — a custom default would corrupt deltas for new keys.
-     * @param current  current snapshot, same default-return-0 requirement.
-     * @param consumer receives one signed delta per identity whose total changed.
+     * @param previous prior snapshot; MUST use default-return-0 for absent keys.
+     * @param current  current snapshot; same default-return-0 requirement.
+     * @param consumer receives one signed delta per identity whose count changed.
      */
     public static void diff(Long2IntMap previous, Long2IntMap current, DeltaConsumer consumer) {
         final ObjectIterator<Long2IntMap.Entry> ci = Long2IntMaps.fastIterator(current);

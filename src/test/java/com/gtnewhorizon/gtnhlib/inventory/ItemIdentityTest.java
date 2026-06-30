@@ -49,7 +49,7 @@ class ItemIdentityTest {
 
     @Test
     void metaBeyond16BitsRoundTrips() {
-        // A 16-bit packing scheme would truncate this; pins id in the high 32 bits, meta in the low 32.
+        // Pins id in high 32 bits, meta in low 32 (16-bit packing would truncate).
         long key = ItemIdentity.pack(1, 100000, true);
         assertEquals(1, ItemIdentity.unpackId(key));
         assertEquals(100000, ItemIdentity.unpackMeta(key));

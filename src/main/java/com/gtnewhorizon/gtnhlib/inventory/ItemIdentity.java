@@ -1,12 +1,8 @@
 package com.gtnewhorizon.gtnhlib.inventory;
 
 /**
- * Packs an item's identity (registry id + subtype metadata) into a single {@code long}, with no allocation. Used to
- * aggregate inventory contents by identity. NBT is intentionally not part of the identity.
- * <p>
- * The id occupies the high 32 bits and the metadata the low 32 bits, so even GregTech meta-items (one id, thousands
- * of high-valued metadata subtypes) never collide. Metadata is only significant for items that declare subtypes;
- * for damageable items (tools) it is zeroed so durability changes do not look like add/remove.
+ * Packs item identity (id + metadata) into a single {@code long}. Id in high 32 bits, meta in low 32 bits: avoids
+ * GregTech collisions even with large metadata. Meta is zeroed for non-subtype/damageable items. NBT excluded.
  */
 public final class ItemIdentity {
 

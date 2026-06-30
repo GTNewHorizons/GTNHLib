@@ -5,15 +5,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
 /**
- * Base for events fired on {@link net.minecraftforge.common.MinecraftForge#EVENT_BUS} when a player's net holdings of
- * an item change. Fired on both client (local player only) and server. Not cancelable; the change already happened.
- * <p>
- * {@link #item} is a synthesized representative stack: its item and metadata identify what changed and its
- * {@code stackSize} is the absolute amount of the change. NBT is not preserved (identity ignores NBT).
- * <p>
- * Subscribe to the concrete {@link ItemAdded} / {@link ItemRemoved} subclasses; in 1.7.10 Forge cannot register a
- * listener against this abstract base (it has no no-arg constructor to instantiate). This type unifies the API for
- * shared/polymorphic handling.
+ * Fired when a player's inventory changes (both client and server). Not cancelable.
+ * Subscribe to concrete {@link ItemAdded} / {@link ItemRemoved} subclasses (1.7.10 Forge cannot register against
+ * abstract base without no-arg constructor).
  */
 public abstract class InventoryChangedEvent extends PlayerEvent {
 
@@ -32,7 +26,7 @@ public abstract class InventoryChangedEvent extends PlayerEvent {
     /** Signed change: positive when added, negative when removed. */
     public abstract int getDelta();
 
-    /** A player's net holdings of {@link #item} increased by {@link #getCount()}. */
+    /** Player gained {@link #item}. */
     public static class ItemAdded extends InventoryChangedEvent {
 
         public ItemAdded(EntityPlayer player, ItemStack item) {
@@ -45,7 +39,7 @@ public abstract class InventoryChangedEvent extends PlayerEvent {
         }
     }
 
-    /** A player's net holdings of {@link #item} decreased by {@link #getCount()}. */
+    /** Player lost {@link #item}. */
     public static class ItemRemoved extends InventoryChangedEvent {
 
         public ItemRemoved(EntityPlayer player, ItemStack item) {
