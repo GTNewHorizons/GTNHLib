@@ -106,9 +106,10 @@ public class CommonProxy {
         if ((boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
             SyncedKeybind.createConfigurable("gtnhlib.test_keybind", "debug", 0).registerGlobalListener(
                     (p, l, keyDown) -> { GTNHLib.LOG.info("GTNHLib test keybind down: {}", keyDown); });
-            if (GTNHLibConfig.debugInventoryEvents) {
-                MinecraftForge.EVENT_BUS.register(new InventoryEventDebugHandler());
-            }
+        }
+
+        if (GTNHLibConfig.debugInventoryEvents) {
+            MinecraftForge.EVENT_BUS.register(new InventoryEventDebugHandler());
         }
     }
 
