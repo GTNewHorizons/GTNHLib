@@ -25,6 +25,7 @@ public final class BaublesCompat {
         }
     }
 
+    // classload attempt is fine since its only done once
     private static synchronized void resolve() {
         if (resolved) return;
         try {

@@ -3,10 +3,10 @@ package com.gtnewhorizon.gtnhlib.inventory;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
-/** Per-player scan state. Maps are reused across scans; {@link #current} is cleared before each fill. */
+/** Per-player scan state. {@link #current} is cleared before each fill. */
 public final class PlayerInvState {
 
-    // Pre-sized so the first fills (a typical inventory holds dozens of distinct items) do not rehash.
+    // Pre-sized so the first fills do not rehash.
     private static final int INITIAL_CAPACITY = 64;
 
     public Long2IntMap current = new Long2IntOpenHashMap(INITIAL_CAPACITY);

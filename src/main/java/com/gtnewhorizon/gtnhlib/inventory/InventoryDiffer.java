@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 /**
- * Diff between two item-count snapshots. Uses fastutil {@code fastIterator} to avoid per-entry allocation.
+ * Diff between two item-count snapshots.
  * Maps must use default-return-0 for absent keys.
  */
 public final class InventoryDiffer {

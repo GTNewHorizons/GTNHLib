@@ -8,8 +8,7 @@ import net.minecraftforge.common.MinecraftForge;
 import com.gtnewhorizon.gtnhlib.event.InventoryChangedEvent;
 
 /**
- * Reusable {@link InventoryDiffer.DeltaConsumer} that turns a packed-key delta into a posted event. One instance per
- * logical side, reused across scans; {@link #player} is assigned before each diff so no per-scan lambda is allocated.
+ * Reusable {@link InventoryDiffer.DeltaConsumer} that turns a packed-key delta into a posted event.
  */
 public final class InventoryEventPoster implements InventoryDiffer.DeltaConsumer {
 

@@ -12,7 +12,7 @@ import com.gtnewhorizon.gtnhlib.compat.Mods;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 
-/** Builds the per-tick inventory snapshot and diffs it. No client-only or side-specific code, no per-scan allocation. */
+/** Builds the per-tick inventory snapshot and diffs it. */
 public final class PlayerInventoryScanner {
 
     private PlayerInventoryScanner() {}

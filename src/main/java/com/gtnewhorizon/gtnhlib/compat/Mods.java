@@ -8,6 +8,6 @@ public class Mods {
     public static final boolean NEI = Loader.isModLoaded("NotEnoughItems");
     public static final boolean ANGELICA = Loader.isModLoaded("angelica");
 
-    // GTNH Baubles-Expanded is a drop-in fork that registers under the "Baubles" modid, so one check covers both.
+    // Covers both Baubles and Baubles-Expanded.
     public static final boolean BAUBLES = Loader.isModLoaded("Baubles");
 }

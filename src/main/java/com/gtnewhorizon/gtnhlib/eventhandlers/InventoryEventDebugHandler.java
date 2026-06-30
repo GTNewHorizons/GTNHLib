@@ -33,7 +33,7 @@ public final class InventoryEventDebugHandler {
                 event.item.getDisplayName(),
                 event.getCount(),
                 player.getCommandSenderName());
-        // Chat only on the client so single-player does not double up (the server event fires the same change).
+
         if (player.worldObj.isRemote) {
             player.addChatMessage(
                     new ChatComponentText("[InvEvent] " + verb + " " + event.item.getDisplayName() + " x"

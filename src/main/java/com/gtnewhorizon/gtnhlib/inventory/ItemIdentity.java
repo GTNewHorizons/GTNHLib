@@ -1,8 +1,8 @@
 package com.gtnewhorizon.gtnhlib.inventory;
 
 /**
- * Packs item identity (id + metadata) into a single {@code long}. Id in high 32 bits, meta in low 32 bits: avoids
- * GregTech collisions even with large metadata. Meta is zeroed for non-subtype/damageable items. NBT excluded.
+ * Packs item identity (id + metadata) into a single {@code long}. Id in high 32 bits, meta in low 32 bits:
+ * Meta is zeroed for non-subtype/damageable items. NBT excluded.
  */
 public final class ItemIdentity {
 

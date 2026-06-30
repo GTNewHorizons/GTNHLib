@@ -17,11 +17,6 @@ import cpw.mods.fml.common.network.FMLNetworkEvent;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-/**
- * Drives inventory events; logical side is determined by {@code worldObj.isRemote} (not physical side), so server
- * events fire in single-player. State and posters are split per side because the integrated server and client share
- * a UUID across two threads.
- */
 @EventBusSubscriber
 public final class PlayerInventoryEventHandler {
 
