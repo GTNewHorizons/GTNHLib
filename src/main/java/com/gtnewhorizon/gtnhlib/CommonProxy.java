@@ -11,12 +11,15 @@ import net.minecraftforge.common.util.FakePlayer;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import net.minecraftforge.common.MinecraftForge;
+
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentItemName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
+import com.gtnewhorizon.gtnhlib.eventhandlers.InventoryEventDebugHandler;
 import com.gtnewhorizon.gtnhlib.commands.TitleCommand;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
@@ -104,6 +107,9 @@ public class CommonProxy {
         if ((boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
             SyncedKeybind.createConfigurable("gtnhlib.test_keybind", "debug", 0).registerGlobalListener(
                     (p, l, keyDown) -> { GTNHLib.LOG.info("GTNHLib test keybind down: {}", keyDown); });
+            if (GTNHLibConfig.debugInventoryEvents) {
+                MinecraftForge.EVENT_BUS.register(new InventoryEventDebugHandler());
+            }
         }
     }
 
