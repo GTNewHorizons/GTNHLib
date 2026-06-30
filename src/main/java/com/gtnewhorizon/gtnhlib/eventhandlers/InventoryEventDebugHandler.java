@@ -8,7 +8,7 @@ import com.gtnewhorizon.gtnhlib.event.InventoryChangedEvent;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
-/** Dev-only listener that logs inventory change events. Registered only in deobf with debugInventoryEvents=true. */
+/** Dev-only listener that logs inventory change events. Registered with debugInventoryEvents=true. */
 public final class InventoryEventDebugHandler {
 
     @SubscribeEvent
