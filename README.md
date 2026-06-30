@@ -17,6 +17,7 @@ Each event exposes the representative `ItemStack item`, `getCount()` (absolute a
 
 Inventories are scanned every `inventoryScanInterval` ticks (default 5, configurable 1-200 in the GTNHLib config).
 
+Known limitations: items moved into an external crafting-table grid or other open container slots are out of scope, so placing items there reads as a removal and retrieving them reads as an addition. On joining a world the inventory arrives over a few ticks, so a brief burst of add events is possible before the baseline settles.
 
 ## Credits
 

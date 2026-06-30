@@ -37,6 +37,7 @@ public final class PlayerInventoryEventHandler {
         if (player == null || player.inventory == null || player.worldObj == null) return;
 
         final boolean client = player.worldObj.isRemote;
+        // 'client' must be evaluated first; it short-circuits so a dedicated server never classloads Minecraft via the helper.
         if (client && !PlayerInventoryClientHelper.isLocalPlayer(player)) return;
 
         final Object2ObjectOpenHashMap<UUID, PlayerInvState> states = client ? CLIENT_STATES : SERVER_STATES;

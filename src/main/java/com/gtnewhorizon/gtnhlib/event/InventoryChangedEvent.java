@@ -11,6 +11,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
  */
 public abstract class InventoryChangedEvent extends PlayerEvent {
 
+    /** The changed item (representative; identity ignores NBT). Shared across listeners - copy before mutating. */
     public final ItemStack item;
 
     protected InventoryChangedEvent(EntityPlayer player, ItemStack item) {
