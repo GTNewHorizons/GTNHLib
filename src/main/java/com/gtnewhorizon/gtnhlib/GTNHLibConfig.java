@@ -108,4 +108,14 @@ public class GTNHLibConfig {
     @Config.DefaultInt(0)
     @Config.RangeInt(min = -1000, max = 1000)
     public static int titleOffsetY;
+
+    @Config.Comment("How often (in ticks) to scan player inventories for the InventoryChangedEvent item add/remove "
+            + "events. Higher = less CPU but coarser timing. 1 = every tick.")
+    @Config.DefaultInt(5)
+    @Config.RangeInt(min = 1, max = 200)
+    public static int inventoryScanInterval;
+
+    @Config.Comment("Dev only: log every player inventory add/remove event to the console.")
+    @Config.DefaultBoolean(false)
+    public static boolean debugInventoryEvents;
 }

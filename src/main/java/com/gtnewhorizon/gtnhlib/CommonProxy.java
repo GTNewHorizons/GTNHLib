@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
@@ -23,6 +24,7 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
+import com.gtnewhorizon.gtnhlib.eventhandlers.InventoryEventDebugHandler;
 import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
@@ -104,6 +106,10 @@ public class CommonProxy {
         if ((boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
             SyncedKeybind.createConfigurable("gtnhlib.test_keybind", "debug", 0).registerGlobalListener(
                     (p, l, keyDown) -> { GTNHLib.LOG.info("GTNHLib test keybind down: {}", keyDown); });
+        }
+
+        if (GTNHLibConfig.debugInventoryEvents) {
+            MinecraftForge.EVENT_BUS.register(new InventoryEventDebugHandler());
         }
     }
 

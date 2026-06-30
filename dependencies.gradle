@@ -37,6 +37,9 @@ dependencies {
 
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.102-GTNH:dev") { transitive = false }
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:CodeChickenCore:1.4.15:dev") { transitive = false }
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-994-GTNH") {
+        exclude module:"GTNHLib"
+    }
 
     // Annotation things
     compileOnly("com.github.GTNewHorizons:Angelica:2.1.36:dev") { transitive = false }
