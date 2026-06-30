@@ -5,13 +5,13 @@ import it.unimi.dsi.fastutil.longs.Long2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 /**
- * Diff between two item-count snapshots.
- * Maps must use default-return-0 for absent keys.
+ * Diff between two item-count snapshots. Maps must use default-return-0 for absent keys.
  */
 public final class InventoryDiffer {
 
     @FunctionalInterface
     public interface DeltaConsumer {
+
         /** @param delta positive = added, negative = removed. */
         void accept(long key, int delta);
     }

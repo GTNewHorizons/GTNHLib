@@ -21,9 +21,11 @@ public final class InventoryEventPoster implements InventoryDiffer.DeltaConsumer
         if (item == null) return;
         final int meta = ItemIdentity.unpackMeta(key);
         if (delta > 0) {
-            MinecraftForge.EVENT_BUS.post(new InventoryChangedEvent.ItemAdded(player, new ItemStack(item, delta, meta)));
+            MinecraftForge.EVENT_BUS
+                    .post(new InventoryChangedEvent.ItemAdded(player, new ItemStack(item, delta, meta)));
         } else {
-            MinecraftForge.EVENT_BUS.post(new InventoryChangedEvent.ItemRemoved(player, new ItemStack(item, -delta, meta)));
+            MinecraftForge.EVENT_BUS
+                    .post(new InventoryChangedEvent.ItemRemoved(player, new ItemStack(item, -delta, meta)));
         }
     }
 }

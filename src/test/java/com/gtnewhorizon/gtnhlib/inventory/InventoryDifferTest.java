@@ -2,8 +2,9 @@ package com.gtnewhorizon.gtnhlib.inventory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.junit.jupiter.api.Test;
+
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 class InventoryDifferTest {
 
@@ -69,8 +70,8 @@ class InventoryDifferTest {
         final long matB = ItemIdentity.pack(4096, 1001, true);
         final long matC = ItemIdentity.pack(4096, 1002, true);
         Long2IntOpenHashMap d = deltas(map(matA, 4, matB, 8, matC, 2), map(matA, 4, matB, 5, matC, 9));
-        assertEquals(2, d.size());        // matA unchanged -> no entry
-        assertEquals(-3, d.get(matB));    // lost 3 of subtype B
-        assertEquals(7, d.get(matC));     // gained 7 of subtype C
+        assertEquals(2, d.size()); // matA unchanged -> no entry
+        assertEquals(-3, d.get(matB)); // lost 3 of subtype B
+        assertEquals(7, d.get(matC)); // gained 7 of subtype C
     }
 }

@@ -14,7 +14,6 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 @EventBusSubscriber
@@ -32,7 +31,8 @@ public final class PlayerInventoryEventHandler {
         if (player == null || player.inventory == null || player.worldObj == null) return;
 
         final boolean client = player.worldObj.isRemote;
-        // 'client' must be evaluated first; it short-circuits so a dedicated server never classloads Minecraft via the helper.
+        // 'client' must be evaluated first; it short-circuits so a dedicated server never classloads Minecraft via the
+        // helper.
         if (client && !PlayerInventoryClientHelper.isLocalPlayer(player)) return;
 
         final Object2ObjectOpenHashMap<UUID, PlayerInvState> states = client ? CLIENT_STATES : SERVER_STATES;

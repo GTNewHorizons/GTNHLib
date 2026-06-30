@@ -1,12 +1,12 @@
 package com.gtnewhorizon.gtnhlib.eventhandlers;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.event.InventoryChangedEvent;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.util.ChatComponentText;
 
 /** Dev-only listener that logs inventory change events. Registered only in deobf with debugInventoryEvents=true. */
 public final class InventoryEventDebugHandler {
@@ -36,8 +36,8 @@ public final class InventoryEventDebugHandler {
 
         if (player.worldObj.isRemote) {
             player.addChatMessage(
-                    new ChatComponentText("[InvEvent] " + verb + " " + event.item.getDisplayName() + " x"
-                            + event.getCount()));
+                    new ChatComponentText(
+                            "[InvEvent] " + verb + " " + event.item.getDisplayName() + " x" + event.getCount()));
         }
     }
 }

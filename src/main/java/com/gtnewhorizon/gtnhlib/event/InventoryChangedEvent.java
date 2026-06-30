@@ -5,9 +5,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
 /**
- * Fired when a player's inventory changes (both client and server). Not cancelable.
- * Subscribe to concrete {@link ItemAdded} / {@link ItemRemoved} subclasses (1.7.10 Forge cannot register against
- * abstract base without no-arg constructor).
+ * Fired when a player's inventory changes (both client and server). Not cancelable. Subscribe to concrete
+ * {@link ItemAdded} / {@link ItemRemoved} subclasses (1.7.10 Forge cannot register against abstract base without no-arg
+ * constructor).
  */
 public abstract class InventoryChangedEvent extends PlayerEvent {
 
