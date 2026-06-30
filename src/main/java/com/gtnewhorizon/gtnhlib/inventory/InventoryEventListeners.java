@@ -9,8 +9,7 @@ import cpw.mods.fml.common.eventhandler.ListenerList;
 
 /**
  * Cheap "is anyone listening" check so the per-player scan can be skipped entirely when no mod subscribes to the
- * inventory change events. Each event class owns one shared {@link ListenerList}; we capture it once (from a throwaway
- * instance) and read its listener count, which reflects runtime register/unregister.
+ * inventory change events.
  */
 public final class InventoryEventListeners {
 
