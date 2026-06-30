@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.client.PlayerInventoryClientHelper;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.inventory.InventoryEventListeners;
@@ -48,6 +49,8 @@ public final class PlayerInventoryEventHandler {
         PlayerInvState state = states.get(id);
         if (state == null) {
             state = new PlayerInvState();
+            // Stagger first scan by a per-player offset so many players' scans don't all land on the same tick.
+            state.ticksSinceScan = Math.floorMod(id.hashCode(), Math.max(1, GTNHLibConfig.inventoryScanInterval));
             states.put(id, state);
         }
 
