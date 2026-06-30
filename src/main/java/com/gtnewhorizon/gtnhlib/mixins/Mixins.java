@@ -59,7 +59,9 @@ public enum Mixins implements IMixins {
                     .setPhase(Phase.LATE).addCommonMixins("MixinEnhancedInfusionRecipe")
                     .addRequiredMod(TargetMods.THAUMCRAFT)),
     CONFIG_ORDER(Side.CLIENT, "fml.MixinGuiConfig"),
-    WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld")
+    WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld"),
+    WORLD_LOAD_WARNING(new MixinBuilder("Accessors for the world conversion warning screen system")
+            .addCommonMixins("AccessorGuiNotification", "AccessorStartupQuery").setPhase(Phase.EARLY)),
     //
     ;
 
