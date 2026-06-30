@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 
 import com.gtnewhorizon.gtnhlib.client.PlayerInventoryClientHelper;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.inventory.InventoryEventListeners;
 import com.gtnewhorizon.gtnhlib.inventory.InventoryEventPoster;
 import com.gtnewhorizon.gtnhlib.inventory.PlayerInvState;
 import com.gtnewhorizon.gtnhlib.inventory.PlayerInventoryScanner;
@@ -36,6 +37,13 @@ public final class PlayerInventoryEventHandler {
         if (client && !PlayerInventoryClientHelper.isLocalPlayer(player)) return;
 
         final Object2ObjectOpenHashMap<UUID, PlayerInvState> states = client ? CLIENT_STATES : SERVER_STATES;
+
+        // Skip all scanning when nothing listens. Drop baselines so we re-seed (no backlog burst) once a listener returns.
+        if (!InventoryEventListeners.anySubscribed()) {
+            if (!states.isEmpty()) states.clear();
+            return;
+        }
+
         final UUID id = player.getUniqueID();
         PlayerInvState state = states.get(id);
         if (state == null) {
