@@ -115,8 +115,7 @@ public class GTNHLibConfig {
     @Config.RangeInt(min = 1, max = 200)
     public static int inventoryScanInterval;
 
-    @Config.Comment("Dev only: log every player inventory add/remove event to the console. Only takes effect in a "
-            + "deobfuscated (development) environment.")
+    @Config.Comment("Dev only: log every player inventory add/remove event to the console.")
     @Config.DefaultBoolean(false)
     public static boolean debugInventoryEvents;
 }
