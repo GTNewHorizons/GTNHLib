@@ -10,14 +10,14 @@ import java.util.HashMap;
  */
 public class WorldConversionWarningManager {
 
-    public static final HashMap<String, WorldConversionWarning> WARNINGS = new HashMap<>();
+    public static final HashMap<String, IWorldConversionWarning> WARNINGS = new HashMap<>();
 
     /**
-     * Call during game startup to register a {@link WorldConversionWarning}.
+     * Call during game startup to register a {@link IWorldConversionWarning}.
      *
      * @param id A unique id for your warning
      */
-    public static void register(String id, WorldConversionWarning wcw) {
+    public static void register(String id, IWorldConversionWarning wcw) {
         WARNINGS.put(id, wcw);
     }
 

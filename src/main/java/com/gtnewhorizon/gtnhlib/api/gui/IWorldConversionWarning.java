@@ -4,7 +4,7 @@ import cpw.mods.fml.common.StartupQuery;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public abstract class WorldConversionWarning {
+public interface IWorldConversionWarning {
 
     /**
      * Will be called right after {@link cpw.mods.fml.common.event.FMLMissingMappingsEvent}s are fired to determine if
@@ -12,14 +12,14 @@ public abstract class WorldConversionWarning {
      *
      * @return True if the warning should be shown
      */
-    public abstract boolean shouldShow();
+    boolean shouldShow();
 
     /**
      * Server-side only a simple text message will be printed.
      *
      * @return The text message
      */
-    public abstract String getServerMessage();
+    String getServerMessage();
 
     /**
      * Client-side you can choose to either supply a custom {@link com.gtnewhorizon.gtnhlib.api.gui.GuiConfirmationWCW}
@@ -29,7 +29,7 @@ public abstract class WorldConversionWarning {
      * @return The text message for default gui class
      */
     @SideOnly(Side.CLIENT)
-    public abstract String getClientMessage();
+    String getClientMessage();
 
     /**
      * Children MUST annotate with @SideOnly(Side.CLIENT)
@@ -41,5 +41,5 @@ public abstract class WorldConversionWarning {
      * @return Gui to be used in the warning. null to use default.
      */
     @SideOnly(Side.CLIENT)
-    public abstract GuiConfirmationWCW getGui(StartupQuery startupQuery);
+    GuiConfirmationWCW getGui(StartupQuery startupQuery);
 }
