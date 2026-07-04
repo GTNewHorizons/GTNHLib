@@ -41,5 +41,7 @@ public interface IWorldConversionWarning {
      * @return Gui to be used in the warning. null to use default.
      */
     @SideOnly(Side.CLIENT)
-    GuiConfirmationWCW getGui(StartupQuery startupQuery);
+    default GuiConfirmationWCW getGui(StartupQuery startupQuery) {
+        return null;
+    }
 }
