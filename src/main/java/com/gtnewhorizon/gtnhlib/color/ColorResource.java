@@ -1,8 +1,6 @@
 package com.gtnewhorizon.gtnhlib.color;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -49,20 +47,12 @@ import org.apache.logging.log4j.Logger;
  * ARGB colors use 8-char hex (AARRGGBB). RGB colors use 6-char hex (RRGGBB), alpha is always FF.
  * <p>
  * Colors are resolved on every resource reload (F3+T) via {@link CacheReloadListener}, registered by GTNHLib's client
- * proxy. On the first reload all instances are scanned to find overrides; subsequent reloads only re-check instances
- * that actually have an override, so mods with no resource pack pay no per-reload cost. Call {@link #invalidate()} to
- * force a full rescan (e.g. after a resource pack is added at runtime).
+ * proxy.
  */
 public class ColorResource {
 
     private static final Logger LOG = LogManager.getLogger(ColorResource.class);
-
-    // All registered instances. WeakHashMap allows GC if an instance is no longer referenced elsewhere.
-    private static final Set<ColorResource> ALL = Collections.newSetFromMap(new WeakHashMap<>());
-    // Only instances that have a confirmed resource pack override. Rebuilt on each full scan.
-    private static final List<ColorResource> ACTIVE = new ArrayList<>();
-    // Guarded by ALL's monitor. False until the first onResourceManagerReload completes.
-    private static boolean initialized = false;
+    private static final Set<ColorResource> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
 
     private final String modId;
     private final String name;
@@ -82,9 +72,9 @@ public class ColorResource {
         this.name = name;
         this.argb = argb;
         this.defaultColor = parseHex(hex, argb);
-        this.cachedColor = this.defaultColor;
-        synchronized (ALL) {
-            ALL.add(this);
+        this.cachedColor = resolveColor();
+        synchronized (INSTANCES) {
+            INSTANCES.add(this);
         }
     }
 
@@ -144,16 +134,6 @@ public class ColorResource {
     }
 
     /**
-     * Forces a full rescan of all registered instances on the next resource reload. Call this if a resource pack is
-     * added or removed at runtime so that newly introduced overrides are picked up.
-     */
-    public static void invalidate() {
-        synchronized (ALL) {
-            initialized = false;
-        }
-    }
-
-    /**
      * Factory that holds a mod ID so it does not need to be repeated on every color declaration.
      * <p>
      * Example usage:
@@ -191,46 +171,17 @@ public class ColorResource {
         }
     }
 
-    /**
-     * Resolves color values on resource reload (F3+T). Registered by GTNHLib's client proxy.
-     * <p>
-     * On the first reload all instances are scanned (full scan). After that only instances with a confirmed resource
-     * pack override are re-checked, so packs with no overrides pay zero per-reload cost.
-     */
+    /** Resolves all color values on resource reload (F3+T). Registered by GTNHLib's client proxy. */
     public static class CacheReloadListener implements IResourceManagerReloadListener {
 
         @Override
         public void onResourceManagerReload(IResourceManager resourceManager) {
-            synchronized (ALL) {
-                if (!initialized) {
-                    fullScan();
-                    initialized = true;
-                } else {
-                    partialScan();
+            synchronized (INSTANCES) {
+                for (ColorResource instance : INSTANCES) {
+                    instance.cachedColor = instance.resolveColor();
+
                 }
             }
-        }
-
-        private static void fullScan() {
-            ACTIVE.clear();
-            for (ColorResource instance : ALL) {
-                int resolved = instance.resolveColor();
-                instance.cachedColor = resolved;
-                if (resolved != instance.defaultColor) {
-                    ACTIVE.add(instance);
-                }
-            }
-        }
-
-        private static void partialScan() {
-            // Only re-check instances with a confirmed override. If no resource pack provides overrides,
-            // ACTIVE is empty and this loop does nothing.
-            ACTIVE.removeIf(instance -> {
-                int resolved = instance.resolveColor();
-                instance.cachedColor = resolved;
-                // Remove from ACTIVE if the override is gone (e.g. resource pack was unloaded)
-                return resolved == instance.defaultColor;
-            });
         }
     }
 }
