@@ -179,7 +179,6 @@ public class ColorResource {
             synchronized (INSTANCES) {
                 for (ColorResource instance : INSTANCES) {
                     instance.cachedColor = instance.resolveColor();
-
                 }
             }
         }
