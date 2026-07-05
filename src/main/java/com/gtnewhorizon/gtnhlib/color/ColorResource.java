@@ -68,7 +68,7 @@ public class ColorResource {
      * @param argb  true to include the alpha channel, false to force alpha to FF
      */
     public ColorResource(String modId, String name, String hex, boolean argb) {
-        this.modId = modId.intern();
+        this.modId = modId;
         this.name = name;
         this.argb = argb;
         this.defaultColor = parseHex(hex, argb);
