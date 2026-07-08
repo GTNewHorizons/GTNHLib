@@ -32,7 +32,7 @@ public class NBTJson {
             .compile("^([-+]?\\d{1,20}(?:\\.?\\d*(?:[eE][-+]?\\d+)?)?)([bBsSlLfFdD]?)$");
     /**
      * in case someone actually puts a "+" signed unsigned int into a json
-     * 
+     *
      * @see Integer#parseUnsignedInt(String)
      */
     private static final int UNSIGNED_INT_STRING_LENGTH = 12;
