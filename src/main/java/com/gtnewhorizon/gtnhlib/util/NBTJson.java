@@ -28,13 +28,14 @@ import com.google.gson.JsonPrimitive;
 // Taken from NEI
 public class NBTJson {
 
-    private static final Pattern numberPattern = Pattern.compile("^([-+]?\\d{1,20}(?:\\.?\\d*(?:[eE][-+]?\\d+)?)?)([bBsSlLfFdD]?)$");
+    private static final Pattern numberPattern = Pattern
+            .compile("^([-+]?\\d{1,20}(?:\\.?\\d*(?:[eE][-+]?\\d+)?)?)([bBsSlLfFdD]?)$");
     /**
      * in case someone actually puts a "+" signed unsigned int into a json
      * 
      * @see Integer#parseUnsignedInt(String)
      */
-    private static final int UNSIGNED_INT_STRING_LENGTH = 12; 
+    private static final int UNSIGNED_INT_STRING_LENGTH = 12;
 
     public static String toJson(NBTTagCompound tag) {
         return toJson(toJsonObject(tag));
@@ -159,7 +160,8 @@ public class NBTJson {
                     }
                 } else {
                     if (numberString.contains(".")) return new NBTTagDouble(Double.parseDouble(numberString));
-                    else if (numberString.length() <= UNSIGNED_INT_STRING_LENGTH) return new NBTTagInt(Integer.parseInt(numberString));
+                    else if (numberString.length() <= UNSIGNED_INT_STRING_LENGTH)
+                        return new NBTTagInt(Integer.parseInt(numberString));
                     else return new NBTTagString(jsonString);
                 }
             } else {
