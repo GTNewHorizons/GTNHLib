@@ -159,7 +159,10 @@ public class NBTJson {
                             return new NBTTagDouble(Double.parseDouble(numberString));
                     }
                 } else {
-                    if (numberString.contains(".")) return new NBTTagDouble(Double.parseDouble(numberString));
+                    if (numberString.indexOf('.') >= 0
+                            || numberString.indexOf('e') >= 0
+                            || numberString.indexOf('E') >= 0)
+                        return new NBTTagDouble(Double.parseDouble(numberString));
                     else if (numberString.length() <= UNSIGNED_INT_STRING_LENGTH)
                         return new NBTTagInt(Integer.parseInt(numberString));
                     else return new NBTTagString(jsonString);
