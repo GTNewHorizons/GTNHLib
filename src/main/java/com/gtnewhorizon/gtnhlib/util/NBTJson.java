@@ -136,10 +136,10 @@ public class NBTJson {
             final JsonPrimitive jsonPrimitive = (JsonPrimitive) jsonElement;
             final String jsonString = jsonPrimitive.getAsString();
             final Matcher m = numberPattern.matcher(jsonString);
-            if (m.find()) {
+            if (m.matches()) {
                 // Number
                 final String numberString = m.group(1);
-                if (m.groupCount() == 2 && m.group(2).length() > 0) {
+                if (m.groupCount() == 2 && !m.group(2).isEmpty()) {
                     final char numberType = m.group(2).charAt(0);
                     switch (numberType) {
                         case 'b':
@@ -159,8 +159,7 @@ public class NBTJson {
                             return new NBTTagDouble(Double.parseDouble(numberString));
                     }
                 } else {
-                    if (numberString.indexOf('.') >= 0
-                            || numberString.indexOf('e') >= 0
+                    if (numberString.indexOf('.') >= 0 || numberString.indexOf('e') >= 0
                             || numberString.indexOf('E') >= 0)
                         return new NBTTagDouble(Double.parseDouble(numberString));
                     else if (numberString.length() <= UNSIGNED_INT_STRING_LENGTH)
