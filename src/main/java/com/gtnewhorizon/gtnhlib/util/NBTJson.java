@@ -28,7 +28,7 @@ import com.google.gson.JsonPrimitive;
 // Taken from NEI
 public class NBTJson {
 
-    private static final Pattern numberPattern = Pattern.compile("^([-+]?\\d{1,20}(?:\\.\\d*[eE][-+]?\\d+)?)([bBsSlLfFdD]?)$");
+    private static final Pattern numberPattern = Pattern.compile("^([-+]?\\d{1,20}(?:\\.?\\d*(?:[eE][-+]?\\d+)?)?)([bBsSlLfFdD]?)$");
     /**
      * in case someone actually puts a "+" signed unsigned int into a json
      * 
