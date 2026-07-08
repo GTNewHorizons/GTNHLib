@@ -29,7 +29,7 @@ import com.google.gson.JsonPrimitive;
 public class NBTJson {
 
     private static final Pattern numberPattern = Pattern
-            .compile("^([-+]?\\d{1,20}(?:\\.?\\d*(?:[eE][-+]?\\d+)?)?)([bBsSlLfFdD]?)$");
+            .compile("^([-+]?\\d{1,20}(?:\\.?\\d+(?:[eE][-+]?\\d+)?)?)([bBsSlLfFdD]?)$");
     /**
      * in case someone actually puts a "+" signed unsigned int into a json
      *
@@ -47,14 +47,13 @@ public class NBTJson {
 
     @SuppressWarnings("unchecked")
     public static JsonElement toJsonObject(NBTBase nbt) {
-        if (nbt instanceof NBTTagCompound) {
+        if (nbt instanceof NBTTagCompound nbtTagCompound) {
             // NBTTagCompound
-            final NBTTagCompound nbtTagCompound = (NBTTagCompound) nbt;
             final Map<String, NBTBase> tagMap = (Map<String, NBTBase>) nbtTagCompound.tagMap;
             final JsonObject root = new JsonObject();
 
             tagMap.entrySet().stream().sorted(Map.Entry.<String, NBTBase>comparingByKey())
-                    .forEach(nbtEntry -> { root.add(nbtEntry.getKey(), toJsonObject(nbtEntry.getValue())); });
+                    .forEach(nbtEntry -> root.add(nbtEntry.getKey(), toJsonObject(nbtEntry.getValue())));
 
             return root;
         } else if (nbt instanceof NBTTagByte) {
@@ -81,9 +80,8 @@ public class NBTJson {
         } else if (nbt instanceof NBTTagString) {
             // String
             return new JsonPrimitive(((NBTTagString) nbt).func_150285_a_());
-        } else if (nbt instanceof NBTTagList) {
+        } else if (nbt instanceof NBTTagList list) {
             // Tag List
-            final NBTTagList list = (NBTTagList) nbt;
 
             if (list.tagList.isEmpty()) {
                 return createEmptyList(list);
@@ -93,9 +91,8 @@ public class NBTJson {
                 return arr;
             }
 
-        } else if (nbt instanceof NBTTagIntArray) {
+        } else if (nbt instanceof NBTTagIntArray list) {
             // Int Array
-            final NBTTagIntArray list = (NBTTagIntArray) nbt;
 
             if (list.func_150302_c().length == 0) {
                 return createEmptyList(list);
@@ -109,9 +106,8 @@ public class NBTJson {
                 return arr;
             }
 
-        } else if (nbt instanceof NBTTagByteArray) {
+        } else if (nbt instanceof NBTTagByteArray list) {
             // Byte Array
-            final NBTTagByteArray list = (NBTTagByteArray) nbt;
 
             if (list.func_150292_c().length == 0) {
                 return createEmptyList(list);
@@ -131,9 +127,8 @@ public class NBTJson {
     }
 
     public static NBTBase toNbt(JsonElement jsonElement) {
-        if (jsonElement instanceof JsonPrimitive) {
+        if (jsonElement instanceof JsonPrimitive jsonPrimitive) {
             // Number or String
-            final JsonPrimitive jsonPrimitive = (JsonPrimitive) jsonElement;
             final String jsonString = jsonPrimitive.getAsString();
             final Matcher m = numberPattern.matcher(jsonString);
             if (m.matches()) {
@@ -170,9 +165,8 @@ public class NBTJson {
                 // String
                 return new NBTTagString(jsonString);
             }
-        } else if (jsonElement instanceof JsonArray) {
+        } else if (jsonElement instanceof JsonArray jsonArray) {
             // NBTTagIntArray or NBTTagList
-            final JsonArray jsonArray = (JsonArray) jsonElement;
             final List<NBTBase> nbtList = new ArrayList<>();
 
             for (JsonElement element : jsonArray) {
@@ -195,9 +189,8 @@ public class NBTJson {
 
                 return nbtTagList;
             }
-        } else if (jsonElement instanceof JsonObject) {
+        } else if (jsonElement instanceof JsonObject jsonObject) {
             // NBTTagCompound
-            final JsonObject jsonObject = (JsonObject) jsonElement;
             final NBTBase custom = restoreEmptyList(jsonObject);
 
             if (custom == null) {
