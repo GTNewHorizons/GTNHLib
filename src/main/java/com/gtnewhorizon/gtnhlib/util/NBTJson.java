@@ -28,7 +28,7 @@ import com.google.gson.JsonPrimitive;
 // Taken from NEI
 public class NBTJson {
 
-    private static final Pattern numberPattern = Pattern.compile("^([-+]?\\d+\\.?\\d*E*\\d*)([bBsSlLfFdD]?)$");
+    private static final Pattern numberPattern = Pattern.compile("^([-+]?\\d+\\.?\\d*E*\\d{,20)([bBsSlLfFdD]?)$");
 
     public static String toJson(NBTTagCompound tag) {
         return toJson(toJsonObject(tag));
@@ -153,7 +153,8 @@ public class NBTJson {
                     }
                 } else {
                     if (numberString.contains(".")) return new NBTTagDouble(Double.parseDouble(numberString));
-                    else return new NBTTagInt(Integer.parseInt(numberString));
+                    else if (numberString.length() <= 12) return new NBTTagInt(Integer.parseInt(numberString));
+                    else return new NBTTagString(jsonString);
                 }
             } else {
                 // String
