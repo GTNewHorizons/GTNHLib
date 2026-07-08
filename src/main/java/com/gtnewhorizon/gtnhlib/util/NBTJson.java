@@ -29,6 +29,12 @@ import com.google.gson.JsonPrimitive;
 public class NBTJson {
 
     private static final Pattern numberPattern = Pattern.compile("^([-+]?\\d+\\.?\\d*E*\\d{,20)([bBsSlLfFdD]?)$");
+    /**
+     * in case someone actually puts a "+" signed unsigned int into a json
+     * 
+     * @see Integer#parseUnsignedInt(String)
+     */
+    private static final int UNSIGNED_INT_STRING_LENGTH = 12; 
 
     public static String toJson(NBTTagCompound tag) {
         return toJson(toJsonObject(tag));
@@ -153,7 +159,7 @@ public class NBTJson {
                     }
                 } else {
                     if (numberString.contains(".")) return new NBTTagDouble(Double.parseDouble(numberString));
-                    else if (numberString.length() <= 12) return new NBTTagInt(Integer.parseInt(numberString));
+                    else if (numberString.length() <= UNSIGNED_INT_STRING_LENGTH) return new NBTTagInt(Integer.parseInt(numberString));
                     else return new NBTTagString(jsonString);
                 }
             } else {
