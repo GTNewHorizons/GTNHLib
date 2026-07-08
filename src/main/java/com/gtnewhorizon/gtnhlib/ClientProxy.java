@@ -2,12 +2,15 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.GTNHLib.MODID;
 
+import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater.ResourcePackUpdateEventHandler;
@@ -101,6 +104,11 @@ public class ClientProxy extends CommonProxy {
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         resourceManager.registerReloadListener(new ColorResource.CacheReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
+    }
+
+    @SubscribeEvent
+    public void onFinishTextureStitch(TextureStitchEvent.Post event) {
+        ResourceUtil.clearCache();
     }
 
     @Override
