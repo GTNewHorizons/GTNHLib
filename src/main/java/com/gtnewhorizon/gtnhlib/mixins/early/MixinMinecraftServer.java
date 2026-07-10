@@ -23,6 +23,7 @@ public class MixinMinecraftServer {
     private void runJobs(CallbackInfo ci) {
         this.theProfiler.startSection("jobs");
         ServerThreadUtil.runJobs();
+        this.theProfiler.endSection();
     }
 
     @Inject(method = "run", at = @At("HEAD"))
