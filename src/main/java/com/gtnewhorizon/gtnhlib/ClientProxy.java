@@ -107,7 +107,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     @SubscribeEvent
-    public void onFinishTextureStitch(TextureStitchEvent.Post event) {
+    public static void onFinishTextureStitch(TextureStitchEvent.Post event) {
         ResourceUtil.clearCache();
     }
 
