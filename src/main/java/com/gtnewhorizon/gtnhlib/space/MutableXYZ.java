@@ -1,5 +1,9 @@
 package com.gtnewhorizon.gtnhlib.space;
 
+import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.unpackX;
+import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.unpackY;
+import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.unpackZ;
+
 import com.gtnewhorizon.gtnhlib.hash.Fnv1a32;
 
 public class MutableXYZ implements XYZAddressable {
@@ -12,6 +16,10 @@ public class MutableXYZ implements XYZAddressable {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public static MutableXYZ unpack(long coord) {
+        return new MutableXYZ(unpackX(coord), unpackY(coord), unpackZ(coord));
     }
 
     @Override

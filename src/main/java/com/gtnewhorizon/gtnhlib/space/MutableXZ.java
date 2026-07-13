@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.space;
 
 import com.gtnewhorizon.gtnhlib.hash.Fnv1a32;
+import com.gtnewhorizon.gtnhlib.util.CoordinatePacker2D;
 
 public class MutableXZ implements XZAddressable {
 
@@ -11,6 +12,10 @@ public class MutableXZ implements XZAddressable {
     public MutableXZ(int x, int z) {
         this.x = x;
         this.z = z;
+    }
+
+    public static MutableXZ unpack(long coord) {
+        return new MutableXZ(CoordinatePacker2D.unpackChunkX(coord), CoordinatePacker2D.unpackChunkZ(coord));
     }
 
     @Override
