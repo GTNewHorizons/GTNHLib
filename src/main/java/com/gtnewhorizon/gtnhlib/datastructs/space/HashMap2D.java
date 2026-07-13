@@ -4,6 +4,7 @@ import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker2D.packChunk;
 import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker2D.unpackChunkX;
 import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker2D.unpackChunkZ;
 
+import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
@@ -208,10 +209,16 @@ public class HashMap2D<V> extends Long2ObjectOpenHashMap<V> {
         return () -> fastEntrySet().fastIterator();
     }
 
-    public Stream<Entry2D<V>> fastEntryStream() {
+    /// Unlike {@link #fastEntryIterable()}, each returned {@link Entry2D} is an independent instance, so the result
+    /// is safe to buffer (e.g. via {@link Stream#sorted()} or {@link Stream#toList()}).
+    public Iterator<Entry2D<V>> slowIterator() {
+        return fastEntrySet().iterator();
+    }
+
+    public Stream<Entry2D<V>> slowStream() {
         return StreamSupport.stream(
                 Spliterators.spliterator(
-                        fastEntryIterable().iterator(),
+                        slowIterator(),
                         size(),
                         Spliterator.SIZED | Spliterator.NONNULL | Spliterator.DISTINCT),
                 false);

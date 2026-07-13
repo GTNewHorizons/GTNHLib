@@ -3,8 +3,10 @@ package com.gtnewhorizon.gtnhlib.test.datastructs.space;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -168,11 +170,41 @@ class HashMap2DTest {
     }
 
     @Test
-    void fastEntryStreamCountMatchesSize() {
+    void slowIteratorReturnsIndependentEntries() {
         map.put(1, 2, "A");
         map.put(3, 4, "B");
 
-        assertEquals(2, map.fastEntryStream().count());
+        var iter = map.slowIterator();
+        Entry2D<String> first = iter.next();
+        Entry2D<String> second = iter.next();
+
+        assertNotSame(first, second);
+        Set<String> seen = new HashSet<>();
+        seen.add(first.getX() + "," + first.getZ() + "=" + first.getValue());
+        seen.add(second.getX() + "," + second.getZ() + "=" + second.getValue());
+        assertEquals(new HashSet<>(Arrays.asList("1,2=A", "3,4=B")), seen);
+    }
+
+    @Test
+    void slowStreamCountMatchesSize() {
+        map.put(1, 2, "A");
+        map.put(3, 4, "B");
+
+        assertEquals(2, map.slowStream().count());
+    }
+
+    @Test
+    void slowStreamElementsSurviveBuffering() {
+        map.put(1, 2, "A");
+        map.put(3, 4, "B");
+
+        // sorted() buffers every element before emitting; slowStream must not share mutable state
+        // across entries the way fastEntryStream() used to, or every entry would collapse to the last one.
+        Set<String> collected = map.slowStream().sorted(Comparator.comparingInt(Entry2D::getX))
+                .map(e -> e.getX() + "," + e.getZ() + "=" + e.getValue())
+                .collect(Collectors.toCollection(HashSet::new));
+
+        assertEquals(new HashSet<>(Arrays.asList("1,2=A", "3,4=B")), collected);
     }
 
     @Test

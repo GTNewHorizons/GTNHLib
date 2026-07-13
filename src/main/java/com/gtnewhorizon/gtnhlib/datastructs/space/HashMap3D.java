@@ -5,6 +5,7 @@ import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.unpackX;
 import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.unpackY;
 import static com.gtnewhorizon.gtnhlib.util.CoordinatePacker.unpackZ;
 
+import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
@@ -210,10 +211,16 @@ public class HashMap3D<V> extends Long2ObjectOpenHashMap<V> {
         return () -> fastEntrySet().fastIterator();
     }
 
-    public Stream<Entry3D<V>> fastEntryStream() {
+    /// Unlike {@link #fastEntryIterable()}, each returned {@link Entry3D} is an independent instance, so the result
+    /// is safe to buffer (e.g. via {@link Stream#sorted()} or {@link Stream#toList()}).
+    public Iterator<Entry3D<V>> slowIterator() {
+        return fastEntrySet().iterator();
+    }
+
+    public Stream<Entry3D<V>> slowStream() {
         return StreamSupport.stream(
                 Spliterators.spliterator(
-                        fastEntryIterable().iterator(),
+                        slowIterator(),
                         size(),
                         Spliterator.SIZED | Spliterator.NONNULL | Spliterator.DISTINCT),
                 false);

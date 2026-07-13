@@ -8,6 +8,8 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.jetbrains.annotations.Contract;
+
 import com.gtnewhorizon.gtnhlib.functional.Consumer3D;
 import com.gtnewhorizon.gtnhlib.space.MutableXYZ;
 import com.gtnewhorizon.gtnhlib.space.XYZAddressable;
@@ -49,6 +51,34 @@ public class HashSet3D extends LongOpenHashSet {
         }
     }
 
+    public Iterator<XYZAddressable> slowIterator() {
+        LongIterator iter = super.iterator();
+
+        return new Iterator<>() {
+
+            @Contract(pure = true)
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Contract(mutates = "this")
+            @Override
+            public XYZAddressable next() {
+                return MutableXYZ.unpack(iter.nextLong());
+            }
+        };
+    }
+
+    public Stream<XYZAddressable> slowStream() {
+        return StreamSupport.stream(
+                Spliterators.spliterator(
+                        this.slowIterator(),
+                        size(),
+                        Spliterator.SIZED | Spliterator.NONNULL | Spliterator.DISTINCT),
+                false);
+    }
+
     /// The returned iterator always yields the same mutated {@link XYZAddressable} instance; do not retain the
     /// result of {@link Iterator#next()} past the following call.
     public Iterator<XYZAddressable> fastIterator() {
@@ -58,11 +88,13 @@ public class HashSet3D extends LongOpenHashSet {
 
         return new Iterator<>() {
 
+            @Contract(pure = true)
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
+            @Contract(mutates = "this")
             @Override
             public XYZAddressable next() {
                 long l = iter.nextLong();
@@ -78,17 +110,5 @@ public class HashSet3D extends LongOpenHashSet {
 
     public Iterable<XYZAddressable> fastEntryIterable() {
         return this::fastIterator;
-    }
-
-    /// The stream elements are backed by the same mutated {@link XYZAddressable} instance as
-    /// {@link #fastIterator()}; collect {@code new MutableXYZ(e.getX(), e.getY(), e.getZ())} if you need to retain
-    /// them.
-    public Stream<XYZAddressable> fastEntryStream() {
-        return StreamSupport.stream(
-                Spliterators.spliterator(
-                        fastEntryIterable().iterator(),
-                        size(),
-                        Spliterator.SIZED | Spliterator.NONNULL | Spliterator.DISTINCT),
-                false);
     }
 }
