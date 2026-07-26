@@ -41,7 +41,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 /// {@link Tessellator} across multiple draw calls and make the quad list available for usage.
 ///
 /// NOTE: This will _not_ (currently) capture, integrate, or stop any GL calls made around the tessellator draw calls.
-@SuppressWarnings("unused")
+///
+/// @Deprecated replaced by {@link LocalTessellator} / {@link DirectTessellator}
+@Deprecated
 public class CapturingTessellator extends Tessellator implements ITessellatorInstance {
 
     boolean active = false;
@@ -277,6 +279,7 @@ public class CapturingTessellator extends Tessellator implements ITessellatorIns
         shaderBlockId = blockId;
     }
 
+    @Deprecated
     public static class Flags {
 
         public boolean hasTexture;

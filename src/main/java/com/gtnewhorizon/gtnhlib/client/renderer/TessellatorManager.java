@@ -870,4 +870,14 @@ public class TessellatorManager {
         return Tessellator.instance;
     }
 
+    /**
+     * Fast path to get the Tessellator used in the main thread. Does not check if this is called on the main thread.
+     * This should only be used if you are 100% certain that it only gets called in the main thread.
+     * 
+     * @return Tessellator.instance, or DirectTessellator if currently capturing.
+     */
+    public static Tessellator getMainThreadTessellator() {
+        if (hasDirectTessellator()) return getDirectTessellator();
+        return Tessellator.instance;
+    }
 }

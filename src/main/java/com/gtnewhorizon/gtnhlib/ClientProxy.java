@@ -8,6 +8,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater.ResourcePackUpdateEventHandler;
@@ -27,6 +28,7 @@ import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
+import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -34,6 +36,7 @@ import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import lombok.Getter;
 
@@ -101,6 +104,11 @@ public class ClientProxy extends CommonProxy {
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         resourceManager.registerReloadListener(new ColorResource.CacheReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
+    }
+
+    @SubscribeEvent
+    public static void onFinishTextureStitch(TextureStitchEvent.Post event) {
+        ResourceUtil.clearCache();
     }
 
     @Override

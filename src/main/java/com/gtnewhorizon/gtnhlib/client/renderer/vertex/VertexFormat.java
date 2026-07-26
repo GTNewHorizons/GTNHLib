@@ -20,10 +20,17 @@ import lombok.Getter;
 
 public class VertexFormat {
 
-    @Getter
+    @Deprecated
     protected final List<VertexFormatElement> elements;
+    public final VertexFormatElement[] elementsArray;
+
+    @Deprecated // Use elementsArray instead
+    public List<VertexFormatElement> getElements() {
+        return elements;
+    }
+
     @Getter
-    protected final int vertexSize;
+    public final int vertexSize;
     protected final int[] offsets;
 
     protected static final List<SetupBufferState> setupBufferStateOverrride = new ArrayList<>();
@@ -56,6 +63,7 @@ public class VertexFormat {
         }
         this.vertexFlags = flags;
 
+        this.elementsArray = elements;
         this.elements = new ObjectImmutableList<>(elements);
         this.vertexSize = offset;
     }
@@ -71,12 +79,12 @@ public class VertexFormat {
             }
         }
 
-        final int i = this.getVertexSize();
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+        final int i = this.vertexSize;
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
 
         for (int j = 0; j < listSize; ++j) {
-            list.get(j).setupBufferState(l + this.offsets[j], i);
+            list[j].setupBufferState(l + this.offsets[j], i);
         }
     }
 
@@ -90,12 +98,12 @@ public class VertexFormat {
                 return;
             }
         }
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
 
         // noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < listSize; ++i) {
-            list.get(i).clearBufferState();
+            list[i].clearBufferState();
         }
     }
 
@@ -107,11 +115,11 @@ public class VertexFormat {
 
     public final void writeQuads(List<ModelQuadViewMutable> quads, ByteBuffer out) {
         final int size = quads.size();
-        if (out.remaining() < this.getVertexSize() * size) throw new IllegalArgumentException(
-                "Buffer only has " + out.remaining() + " out of " + this.getVertexSize() * size + " bytes remaining.");
+        if (out.remaining() < this.vertexSize * size) throw new IllegalArgumentException(
+                "Buffer only has " + out.remaining() + " out of " + this.vertexSize * size + " bytes remaining.");
 
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
 
         final long address = memAddress0(out);
         long writePointer = address + out.position();
@@ -122,7 +130,7 @@ public class VertexFormat {
 
             for (int index = 0; index < 32; index += 8) {
                 for (int j = 0; j < listSize; j++) {
-                    writePointer += list.get(j).writer.writeAttribute(writePointer, data, index);
+                    writePointer += list[j].writer.writeAttribute(writePointer, data, index);
                 }
             }
         }
@@ -131,44 +139,67 @@ public class VertexFormat {
     }
 
     public final void writeQuad(ModelQuadView quad, ByteBuffer out) {
-        if (out.remaining() < this.getVertexSize()) throw new IllegalArgumentException(
-                "Buffer only has " + out.remaining() + " out of " + this.getVertexSize() + " bytes remaining.");
+        if (out.remaining() < this.vertexSize) throw new IllegalArgumentException(
+                "Buffer only has " + out.remaining() + " out of " + this.vertexSize + " bytes remaining.");
 
         final int[] data = quad.getDataArray();
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
 
         final long address = memAddress0(out);
         long writePointer = address + out.position();
 
         for (int index = 0; index < 32; index += 8) {
             for (int i = 0; i < listSize; i++) {
-                writePointer += list.get(i).writer.writeAttribute(writePointer, data, index);
+                writePointer += list[i].writer.writeAttribute(writePointer, data, index);
             }
         }
         out.position((int) (writePointer - address));
     }
 
-    public final long writeToBuffer0(long pointer, int[] data, int rawVertexCount) {
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+    public final void writeToBuffer(ByteBuffer out, int[] data, int rawBufferIndex) {
+        final int vertexCount = rawBufferIndex >> 3;
+        if (out.remaining() < this.vertexSize * vertexCount) throw new IllegalArgumentException(
+                "Buffer only has " + out.remaining()
+                        + " out of "
+                        + this.vertexSize * vertexCount
+                        + " bytes remaining.");
 
-        for (int index = 0; index < rawVertexCount; index += 8) {
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
+
+        final long address = memAddress0(out);
+        long writePointer = address + out.position();
+
+        for (int index = 0; index < rawBufferIndex; index += 8) {
+            for (int j = 0; j < listSize; j++) {
+                writePointer += list[j].writer.writeAttribute(writePointer, data, index);
+            }
+        }
+
+        out.position((int) (writePointer - address));
+    }
+
+    public final long writeToBuffer0(long pointer, final int[] data, final int rawBufferIndex) {
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
+
+        for (int index = 0; index < rawBufferIndex; index += 8) {
             for (int i = 0; i < listSize; i++) {
-                pointer += list.get(i).writer.writeAttribute(pointer, data, index);
+                pointer += list[i].writer.writeAttribute(pointer, data, index);
             }
         }
         return pointer;
     }
 
-    public final long writeToBuffer0(long pointer, int[] data, int rawVertexCount, Matrix4fc transform,
+    public final long writeToBuffer0(long pointer, int[] data, int rawBufferIndex, Matrix4fc transform,
             Vector3f scratch) {
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
 
-        for (int index = 0; index < rawVertexCount; index += 8) {
+        for (int index = 0; index < rawBufferIndex; index += 8) {
             for (int i = 0; i < listSize; i++) {
-                pointer += list.get(i).writer.writeAttributeTransformed(pointer, data, index, transform, scratch);
+                pointer += list[i].writer.writeAttributeTransformed(pointer, data, index, transform, scratch);
             }
         }
         return pointer;
@@ -181,10 +212,10 @@ public class VertexFormat {
         memPutFloat(pointer + 8, z);
         pointer += 12;
 
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
         for (int i = 1; i < listSize; i++) {
-            pointer += list.get(i).writer.writeAttribute(pointer, tessellator);
+            pointer += list[i].writer.writeAttribute(pointer, tessellator);
         }
         return pointer;
     }
@@ -194,10 +225,10 @@ public class VertexFormat {
      * this method.
      */
     public final long readFromBuffer0(long pointer, Tessellator tessellator) {
-        final List<VertexFormatElement> list = this.getElements();
-        final int listSize = list.size();
+        final VertexFormatElement[] list = this.elementsArray;
+        final int listSize = list.length;
         for (int i = 1; i < listSize; i++) {
-            pointer += list.get(i).writer.readAttribute(pointer, tessellator);
+            pointer += list[i].writer.readAttribute(pointer, tessellator);
         }
         return pointer;
     }

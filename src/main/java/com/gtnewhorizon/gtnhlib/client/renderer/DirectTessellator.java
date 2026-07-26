@@ -173,7 +173,6 @@ public class DirectTessellator extends Tessellator {
         if (this.isDrawing) {
             throw new IllegalStateException("Already tesselating!");
         }
-        reset();
         this.isDrawing = true;
         this.drawMode = p_78371_1_;
     }
