@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  * </pre>
  * <p>
  * Then use the color anywhere:
- * 
+ *
  * <pre>
  * <code>
  *  GuiDraw.drawRect(x, y, w, h, ColorUtils.background.getColor());
@@ -54,7 +54,8 @@ public class ColorResource {
     private static final Logger LOG = LogManager.getLogger(ColorResource.class);
     private static final Set<ColorResource> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
 
-    private final String langKey;
+    private final String modId;
+    private final String name;
     private final int defaultColor;
     private final boolean argb;
     private volatile int cachedColor;
@@ -67,7 +68,8 @@ public class ColorResource {
      * @param argb  true to include the alpha channel, false to force alpha to FF
      */
     public ColorResource(String modId, String name, String hex, boolean argb) {
-        this.langKey = "color.resource." + modId + "." + name;
+        this.modId = modId;
+        this.name = name;
         this.argb = argb;
         this.defaultColor = parseHex(hex, argb);
         this.cachedColor = resolveColor();
@@ -88,9 +90,9 @@ public class ColorResource {
         return argb ? (int) value : (int) (0xFF000000L | value);
     }
 
-    /** Lang key used to look up a resource pack override. */
+    /** Lang key used to look up a resource pack override, e.g. {@code color.resource.mymod.background}. */
     public String getLangKey() {
-        return langKey;
+        return "color.resource." + modId + "." + name;
     }
 
     /**
@@ -98,7 +100,7 @@ public class ColorResource {
      * Updated on every resource reload (F3+T).
      * <p>
      * Example usage:
-     * 
+     *
      * <pre>
      * <code>
      *  GuiDraw.drawRect(x, y, w, h, ColorUtils.background.getColor());
@@ -110,8 +112,10 @@ public class ColorResource {
     }
 
     private int resolveColor() {
-        if (StatCollector.canTranslate(langKey)) {
-            String value = stripPrefix(StatCollector.translateToLocal(langKey));
+        String langKey = getLangKey();
+        String translatedKey = StatCollector.translateToLocal(langKey);
+        if (langKey != translatedKey) {
+            String value = stripPrefix(translatedKey);
             try {
                 if (!argb && value.length() > 6) {
                     LOG.warn(
