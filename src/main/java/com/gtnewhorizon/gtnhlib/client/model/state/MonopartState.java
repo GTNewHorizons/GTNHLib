@@ -51,7 +51,8 @@ public class MonopartState implements StateModelMap {
         public StateMatch(String s) {
             variantName = s;
 
-            if (s.isEmpty()) {
+            // "normal" is the vanilla key for a block with no properties
+            if (s.isEmpty() || "normal".equals(s)) {
                 matchAll = true;
                 states = null;
                 return;
