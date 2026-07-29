@@ -44,7 +44,11 @@ public class TeamActions {
     }
 
     public static void onInvite(Team team, EntityPlayer source, EntityPlayer target) {
-        TeamManager.addPendingInvite(target.getUniqueID(), team);
+        UUID targetId = target.getUniqueID();
+        TeamManager.addPendingInvite(targetId, team);
+
+        String displayTeamName = TeamManager.getPendingInvites(targetId).size() == 1 ? ""
+                : " \"" + team.getTeamName() + "\"";
 
         ChatComponentTranslation notification = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.message.received_invite",
@@ -52,10 +56,10 @@ public class TeamActions {
                 colorChatComponent(EnumChatFormatting.GOLD, team.getTeamName()),
                 colorChatComponent(
                         EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " accept \"" + team.getTeamName() + "\""),
+                        TeamCommandsUtils.getCommandRoot() + " accept" + displayTeamName),
                 colorChatComponent(
                         EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " deny \"" + team.getTeamName() + "\""));
+                        TeamCommandsUtils.getCommandRoot() + " deny" + displayTeamName));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
         target.addChatMessage(notification);
 
@@ -273,16 +277,19 @@ public class TeamActions {
         ChatComponentText targetComponent = colorChatComponent(EnumChatFormatting.GOLD, target.getTeamName());
         success(player, "gtnhlib.chat.teams.message.merge_request_sent", targetComponent);
 
+        String requesterTeamDisplay = TeamManager.getPendingMergeRequests(target).size() == 1 ? ""
+                : " \"" + source.getTeamName() + "\"";
+
         // Notify all online owners of the target team
         ChatComponentTranslation notification = new ChatComponentTranslation(
                 "gtnhlib.chat.teams.message.merge_request_received",
                 sourceComponent,
                 colorChatComponent(
                         EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " merge accept \"" + source.getTeamName() + "\""),
+                        TeamCommandsUtils.getCommandRoot() + " merge accept" + requesterTeamDisplay),
                 colorChatComponent(
                         EnumChatFormatting.YELLOW,
-                        TeamCommandsUtils.getCommandRoot() + " merge deny \"" + source.getTeamName() + "\""));
+                        TeamCommandsUtils.getCommandRoot() + " merge deny" + requesterTeamDisplay));
         notification.getChatStyle().setColor(EnumChatFormatting.GREEN);
         Set<UUID> owners = target.getOwners();
         TeamManager.forEachOnlineTeamMember(target, member -> {
