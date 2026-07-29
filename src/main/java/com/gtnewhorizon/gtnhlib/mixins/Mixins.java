@@ -28,8 +28,12 @@ public enum Mixins implements IMixins {
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
-            "models.SRRMAccessor",
-            "models.particles.MixinEffectRenderer").setPhase(Phase.EARLY).setApplyIf(() -> true)),
+            "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
+    MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
+            "models.particles.MixinEffectRenderer",
+            "models.particles.MixinEntity",
+            "models.particles.RenderGlobalAccessor",
+            "models.particles.WorldAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
     MODEL_BLOCK_CRACKS(new MixinBuilder("Fix crack texture appearance for modeled blocks")
