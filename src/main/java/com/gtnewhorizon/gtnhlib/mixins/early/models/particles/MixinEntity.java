@@ -38,7 +38,6 @@ public class MixinEntity {
         }
 
         // This is a modeled block! Refer to our helper for particles instead of the default.
-        original.call(instance, particleName, (double) j, (double) i, (double) k, velocityX, velocityY, velocityZ);
         for (var iwa : ((WorldAccessor) worldObj).getWorldAccesses()) {
             if (iwa instanceof RenderGlobal rg)
                 nhlib$spawnWalkParticle(rg, j, i, k, x, y, z, velocityX, velocityY, velocityZ);
