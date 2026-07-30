@@ -16,11 +16,14 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.EntityDiggingFX;
 import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
 
@@ -28,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
+import org.spongepowered.asm.mixin.Unique;
 
 import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
@@ -40,6 +44,8 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
+import com.gtnewhorizon.gtnhlib.mixins.early.models.particles.RenderGlobalAccessor;
+import com.gtnewhorizon.gtnhlib.mixins.early.models.particles.WorldAccessor;
 import com.gtnewhorizon.gtnhlib.util.StdLCG;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -506,5 +512,54 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     @SuppressWarnings("unused")
     public @NotNull IIcon getMissingIcon() {
         return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");
+    }
+
+    /// Spawn a particle for an entity walking on a modeled block. This method effectively replaces
+    /// [World#spawnParticle(String, double, double, double, double, double, double)] so we can inject a new texture,
+    /// using the block position that normally gets dropped before the particle is actually spawned.
+    ///
+    /// @param rg The RenderGlobal instance the particle is spawned in.
+    /// @param blockX X position of the block the particle is spawned from.
+    /// @param blockY Y position...
+    /// @param blockZ Z position...
+    /// @param x X position of the particle
+    /// @param y Y position...
+    /// @param z Z position...
+    /// @param vX X velocity of particle
+    /// @param vY Y velocity...
+    /// @param vZ Z velocity...
+    @Unique
+    public static void spawnParticle(RenderGlobal rg, int blockX, int blockY, int blockZ, double x, double y, double z,
+            double vX, double vY, double vZ) {
+        var mc = Minecraft.getMinecraft();
+        if (mc == null || mc.renderViewEntity == null || mc.effectRenderer == null) return;
+
+        // Skip 3/4 of particles when they're set to decreased
+        var world = ((RenderGlobalAccessor) rg).getTheWorld();
+        if (mc.gameSettings.particleSetting == 1 && world.rand.nextInt(3) == 0) return;
+
+        // Don't render distant (>16 blocks) particles.
+        var dx = mc.renderViewEntity.posX - x;
+        var dy = mc.renderViewEntity.posY - y;
+        var dz = mc.renderViewEntity.posZ - z;
+        if (dx * dx + dy * dy * dz * dz > 16 * 16) return;
+
+        var block = world.getBlock(blockX, blockY, blockZ);
+        var meta = world.getBlockMetadata(blockX, blockY, blockZ);
+        var digFX = new EntityDiggingFX(world, x, y, z, vX, vY, vZ, block, meta);
+        digFX.setParticleIcon(INSTANCE.get().getParticleIcon(world, blockX, blockY, blockZ));
+        mc.effectRenderer.addEffect(digFX);
+    }
+
+    /// A helper to call [#spawnParticle] the same way vanilla calls [World#spawnParticle]. It's *probably* fine to only
+    /// call this on the main render global, but "probably" doesn't stop breakages.
+    ///
+    /// Neither does being careful, but such is life.
+    public static void spawnParticleCommon(World world, int blockX, int blockY, int blockZ, double x, double y,
+            double z, double vX, double vY, double vZ) {
+        for (var iwa : ((WorldAccessor) world).getWorldAccesses()) {
+            if (iwa instanceof RenderGlobal rg)
+                ModelISBRH.spawnParticle(rg, blockX, blockY, blockZ, x, y, z, vX, vY, vZ);
+        }
     }
 }

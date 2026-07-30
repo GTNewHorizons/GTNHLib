@@ -32,6 +32,7 @@ public enum Mixins implements IMixins {
     MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
             "models.particles.MixinEffectRenderer",
             "models.particles.MixinEntity",
+            "models.particles.MixinRenderGlobal",
             "models.particles.RenderGlobalAccessor",
             "models.particles.WorldAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
