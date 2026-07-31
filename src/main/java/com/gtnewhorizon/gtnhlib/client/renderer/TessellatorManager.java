@@ -304,6 +304,10 @@ public class TessellatorManager {
         return directTessellatorIndex != -1;
     }
 
+    public static int getDirectCaptureDepth() {
+        return directTessellatorIndex + 1;
+    }
+
     private static void setDirectTessellator(DirectTessellator tessellator) {
         if (++directTessellatorIndex >= DIRECT_TESSELLATOR_STACK_DEPTH) {
             directTessellatorIndex--;
@@ -335,7 +339,12 @@ public class TessellatorManager {
 
     public static DirectTessellator startCapturingDirect(VertexFormat format) {
         final DirectTessellator tessellator = startCapturingDirect();
-        tessellator.setVertexFormat(format);
+        try {
+            tessellator.setVertexFormat(format);
+        } catch (Throwable t) {
+            stopCapturingDirect();
+            throw t;
+        }
         return tessellator;
     }
 
@@ -873,7 +882,7 @@ public class TessellatorManager {
     /**
      * Fast path to get the Tessellator used in the main thread. Does not check if this is called on the main thread.
      * This should only be used if you are 100% certain that it only gets called in the main thread.
-     * 
+     *
      * @return Tessellator.instance, or DirectTessellator if currently capturing.
      */
     public static Tessellator getMainThreadTessellator() {
