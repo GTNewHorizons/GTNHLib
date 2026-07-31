@@ -1,6 +1,9 @@
 
 package com.gtnewhorizon.gtnhlib.client.model.wavefront;
 
+import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.NORMAL_BIT;
+import static com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFlags.TEXTURE_BIT;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +13,6 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelFormatException;
 
@@ -23,6 +25,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.vao.IVertexArrayObject;
 import com.gtnewhorizon.gtnhlib.client.renderer.vao.VertexBufferType;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
 import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement;
 
 /**
  * Wavefront Object importer Based heavily off of the specifications found at
@@ -32,7 +35,6 @@ public final class WavefrontVBOBuilder {
 
     private final List<Vector3f> vertices = new ArrayList<>(64);
     private final List<Vector2f> textureCoordinates = new ArrayList<>(64);
-    private final IVertexArrayObject vao;
 
     static final int FORMAT_V_VT_VN = 0;
     static final int FORMAT_V_VT = 1;
@@ -53,25 +55,62 @@ public final class WavefrontVBOBuilder {
         return compileToVBO(resource, DefaultVertexFormat.POSITION_TEXTURE_NORMAL);
     }
 
+    /**
+     * @throws IllegalArgumentException if the format declares an attribute an OBJ cannot supply; only position, UV and
+     *                                  normal are fillable.
+     */
     public static IVertexArrayObject compileToVBO(ResourceLocation resource, VertexFormat format) {
-        return new WavefrontVBOBuilder(resource, format).vao;
-    }
+        validateFormat(format);
 
-    private WavefrontVBOBuilder(ResourceLocation resource, VertexFormat format) throws ModelFormatException {
-        try {
-            final IResource res = Minecraft.getMinecraft().getResourceManager().getResource(resource);
-            vao = loadObjModel(res.getInputStream(), format);
+        try (InputStream inputStream = Minecraft.getMinecraft().getResourceManager().getResource(resource)
+                .getInputStream()) {
+            final DirectTessellator tessellator = DirectTessellator.startCapturing(format);
+            try {
+                loadObjModel(inputStream, tessellator, format);
+                return tessellator.uploadToVBO(VertexBufferType.IMMUTABLE);
+            } finally {
+                DirectTessellator.stopCapturing();
+            }
         } catch (IOException e) {
             throw new ModelFormatException("IO Exception reading model format", e);
         }
     }
 
-    private IVertexArrayObject loadObjModel(InputStream inputStream, VertexFormat format) throws ModelFormatException {
+    /**
+     * Rejects formats whose attributes the OBJ loader cannot populate
+     */
+    static void validateFormat(VertexFormat format) {
+        final VertexFormatElement[] elements = format.elementsArray;
+
+        if (!format.hasInlinePosition()) {
+            throw new IllegalArgumentException(
+                    "Vertex format must start with a 3-float position element, got "
+                            + (elements.length == 0 ? "an empty format" : elements[0]));
+        }
+
+        for (int i = 1; i < elements.length; i++) {
+            final int bit = elements[i].getVertexBit();
+            if (bit != TEXTURE_BIT && bit != NORMAL_BIT) {
+                throw new IllegalArgumentException(
+                        "Cannot fill vertex format element " + i
+                                + " "
+                                + elements[i]
+                                + " from an OBJ; only a leading position, UV and normal are supported");
+            }
+        }
+    }
+
+    static void loadObjModel(InputStream inputStream, DirectTessellator tessellator, VertexFormat format)
+            throws ModelFormatException {
+        new WavefrontVBOBuilder(format).parse(inputStream, tessellator);
+    }
+
+    private WavefrontVBOBuilder(VertexFormat format) {
         hasTex = format.hasTexture();
         hasNormals = format.hasNormals();
+    }
 
-        final DirectTessellator tessellator = DirectTessellator.startCapturing();
-
+    private void parse(InputStream inputStream, DirectTessellator tessellator) throws ModelFormatException {
         BufferedReader reader = null;
 
         String currentLine;
@@ -120,7 +159,9 @@ public final class WavefrontVBOBuilder {
             } catch (IOException ignored) {}
         }
 
-        return DirectTessellator.stopCapturingToVBO(VertexBufferType.IMMUTABLE);
+        if (format == -1) {
+            throw new ModelFormatException("Model contains no faces");
+        }
     }
 
     static Vector3f parseVertex(final String line, final int lineCount, final String[] tokens)
@@ -186,6 +227,28 @@ public final class WavefrontVBOBuilder {
             this.vertexArr = new Vector3f[length];
             this.texArr = new Vector2f[length];
             format = determineFormat(tokens[0]);
+
+            if (hasTex && (format == FORMAT_V || format == FORMAT_V_VN)) {
+                throw new ModelFormatException(
+                        "Model has no texture coordinates but the requested vertex format declares a UV attribute (line "
+                                + lineCount
+                                + ")");
+            }
+        } else {
+            if (length != this.vertexArr.length) {
+                throw new ModelFormatException(
+                        "Face at line " + lineCount
+                                + " has "
+                                + length
+                                + " vertices but the model started with "
+                                + this.vertexArr.length
+                                + "; mixed face sizes are not supported");
+            }
+            if (determineFormat(tokens[0]) != format) {
+                throw new ModelFormatException(
+                        "Face at line " + lineCount
+                                + " uses a different vertex reference format than the first face; mixed face formats are not supported");
+            }
         }
 
         final Vector3f[] vertices = this.vertexArr;
@@ -315,9 +378,9 @@ public final class WavefrontVBOBuilder {
             }
         }
 
-        // Remove trailing space if present
+        // Remove trailing space if present; resultLength is -1 for an all-whitespace line
         final int resultLength = output.length() - 1;
-        if (output.charAt(resultLength) == ' ') {
+        if (resultLength >= 0 && output.charAt(resultLength) == ' ') {
             output.setLength(resultLength);
         }
     }
