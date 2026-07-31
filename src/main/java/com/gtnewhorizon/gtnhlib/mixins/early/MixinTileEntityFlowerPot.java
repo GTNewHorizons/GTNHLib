@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.mixins.early;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityFlowerPot;
@@ -20,7 +21,7 @@ public class MixinTileEntityFlowerPot {
 
     @Inject(method = "writeToNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("TAIL"))
     private void hodgepodge$writeFlowerPottableNBT(NBTTagCompound compound, CallbackInfo ci) {
-        if (flowerPotItem instanceof IFlowerPottable pottable) {
+        if (Block.getBlockFromItem(flowerPotItem) instanceof IFlowerPottable pottable) {
             pottable.writeToFlowerPotNBT(compound);
         }
     }

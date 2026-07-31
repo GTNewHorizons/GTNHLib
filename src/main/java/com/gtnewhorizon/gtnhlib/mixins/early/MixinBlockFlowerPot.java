@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlowerPot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityFlowerPot;
@@ -30,14 +31,17 @@ public class MixinBlockFlowerPot {
     @Inject(method = "getDrops", at = @At("RETURN"), remap = false, cancellable = true)
     private void gtnhlib$customFlowerPotDrops(World world, int x, int y, int z, int metadata, int fortune,
             CallbackInfoReturnable<ArrayList<ItemStack>> cir, @Local(name = "te") TileEntityFlowerPot te) {
-        if (te != null && te.getFlowerPotItem() instanceof IFlowerPottable pottable) {
-            NBTTagCompound compound = new NBTTagCompound();
-            te.writeToNBT(compound);
+        if (te != null) {
+            Item item = te.getFlowerPotItem();
+            if (Block.getBlockFromItem(item) instanceof IFlowerPottable pottable) {
+                NBTTagCompound compound = new NBTTagCompound();
+                te.writeToNBT(compound);
 
-            ArrayList<ItemStack> customDrop = pottable.breakFlowerPot(compound);
+                ArrayList<ItemStack> customDrop = pottable.breakFlowerPot(compound);
 
-            if (customDrop != null) {
-                cir.setReturnValue(customDrop);
+                if (customDrop != null) {
+                    cir.setReturnValue(customDrop);
+                }
             }
         }
     }

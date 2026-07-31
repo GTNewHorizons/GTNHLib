@@ -35,19 +35,22 @@ public class MixinRenderBlocks_FlowerPot {
 
         if (tileentity instanceof TileEntityFlowerPot te) {
             Item item = te.getFlowerPotItem();
-            if (item instanceof IFlowerPottable pottable) {
-                NBTTagCompound compound = new NBTTagCompound();
-                te.writeToNBT(compound);
+            if (item != null) {
+                Block block = Block.getBlockFromItem(item);
+                if (block instanceof IFlowerPottable pottable) {
+                    NBTTagCompound compound = new NBTTagCompound();
+                    te.writeToNBT(compound);
 
-                if (pottable.renderFlowerPot(
-                        compound,
-                        blockAccess,
-                        Block.getBlockFromItem(item),
-                        p_147752_2_,
-                        p_147752_3_,
-                        p_147752_4_,
-                        (RenderBlocks) (Object) this)) {
-                    cir.setReturnValue(true);
+                    if (pottable.renderFlowerPot(
+                            compound,
+                            blockAccess,
+                            block,
+                            p_147752_2_,
+                            p_147752_3_,
+                            p_147752_4_,
+                            (RenderBlocks) (Object) this)) {
+                        cir.setReturnValue(true);
+                    }
                 }
             }
         }
