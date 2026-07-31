@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.gtnewhorizon.gtnhlib.IFlowerPottable;
+import com.gtnewhorizon.gtnhlib.api.IFlowerPottable;
 import com.llamalad7.mixinextras.sugar.Local;
 
 @Mixin(BlockFlowerPot.class)

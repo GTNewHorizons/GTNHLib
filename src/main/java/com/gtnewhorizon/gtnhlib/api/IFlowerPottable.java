@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib;
+package com.gtnewhorizon.gtnhlib.api;
 
 import java.util.ArrayList;
 
@@ -7,8 +7,6 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
-
-// TODO dont leave this sitting around in the root package
 
 /**
  * Allow this block to be placed into vanilla Flower Pots. If your block is simple and all of its standard ItemBlock
