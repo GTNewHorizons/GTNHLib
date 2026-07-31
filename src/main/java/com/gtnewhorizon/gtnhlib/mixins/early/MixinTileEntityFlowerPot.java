@@ -23,14 +23,14 @@ public class MixinTileEntityFlowerPot {
     private int flowerPotData;
 
     @Inject(method = "writeToNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("TAIL"))
-    private void hodgepodge$writeFlowerPottableNBT(NBTTagCompound compound, CallbackInfo ci) {
+    private void gtnhlib$writeFlowerPottableNBT(NBTTagCompound compound, CallbackInfo ci) {
         if (Block.getBlockFromItem(flowerPotItem) instanceof IFlowerPottable pottable) {
             pottable.writeToFlowerPotNBT(compound, flowerPotData);
         }
     }
 
     @Inject(method = "readFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("TAIL"), remap = false)
-    private void hodgepodge$updateOnRead(NBTTagCompound compound, CallbackInfo ci) {
+    private void gtnhlib$updateOnRead(NBTTagCompound compound, CallbackInfo ci) {
         TileEntityFlowerPot te = ((TileEntityFlowerPot) (Object) this);
         World world = te.getWorldObj();
         if (world != null && world.isRemote) {
