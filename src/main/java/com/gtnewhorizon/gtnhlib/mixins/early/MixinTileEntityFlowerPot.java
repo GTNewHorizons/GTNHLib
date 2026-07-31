@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityFlowerPot;
+import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,6 +24,15 @@ public class MixinTileEntityFlowerPot {
     private void hodgepodge$writeFlowerPottableNBT(NBTTagCompound compound, CallbackInfo ci) {
         if (Block.getBlockFromItem(flowerPotItem) instanceof IFlowerPottable pottable) {
             pottable.writeToFlowerPotNBT(compound);
+        }
+    }
+
+    @Inject(method = "readFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("TAIL"), remap = false)
+    private void hodgepodge$updateOnRead(NBTTagCompound compound, CallbackInfo ci) {
+        TileEntityFlowerPot te = ((TileEntityFlowerPot) (Object) this);
+        World world = te.getWorldObj();
+        if (world != null && world.isRemote) {
+            world.markBlockForUpdate(te.xCoord, te.yCoord, te.zCoord);
         }
     }
 }
