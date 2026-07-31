@@ -128,7 +128,7 @@ public final class Dumper {
                     continue;
                 }
                 String name = entry.getName();
-                if (!name.startsWith("assets/")) {
+                if (!isSafeAssetPath(name)) {
                     continue;
                 }
                 paths.add(name);
@@ -139,6 +139,18 @@ public final class Dumper {
             return null;
         }
         return new ModAssets(modId, source, true, paths, totalBytes);
+    }
+
+    private static boolean isSafeAssetPath(String name) {
+        if (!name.startsWith("assets/")) {
+            return false;
+        }
+        for (String segment : name.split("/")) {
+            if (segment.isEmpty() || segment.equals(".") || segment.equals("..")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static ModAssets scanDirectory(String modId, File source) {
@@ -180,7 +192,11 @@ public final class Dumper {
                 if (entry == null) {
                     continue;
                 }
-                File dest = new File(outputDir, path);
+                File dest = resolveSafeDest(outputDir, path);
+                if (dest == null) {
+                    Log.warn("Refusing to copy unsafe path {} from {}", path, mod.source);
+                    continue;
+                }
                 dest.getParentFile().mkdirs();
                 try (InputStream in = zip.getInputStream(entry);
                         OutputStream out = Files.newOutputStream(dest.toPath())) {
@@ -200,7 +216,11 @@ public final class Dumper {
         int copied = 0;
         for (String path : mod.paths) {
             File src = new File(mod.source, path);
-            File dest = new File(outputDir, path);
+            File dest = resolveSafeDest(outputDir, path);
+            if (dest == null) {
+                Log.warn("Refusing to copy unsafe path {} from {}", path, mod.source);
+                continue;
+            }
             dest.getParentFile().mkdirs();
             try {
                 Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -210,6 +230,15 @@ public final class Dumper {
             }
         }
         return copied;
+    }
+
+    private static File resolveSafeDest(File outputDir, String path) {
+        Path outputRoot = outputDir.toPath().normalize();
+        Path dest = outputRoot.resolve(path).normalize();
+        if (!dest.startsWith(outputRoot)) {
+            return null;
+        }
+        return dest.toFile();
     }
 
     private static void copyStream(InputStream in, OutputStream out) throws IOException {
