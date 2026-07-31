@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater;
+package com.gtnewhorizon.gtnhlib.client.resourcepackutils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import net.minecraft.client.resources.ResourcePackRepository;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 
-public final class ResourcePackUpdateChecker {
+public final class UpdateChecker {
 
     private static final long FAILURE_COOLDOWN_MILLIS = 30L * 60L * 1000L;
     private static final long MANUAL_COOLDOWN_MILLIS = 30L * 1000L;
@@ -26,7 +26,7 @@ public final class ResourcePackUpdateChecker {
     private static final Set<String> mismatchNotified = new HashSet<>();
     private static final AtomicBoolean checkInProgress = new AtomicBoolean(false);
 
-    private ResourcePackUpdateChecker() {}
+    private UpdateChecker() {}
 
     public static void runAutoCheckIfNeeded() {
         if (hasRunThisSession) {
@@ -34,7 +34,7 @@ public final class ResourcePackUpdateChecker {
         }
         hasRunThisSession = true;
         if (!GTNHLibConfig.enableResourcePackUpdateCheck) {
-            RpUpdaterLog.debug("Auto-check skipped (disabled in config)");
+            Log.debug("Auto-check skipped (disabled in config)");
             return;
         }
         runCheckAsync(false, false);
@@ -52,7 +52,7 @@ public final class ResourcePackUpdateChecker {
 
     private static void runCheckAsync(boolean force, boolean isManual) {
         if (!checkInProgress.compareAndSet(false, true)) {
-            RpUpdaterLog.debug("Update check already in progress");
+            Log.debug("Update check already in progress");
             if (isManual) {
                 ChatNotifier.sendAlreadyRunning();
             }
@@ -62,7 +62,7 @@ public final class ResourcePackUpdateChecker {
             if (isManual) {
                 ChatNotifier.sendCooldownMessage();
             }
-            RpUpdaterLog.debug("Check skipped due to cooldown");
+            Log.debug("Check skipped due to cooldown");
             checkInProgress.set(false);
             return;
         }
@@ -71,14 +71,14 @@ public final class ResourcePackUpdateChecker {
         if (isManual) {
             ChatNotifier.sendChecking();
         }
-        Thread worker = new Thread(() -> runCheckWorker(packs, playerLine, isManual), "GTNHLib-RPUpdater");
+        Thread worker = new Thread(() -> runCheckWorker(packs, playerLine, isManual), "GTNHLib-resourcepackutils");
         worker.setDaemon(true);
         worker.start();
     }
 
     private static void runCheckWorker(List<IResourcePack> packs, String playerLine, boolean isManual) {
         try {
-            RpUpdaterLog.debug("Starting update check (player line: {})", playerLine);
+            Log.debug("Starting update check (player line: {})", playerLine);
             CheckResult result = new CheckResult();
             List<UpdaterMeta> metas = scanEnabledPacks(packs, result);
             Map<RepoKey, Optional<ReleaseMatch>> releaseCache = new HashMap<>();
@@ -116,10 +116,10 @@ public final class ResourcePackUpdateChecker {
             if (meta.isPresent()) {
                 result.packsWithUpdater++;
                 metas.add(meta.get());
-                RpUpdaterLog.debug("Found updater metadata in pack {}", pack.getPackName());
+                Log.debug("Found updater metadata in pack {}", pack.getPackName());
             }
         }
-        RpUpdaterLog.debug("Scanned {} packs ({} with updater metadata)", result.packsScanned, result.packsWithUpdater);
+        Log.debug("Scanned {} packs ({} with updater metadata)", result.packsScanned, result.packsWithUpdater);
         return metas;
     }
 
@@ -134,7 +134,7 @@ public final class ResourcePackUpdateChecker {
         }
         Optional<ReleaseMatch> match = getNewestRelease(meta, targetLine, cache, result);
         if (!match.isPresent()) {
-            RpUpdaterLog.debug("No compatible release for {} on {}", meta.packName, targetLine);
+            Log.debug("No compatible release for {} on {}", meta.packName, targetLine);
             return;
         }
         ReleaseMatch release = match.get();
@@ -145,14 +145,14 @@ public final class ResourcePackUpdateChecker {
                 ChatNotifier.sendUpdateMessage(meta.packName, meta.packVersion, release.packVersion, release.htmlUrl);
                 result.updatesFound++;
             } else {
-                RpUpdaterLog.debug(
+                Log.debug(
                         "No update for {} (installed {}, remote {})",
                         meta.packName,
                         meta.packVersion,
                         release.packVersion);
             }
         } catch (IllegalArgumentException e) {
-            RpUpdaterLog.warn("Invalid pack version for {}: {}", meta.packName, e.toString());
+            Log.warn("Invalid pack version for {}: {}", meta.packName, e.toString());
         }
     }
 
@@ -170,7 +170,7 @@ public final class ResourcePackUpdateChecker {
         } catch (Exception e) {
             result.hadFailure = true;
             lastFailureMillis = System.currentTimeMillis();
-            RpUpdaterLog.warn("GitHub request failed for {}/{}: {}", meta.owner, meta.repo, e.toString());
+            Log.warn("GitHub request failed for {}/{}: {}", meta.owner, meta.repo, e.toString());
             return Optional.empty();
         }
     }
@@ -244,7 +244,7 @@ public final class ResourcePackUpdateChecker {
             Class<?> refstrings = Class.forName("com.dreammaster.lib.Refstrings");
             return (String) refstrings.getField("MODPACKPACK_VERSION").get(null);
         } catch (Exception e) {
-            RpUpdaterLog.debug("Refstrings not available: {}", e.toString());
+            Log.debug("Refstrings not available: {}", e.toString());
             return null;
         }
     }

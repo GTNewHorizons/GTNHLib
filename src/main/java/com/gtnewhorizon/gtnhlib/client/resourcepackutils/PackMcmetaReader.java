@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater;
+package com.gtnewhorizon.gtnhlib.client.resourcepackutils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ final class PackMcmetaReader {
             }
             JsonElement rootElement = new JsonParser().parse(new InputStreamReader(stream, StandardCharsets.UTF_8));
             if (!rootElement.isJsonObject()) {
-                RpUpdaterLog.warn("pack.mcmeta root is not an object for pack {}", pack.getPackName());
+                Log.warn("pack.mcmeta root is not an object for pack {}", pack.getPackName());
                 return Optional.empty();
             }
             JsonObject root = rootElement.getAsJsonObject();
@@ -38,30 +38,30 @@ final class PackMcmetaReader {
             JsonObject updater = root.getAsJsonObject(UPDATER_KEY);
             int schema = readRequiredInt(updater, "schema", pack.getPackName());
             if (schema != 1) {
-                RpUpdaterLog.warn("Unsupported updater schema {} in pack {}", schema, pack.getPackName());
+                Log.warn("Unsupported updater schema {} in pack {}", schema, pack.getPackName());
                 return Optional.empty();
             }
             String packName = readRequiredString(updater, "pack_name", pack.getPackName());
             String packVersion = readRequiredString(updater, "pack_version", pack.getPackName());
             String packGameVersion = readRequiredString(updater, "pack_game_version", pack.getPackName());
             if (!updater.has("source") || !updater.get("source").isJsonObject()) {
-                RpUpdaterLog.warn("Missing source object in pack {}", pack.getPackName());
+                Log.warn("Missing source object in pack {}", pack.getPackName());
                 return Optional.empty();
             }
             JsonObject source = updater.getAsJsonObject("source");
             String sourceType = readRequiredString(source, "type", pack.getPackName());
             if (!SOURCE_TYPE_GITHUB.equals(sourceType)) {
-                RpUpdaterLog.warn("Unsupported source type {} in pack {}", sourceType, pack.getPackName());
+                Log.warn("Unsupported source type {} in pack {}", sourceType, pack.getPackName());
                 return Optional.empty();
             }
             String owner = readRequiredString(source, "owner", pack.getPackName());
             String repo = readRequiredString(source, "repo", pack.getPackName());
             return Optional.of(new UpdaterMeta(packName, packVersion, packGameVersion, sourceType, owner, repo));
         } catch (IOException e) {
-            RpUpdaterLog.warn("Failed reading pack.mcmeta for pack {}: {}", pack.getPackName(), e.toString());
+            Log.warn("Failed reading pack.mcmeta for pack {}: {}", pack.getPackName(), e.toString());
             return Optional.empty();
         } catch (RuntimeException e) {
-            RpUpdaterLog.warn("Invalid pack.mcmeta for pack {}: {}", pack.getPackName(), e.toString());
+            Log.warn("Invalid pack.mcmeta for pack {}: {}", pack.getPackName(), e.toString());
             return Optional.empty();
         }
     }
@@ -69,13 +69,13 @@ final class PackMcmetaReader {
     private static InputStream openPackMcmeta(IResourcePack pack) throws IOException {
         Method method = findGetInputStreamByName(pack.getClass());
         if (method == null) {
-            RpUpdaterLog.warn("Unable to read pack.mcmeta for pack {} (no access method)", pack.getPackName());
+            Log.warn("Unable to read pack.mcmeta for pack {} (no access method)", pack.getPackName());
             return null;
         }
         try {
             return (InputStream) method.invoke(pack, "pack.mcmeta");
         } catch (Exception e) {
-            RpUpdaterLog.warn("Failed opening pack.mcmeta for pack {}: {}", pack.getPackName(), e.toString());
+            Log.warn("Failed opening pack.mcmeta for pack {}: {}", pack.getPackName(), e.toString());
             return null;
         }
     }

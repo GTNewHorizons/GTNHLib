@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater;
+package com.gtnewhorizon.gtnhlib.client.resourcepackutils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +19,7 @@ import com.google.gson.JsonParser;
 
 final class GitHubReleaseClient {
 
-    private static final String USER_AGENT = "GTNHLib-RPUpdater";
+    private static final String USER_AGENT = "GTNHLib-resourcepackutils";
     private static final int TIMEOUT_MS = 10_000;
     private static final String ASSET_NAME = "gtnh-pack-update.json";
 
@@ -38,8 +38,7 @@ final class GitHubReleaseClient {
                 continue;
             }
             if (matchesLine(meta.packGameVersion, targetLine)) {
-                RpUpdaterLog
-                        .debug("Found compatible release {} for {}/{} ({})", release.htmlUrl, owner, repo, targetLine);
+                Log.debug("Found compatible release {} for {}/{} ({})", release.htmlUrl, owner, repo, targetLine);
                 return Optional.of(new ReleaseMatch(meta.packVersion, release.htmlUrl));
             }
         }
@@ -133,13 +132,13 @@ final class GitHubReleaseClient {
         JsonObject obj = element.getAsJsonObject();
         int schema = readOptionalInt(obj, "schema", -1);
         if (schema != 1) {
-            RpUpdaterLog.warn("Unsupported asset schema {} at {}", schema, downloadUrl);
+            Log.warn("Unsupported asset schema {} at {}", schema, downloadUrl);
             return null;
         }
         String packGameVersion = readOptionalString(obj, "pack_game_version");
         String packVersion = readOptionalString(obj, "pack_version");
         if (packGameVersion == null || packVersion == null) {
-            RpUpdaterLog.warn("Missing fields in asset metadata at {}", downloadUrl);
+            Log.warn("Missing fields in asset metadata at {}", downloadUrl);
             return null;
         }
         return new ReleaseAssetMeta(packGameVersion, packVersion);

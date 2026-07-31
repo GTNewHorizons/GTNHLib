@@ -7,9 +7,9 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.StatCollector;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
-import com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater.ResourcePackUpdateChecker;
+import com.gtnewhorizon.gtnhlib.client.resourcepackutils.UpdateChecker;
 
-public class CommandResourcePack extends GTNHClientCommand {
+public class ResourcePackCommand extends GTNHClientCommand {
 
     @Override
     public String getCommandName() {
@@ -30,10 +30,10 @@ public class CommandResourcePack extends GTNHClientCommand {
         if ("updateCheck".equalsIgnoreCase(args[0])) {
             boolean force = args.length > 1 && "force".equalsIgnoreCase(args[1]);
             if (!GTNHLibConfig.enableResourcePackUpdateCheck && !force) {
-                addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.rpupdater.disabled"));
+                addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.resourcepackutils.disabled"));
                 return;
             }
-            ResourcePackUpdateChecker.runManualCheck(force);
+            UpdateChecker.runManualCheck(force);
             return;
         }
         if ("list".equalsIgnoreCase(args[0])) {
@@ -48,7 +48,7 @@ public class CommandResourcePack extends GTNHClientCommand {
             if (args.length < 2) {
                 addChatMessage(
                         StatCollector.translateToLocalFormatted(
-                                "gtnhlib.chat.rpupdater.info.usage",
+                                "gtnhlib.chat.resourcepackutils.info.usage",
                                 "/resourcepack info <packName>"));
                 return;
             }
@@ -59,7 +59,7 @@ public class CommandResourcePack extends GTNHClientCommand {
     }
 
     private void printHelp() {
-        addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.rpupdater.commands"));
+        addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.resourcepackutils.commands"));
         addChatMessage("/resourcepack updateCheck [force]");
         addChatMessage("/resourcepack list");
         addChatMessage("/resourcepack status");
@@ -68,13 +68,13 @@ public class CommandResourcePack extends GTNHClientCommand {
     }
 
     private void printList() {
-        List<ResourcePackUpdateChecker.PackSummary> packs = ResourcePackUpdateChecker.getActivePackSummaries();
-        addChatMessage(StatCollector.translateToLocalFormatted("gtnhlib.chat.rpupdater.list.header", packs.size()));
-        for (ResourcePackUpdateChecker.PackSummary pack : packs) {
+        List<UpdateChecker.PackSummary> packs = UpdateChecker.getActivePackSummaries();
+        addChatMessage(StatCollector.translateToLocalFormatted("gtnhlib.chat.resourcepackutils.list.header", packs.size()));
+        for (UpdateChecker.PackSummary pack : packs) {
             if (pack.hasUpdater) {
                 addChatMessage(
                         StatCollector.translateToLocalFormatted(
-                                "gtnhlib.chat.rpupdater.list.item.updater",
+                                "gtnhlib.chat.resourcepackutils.list.item.updater",
                                 pack.packDisplayName,
                                 pack.updaterPackName,
                                 pack.packVersion,
@@ -82,42 +82,42 @@ public class CommandResourcePack extends GTNHClientCommand {
             } else {
                 addChatMessage(
                         StatCollector.translateToLocalFormatted(
-                                "gtnhlib.chat.rpupdater.list.item.none",
+                                "gtnhlib.chat.resourcepackutils.list.item.none",
                                 pack.packDisplayName));
             }
         }
     }
 
     private void printStatus() {
-        ResourcePackUpdateChecker.StatusSnapshot status = ResourcePackUpdateChecker.getStatusSnapshot();
-        addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.rpupdater.status.header"));
+        UpdateChecker.StatusSnapshot status = UpdateChecker.getStatusSnapshot();
+        addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.resourcepackutils.status.header"));
         addChatMessage(
                 StatCollector.translateToLocalFormatted(
-                        "gtnhlib.chat.rpupdater.status.running",
+                        "gtnhlib.chat.resourcepackutils.status.running",
                         status.running ? "yes" : "no"));
         String lastCheck = status.lastCheckMillis == 0L
-                ? StatCollector.translateToLocal("gtnhlib.chat.rpupdater.status.never")
+                ? StatCollector.translateToLocal("gtnhlib.chat.resourcepackutils.status.never")
                 : formatSecondsAgo(status.lastCheckMillis);
-        addChatMessage(StatCollector.translateToLocalFormatted("gtnhlib.chat.rpupdater.status.last_check", lastCheck));
+        addChatMessage(StatCollector.translateToLocalFormatted("gtnhlib.chat.resourcepackutils.status.last_check", lastCheck));
         if (status.failureCooldownRemainingMillis > 0L) {
             addChatMessage(
                     StatCollector.translateToLocalFormatted(
-                            "gtnhlib.chat.rpupdater.status.cooldown_failure",
+                            "gtnhlib.chat.resourcepackutils.status.cooldown_failure",
                             formatSecondsRemaining(status.failureCooldownRemainingMillis)));
         }
         if (status.manualCooldownRemainingMillis > 0L) {
             addChatMessage(
                     StatCollector.translateToLocalFormatted(
-                            "gtnhlib.chat.rpupdater.status.cooldown_manual",
+                            "gtnhlib.chat.resourcepackutils.status.cooldown_manual",
                             formatSecondsRemaining(status.manualCooldownRemainingMillis)));
         }
     }
 
     private void printInfo(String query) {
         String needle = query.toLowerCase(Locale.ENGLISH);
-        List<ResourcePackUpdateChecker.PackSummary> packs = ResourcePackUpdateChecker.getActivePackSummaries();
-        List<ResourcePackUpdateChecker.PackSummary> matches = new java.util.ArrayList<>();
-        for (ResourcePackUpdateChecker.PackSummary pack : packs) {
+        List<UpdateChecker.PackSummary> packs = UpdateChecker.getActivePackSummaries();
+        List<UpdateChecker.PackSummary> matches = new java.util.ArrayList<>();
+        for (UpdateChecker.PackSummary pack : packs) {
             String display = pack.packDisplayName.toLowerCase(Locale.ENGLISH);
             String updater = pack.updaterPackName == null ? "" : pack.updaterPackName.toLowerCase(Locale.ENGLISH);
             if (display.contains(needle) || updater.contains(needle)) {
@@ -125,32 +125,32 @@ public class CommandResourcePack extends GTNHClientCommand {
             }
         }
         if (matches.isEmpty()) {
-            addChatMessage(StatCollector.translateToLocalFormatted("gtnhlib.chat.rpupdater.info.not_found", query));
+            addChatMessage(StatCollector.translateToLocalFormatted("gtnhlib.chat.resourcepackutils.info.not_found", query));
             return;
         }
         if (matches.size() > 1) {
             addChatMessage(
                     StatCollector
-                            .translateToLocalFormatted("gtnhlib.chat.rpupdater.info.ambiguous", query, matches.size()));
+                            .translateToLocalFormatted("gtnhlib.chat.resourcepackutils.info.ambiguous", query, matches.size()));
             return;
         }
-        ResourcePackUpdateChecker.PackSummary pack = matches.get(0);
+        UpdateChecker.PackSummary pack = matches.get(0);
         addChatMessage(
-                StatCollector.translateToLocalFormatted("gtnhlib.chat.rpupdater.info.header", pack.packDisplayName));
+                StatCollector.translateToLocalFormatted("gtnhlib.chat.resourcepackutils.info.header", pack.packDisplayName));
         if (!pack.hasUpdater) {
-            addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.rpupdater.info.no_updater"));
+            addChatMessage(StatCollector.translateToLocal("gtnhlib.chat.resourcepackutils.info.no_updater"));
             return;
         }
         addChatMessage(
                 StatCollector
-                        .translateToLocalFormatted("gtnhlib.chat.rpupdater.info.updater_name", pack.updaterPackName));
+                        .translateToLocalFormatted("gtnhlib.chat.resourcepackutils.info.updater_name", pack.updaterPackName));
         addChatMessage(
                 StatCollector.translateToLocalFormatted(
-                        "gtnhlib.chat.rpupdater.info.version",
+                        "gtnhlib.chat.resourcepackutils.info.version",
                         pack.packVersion,
                         pack.packGameVersion));
         addChatMessage(
-                StatCollector.translateToLocalFormatted("gtnhlib.chat.rpupdater.info.source", pack.owner, pack.repo));
+                StatCollector.translateToLocalFormatted("gtnhlib.chat.resourcepackutils.info.source", pack.owner, pack.repo));
     }
 
     private static String formatSecondsRemaining(long millis) {

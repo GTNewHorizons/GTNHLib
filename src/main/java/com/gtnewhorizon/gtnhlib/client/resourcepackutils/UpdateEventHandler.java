@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater;
+package com.gtnewhorizon.gtnhlib.client.resourcepackutils;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -9,7 +9,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
 
-public final class ResourcePackUpdateEventHandler {
+public final class UpdateEventHandler {
 
     private static final Queue<Runnable> TASKS = new ConcurrentLinkedQueue<>();
     private static final int AUTO_RUN_DELAY_TICKS = 100; // 5 seconds
@@ -46,7 +46,7 @@ public final class ResourcePackUpdateEventHandler {
             return;
         }
         pendingAutoRun = false;
-        ResourcePackUpdateChecker.runAutoCheckIfNeeded();
+        UpdateChecker.runAutoCheckIfNeeded();
     }
 
     @SubscribeEvent
@@ -59,7 +59,7 @@ public final class ResourcePackUpdateEventHandler {
             try {
                 task.run();
             } catch (Exception e) {
-                RpUpdaterLog.warn("Task execution failed: {}", e.toString());
+                Log.warn("Task execution failed: {}", e.toString());
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.client.ResourcePackUpdater;
+package com.gtnewhorizon.gtnhlib.client.resourcepackutils;
 
 final class ReleaseMatch {
 
