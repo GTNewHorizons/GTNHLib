@@ -23,7 +23,7 @@ public interface IFlowerPottable {
      * {@link #renderFlowerPot(NBTTagCompound, IBlockAccess, Block, int, int, int, RenderBlocks)} (NBTTagCompound)} and
      * {@link #addDropsToFlowerPot(NBTTagCompound)}
      */
-    default void writeToFlowerPotNBT(NBTTagCompound compound) {}
+    default void writeToFlowerPotNBT(NBTTagCompound compound, int meta) {}
 
     /**
      * Override standard flower pot rendering. Return true if rendering was overriden!

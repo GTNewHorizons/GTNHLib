@@ -19,11 +19,13 @@ public class MixinTileEntityFlowerPot {
 
     @Shadow
     private Item flowerPotItem;
+    @Shadow
+    private int flowerPotData;
 
     @Inject(method = "writeToNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("TAIL"))
     private void hodgepodge$writeFlowerPottableNBT(NBTTagCompound compound, CallbackInfo ci) {
         if (Block.getBlockFromItem(flowerPotItem) instanceof IFlowerPottable pottable) {
-            pottable.writeToFlowerPotNBT(compound);
+            pottable.writeToFlowerPotNBT(compound, flowerPotData);
         }
     }
 
