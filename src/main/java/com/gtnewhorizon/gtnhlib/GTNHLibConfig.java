@@ -32,6 +32,10 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(true)
     public static boolean enableResourcePackUpdateCheck;
 
+    @Config.Comment("Enable the /resourcepack dump command, which dumps every loaded mod's assets into a new resource pack")
+    @Config.DefaultBoolean(false)
+    public static boolean enableResourcePackDump;
+
     @Config.Comment("Enable GTNH Team commands")
     @Config.DefaultBoolean(true)
     public static boolean enableTeamCommands;

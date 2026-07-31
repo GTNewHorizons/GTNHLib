@@ -129,6 +129,15 @@ gtnhlib.chat.resourcepackutils.info.no_updater=No updater metadata found for thi
 gtnhlib.chat.resourcepackutils.info.updater_name=Updater name: §7%s
 gtnhlib.chat.resourcepackutils.info.version=Version: §7%s (GTNH %s)
 gtnhlib.chat.resourcepackutils.info.source=Source: §7%s/%s
+gtnhlib.chat.resourcepackutils.dump.disabled=§4Resource pack dumping is disabled in config. Enable §fenableResourcePackDump§4 in the §fGTNH Lib config§4 to use this command.
+gtnhlib.chat.resourcepackutils.dump.scanning=§3Scanning loaded mods for assets...
+gtnhlib.chat.resourcepackutils.dump.summary=§2Found §f%s §2mods with §f%s §2files (§f%s§2). Run §f/resourcepack dump confirm§2 within 60s to create the pack.
+gtnhlib.chat.resourcepackutils.dump.scan_failed=§4Failed to scan mods for assets. Check the log for details.
+gtnhlib.chat.resourcepackutils.dump.already_running=§4A resource pack dump is already in progress.
+gtnhlib.chat.resourcepackutils.dump.no_pending=§4No pending dump. Run §f/resourcepack dump§4 first.
+gtnhlib.chat.resourcepackutils.dump.expired=§4The pending dump expired. Run §f/resourcepack dump§4 again.
+gtnhlib.chat.resourcepackutils.dump.complete=§2Dumped §f%s §2files into §f%s§2. Select it from the resource packs menu.
+gtnhlib.chat.resourcepackutils.dump.failed=§4Resource pack dump failed. Check the log for details.
 
 # GTNHTeams Commands
 gtnhlib.chat.teams.error.name_in_use=That team name is already taken or invalid.
