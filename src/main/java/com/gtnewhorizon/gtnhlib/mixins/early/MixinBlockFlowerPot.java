@@ -37,7 +37,7 @@ public class MixinBlockFlowerPot {
                 NBTTagCompound compound = new NBTTagCompound();
                 te.writeToNBT(compound);
 
-                ArrayList<ItemStack> customDrop = pottable.breakFlowerPot(compound);
+                ArrayList<ItemStack> customDrop = pottable.addDropsToFlowerPot(compound);
 
                 if (customDrop != null) {
                     cir.setReturnValue(customDrop);

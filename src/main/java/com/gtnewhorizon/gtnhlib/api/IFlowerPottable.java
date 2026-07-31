@@ -21,7 +21,7 @@ public interface IFlowerPottable {
     /**
      * Write additional data to the NBT of the flower pot. This NBT can be accessed in
      * {@link #renderFlowerPot(NBTTagCompound, IBlockAccess, Block, int, int, int, RenderBlocks)} (NBTTagCompound)} and
-     * {@link #breakFlowerPot(NBTTagCompound)}
+     * {@link #addDropsToFlowerPot(NBTTagCompound)}
      */
     default void writeToFlowerPotNBT(NBTTagCompound compound) {}
 
@@ -36,7 +36,7 @@ public interface IFlowerPottable {
     /**
      * Override the standard flower pot drops. Will drop the normal item if null is returned.
      */
-    default ArrayList<ItemStack> breakFlowerPot(NBTTagCompound compound) {
+    default ArrayList<ItemStack> addDropsToFlowerPot(NBTTagCompound compound) {
         return null;
     }
 }
