@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.api;
 
-import java.util.ArrayList;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.item.ItemStack;
@@ -14,14 +12,14 @@ import net.minecraft.world.IBlockAccess;
  */
 public interface IFlowerPottable {
 
-    default boolean canBePotted(int meta) {
+    default boolean isFlowerPottable(int meta) {
         return true;
     }
 
     /**
      * Write additional data to the NBT of the flower pot. This NBT can be accessed in
      * {@link #renderFlowerPot(NBTTagCompound, IBlockAccess, Block, int, int, int, RenderBlocks)} (NBTTagCompound)} and
-     * {@link #addDropsToFlowerPot(NBTTagCompound)}
+     * {@link #replaceFlowerPotDrop(NBTTagCompound)}
      */
     default void writeToFlowerPotNBT(NBTTagCompound compound, int meta) {}
 
@@ -34,9 +32,10 @@ public interface IFlowerPottable {
     }
 
     /**
-     * Override the standard flower pot drops. Will drop the normal item if null is returned.
+     * Replace the flower drop from a flower pot containing this block. Will drop the default (a new ItemStack with just
+     * item id and meta) if this returns null.
      */
-    default ArrayList<ItemStack> addDropsToFlowerPot(NBTTagCompound compound) {
+    default ItemStack replaceFlowerPotDrop(NBTTagCompound compound) {
         return null;
     }
 }

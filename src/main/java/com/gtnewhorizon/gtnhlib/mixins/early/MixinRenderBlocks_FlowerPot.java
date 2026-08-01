@@ -30,29 +30,21 @@ public class MixinRenderBlocks_FlowerPot {
                     value = "INVOKE",
                     target = "Lnet/minecraft/block/Block;getBlockFromItem(Lnet/minecraft/item/Item;)Lnet/minecraft/block/Block;"),
             cancellable = true)
-    private void gtnhlib$renderCustomFlowerPot(BlockFlowerPot p_147752_1_, int p_147752_2_, int p_147752_3_,
-            int p_147752_4_, CallbackInfoReturnable<Boolean> cir, @Local(name = "tileentity") TileEntity tileentity) {
+    private void gtnhlib$renderCustomFlowerPot(BlockFlowerPot blockPot, int x, int y, int z,
+            CallbackInfoReturnable<Boolean> cir, @Local(name = "tileentity") TileEntity tileentity) {
+        if (!(tileentity instanceof TileEntityFlowerPot pot)) return;
 
-        if (tileentity instanceof TileEntityFlowerPot te) {
-            Item item = te.getFlowerPotItem();
-            if (item != null) {
-                Block block = Block.getBlockFromItem(item);
-                if (block instanceof IFlowerPottable pottable) {
-                    NBTTagCompound compound = new NBTTagCompound();
-                    te.writeToNBT(compound);
+        Item item = pot.getFlowerPotItem();
+        if (item == null) return;
 
-                    if (pottable.renderFlowerPot(
-                            compound,
-                            blockAccess,
-                            block,
-                            p_147752_2_,
-                            p_147752_3_,
-                            p_147752_4_,
-                            (RenderBlocks) (Object) this)) {
-                        cir.setReturnValue(true);
-                    }
-                }
-            }
+        Block block = Block.getBlockFromItem(item);
+        if (!(block instanceof IFlowerPottable pottable)) return;
+
+        NBTTagCompound compound = new NBTTagCompound();
+        pot.writeToNBT(compound);
+
+        if (pottable.renderFlowerPot(compound, blockAccess, block, x, y, z, (RenderBlocks) (Object) this)) {
+            cir.setReturnValue(true);
         }
     }
 }
