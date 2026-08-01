@@ -41,12 +41,12 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 import com.gtnewhorizon.gtnhlib.core.fml.transformers.BlockIconTransformer;
 import com.gtnewhorizon.gtnhlib.util.StdLCG;
+import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
-// TODO: Fix thread safety issues in blockstates
-// @ThreadSafeISBRH(perThread = true)
+@ThreadSafeISBRH(perThread = true)
 public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     public static final ThreadLocal<ModelISBRH> INSTANCE = ThreadLocal.withInitial(ModelISBRH::new);
@@ -301,11 +301,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         int meta = stack.getItemDamage();
 
         final Tessellator tesselator = TessellatorManager.get();
-        itemContext.stack = stack;
-        itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
-        itemContext.random = RAND;
-        // I mean, I *could* pack 0, 0, 0. But that seems like a waste when I know the answer...
-        itemContext.random.setSeed(0);
+        itemContext.set(stack, RAND);
 
         final BakedModel model = ModelRegistry.getBakedModel(itemContext);
 
