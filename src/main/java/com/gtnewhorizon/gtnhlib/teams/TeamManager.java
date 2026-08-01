@@ -15,6 +15,9 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamCreateEvent;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamMergeEvent;
@@ -47,6 +50,11 @@ public class TeamManager {
         return Collections.unmodifiableMap(TEAM_MAP);
     }
 
+    /**
+     * Get a team by player's UUID. It is generally recommended to use {@link #getOrCreateTeam(String, UUID)}, as this
+     * guarantees a non-null team!
+     */
+    @Nullable
     public static Team getTeamByPlayer(UUID playerUuid) {
         Team foundTeam = PLAYER_TEAM_CACHE.get(playerUuid);
         if (foundTeam != null && foundTeam.isMember(playerUuid) && TEAM_MAP.containsKey(foundTeam.getTeamId())) {
@@ -83,6 +91,7 @@ public class TeamManager {
     /**
      * Returns the player's current team, creating a solo team for them if they are not in one.
      */
+    @NotNull
     public static Team getOrCreateTeam(String playerName, UUID playerUuid) {
         Team existing = getTeamByPlayer(playerUuid);
         if (existing != null) return existing;
