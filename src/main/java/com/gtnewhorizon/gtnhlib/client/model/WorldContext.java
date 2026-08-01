@@ -8,6 +8,7 @@ import net.minecraft.world.IBlockAccess;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockStatePool;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -20,6 +21,8 @@ public class WorldContext implements BakedModelQuadContext.World {
     public ModelQuadFacing quadFacing;
     public Random random;
     public Supplier<ModelQuadViewMutable> quadPool;
+
+    private final BlockStatePool pool = new BlockStatePool(4);
 
     public void reset() {
         this.world = null;
@@ -35,7 +38,7 @@ public class WorldContext implements BakedModelQuadContext.World {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.blockState = BlockPropertyRegistry.getBlockState(world, x, y, z);
+        this.blockState = BlockPropertyRegistry.getBlockState(pool, world, x, y, z);
         this.random = random;
         seedRNG(x, y, z);
     }

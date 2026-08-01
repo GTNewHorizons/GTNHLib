@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
+import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyJsonException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.MetaBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.TransformableProperty;
@@ -32,7 +33,7 @@ public interface AxisBlockProperty extends BlockProperty<Axis>, TransformablePro
     }
 
     @Override
-    default Axis deserialize(JsonElement element) {
+    default Axis deserialize(JsonElement element) throws InvalidPropertyJsonException {
         return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString())
                 : Axis.UNKNOWN;
     }
@@ -62,7 +63,7 @@ public interface AxisBlockProperty extends BlockProperty<Axis>, TransformablePro
         return isValidAxis(axis) ? axis : value;
     }
 
-    interface Meta extends AxisBlockProperty, MetaBlockProperty<Axis> {
+    interface AxisMetaBlockProperty extends AxisBlockProperty, MetaBlockProperty<Axis> {
 
         @Override
         default boolean appliesTo(int meta) {
@@ -70,7 +71,12 @@ public interface AxisBlockProperty extends BlockProperty<Axis>, TransformablePro
         }
     }
 
-    abstract class AbstractAxisBlockProperty implements Meta {
+    /** @deprecated Use {@link AxisMetaBlockProperty} */
+    @Deprecated
+    interface Meta extends AxisMetaBlockProperty {
+    }
+
+    abstract class AbstractAxisBlockProperty implements AxisMetaBlockProperty {
 
         private final String name;
 
@@ -92,11 +98,13 @@ public interface AxisBlockProperty extends BlockProperty<Axis>, TransformablePro
         }
     }
 
+    @FunctionalInterface
     interface A2M {
 
         int getMeta(Axis axis);
     }
 
+    @FunctionalInterface
     interface M2A {
 
         Axis getAxis(int meta);
