@@ -27,6 +27,11 @@ tasks.jar.configure {
     dependsOn(main17.compileJavaTaskName)
     into("META-INF/versions/17") { from(main17.output) }
 }
+tasks.jar {
+    manifest {
+        attributes["MixinConfigs"] = "mixins.gtnhlib.preinit.json"
+    }
+}
 tasks.sourcesJar.configure {
     into("META-INF/versions/17") { from(main17.java.sourceDirectories) }
 }

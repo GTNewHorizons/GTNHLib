@@ -11,6 +11,10 @@ public class FontRendering {
 
     private static final char FORMATTING_CHAR = 167; // §
 
+    // §x hex color = §x marker + 12 payload chars (six §H pairs: §R§R§G§G§B§B)
+    private static final int SECTION_X_PAYLOAD = 12;
+    private static final int SECTION_X_LENGTH = SECTION_X_PAYLOAD + 2;
+
     @Setter
     private static Function<String, String> textPreprocessor = null;
 
@@ -93,6 +97,16 @@ public class FontRendering {
         return true;
     }
 
+    /** true if start points at a §x payload: six §H pairs (§R§R§G§G§B§B) */
+    private static boolean isSectionXPayload(String str, int start) {
+        if (start + SECTION_X_PAYLOAD > str.length()) return false;
+        for (int k = 0; k < 6; k++) {
+            final int p = start + k * 2;
+            if (str.charAt(p) != FORMATTING_CHAR || !isHexChar(str.charAt(p + 1))) return false;
+        }
+        return true;
+    }
+
     private static boolean isValidAmpCode(char c) {
         char cl = Character.toLowerCase(c);
         return (cl >= '0' && cl <= '9') || (cl >= 'a' && cl <= 'f')
@@ -144,7 +158,13 @@ public class FontRendering {
             if (charWidth < 0 && (i + 1) < str.length()) {
                 i++;
                 char fmtChar = str.charAt(i);
-                curBold = determineIfBold(curBold, fmtChar);
+                if (Character.toLowerCase(fmtChar) == 'x' && preprocessorHandlesAmpCodes()
+                        && isSectionXPayload(str, i + 1)) {
+                    // §x hex color: skip the payload, keep bold (renderer keeps styles through hex, unlike §0-f)
+                    i += SECTION_X_PAYLOAD;
+                } else {
+                    curBold = determineIfBold(curBold, fmtChar);
+                }
                 charWidth = 0;
             }
 
@@ -194,7 +214,13 @@ public class FontRendering {
                     if ((i + 1) < originalStringLength) {
                         i++;
                         char fmtChar = str.charAt(i);
-                        curBold = determineIfBold(curBold, fmtChar);
+                        if (Character.toLowerCase(fmtChar) == 'x' && preprocessorHandlesAmpCodes()
+                                && isSectionXPayload(str, i + 1)) {
+                            // §x hex color: skip payload, keep bold
+                            i += SECTION_X_PAYLOAD;
+                        } else {
+                            curBold = determineIfBold(curBold, fmtChar);
+                        }
                     }
                     break;
                 case '&':
@@ -267,6 +293,20 @@ public class FontRendering {
         for (int i = startOrEnd; i >= 0 && i < str.length() && width < trimWidth; i += increment) {
             char ch = str.charAt(i);
             float charWidth = fontParams.getCharWidthFine(ch);
+
+            if (!reverse && !parsingFormatCode
+                    && ch == FORMATTING_CHAR
+                    && i + 1 < str.length()
+                    && Character.toLowerCase(str.charAt(i + 1)) == 'x'
+                    && preprocessorHandlesAmpCodes()
+                    && isSectionXPayload(str, i + 2)) {
+                // §x hex color: copy the whole token, no width, keep bold
+                for (int k = 0; k < SECTION_X_LENGTH && i + k < str.length(); k++) {
+                    stringbuilder.append(str.charAt(i + k));
+                }
+                i += SECTION_X_LENGTH - 1; // loop's increment (+1) advances past the full 14-char token
+                continue;
+            }
 
             if (parsingFormatCode) {
                 parsingFormatCode = false;

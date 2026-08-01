@@ -15,9 +15,13 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamCreateEvent;
 import com.gtnewhorizon.gtnhlib.teams.TeamEvents.TeamMergeEvent;
+import com.gtnewhorizon.gtnhlib.util.ServerPlayerUtils;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
@@ -46,6 +50,11 @@ public class TeamManager {
         return Collections.unmodifiableMap(TEAM_MAP);
     }
 
+    /**
+     * Get a team by player's UUID. It is generally recommended to use {@link #getOrCreateTeam(String, UUID)}, as this
+     * guarantees a non-null team!
+     */
+    @Nullable
     public static Team getTeamByPlayer(UUID playerUuid) {
         Team foundTeam = PLAYER_TEAM_CACHE.get(playerUuid);
         if (foundTeam != null && foundTeam.isMember(playerUuid) && TEAM_MAP.containsKey(foundTeam.getTeamId())) {
@@ -59,7 +68,10 @@ public class TeamManager {
             }
         }
         PLAYER_TEAM_CACHE.remove(playerUuid);
-        GTNHLib.LOG.error("Unable to find team for player {}", playerUuid);
+        GTNHLib.LOG.error(
+                "Unable to find team for player {} ({})",
+                playerUuid,
+                ServerPlayerUtils.getPlayerName(playerUuid));
         return null;
     }
 
@@ -79,13 +91,19 @@ public class TeamManager {
     /**
      * Returns the player's current team, creating a solo team for them if they are not in one.
      */
+    @NotNull
     public static Team getOrCreateTeam(String playerName, UUID playerUuid) {
         Team existing = getTeamByPlayer(playerUuid);
         if (existing != null) return existing;
 
+        return createTeam(playerName, playerUuid);
+    }
+
+    public static Team createTeam(String playerName, UUID playerUuid) {
         Team team = new Team(playerName + "'s Team", UUID.randomUUID());
         team.initializeData(TeamDataRegistry.getRegisteredKeys().toArray(new String[0]));
         team.addOwner(playerUuid);
+        PLAYER_TEAM_CACHE.put(playerUuid, team);
         MinecraftForge.EVENT_BUS.post(new TeamCreateEvent(team, playerUuid));
         TEAMS.add(team);
         TEAM_MAP.put(team.getTeamId(), team);

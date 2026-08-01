@@ -59,7 +59,12 @@ public enum Mixins implements IMixins {
                     .setPhase(Phase.LATE).addCommonMixins("MixinEnhancedInfusionRecipe")
                     .addRequiredMod(TargetMods.THAUMCRAFT)),
     CONFIG_ORDER(Side.CLIENT, "fml.MixinGuiConfig"),
-    WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld")
+    WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld"),
+    WORLD_LOAD_WARNING(new MixinBuilder("Accessors for the world conversion warning screen system")
+            .addCommonMixins("AccessorGuiNotification", "AccessorStartupQuery").setPhase(Phase.EARLY)),
+    MODDED_FLOWERS_IN_FLOWER_POT(new MixinBuilder()
+            .addCommonMixins("MixinBlockFlowerPot", "MixinTileEntityFlowerPot", "MixinRenderBlocks_FlowerPot")
+            .setApplyIf(() -> GTNHLibConfig.enableMoreFlowerPottage).setPhase(Phase.EARLY)),
     //
     ;
 

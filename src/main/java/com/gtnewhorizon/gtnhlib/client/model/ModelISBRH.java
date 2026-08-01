@@ -301,11 +301,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         int meta = stack.getItemDamage();
 
         final Tessellator tesselator = TessellatorManager.get();
-        itemContext.stack = stack;
-        itemContext.blockState = BlockPropertyRegistry.getBlockState(stack);
-        itemContext.random = RAND;
-        // I mean, I *could* pack 0, 0, 0. But that seems like a waste when I know the answer...
-        itemContext.random.setSeed(0);
+        itemContext.set(stack, RAND);
 
         final BakedModel model = ModelRegistry.getBakedModel(itemContext);
 

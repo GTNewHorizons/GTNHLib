@@ -53,6 +53,14 @@ public class TeamAdminCommand {
                                                                 StringArgumentType.getString(ctx, ARG_TEAM_NAME),
                                                                 StringArgumentType.getString(ctx, ARG_PLAYER))))))
                         .then(
+                                literal("kick").then(
+                                        argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
+                                                argument(ARG_PLAYER, StringArgumentType.string()).executes(
+                                                        ctx -> executeAdminKick(
+                                                                ctx.getSource(),
+                                                                StringArgumentType.getString(ctx, ARG_TEAM_NAME),
+                                                                StringArgumentType.getString(ctx, ARG_PLAYER))))))
+                        .then(
                                 literal("merge").then(
                                         argument(ARG_TEAM_NAME, StringArgumentType.string()).then(
                                                 argument(ARG_TEAM_NAME_OTHER, StringArgumentType.string()).executes(
@@ -120,6 +128,21 @@ public class TeamAdminCommand {
         return Command.SINGLE_SUCCESS;
     }
 
+    private static int executeAdminKick(ICommandSender sender, String teamName, String playerName) {
+        Team team = TeamManager.getTeamByName(teamName);
+        if (team == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", teamName);
+
+        UUID uuid = resolveTeamMemberUuid(team, playerName);
+        if (uuid == null || !team.isMember(uuid))
+            return error(sender, "gtnhlib.chat.teams.admin.error.player_not_in_team", playerName, teamName);
+        if (team.isOwner(uuid) && team.getOwners().size() == 1)
+            return error(sender, "gtnhlib.chat.teams.admin.error.kick_last_owner", playerName, teamName);
+
+        TeamActions.onKick(team, uuid, true, sender);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
     private static int executeAdminMerge(ICommandSender sender, String sourceName, String targetName) {
         Team sourceTeam = TeamManager.getTeamByName(sourceName);
         if (sourceTeam == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", sourceName);
@@ -138,6 +161,7 @@ public class TeamAdminCommand {
     private static int executeAdminDisband(ICommandSender sender, String teamName) {
         Team team = TeamManager.getTeamByName(teamName);
         if (team == null) return error(sender, "gtnhlib.chat.teams.admin.error.team_not_found", teamName);
+        if (!team.canBeDisbanded()) return error(sender, "gtnhlib.chat.teams.admin.error.cannot_disband_solo_team");
 
         TeamActions.onDisband(team, true, sender);
 
@@ -163,6 +187,7 @@ public class TeamAdminCommand {
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.5", root));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.6", root));
         sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.7", root));
+        sender.addChatMessage(new ChatComponentTranslation("gtnhlib.chat.teams.admin.help.8", root));
         return Command.SINGLE_SUCCESS;
     }
 

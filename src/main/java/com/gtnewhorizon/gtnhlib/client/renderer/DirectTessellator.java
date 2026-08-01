@@ -173,7 +173,6 @@ public class DirectTessellator extends Tessellator {
         if (this.isDrawing) {
             throw new IllegalStateException("Already tesselating!");
         }
-        reset();
         this.isDrawing = true;
         this.drawMode = p_78371_1_;
     }
@@ -430,10 +429,19 @@ public class DirectTessellator extends Tessellator {
 
     // Method may change/get removed in the future.
     // For future-proof use, use TessellatorManager#startCapturingDirect(VertexFormat)
+    /**
+     * @throws IllegalArgumentException if the format does not start with an inline 3-float position element (see
+     *                                  {@link VertexFormat#hasInlinePosition()})
+     */
     @Deprecated
     public final void setVertexFormat(VertexFormat format) {
         if (this.format != null) {
             throw new IllegalStateException("Cannot call setVertexFormat() after a vertex has already been emitted!");
+        }
+        if (!format.hasInlinePosition()) {
+            throw new IllegalArgumentException(
+                    "Vertex format must start with a 3-float position element, got "
+                            + (format.elementsArray.length == 0 ? "an empty format" : format.elementsArray[0]));
         }
         this.preDefinedFormat = format;
         this.format = format;
