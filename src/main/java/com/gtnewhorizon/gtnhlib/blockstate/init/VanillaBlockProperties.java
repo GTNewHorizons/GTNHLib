@@ -55,7 +55,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.VectorTransformableProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.mixin.BlockSkullExt;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.AxisBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.AxisBlockProperty.AbstractAxisBlockProperty;
-import com.gtnewhorizon.gtnhlib.blockstate.properties.AxisBlockProperty.Meta;
+import com.gtnewhorizon.gtnhlib.blockstate.properties.AxisBlockProperty.AxisMetaBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.BooleanBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.BooleanBlockProperty.FlagBooleanBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
@@ -193,7 +193,7 @@ class VanillaBlockProperties {
                 BooleanBlockProperty.blocks("powered", Blocks.unlit_redstone_torch, Blocks.redstone_torch));
 
         registerProperty(Blocks.lever, powered);
-        registerProperty(Blocks.lever, new Meta() {
+        registerProperty(Blocks.lever, new AxisMetaBlockProperty() {
 
             @Override
             public boolean hasTrait(BlockPropertyTrait trait) {

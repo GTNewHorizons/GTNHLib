@@ -41,4 +41,9 @@ public final class PositionVertexAttributeWriter implements IVertexAttributeWrit
         throw new UnsupportedOperationException("Cannot read position from tessellator!");
     }
 
+    @Override
+    public boolean isInlinePosition() {
+        return true;
+    }
+
 }

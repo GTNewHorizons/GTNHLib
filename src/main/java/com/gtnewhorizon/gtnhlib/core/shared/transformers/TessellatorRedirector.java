@@ -27,7 +27,7 @@ public final class TessellatorRedirector {
     }
 
     public boolean shouldTransform(byte[] basicClass) {
-        return cstPoolParser.find(basicClass, true);
+        return cstPoolParser.find(basicClass);
     }
 
     /**

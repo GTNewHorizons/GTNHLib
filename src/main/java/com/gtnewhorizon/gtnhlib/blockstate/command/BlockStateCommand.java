@@ -54,13 +54,18 @@ public class BlockStateCommand extends CommandBase {
 
         var hit = getHitResult(player);
 
-        if (hit == null || hit.typeOfHit != MovingObjectType.BLOCK) {
+        if (hit == null) {
             sendErrorToPlayer(sender, "You must be looking at a block to use this command.");
             return;
         }
 
         Map<String, BlockProperty<?>> properties = new Object2ObjectOpenHashMap<>();
-        BlockPropertyRegistry.getProperties(player.worldObj, hit.blockX, hit.blockY, hit.blockZ, properties);
+        BlockPropertyRegistry.getValidProperties(
+                player.worldObj,
+                hit.blockX,
+                hit.blockY,
+                hit.blockZ,
+                prop -> properties.put(prop.getName(), prop));
 
         if ("get".equals(action)) {
             if (name != null) {
