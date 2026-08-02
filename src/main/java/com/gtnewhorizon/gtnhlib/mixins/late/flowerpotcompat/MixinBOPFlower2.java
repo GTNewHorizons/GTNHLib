@@ -21,6 +21,7 @@ public class MixinBOPFlower2 {
 
     public boolean gtnhlib$isFlowerPottable(int meta) {
         // These ones don't work well, they clip way too badly
+        // Lily of the Valley, Bluebells
         return (meta != 1 && meta != 5);
     }
 
