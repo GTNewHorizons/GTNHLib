@@ -4,9 +4,6 @@ import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.resources.FallbackResourceManager;
 import net.minecraft.client.resources.IResourceManager;
@@ -169,7 +166,7 @@ public class ModelRegistry {
 
             // Gather the list of modeled blocks and their textures
             final var modeledBlocks = new ObjectOpenHashSet<String>();
-            final var texturesToLoad = new HashSet<String>();
+            final var texturesToLoad = new ObjectOpenHashSet<String>();
             for (var pack : resourcePacks) {
                 if (!(pack instanceof ModelResourcePack mrp)) continue;
 
@@ -217,7 +214,7 @@ public class ModelRegistry {
 
     public static class EventHandler {
 
-        private static @NotNull Set<String> texturesToLoad = Set.of();
+        private static @NotNull ObjectOpenHashSet<String> texturesToLoad = ObjectOpenHashSet.of();
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
@@ -225,7 +222,7 @@ public class ModelRegistry {
             for (var texture : texturesToLoad) {
                 TexHelper.registerTexture(event.map, texture);
             }
-            texturesToLoad = Set.of(); // don't need it anymore
+            texturesToLoad = ObjectOpenHashSet.of(); // don't need it anymore
         }
     }
 }
