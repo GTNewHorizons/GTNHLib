@@ -3,10 +3,13 @@
 In general, it is designed to mimic the latest version.
 
 ### Intentional deviations
-Texture references are assumed to be in `assets/<domain>/blocks` by
-default, to match 7.10 conventions. However, textures specified by
-`domain:block/whatever` are remapped to `domain:whatever`, to support
-importing models from modern.
+None (for now).
+
+### Former deviations
+Texture references are no longer assumed to be the same as 7.10 locations.
+Instead, they are resolved from `assets/namespace/textures` like modern
+does. This also means you can now use *any* texture in your ISBRH, and
+GTNHLib will inject it into the block atlas. Please use this power responsibly.
 
 Resource packs can now replace most blocks, similarly to modern.
 Note that this primarily works on blocks with ISBRHS - if the block
@@ -164,7 +167,6 @@ The loader will:
 Only implement the traits you need.
 
 ### TODO
-- Autoload item textures too.
 - Add smooth shading to ModelISBRH.
 - Add face culling to models.
 - Implement UV locking.
