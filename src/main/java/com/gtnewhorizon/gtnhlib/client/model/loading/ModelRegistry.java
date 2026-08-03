@@ -222,7 +222,7 @@ public class ModelRegistry {
         @SideOnly(Side.CLIENT)
         public void onTextureStitch(TextureStitchEvent.Pre event) {
             for (var texture : texturesToLoad) {
-                event.map.registerIcon(texture.replaceFirst("^minecraft:", ""));
+                TexHelper.registerTexture(event.map, texture);
             }
             texturesToLoad = ObjectLists.emptyList(); // don't need it anymore
         }
