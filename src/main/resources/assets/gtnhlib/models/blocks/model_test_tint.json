@@ -6,7 +6,7 @@
     "south": "gtnhlib:blocks/test",
     "east":  "gtnhlib:blocks/test",
     "west":  "gtnhlib:blocks/test",
-    "up":    "minecraft:items/apple",
+    "up":    "gtnhlib:blocks/test",
     "down":  "gtnhlib:blocks/test"
   },
   "elements": [
