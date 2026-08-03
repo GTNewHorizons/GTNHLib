@@ -67,6 +67,16 @@ public enum Mixins implements IMixins {
     MODDED_FLOWERS_IN_FLOWER_POT(new MixinBuilder()
             .addCommonMixins("MixinBlockFlowerPot", "MixinTileEntityFlowerPot", "MixinRenderBlocks_FlowerPot")
             .setApplyIf(() -> GTNHLibConfig.enableMoreFlowerPottage).setPhase(Phase.EARLY)),
+    BIOMES_O_PLENTY_FLOWER_POT(new MixinBuilder("Implement IFlowerPottable on BoP blocks")
+            .setApplyIf(() -> GTNHLibConfig.enableMoreFlowerPottage).setPhase(Phase.LATE)
+            .addCommonMixins(
+                    "flowerpotcompat.MixinBOPColorizedSapling",
+                    "flowerpotcompat.MixinBOPSapling",
+                    "flowerpotcompat.MixinBOPFlower",
+                    "flowerpotcompat.MixinBOPFlower2",
+                    "flowerpotcompat.MixinBOPPlant",
+                    "flowerpotcompat.MixinBOPMushroom")
+            .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
     //
     ;
 
