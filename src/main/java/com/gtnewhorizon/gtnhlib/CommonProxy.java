@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.isObf;
 
+import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
@@ -69,6 +70,7 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
 
         if (GTNHLibConfig.enableTestBlocks) {
+            BlockLightUnderStair.register();
             BlockTest.register();
             BlockTestLectern.register();
             BlockTestTint.register();
