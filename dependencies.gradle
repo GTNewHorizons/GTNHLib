@@ -42,7 +42,7 @@ dependencies {
     }
 
     // Annotation things
-    compileOnly("com.github.GTNewHorizons:Angelica:2.1.60:dev") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:Angelica:99.0.0:dev") { transitive = false }
     compileOnly('org.jetbrains:annotations:26.0.1')
     compileOnly("org.projectlombok:lombok:1.18.36") {transitive = false }
     annotationProcessor("org.projectlombok:lombok:1.18.36")
