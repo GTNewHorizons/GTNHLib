@@ -54,12 +54,7 @@ public final class PlayerInventoryEventHandler {
             states.put(id, state);
         }
 
-        final InventoryEventPoster poster = client ? CLIENT_POSTER : SERVER_POSTER;
-        try {
-            PlayerInventoryScanner.process(player, state, poster);
-        } finally {
-            poster.player = null;
-        }
+        PlayerInventoryScanner.process(player, state, client ? CLIENT_POSTER : SERVER_POSTER);
     }
 
     @SubscribeEvent

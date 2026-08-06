@@ -17,7 +17,7 @@ public final class PlayerInventoryScanner {
 
     private PlayerInventoryScanner() {}
 
-    /** @param poster a reusable per-side consumer; its {@code player} is set here before diffing. */
+    /** @param poster a reusable per-side consumer; its {@code player} is set and cleared here around the diff. */
     public static void process(EntityPlayer player, PlayerInvState state, InventoryEventPoster poster) {
         if (++state.ticksSinceScan < GTNHLibConfig.inventoryScanInterval) return;
         state.ticksSinceScan = 0;
@@ -33,7 +33,11 @@ public final class PlayerInventoryScanner {
         }
 
         poster.player = player;
-        InventoryDiffer.diff(state.previous, current, poster);
+        try {
+            InventoryDiffer.diff(state.previous, current, poster);
+        } finally {
+            poster.player = null;
+        }
         state.swap();
     }
 
