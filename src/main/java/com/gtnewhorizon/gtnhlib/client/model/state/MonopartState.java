@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
-import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
 import java.util.Map;
 import java.util.Objects;
@@ -53,11 +52,6 @@ public class MonopartState implements StateModelMap {
             variantName = s;
 
             if (s.isEmpty()) {
-                matchAll = true;
-                states = null;
-                return;
-            } else if ("normal".equals(s)) {
-                MODEL_LOGGER.error("Attempting to load old (pre-13.x) blockstate file loaded - please upgrade it!");
                 matchAll = true;
                 states = null;
                 return;
