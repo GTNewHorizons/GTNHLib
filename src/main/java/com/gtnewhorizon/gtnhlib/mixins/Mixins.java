@@ -29,6 +29,8 @@ public enum Mixins implements IMixins {
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
+            "models.MixinTextureAtlasSprite",
+            "models.MixinTextureMap",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
