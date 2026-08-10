@@ -18,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
+import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyJsonException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.MetaBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.TransformableProperty;
@@ -48,7 +49,7 @@ public interface DirectionBlockProperty extends BlockProperty<ForgeDirection>, T
     }
 
     @Override
-    default ForgeDirection deserialize(JsonElement element) {
+    default ForgeDirection deserialize(JsonElement element) throws InvalidPropertyJsonException {
         return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString())
                 : UNKNOWN;
     }

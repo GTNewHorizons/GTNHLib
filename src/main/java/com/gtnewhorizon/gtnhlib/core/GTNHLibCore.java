@@ -76,6 +76,12 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
             Set<String> cle = (Set<String>) cleF.get(Launch.classLoader);
             // for Brigadier
             cle.remove("com.mojang.");
+            // Thermos console log compat
+            boolean hybridServer = Launch.classLoader.getResource("org/bukkit/World.class") != null
+                    || Launch.classLoader.getResource("thermos/Thermos.class") != null;
+            if (hybridServer) {
+                cle.add("com.mojang.util.QueueLogAppender");
+            }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }

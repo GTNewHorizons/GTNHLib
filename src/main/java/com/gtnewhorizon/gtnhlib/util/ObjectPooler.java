@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-public class ObjectPooler<T> {
+public class ObjectPooler<T> implements IObjectPool<T> {
 
     private final Supplier<T> instanceSupplier;
     private final ObjectArrayList<T> availableInstances;
@@ -18,6 +18,7 @@ public class ObjectPooler<T> {
         this.availableInstances = new ObjectArrayList<>();
     }
 
+    @Override
     public T getInstance() {
         if (this.availableInstances.isEmpty()) {
             return this.instanceSupplier.get();
@@ -25,6 +26,7 @@ public class ObjectPooler<T> {
         return this.availableInstances.remove(this.availableInstances.size() - 1);
     }
 
+    @Override
     public void releaseInstance(T instance) {
         if (instance == null) return;
         this.availableInstances.add(instance);
