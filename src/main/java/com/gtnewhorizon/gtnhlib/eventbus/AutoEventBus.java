@@ -90,7 +90,7 @@ public class AutoEventBus {
                     String conditionToCheck = EventBusUtil.getConditionsToCheck().get(className);
                     if (conditionToCheck != null && !isConditionMet(clazz, conditionToCheck)) {
                         if (DEBUG_EVENT_BUS) {
-                            LOGGER.info("Skipping registration for {}, condition not met", clazz.getSimpleName());
+                            LOGGER.info("Skipping registration for {}, condition not met", className);
                         }
                         continue;
                     }
@@ -168,6 +168,10 @@ public class AutoEventBus {
         try {
             MethodHandle handle = MethodHandles.publicLookup()
                     .findStatic(clazz, condition.substring(0, condition.indexOf("(")), CONDITION_TYPE);
+
+            // Note: `LambdaMetafactory` allows us to run the method without loading the full class, so if any of the
+            // event handlers use event classes that are not present on the class path, we don't crash the game by
+            // loading them before testing the `@EventBusSubscriber.Condition`.
             CallSite call = LambdaMetafactory.metafactory(
                     LOOKUP,
                     "getAsBoolean",
