@@ -109,11 +109,10 @@ public class AutoEventBus {
             if (invalidMethods.size() == 1) {
                 throw new IllegalArgumentException(invalidMethods.get(0));
             } else if (invalidMethods.size() > 1) {
-                int i;
-                for (i = 0; i < invalidMethods.size() - 1; i++) {
-                    LOGGER.error(invalidMethods.get(i));
-                }
-                throw new IllegalArgumentException("Encountered" + i + "invalid methods. " + invalidMethods.get(i));
+                throw new IllegalArgumentException(
+                        "Encountered " + invalidMethods.size()
+                                + " invalid methods.\n - "
+                                + String.join("\n - ", invalidMethods));
             }
         }
     }
