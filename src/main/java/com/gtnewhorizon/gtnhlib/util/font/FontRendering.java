@@ -35,10 +35,25 @@ public class FontRendering {
         default boolean handlesAmpCodes() {
             return false;
         }
+
+        /**
+         * Whether a {@code §x} hex color clears bold and the other style flags. Vanilla color codes always do; hex is
+         * the renderer's choice, and the default keeps them so widths match a renderer that carries styles through.
+         * Evaluated per call, so implementations may return a live value tied to configuration state.
+         */
+        default boolean hexColorResetsStyles() {
+            return false;
+        }
     }
 
     private static boolean preprocessorHandlesAmpCodes() {
         return textPreprocessor instanceof TextPreprocessor && ((TextPreprocessor) textPreprocessor).handlesAmpCodes();
+    }
+
+    /** Whether a {@code §x} hex color clears style flags, as the registered preprocessor's renderer draws it. */
+    public static boolean hexColorResetsStyles() {
+        return textPreprocessor instanceof TextPreprocessor
+            && ((TextPreprocessor) textPreprocessor).hexColorResetsStyles();
     }
 
     /**
@@ -150,6 +165,7 @@ public class FontRendering {
         float width = 0;
         boolean curBold = false;
         boolean spacingOmittedOnce = false;
+        final boolean hexResetsStyles = hexColorResetsStyles();
 
         for (int i = 0; i < str.length(); ++i) {
             char ch = str.charAt(i);
@@ -160,7 +176,8 @@ public class FontRendering {
                 char fmtChar = str.charAt(i);
                 if (Character.toLowerCase(fmtChar) == 'x' && preprocessorHandlesAmpCodes()
                         && isSectionXPayload(str, i + 1)) {
-                    // §x hex color: skip the payload, keep bold (renderer keeps styles through hex, unlike §0-f)
+                    // §x hex color: skip the payload; styles follow the renderer's rule.
+                    if (hexResetsStyles) curBold = false;
                     i += SECTION_X_PAYLOAD;
                 } else {
                     curBold = determineIfBold(curBold, fmtChar);
@@ -198,6 +215,7 @@ public class FontRendering {
         int lastBreakSpot = -1;
         boolean curBold = false;
         boolean spacingOmittedOnce = false;
+        final boolean hexResetsStyles = hexColorResetsStyles();
 
         IFontParameters fontParams = (IFontParameters) fr;
 
@@ -216,7 +234,8 @@ public class FontRendering {
                         char fmtChar = str.charAt(i);
                         if (Character.toLowerCase(fmtChar) == 'x' && preprocessorHandlesAmpCodes()
                                 && isSectionXPayload(str, i + 1)) {
-                            // §x hex color: skip payload, keep bold
+                            // §x hex color: skip payload; styles follow the renderer's rule.
+                            if (hexResetsStyles) curBold = false;
                             i += SECTION_X_PAYLOAD;
                         } else {
                             curBold = determineIfBold(curBold, fmtChar);
@@ -287,6 +306,7 @@ public class FontRendering {
         boolean curBold = false;
         boolean spacingOmittedOnce = false;
         boolean parsingFormatCode = false;
+        final boolean hexResetsStyles = hexColorResetsStyles();
 
         IFontParameters fontParams = (IFontParameters) fr;
 
@@ -300,7 +320,8 @@ public class FontRendering {
                     && Character.toLowerCase(str.charAt(i + 1)) == 'x'
                     && preprocessorHandlesAmpCodes()
                     && isSectionXPayload(str, i + 2)) {
-                // §x hex color: copy the whole token, no width, keep bold
+                // §x hex color: copy the whole token, no width; styles follow the renderer's rule.
+                if (hexResetsStyles) curBold = false;
                 for (int k = 0; k < SECTION_X_LENGTH && i + k < str.length(); k++) {
                     stringbuilder.append(str.charAt(i + k));
                 }
