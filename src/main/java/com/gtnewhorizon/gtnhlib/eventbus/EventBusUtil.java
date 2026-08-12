@@ -21,7 +21,7 @@ import lombok.Getter;
 
 public final class EventBusUtil {
 
-    public static final Boolean DEBUG_EVENT_BUS = Boolean.getBoolean("gtnhlib.debug.eventbus");
+    public static final boolean DEBUG_EVENT_BUS = Boolean.getBoolean("gtnhlib.debug.eventbus");
     private static final String CURRENT_SIDE = FMLLaunchHandler.side().name();
 
     @Getter
