@@ -38,10 +38,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AutoEventBus {
 
     private static final Logger LOGGER = LogManager.getLogger("GTNHLib EventBus");
@@ -52,6 +49,8 @@ public class AutoEventBus {
 
     private static final DummyEvent INVALID_EVENT = new DummyEvent();
     private static final DummyEvent NOT_AN_EVENT = new DummyEvent();
+
+    private AutoEventBus() {}
 
     private enum EventBusType {
 
@@ -89,7 +88,7 @@ public class AutoEventBus {
             for (String className : entry.getValue()) {
                 try {
                     Class<?> clazz = Class.forName(className, false, Loader.instance().getModClassLoader());
-                    String conditionToCheck = EventBusUtil.getConditionsToCheck().get(className);
+                    String conditionToCheck = EventBusUtil.conditionsToCheck.get(className);
                     if (conditionToCheck != null && !isConditionMet(clazz, conditionToCheck)) {
                         if (DEBUG_EVENT_BUS) {
                             LOGGER.info("Skipping registration for {}, condition not met", className);
@@ -97,7 +96,7 @@ public class AutoEventBus {
                         continue;
                     }
 
-                    ObjectSet<MethodInfo> methods = EventBusUtil.getMethodsToSubscribe().get(className);
+                    ObjectSet<MethodInfo> methods = EventBusUtil.methodsToSubscribe.get(className);
                     if (methods == null || methods.isEmpty()) continue;
                     register(entry.getKey(), clazz, methods);
                 } catch (ClassNotFoundException e) {
@@ -107,7 +106,7 @@ public class AutoEventBus {
         }
 
         if (phase == Phase.INIT) {
-            ObjectList<String> invalidMethods = EventBusUtil.getInvalidMethods();
+            ObjectList<String> invalidMethods = EventBusUtil.invalidMethods;
             if (invalidMethods.size() == 1) {
                 throw new IllegalArgumentException(invalidMethods.get(0));
             } else if (invalidMethods.size() > 1) {
@@ -132,7 +131,7 @@ public class AutoEventBus {
                 if (event == INVALID_EVENT) {
                     continue;
                 } else if (event == NOT_AN_EVENT) {
-                    EventBusUtil.getInvalidMethods().add(
+                    EventBusUtil.invalidMethods.add(
                             "Invalid event handler method: " + method.declaringClass
                                     + " "
                                     + method.name
