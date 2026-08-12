@@ -91,6 +91,13 @@ public class EventBusSubTransformer implements IClassTransformer {
                                     + ". Condition method must have no parameters and return a boolean.");
                 }
                 continue;
+            } else {
+                if (!isValidDesc(mn.desc)) {
+                    EventBusUtil.getInvalidMethods().add(
+                            "Invalid event handler method: " + getMethodKey(transformedName, mn)
+                                    + ". Event handler method must have exactly one Event parameter and return void.");
+                    continue;
+                }
             }
 
             if (subscribe == null) {
@@ -200,5 +207,18 @@ public class EventBusSubTransformer implements IClassTransformer {
 
     private static String getMethodKey(String className, MethodNode mn) {
         return className + " " + mn.name + mn.desc;
+    }
+
+    /**
+     * Check whether this method descriptor is a possible descriptor for an event handler method. Specifically, it
+     * checks that the method takes one non-literal parameter and returns void. Does not check whether that parameter is
+     * a valid Event method, since that would require class-loading
+     *
+     * @param desc The descriptor of the static method.
+     * @return True if the method could potentially be an event handler method, false if the method is guaranteed to be
+     *         an invalid event handler method.
+     */
+    private static boolean isValidDesc(String desc) {
+        return desc.startsWith("(L") && desc.endsWith(";)V") && desc.lastIndexOf(';', desc.length() - 4) == -1;
     }
 }

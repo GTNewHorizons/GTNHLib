@@ -45,11 +45,13 @@ import lombok.NoArgsConstructor;
 public class AutoEventBus {
 
     private static final Logger LOGGER = LogManager.getLogger("GTNHLib EventBus");
-    private static final DummyEvent INVALID_EVENT = new DummyEvent();
     private static final Object2ObjectMap<String, Event> eventCache = new Object2ObjectOpenHashMap<>();
     private static final Object2BooleanMap<String> optionalMods = new Object2BooleanOpenHashMap<>();
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     private static final MethodType CONDITION_TYPE = MethodType.methodType(boolean.class);
+
+    private static final DummyEvent INVALID_EVENT = new DummyEvent();
+    private static final DummyEvent NOT_AN_EVENT = new DummyEvent();
 
     private enum EventBusType {
 
@@ -127,7 +129,17 @@ public class AutoEventBus {
                 }
 
                 Event event = getCachedEvent(EventBusUtil.getParameterClassName(method.desc));
-                if (INVALID_EVENT.equals(event)) continue;
+                if (event == INVALID_EVENT) {
+                    continue;
+                } else if (event == NOT_AN_EVENT) {
+                    EventBusUtil.getInvalidMethods().add(
+                            "Invalid event handler method: " + method.declaringClass
+                                    + " "
+                                    + method.name
+                                    + method.desc
+                                    + ". The parameter of an event handler method must extend cpw.mods.fml.common.eventhandler.Event");
+                    continue;
+                }
 
                 StaticASMEventHandler listener = new StaticASMEventHandler(method);
                 for (EventBusType bus : EventBusType.VALUES) {
@@ -152,6 +164,9 @@ public class AutoEventBus {
         return eventCache.computeIfAbsent(eventClass, e -> {
             try {
                 Class<?> clazz = Class.forName(eventClass, false, Loader.instance().getModClassLoader());
+
+                if (!Event.class.isAssignableFrom(clazz)) return NOT_AN_EVENT;
+
                 return (Event) ConstructorUtils.invokeConstructor(clazz);
             } catch (NoClassDefFoundError | ExceptionInInitializerError | Exception ex) {
                 // Event was likely for a mod that is not loaded or an invalid side.
