@@ -20,16 +20,20 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.IItemRenderer;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
+import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
@@ -70,15 +74,15 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
             RenderBlocks renderer) {
+        // Setup for rendering
         final Tessellator tesselator = TessellatorManager.get();
+        final var wrappedContext = new WorldWrapper(world, block, x, y, z);
+        worldContext.set(wrappedContext, x, y, z, RAND);
+        final int meta = wrappedContext.getBlockMetadata(x, y, z);
+
         if (ANGELICA) AngelicaHelper.initAngelicaLighting(tesselator);
 
-        // Get the model!
-        final int meta = world.getBlockMetadata(x, y, z);
-
-        worldContext.set(world, x, y, z, RAND);
         final BakedModel model = ModelRegistry.getBakedModel(worldContext);
-
         int color = model.getColor(world, x, y, z, block, meta, RAND);
 
         var rendered = false;
@@ -513,5 +517,66 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     @SuppressWarnings("unused")
     public @NotNull IIcon getMissingIcon() {
         return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("missingno");
+    }
+
+    /// Some blocks, like LittleTiles, rely on recursively rendering other blocks in the same location. Unfortunately,
+    /// this means we have to actually respect the block passed into [ModelISBRH#renderWorldBlock]. In order to read a
+    /// blockstate with that, we wrap the original IBA with one that just returns a slightly different block.
+    @Desugar
+    private record WorldWrapper(IBlockAccess wrapped, Block replace, int x, int y, int z) implements IBlockAccess {
+
+        @Override
+        public Block getBlock(int x, int y, int z) {
+            if (x == this.x && y == this.y && z == this.z) return replace;
+            return wrapped.getBlock(x, y, z);
+        }
+
+        @Override
+        public TileEntity getTileEntity(int x, int y, int z) {
+            return wrapped.getTileEntity(x, y, z);
+        }
+
+        @Override
+        public int getLightBrightnessForSkyBlocks(int x, int y, int z, int defauld) {
+            return wrapped.getLightBrightnessForSkyBlocks(x, y, z, defauld);
+        }
+
+        @Override
+        public int getBlockMetadata(int x, int y, int z) {
+            return wrapped.getBlockMetadata(x, y, z);
+        }
+
+        /// WARNING: This may improperly ignore the replacing block!
+        @Override
+        public int isBlockProvidingPowerTo(int x, int y, int z, int directionIn) {
+            return wrapped.isBlockProvidingPowerTo(x, y, z, directionIn);
+        }
+
+        /// WARNING: This may improperly ignore the replacing block!
+        @Override
+        public boolean isAirBlock(int x, int y, int z) {
+            return wrapped.isAirBlock(x, y, z);
+        }
+
+        @Override
+        public BiomeGenBase getBiomeGenForCoords(int x, int z) {
+            return wrapped.getBiomeGenForCoords(x, y);
+        }
+
+        @Override
+        public int getHeight() {
+            return wrapped.getHeight();
+        }
+
+        @Override
+        public boolean extendedLevelsInChunkCache() {
+            return wrapped.extendedLevelsInChunkCache();
+        }
+
+        /// WARNING: may improperly ignore replaced block!
+        @Override
+        public boolean isSideSolid(int x, int y, int z, ForgeDirection side, boolean defauld) {
+            return wrapped.isSideSolid(x, y, z, side, defauld);
+        }
     }
 }
