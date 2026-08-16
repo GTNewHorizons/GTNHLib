@@ -2,7 +2,6 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.isObf;
 
-import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
@@ -34,6 +33,7 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;

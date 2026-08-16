@@ -1,9 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.model;
 
-import com.gtnewhorizons.angelica.rendering.StateAwareTessellator;
 import net.minecraft.client.renderer.Tessellator;
 
+import com.gtnewhorizons.angelica.rendering.StateAwareTessellator;
+
 class AngelicaHelper {
+
     /// This method doesn't need to mess with [com.gtnewhorizons.angelica.api.ExtCeleritasRenderBlocks] because that
     /// only affects [net.minecraft.client.renderer.RenderBlocks] methods, which we don't use.
     static void initAngelicaLighting(Tessellator tesselator) {

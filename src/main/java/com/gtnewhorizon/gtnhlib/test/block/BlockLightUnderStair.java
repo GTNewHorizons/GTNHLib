@@ -1,16 +1,18 @@
 package com.gtnewhorizon.gtnhlib.test.block;
 
-import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
-import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty.AbstractDirectionBlockProperty;
-import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
-import com.gtnewhorizon.gtnhlib.util.DirectionUtil;
-import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
+import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty.AbstractDirectionBlockProperty;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
+import com.gtnewhorizon.gtnhlib.util.DirectionUtil;
+
+import cpw.mods.fml.common.registry.GameRegistry;
 
 public class BlockLightUnderStair extends Block {
 
