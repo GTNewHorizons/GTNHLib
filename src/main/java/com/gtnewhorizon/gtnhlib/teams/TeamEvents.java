@@ -40,4 +40,50 @@ public class TeamEvents {
         public final boolean adminAction;
     }
 
+    @RequiredArgsConstructor
+    public static class TeamJoinEvent extends Event {
+
+        public final Team team;
+        public final UUID player;
+        public final Team oldTeam;
+    }
+
+    @RequiredArgsConstructor
+    public static class TeamKickEvent extends Event {
+
+        public final Team team;
+        public final UUID kicked;
+        public final Team newTeam;
+        public final boolean adminAction;
+    }
+
+    @RequiredArgsConstructor
+    public static class TeamRenameEvent extends Event {
+
+        public final Team team;
+        public final String oldName;
+        public final String newName;
+        public final boolean adminAction;
+    }
+
+    @RequiredArgsConstructor
+    public static class TeamPromoteEvent extends Event {
+
+        public final Team team;
+        public final UUID player;
+        public final TeamRole oldRole;
+        public final TeamRole newRole;
+        public final boolean adminAction;
+    }
+
+    @RequiredArgsConstructor
+    public static class TeamDemoteEvent extends Event {
+
+        public final Team team;
+        public final UUID player;
+        public final TeamRole oldRole;
+        public final TeamRole newRole;
+        public final boolean adminAction;
+    }
+
 }

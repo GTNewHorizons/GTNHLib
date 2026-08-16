@@ -29,6 +29,9 @@ public class TeamActions {
     public static void onRename(Team team, String oldName, String newName, boolean adminAction,
             @Nullable ICommandSender admin) {
         team.markDirty();
+
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamRenameEvent(team, oldName, newName, adminAction));
+
         TeamManager.forEachOnlineTeamMember(team, member -> {
             NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
             success(
@@ -102,6 +105,8 @@ public class TeamActions {
         TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitingTeam);
         invitingTeam.markDirty();
 
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamJoinEvent(invitingTeam, playerId, oldTeam));
+
         TeamDataSync newTeamData = TeamNetwork.createCompleteTeamDataSyncPacket(invitingTeam);
         TeamManager.forEachOnlineTeamMember(invitingTeam, member -> {
             NetworkHandler.instance.sendTo(newTeamData, member);
@@ -136,6 +141,9 @@ public class TeamActions {
         TeamManager.transferTeamData(team, newTeam, kicked, TeamDataTransferReason.JoinedNewTeam);
         team.markDirty();
         newTeam.markDirty();
+
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamKickEvent(team, kicked, newTeam, adminAction));
+
         TeamDataSync teamData = TeamNetwork.createCompleteTeamDataSyncPacket(team);
         TeamManager.forEachOnlineTeamMember(team, member -> {
             NetworkHandler.instance.sendTo(teamData, member);
@@ -207,6 +215,10 @@ public class TeamActions {
                 ServerPlayerUtils.getPlayerName(target));
         if (team.isOfficer(target)) {
             team.addOwner(target);
+
+            MinecraftForge.EVENT_BUS
+                    .post(new TeamEvents.TeamPromoteEvent(team, target, TeamRole.OFFICER, TeamRole.OWNER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.promoted_to_owner", playerComp);
                 if (member.getUniqueID().equals(target)) {
@@ -222,6 +234,10 @@ public class TeamActions {
             }
         } else {
             team.addOfficer(target);
+
+            MinecraftForge.EVENT_BUS.post(
+                    new TeamEvents.TeamPromoteEvent(team, target, TeamRole.MEMBER, TeamRole.OFFICER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.promoted_to_officer", playerComp);
                 if (member.getUniqueID().equals(target)) {
@@ -244,6 +260,10 @@ public class TeamActions {
                 ServerPlayerUtils.getPlayerName(target));
         if (team.isOwner(target)) {
             team.removeOwner(target);
+
+            MinecraftForge.EVENT_BUS
+                    .post(new TeamEvents.TeamDemoteEvent(team, target, TeamRole.OWNER, TeamRole.OFFICER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.demoted_to_officer", playerComp);
                 if (member.getUniqueID().equals(target)) {
@@ -259,6 +279,10 @@ public class TeamActions {
             }
         } else {
             team.removeOfficer(target);
+
+            MinecraftForge.EVENT_BUS
+                    .post(new TeamEvents.TeamDemoteEvent(team, target, TeamRole.OFFICER, TeamRole.MEMBER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.demoted_to_member", playerComp);
                 if (member.getUniqueID().equals(target)) {
