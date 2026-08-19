@@ -8,17 +8,27 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.AbstractResourcePack;
 import net.minecraft.client.resources.FileResourcePack;
+import net.minecraft.client.resources.data.IMetadataSection;
+import net.minecraft.client.resources.data.PackMetadataSection;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
 
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelResourcePack;
 import com.gtnewhorizon.gtnhlib.client.model.loading.RPInfo;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 
@@ -69,5 +79,44 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
         }
 
         return new RPInfo(textures, models);
+    }
+
+    @Unique
+    private static final int PACK_FORMAT_MC_13_X = 4;
+    @Unique
+    private static final String METADATA_FILE = "pack.mcmeta";
+
+    /// Block old resourcepacks from loading blockstates or models.
+    /// @return True if the resource SHOULDN'T load, false if it SHOULD.
+    @Definition(id = "zipentry", local = @Local(type = ZipEntry.class))
+    @Expression("zipentry == null")
+    @ModifyExpressionValue(method = "getInputStreamByName", at = @At(value = "MIXINEXTRAS:EXPRESSION"))
+    private boolean nhlib$blockOldModels(boolean original, @Local(argsOnly = true) String resource) {
+        // Return the default for the metadata, or getting it below will infinitely recurse.
+        if (original || METADATA_FILE.equals(resource)) return original;
+
+        // This song and dance is needed because some calls to getInputStreamByName expect it to never fail,
+        // since they're referring to resources bundled in jars. So while the original has a checked exception, we can't
+        // rely on everyone checking it.
+        final int packFormat;
+        IMetadataSection packFormatSection = null;
+        try {
+            packFormatSection = getPackMetadata(
+                    Minecraft.getMinecraft().getResourcePackRepository().rprMetadataSerializer,
+                    "pack");
+        } catch (IOException e) {
+            // If the above fails, pack metadata is null and thus format is assumed to be 1 (i.e. old).
+        }
+        if (!(packFormatSection instanceof PackMetadataSection metadata)) packFormat = 1;
+        else packFormat = metadata.getPackFormat();
+
+        if (!resource.endsWith(".json")) return false; // not a JSON model/blockstate
+        var pathParts = resource.split("/");
+        if (pathParts.length < 4) return false; // too short to be a blockstate or model
+        if (!"assets".equals(pathParts[0])) return false;
+        if (!"blockstates".equals(pathParts[2])) return false;
+
+        // This is a blockstate, reject it if it's too old.
+        return packFormat < PACK_FORMAT_MC_13_X;
     }
 }
