@@ -95,6 +95,12 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
         // Return the default for the metadata, or getting it below will infinitely recurse.
         if (original || METADATA_FILE.equals(resource)) return original;
 
+        if (!resource.endsWith(".json")) return false; // not a JSON blockstate
+        var pathParts = resource.split("/");
+        if (pathParts.length < 4) return false; // too short to be a blockstate
+        if (!"assets".equals(pathParts[0])) return false;
+        if (!"blockstates".equals(pathParts[2])) return false;
+
         // This song and dance is needed because some calls to getInputStreamByName expect it to never fail,
         // since they're referring to resources bundled in jars. So while the original has a checked exception, we can't
         // rely on everyone checking it.
@@ -109,12 +115,6 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
         }
         if (!(packFormatSection instanceof PackMetadataSection metadata)) packFormat = 1;
         else packFormat = metadata.getPackFormat();
-
-        if (!resource.endsWith(".json")) return false; // not a JSON model/blockstate
-        var pathParts = resource.split("/");
-        if (pathParts.length < 4) return false; // too short to be a blockstate or model
-        if (!"assets".equals(pathParts[0])) return false;
-        if (!"blockstates".equals(pathParts[2])) return false;
 
         // This is a blockstate, reject it if it's too old.
         return packFormat < PACK_FORMAT_MC_13_X;
