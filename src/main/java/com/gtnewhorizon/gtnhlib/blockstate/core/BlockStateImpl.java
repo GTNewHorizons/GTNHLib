@@ -23,6 +23,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.gson.JsonObject;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import com.gtnewhorizon.gtnhlib.geometry.DirectionTransform;
@@ -278,6 +279,25 @@ public class BlockStateImpl implements BlockState {
         return cloned.copy(this);
     }
 
+    @Override
+    public BlockState clone(@Nullable BlockStatePool otherPool) {
+        BlockStateImpl cloned = otherPool != null ? otherPool.getInstance() : new BlockStateImpl();
+        return cloned.copy(this);
+    }
+
+    @Override
+    public int size() {
+        int count = 0;
+
+        for (int i = 0; i < entries.size(); i++) {
+            PropertyEntry entry = entries.get(i);
+
+            if (entry.name != null) count++;
+        }
+
+        return count;
+    }
+
     private int findIndex(BlockProperty prop) {
         for (int i = 0; i < entries.size(); i++) {
             PropertyEntry entry = entries.get(i);
@@ -443,6 +463,19 @@ public class BlockStateImpl implements BlockState {
     }
 
     @Override
+    public boolean needsReification() {
+        for (int i = 0; i < entries.size(); i++) {
+            PropertyEntry entry = entries.get(i);
+
+            if (entry.name == null) continue;
+
+            if (entry.property == null || !entry.validated) return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public void removeProperty(BlockProperty<?> property) {
         int index = findIndex(property);
         if (index != -1) entries.get(index).reset();
@@ -452,6 +485,31 @@ public class BlockStateImpl implements BlockState {
     public void removeProperty(String name) {
         int index = findIndex(name);
         if (index != -1) entries.get(index).reset();
+    }
+
+    @Override
+    public void removeIf(BlockPropertyValuePredicate test) {
+        for (int i = 0; i < entries.size(); i++) {
+            BlockStateImpl.PropertyEntry entry = entries.get(i);
+
+            if (entry.name == null) continue;
+
+            BlockPropertyState state;
+
+            if (!entry.isDeferred()) {
+                if (entry.validated) {
+                    state = BlockPropertyState.NORMAL;
+                } else {
+                    state = BlockPropertyState.UNVALIDATED;
+                }
+            } else {
+                state = BlockPropertyState.DEFERRED;
+            }
+
+            if (test.test(entry.name, state, entry.property, entry.value)) {
+                entry.reset();
+            }
+        }
     }
 
     @Override
@@ -530,6 +588,42 @@ public class BlockStateImpl implements BlockState {
     }
 
     @Override
+    public void putAll(BlockState source) {
+        if (source instanceof BlockStateImpl impl) {
+            var other = impl.entries;
+
+            for (int i = 0; i < other.size(); i++) {
+                BlockStateImpl.PropertyEntry otherEntry = other.get(i);
+
+                if (otherEntry.name == null) continue;
+
+                int index = findIndex(otherEntry.name);
+
+                if (index == -1) {
+                    index = findOrAddFreeIndex();
+                }
+
+                entries.get(index).copy(otherEntry);
+            }
+        } else {
+            source.forEachValue((name, state, property, value) -> {
+                int index = findIndex(name);
+
+                if (index == -1) {
+                    index = findOrAddFreeIndex();
+                }
+
+                PropertyEntry entry = entries.get(index);
+
+                entry.name = name;
+                entry.property = property;
+                entry.value = value;
+                entry.validated = state == BlockPropertyState.NORMAL;
+            });
+        }
+    }
+
+    @Override
     public Map<String, String> toMap() {
         Map<String, String> out = new Object2ObjectOpenHashMap<>(entries.size());
 
@@ -546,6 +640,62 @@ public class BlockStateImpl implements BlockState {
         }
 
         return out;
+    }
+
+    @Override
+    public JsonObject toJson() {
+        JsonObject obj = new JsonObject();
+
+        for (int i = 0; i < entries.size(); i++) {
+            PropertyEntry entry = entries.get(i);
+
+            if (entry.name == null) continue;
+
+            if (entry.property != null) {
+                //noinspection unchecked
+                obj.add(entry.name, entry.property.serialize(entry.value));
+            } else {
+                obj.addProperty(entry.name, entry.value == null ? null : entry.value.toString());
+            }
+        }
+
+        return obj;
+    }
+
+    @Override
+    public void fromJson(JsonObject obj) {
+        for (var e : obj.entrySet()) {
+            var name = e.getKey();
+            var value = e.getValue();
+
+            int index = findIndex(name);
+
+            if (index == -1) {
+                index = findOrAddFreeIndex();
+
+                entries.get(index).deferred(name, value);
+            } else {
+                PropertyEntry entry = entries.get(index);
+
+                if (entry.property != null) {
+                    if (entry.property.getType() != String.class) {
+                        entry.value = entry.property.deserialize(value);
+                    } else if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
+                        entry.value = entry.property.parse(value.getAsString());
+                    } else {
+                        GTNHLib.LOG.warn(
+                            "Tried to set property on BlockState to invalid type. Name={}, Value={}, Type={}, Expected={}",
+                            name,
+                            value,
+                            value.getClass(),
+                            entry.property.getType(),
+                            new IllegalBlockStateException());
+                    }
+                } else {
+                    entry.deferred(name, value);
+                }
+            }
+        }
     }
 
     @Override
@@ -598,6 +748,8 @@ public class BlockStateImpl implements BlockState {
                         entry.reset();
                         continue;
                     }
+
+                    entry.validated = true;
                 }
 
                 if (!entry.property.hasTrait(SupportsWorld) || !entry.property.hasTrait(WorldMutable)) {
@@ -649,6 +801,8 @@ public class BlockStateImpl implements BlockState {
                             new IllegalBlockStateException());
                     continue;
                 }
+
+                entry.validated = true;
 
                 if (!match.hasTrait(SupportsWorld) || !match.hasTrait(WorldMutable)) {
                     GTNHLib.LOG.warn(

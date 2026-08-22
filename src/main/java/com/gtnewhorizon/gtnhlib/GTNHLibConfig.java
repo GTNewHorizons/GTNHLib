@@ -17,6 +17,10 @@ public class GTNHLibConfig {
     @Config.DefaultBoolean(true)
     public static boolean enableMoreFlowerPottage;
 
+    @Config.Comment("Enable the ability to directly store BlockStates in the world")
+    @Config.DefaultBoolean(true)
+    public static boolean enableNativeBlockStates;
+
     @Config.Comment("Larger values take more RAM, but require less model rebuilding (may reduce lag spikes). Unless you are very short on RAM, reducing this is not advised.")
     @Config.DefaultInt(1000)
     @Config.RangeInt(min = 1, max = 1_000_000)

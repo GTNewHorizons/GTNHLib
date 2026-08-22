@@ -75,6 +75,8 @@ public enum Mixins implements IMixins {
                     "flowerpotcompat.MixinBOPPlant",
                     "flowerpotcompat.MixinBOPMushroom")
             .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
+    NATIVE_BLOCK_STATE(new MixinBuilder("Inject fields needed for native BlockState storage")
+        .addCommonMixins("MixinEBS_BlockStates", "MixinS23_BlockStates", "MixinChunk_BlockStates", "MixinBlockSnapshot_BlockStates", "MixinChunkCache_BlockStates", "MixinWorld_BlockStates").setPhase(Phase.EARLY)),
     //
     ;
 

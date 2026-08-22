@@ -12,6 +12,7 @@ import net.minecraftforge.common.util.FakePlayer;
 
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
+import com.gtnewhorizon.gtnhlib.blockstate.storage.NativeBlockStates;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierCommandWrapper;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
@@ -31,8 +32,10 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
+import com.gtnewhorizon.gtnhlib.tags.ITagRegistrar;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.blockstate.example.ExampleBlockStateBlock;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
@@ -75,6 +78,7 @@ public class CommonProxy {
             BlockTestTintMul.register();
             BlockRngTest.register();
             BlockWeightedRngTest.register();
+            ExampleBlockStateBlock.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
@@ -105,6 +109,7 @@ public class CommonProxy {
         AutoEventBus.executePhase(Phase.INIT);
         NetworkHandler.init();
         ConfigurationManager.onInit();
+        NativeBlockStates.init();
 
         if ((boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
             SyncedKeybind.createConfigurable("gtnhlib.test_keybind", "debug", 0).registerGlobalListener(
