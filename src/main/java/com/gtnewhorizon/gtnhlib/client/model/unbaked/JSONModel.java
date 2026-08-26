@@ -192,6 +192,24 @@ public class JSONModel implements UnbakedModel {
                 Vector2f[] uvs = new Vector2f[] { new Vector2f(uv.x, uv.y), new Vector2f(uv.x, uv.w),
                         new Vector2f(uv.z, uv.w), new Vector2f(uv.z, uv.y) };
 
+                int rotation = f.rotation();
+
+                if (f.name() == ForgeDirection.DOWN) {
+                    rotation = (360 - rotation) % 360;
+                }
+
+                int offset = rotation / 90;
+
+                if (offset != 0) {
+                    Vector2f[] rotated = new Vector2f[4];
+
+                    for (int i = 0; i < 4; i++) {
+                        rotated[i] = uvs[(i + offset) & 3];
+                    }
+
+                    uvs = rotated;
+                }
+
                 if (data.uvLock()) {
                     final var normFace = quad.getNormalFace();
                     int angle = 0;
@@ -247,7 +265,6 @@ public class JSONModel implements UnbakedModel {
         return new PileOfQuads(sidedQuadStore, this.display, this.getParticle());
     }
 
-    // TODO Doesn't account for UV rotation settings atm
     protected void bakeSprite(ModelQuadViewMutable quad, String name) {
         name = name.replaceFirst("^minecraft:", "");
         final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
