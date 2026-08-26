@@ -1,14 +1,11 @@
 package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
-import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.fromForgeDir;
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 import static com.gtnewhorizon.gtnhlib.util.DirectionUtil.rotateFacing;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
 import java.util.ArrayList;
@@ -18,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.github.bsideup.jabel.Desugar;
-import com.gtnewhorizon.gtnhlib.GTNHLib;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
@@ -27,15 +22,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix2f;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.google.common.base.Objects;
+import com.github.bsideup.jabel.Desugar;
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
@@ -68,51 +62,29 @@ public class JSONModel implements UnbakedModel {
 
     protected static final Vector4f DEFAULT_UV = new Vector4f(0, 0, 16, 16);
 
-    private static final Map<ForgeDirection, Matrix4f> UV_TRANSFORM_LOCAL_TO_GLOBAL =
-        new EnumMap<>(ForgeDirection.class);
+    private static final Map<ForgeDirection, Matrix4f> UV_TRANSFORM_LOCAL_TO_GLOBAL = new EnumMap<>(
+            ForgeDirection.class);
 
-    private static final Map<ForgeDirection, Matrix4f> UV_TRANSFORM_GLOBAL_TO_LOCAL =
-        new EnumMap<>(ForgeDirection.class);
+    private static final Map<ForgeDirection, Matrix4f> UV_TRANSFORM_GLOBAL_TO_LOCAL = new EnumMap<>(
+            ForgeDirection.class);
 
     // Get these magic matrices
     static {
-        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(
-            ForgeDirection.SOUTH,
-            new Matrix4f()
-        );
+        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(ForgeDirection.SOUTH, new Matrix4f());
 
-        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(
-            ForgeDirection.EAST,
-            new Matrix4f().rotateY((float) (Math.PI / 2))
-        );
+        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(ForgeDirection.EAST, new Matrix4f().rotateY((float) (Math.PI / 2)));
 
-        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(
-            ForgeDirection.WEST,
-            new Matrix4f().rotateY((float) (-Math.PI / 2))
-        );
+        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(ForgeDirection.WEST, new Matrix4f().rotateY((float) (-Math.PI / 2)));
 
-        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(
-            ForgeDirection.NORTH,
-            new Matrix4f().rotateY((float) Math.PI)
-        );
+        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(ForgeDirection.NORTH, new Matrix4f().rotateY((float) Math.PI));
 
-        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(
-            ForgeDirection.UP,
-            new Matrix4f().rotateX((float) (-Math.PI / 2))
-        );
+        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(ForgeDirection.UP, new Matrix4f().rotateX((float) (-Math.PI / 2)));
 
-        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(
-            ForgeDirection.DOWN,
-            new Matrix4f().rotateX((float) (Math.PI / 2))
-        );
+        UV_TRANSFORM_LOCAL_TO_GLOBAL.put(ForgeDirection.DOWN, new Matrix4f().rotateX((float) (Math.PI / 2)));
 
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            UV_TRANSFORM_GLOBAL_TO_LOCAL.put(
-                direction,
-                new Matrix4f(
-                    UV_TRANSFORM_LOCAL_TO_GLOBAL.get(direction)
-                ).invert()
-            );
+            UV_TRANSFORM_GLOBAL_TO_LOCAL
+                    .put(direction, new Matrix4f(UV_TRANSFORM_LOCAL_TO_GLOBAL.get(direction)).invert());
         }
     }
 
@@ -230,20 +202,11 @@ public class JSONModel implements UnbakedModel {
                 BakedUV bakedUV = f.bakedUV();
 
                 if (data.uvLock()) {
-                    bakedUV = recomputeUVs(
-                        f.bakedUV(),
-                        f.name(),
-                        new Matrix4f(data.getAffineMatrix())
-                    );
+                    bakedUV = recomputeUVs(f.bakedUV(), f.name(), new Matrix4f(data.getAffineMatrix()));
                 }
 
                 for (int i = 0; i < 4; i++) {
-                    setUV(
-                        quad,
-                        i,
-                        bakedUV.getU(i),
-                        bakedUV.getV(i)
-                    );
+                    setUV(quad, i, bakedUV.getU(i), bakedUV.getV(i));
                 }
 
                 // Set the sprite
@@ -281,21 +244,16 @@ public class JSONModel implements UnbakedModel {
 
     // The following functions are pretty much directly ported from vanilla used Matrix4f instead of transformation
     // just to keep it simpler.
-    private static BakedUV recomputeUVs(BakedUV bakedUV, ForgeDirection face, Matrix4fc modelRotation)
-    {
-//        MODEL_LOGGER.info(
-//            "UV FACE ROTATION: {} -> {}",
-//            face,
-//            rotate(modelRotation, face)
-//        );
+    private static BakedUV recomputeUVs(BakedUV bakedUV, ForgeDirection face, Matrix4fc modelRotation) {
+        // MODEL_LOGGER.info(
+        // "UV FACE ROTATION: {} -> {}",
+        // face,
+        // rotate(modelRotation, face)
+        // );
 
         Matrix4f transform = getUVLockTransform(modelRotation, face);
 
-        MODEL_LOGGER.info(
-            "UV LOCK TRANSFORM face={}:\n{}",
-            face,
-            transform
-        );
+        MODEL_LOGGER.info("UV LOCK TRANSFORM face={}:\n{}", face, transform);
 
         float u = bakedUV.getU(bakedUV.getReverseIndex(0));
         float v = bakedUV.getV(bakedUV.getReverseIndex(0));
@@ -328,26 +286,23 @@ public class JSONModel implements UnbakedModel {
             f11 = f3;
         }
 
-        float f12 = (float)Math.toRadians(bakedUV.rotation);
+        float f12 = (float) Math.toRadians(bakedUV.rotation);
         Matrix3f matrix3f = new Matrix3f(transform);
         Vector3f vector3f = matrix3f.transform(new Vector3f(MathHelper.cos(f12), MathHelper.sin(f12), 0.0F));
-        int i = Math.floorMod(-((int)Math.round(Math.toDegrees(Math.atan2((double)vector3f.y(), (double)vector3f.x())) / 90.0)) * 90, 360);
+        int i = Math.floorMod(
+                -((int) Math.round(Math.toDegrees(Math.atan2((double) vector3f.y(), (double) vector3f.x())) / 90.0))
+                        * 90,
+                360);
         return new BakedUV(new Vector4f(f8, f10, f9, f11), i);
     }
 
-
-    private static Matrix4f getUVLockTransform(
-        Matrix4fc modelRotation,
-        ForgeDirection face) {
+    private static Matrix4f getUVLockTransform(Matrix4fc modelRotation, ForgeDirection face) {
 
         ForgeDirection rotatedFace = rotate(modelRotation, face);
 
-
         Matrix4f inverse = inverseOrIdentity(modelRotation);
 
-        Matrix4f result = new Matrix4f(
-            UV_TRANSFORM_GLOBAL_TO_LOCAL.get(face)
-        );
+        Matrix4f result = new Matrix4f(UV_TRANSFORM_GLOBAL_TO_LOCAL.get(face));
 
         result.mul(inverse);
         result.mul(UV_TRANSFORM_LOCAL_TO_GLOBAL.get(rotatedFace));
@@ -356,8 +311,7 @@ public class JSONModel implements UnbakedModel {
     }
 
     private static Matrix4f inverseOrIdentity(Matrix4fc matrix) {
-        if (Math.abs(matrix.determinant()) < 1.0e-6f)
-        {
+        if (Math.abs(matrix.determinant()) < 1.0e-6f) {
             GTNHLib.error("Failed to invert the UV transformation! Likely something wrong with scaling values.");
             return new Matrix4f();
         }
@@ -366,8 +320,7 @@ public class JSONModel implements UnbakedModel {
     }
 
     private static Matrix4f blockCenterToCorner(Matrix4f transform) {
-        Matrix4f matrix = new Matrix4f()
-            .translation(0.5f, 0.5f, 0.5f);
+        Matrix4f matrix = new Matrix4f().translation(0.5f, 0.5f, 0.5f);
 
         matrix.mul(transform);
         matrix.translate(-0.5f, -0.5f, -0.5f);
@@ -375,27 +328,16 @@ public class JSONModel implements UnbakedModel {
         return matrix;
     }
 
-    private static ForgeDirection rotate(
-        Matrix4fc matrix,
-        ForgeDirection direction) {
+    private static ForgeDirection rotate(Matrix4fc matrix, ForgeDirection direction) {
 
         Vector3f normal = directionVector(direction);
 
-        Vector4f transformed = matrix.transform(
-            new Vector4f(normal.x, normal.y, normal.z, 0.0f)
-        );
+        Vector4f transformed = matrix.transform(new Vector4f(normal.x, normal.y, normal.z, 0.0f));
 
-        return getApproximateNearest(
-            transformed.x,
-            transformed.y,
-            transformed.z
-        );
+        return getApproximateNearest(transformed.x, transformed.y, transformed.z);
     }
 
-    private static ForgeDirection getApproximateNearest(
-        float x,
-        float y,
-        float z) {
+    private static ForgeDirection getApproximateNearest(float x, float y, float z) {
 
         ForgeDirection closest = ForgeDirection.NORTH;
         float best = -Float.MAX_VALUE;
@@ -403,10 +345,7 @@ public class JSONModel implements UnbakedModel {
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             Vector3f normal = directionVector(direction);
 
-            float dot =
-                x * normal.x +
-                    y * normal.y +
-                    z * normal.z;
+            float dot = x * normal.x + y * normal.y + z * normal.z;
 
             if (dot > best) {
                 best = dot;
@@ -418,11 +357,7 @@ public class JSONModel implements UnbakedModel {
     }
 
     private static Vector3f directionVector(ForgeDirection direction) {
-        return new Vector3f(
-            direction.offsetX,
-            direction.offsetY,
-            direction.offsetZ
-        );
+        return new Vector3f(direction.offsetX, direction.offsetY, direction.offsetZ);
     }
 
     protected void bakeSprite(ModelQuadViewMutable quad, String name) {
@@ -509,8 +444,8 @@ public class JSONModel implements UnbakedModel {
 
     // Is this the right place for this?
     @Desugar
-    public record BakedUV(Vector4f uv, int rotation)
-    {
+    public record BakedUV(Vector4f uv, int rotation) {
+
         public float getU(int shift) {
             if (this.uv == null) {
                 throw new NullPointerException("uvs");
