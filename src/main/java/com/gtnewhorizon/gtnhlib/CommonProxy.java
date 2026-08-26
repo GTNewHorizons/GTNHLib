@@ -38,6 +38,7 @@ import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
+import com.gtnewhorizon.gtnhlib.test.block.BlockUVRotationTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockWeightedRngTest;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
@@ -75,6 +76,7 @@ public class CommonProxy {
             BlockTestTintMul.register();
             BlockRngTest.register();
             BlockWeightedRngTest.register();
+            BlockUVRotationTest.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
