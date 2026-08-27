@@ -53,7 +53,7 @@ public class FontRendering {
     /** Whether a {@code §x} hex color clears style flags, as the registered preprocessor's renderer draws it. */
     public static boolean hexColorResetsStyles() {
         return textPreprocessor instanceof TextPreprocessor
-            && ((TextPreprocessor) textPreprocessor).hexColorResetsStyles();
+                && ((TextPreprocessor) textPreprocessor).hexColorResetsStyles();
     }
 
     /**
