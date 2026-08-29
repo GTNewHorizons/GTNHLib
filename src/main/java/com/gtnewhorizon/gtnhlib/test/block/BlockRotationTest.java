@@ -1,9 +1,5 @@
 package com.gtnewhorizon.gtnhlib.test.block;
 
-import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
-import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
-import com.gtnewhorizon.gtnhlib.util.DirectionUtil;
-import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
@@ -11,18 +7,22 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class BlockRotationTest extends Block
-{
-    public final DirectionBlockProperty.AbstractDirectionBlockProperty FACING_PROP = (DirectionBlockProperty.AbstractDirectionBlockProperty) DirectionBlockProperty
-        .facing();
+import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
+import com.gtnewhorizon.gtnhlib.util.DirectionUtil;
 
-    public BlockRotationTest()
-    {
+import cpw.mods.fml.common.registry.GameRegistry;
+
+public class BlockRotationTest extends Block {
+
+    public final DirectionBlockProperty.AbstractDirectionBlockProperty FACING_PROP = (DirectionBlockProperty.AbstractDirectionBlockProperty) DirectionBlockProperty
+            .facing();
+
+    public BlockRotationTest() {
         super(Material.iron);
     }
 
-    public static void register(BlockRotationTest testBlock, String name)
-    {
+    public static void register(BlockRotationTest testBlock, String name) {
         testBlock.setBlockName(name);
         GameRegistry.registerBlock(testBlock, name);
         BlockPropertyRegistry.registerBlockItemProperty(testBlock, testBlock.FACING_PROP, ForgeDirection.EAST);

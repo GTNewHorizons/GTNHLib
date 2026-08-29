@@ -355,8 +355,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
                 return name;
             }
 
-            public JSONModel.BakedUV bakedUV()
-            {
+            public JSONModel.BakedUV bakedUV() {
                 return bakedUV;
             }
 
