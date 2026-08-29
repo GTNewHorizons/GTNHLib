@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
+import static com.gtnewhorizon.gtnhlib.client.model.JSONVariant.DEG2RAD;
 import static com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.ModelElement.Rotation.NOOP;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.NEG_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
@@ -7,8 +8,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.fromForgeDir;
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 import static com.gtnewhorizon.gtnhlib.util.DirectionUtil.rotateFacing;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static org.joml.Math.fma;
 
 import java.util.ArrayList;
@@ -21,21 +20,20 @@ import java.util.function.Function;
 import com.github.bsideup.jabel.Desugar;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix2f;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Vector2f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.google.common.base.Objects;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
@@ -115,6 +113,10 @@ public class JSONModel implements UnbakedModel {
             );
         }
     }
+
+
+    private static final float RESCALE_22_5 = 1.0F / (float)Math.cos((float) (Math.PI / 8)) - 1.0F;
+    private static final float RESCALE_45 = 1.0F / (float)Math.cos((float) (Math.PI / 4)) - 1.0F;
 
     public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
             @NotNull Object2ObjectMap<String, String> textures,
@@ -206,45 +208,10 @@ public class JSONModel implements UnbakedModel {
         // Append faces from each element
         for (ModelDeserializer.ModelElement e : this.elements) {
 
-            final Matrix4f rot = (e.rotation() == null) ? NOOP.getAffineMatrix() : e.rotation().getAffineMatrix();
-
             final Vector3f from = e.from();
             final Vector3f to = e.to();
 
             for (Face f : e.faces()) {
-
-                // Assign vertexes
-                final var quad = new ModelQuad();
-                for (int i = 0; i < 4; ++i) {
-                    final Vector3f vert = mapSideToVertex(from, to, i, f.name()).mulPosition(rot).mulPosition(vRot);
-                    quad.setX(i, vert.x);
-                    quad.setY(i, vert.y);
-                    quad.setZ(i, vert.z);
-                }
-
-                // Set shading properties
-                quad.setEmissiveness(e.lightEmission());
-                quad.setDirectionalShading(e.shade());
-                quad.setHasAmbientOcclusion(this.useAO);
-
-                BakedUV bakedUV = f.bakedUV();
-
-                if (data.uvLock()) {
-                    bakedUV = recomputeUVs(
-                        f.bakedUV(),
-                        f.name(),
-                        new Matrix4f(data.getAffineMatrix())
-                    );
-                }
-
-                for (int i = 0; i < 4; i++) {
-                    setUV(
-                        quad,
-                        i,
-                        bakedUV.getU(i),
-                        bakedUV.getV(i)
-                    );
-                }
 
                 // Set the sprite
                 var texKey = f.texture();
@@ -259,7 +226,35 @@ public class JSONModel implements UnbakedModel {
                     textures.put(texKey, "minecraft:missing");
                     texName = "minecraft:missing";
                 }
-                bakeSprite(quad, texName);
+                final TextureAtlasSprite icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(texName);
+
+                // Assign vertexes
+                final var quad = new ModelQuad();
+                quad.setSprite(icon);
+
+                // Set shading properties
+                quad.setEmissiveness(e.lightEmission());
+                quad.setDirectionalShading(e.shade());
+                quad.setHasAmbientOcclusion(this.useAO);
+
+                // Figure out the UV rotations
+                BakedUV bakedUV = f.bakedUV();
+
+                // If uv is locked we need to recompute the UVs based on the rotation of the element
+                // and the model rotation
+                if (data.uvLock()) {
+                    bakedUV = recomputeUVs(
+                        f.bakedUV(),
+                        f.name(),
+                        new Matrix4f(vRot)
+                    );
+                }
+
+                // Bake vertexes
+                for (int i = 0; i < 4; i++)
+                {
+                    bakeVertex(quad, i, from, to, f.name(), e.rotation(), vRot, bakedUV, icon);
+                }
 
                 // Set the tint index
                 quad.setColorIndex(f.tintIndex());
@@ -280,62 +275,214 @@ public class JSONModel implements UnbakedModel {
     }
 
     // The following functions are pretty much directly ported from vanilla used Matrix4f instead of transformation
-    // just to keep it simpler.
-    private static BakedUV recomputeUVs(BakedUV bakedUV, ForgeDirection face, Matrix4fc modelRotation)
-    {
-//        MODEL_LOGGER.info(
-//            "UV FACE ROTATION: {} -> {}",
-//            face,
-//            rotate(modelRotation, face)
-//        );
+    // just to keep it simpler. I've modified them A LITTLE, and have documented them because matrix/vector
+    // math is really fucking hard to read unless you're some super genius I guess.
 
-        Matrix4f transform = getUVLockTransform(modelRotation, face);
 
-        MODEL_LOGGER.info(
-            "UV LOCK TRANSFORM face={}:\n{}",
-            face,
-            transform
-        );
-
-        float u = bakedUV.getU(bakedUV.getReverseIndex(0));
-        float v = bakedUV.getV(bakedUV.getReverseIndex(0));
-
-        Vector4f vector4f = transform.transform(new Vector4f(u / 16.0F, v / 16.0F, 0.0F, 1.0F));
-        float f2 = 16.0F * vector4f.x();
-        float f3 = 16.0F * vector4f.y();
-        float f4 = bakedUV.getU(bakedUV.getReverseIndex(2));
-        float f5 = bakedUV.getV(bakedUV.getReverseIndex(2));
-        Vector4f vector4f1 = transform.transform(new Vector4f(f4 / 16.0F, f5 / 16.0F, 0.0F, 1.0F));
-        float f6 = 16.0F * vector4f1.x();
-        float f7 = 16.0F * vector4f1.y();
-        float f8;
-        float f9;
-        if (Math.signum(f4 - u) == Math.signum(f6 - f2)) {
-            f8 = f2;
-            f9 = f6;
-        } else {
-            f8 = f6;
-            f9 = f2;
-        }
-
-        float f10;
-        float f11;
-        if (Math.signum(f5 - v) == Math.signum(f7 - f3)) {
-            f10 = f3;
-            f11 = f7;
-        } else {
-            f10 = f7;
-            f11 = f3;
-        }
-
-        float f12 = (float)Math.toRadians(bakedUV.rotation);
-        Matrix3f matrix3f = new Matrix3f(transform);
-        Vector3f vector3f = matrix3f.transform(new Vector3f(MathHelper.cos(f12), MathHelper.sin(f12), 0.0F));
-        int i = Math.floorMod(-((int)Math.round(Math.toDegrees(Math.atan2((double)vector3f.y(), (double)vector3f.x())) / 90.0)) * 90, 360);
-        return new BakedUV(new Vector4f(f8, f10, f9, f11), i);
+    private static void bakeVertex(ModelQuadViewMutable quad, int vertexIndex, Vector3f from, Vector3f to, ForgeDirection face, ModelDeserializer.ModelElement.Rotation elementRotation, Matrix4fc modelRotation, BakedUV uv, TextureAtlasSprite icon) {
+        Vector3f vert = mapSideToVertex(from, to, vertexIndex, face);
+        applyElementRotation(vert, elementRotation);
+        applyModelRotation(vert, modelRotation);
+        fillVertex(quad, vertexIndex, vert, icon, uv);
     }
 
+    /**
+     * Sets the vertexes of a quad given an index. Also bakes the sprite in.
+     *
+     * @param quad the quad to fill
+     * @param index index of the vert in the quad.
+     * @param position which vertex to fill in for the quad. This is computed beforehand to match the vertex
+     * @param sprite the sprite to bake
+     * @param uv the UVs of the sprite
+     */
+    private static void fillVertex(ModelQuadViewMutable quad, int index, Vector3f position, TextureAtlasSprite sprite, BakedUV uv)
+    {
+        quad.setX(index, position.x());
+        quad.setY(index, position.y());
+        quad.setZ(index, position.z());
+        quad.setColor(index, -1); // Needed?
+        quad.setTexU(
+            index,
+            sprite.getInterpolatedU(uv.getU(index))
+        );
+        quad.setTexV(
+            index,
+            sprite.getInterpolatedV(uv.getV(index))
+        );
+    }
 
+    /**
+     * Applies model rotation to the matrix given a model rotation matrix argument
+     *
+     * @param vertex the vertex to rotate
+     * @param rotation the rotation to apply
+     */
+    private static void applyModelRotation(Vector3f vertex, Matrix4fc rotation) {
+        if (!rotation.equals(new Matrix4f(), 1.0e-6f)) { // Check for identity
+            transformVertex(
+                vertex,
+                new Vector3f(0.5F, 0.5F, 0.5F),
+                rotation,
+                new Vector3f(1.0F, 1.0F, 1.0F)
+            );
+        }
+    }
+
+    /**
+     * Applies element rotation to the matrix given a {@link ModelDeserializer.ModelElement.Rotation} argument
+     *
+     * @param vertex the vertex to rotate
+     * @param rotation the rotation to apply
+     */
+    private static void applyElementRotation(Vector3f vertex, @Nullable ModelDeserializer.ModelElement.Rotation rotation)
+    {
+        if (rotation == null) {
+            return;
+        }
+
+        Vector3f axis;
+        Vector3f rescale = switch (rotation.axis()) {
+            case X -> {
+                axis = new Vector3f(1.0F, 0.0F, 0.0F);
+                yield new Vector3f(0.0F, 1.0F, 1.0F);
+            }
+            case Y -> {
+                axis = new Vector3f(0.0F, 1.0F, 0.0F);
+                yield new Vector3f(1.0F, 0.0F, 1.0F);
+            }
+            case Z -> {
+                axis = new Vector3f(0.0F, 0.0F, 1.0F);
+                yield new Vector3f(1.0F, 1.0F, 0.0F);
+            }
+            default -> throw new IllegalArgumentException("There are only 3 axes");
+        };
+
+        Quaternionf quaternion = new Quaternionf().rotationAxis(rotation.angle() * DEG2RAD, axis);
+
+        if (rotation.rescale())
+        {
+            if (Math.abs(rotation.angle()) == 22.5F)
+            {
+                rescale.mul(RESCALE_22_5);
+            }
+            else
+            {
+                rescale.mul(RESCALE_45);
+            }
+
+            rescale.add(1.0F, 1.0F, 1.0F);
+        }
+        else
+        {
+            rescale.set(1.0F, 1.0F, 1.0F);
+        }
+
+        transformVertex(
+            vertex,
+            rotation.origin(),
+            new Matrix4f().rotation(quaternion),
+            rescale
+        );
+    }
+
+    /**
+     * Applies a rotation and rescaling to a vertex around a specified origin.
+     * <p>The vertex is translated relative to the origin, transformed by the rotation
+     * matrix, scaled by the supplied scale factor, and then translated back.</p>
+     *
+     * @param vertex the vertex to transform; modified in place
+     * @param origin the point around which the transformation is applied
+     * @param rotation the rotation matrix to apply
+     * @param scale the scale factor to apply after rotation
+     */
+    private static void transformVertex(Vector3f vertex, Vector3f origin, Matrix4fc rotation, Vector3f scale) {
+        Vector4f vector4f = rotation.transform(new Vector4f(vertex.x() - origin.x(), vertex.y() - origin.y(), vertex.z() - origin.z(), 1.0F));
+        vector4f.mul(new Vector4f(scale, 1.0F));
+        vertex.set(vector4f.x() + origin.x(), vector4f.y() + origin.y(), vector4f.z() + origin.z());
+    }
+
+    /**
+     * Recomputes the UV based on the model rotation and the uv lock status.
+     *
+     * @param bakedUV the uv to recompute
+     * @param face the face it belongs to
+     * @param modelRotation the rotation of the model
+     * @return a new recomputed bakedUV for uvlock
+     */
+    private static BakedUV recomputeUVs(BakedUV bakedUV, ForgeDirection face, Matrix4fc modelRotation)
+    {
+        Matrix4f uvLockTransform = getUVLockTransform(modelRotation, face);
+
+        float minU = bakedUV.getU(bakedUV.getReverseIndex(0));
+        float minV = bakedUV.getV(bakedUV.getReverseIndex(0));
+
+        Vector4f transformedFirstUV = uvLockTransform.transform(
+            new Vector4f(minU / 16.0F, minV / 16.0F, 0.0F, 1.0F)
+        );
+
+        float transformedMinU = 16.0F * transformedFirstUV.x();
+        float transformedMinV = 16.0F * transformedFirstUV.y();
+
+        float maxU = bakedUV.getU(bakedUV.getReverseIndex(2));
+        float maxV = bakedUV.getV(bakedUV.getReverseIndex(2));
+
+        Vector4f transformedSecondUV = uvLockTransform.transform(
+            new Vector4f(maxU / 16.0F, maxV / 16.0F, 0.0F, 1.0F)
+        );
+
+        float transformedMaxU = 16.0F * transformedSecondUV.x();
+        float transformedMaxV = 16.0F * transformedSecondUV.y();
+
+        float u0;
+        float u1;
+        if (Math.signum(maxU - minU) == Math.signum(transformedMaxU - transformedMinU)) {
+            u0 = transformedMinU;
+            u1 = transformedMaxU;
+        } else {
+            u0 = transformedMaxU;
+            u1 = transformedMinU;
+        }
+
+        float v0;
+        float v1;
+        if (Math.signum(maxV - minV) == Math.signum(transformedMaxV - transformedMinV)) {
+            v0 = transformedMinV;
+            v1 = transformedMaxV;
+        } else {
+            v0 = transformedMaxV;
+            v1 = transformedMinV;
+        }
+
+        float rotationRadians = (float) Math.toRadians(bakedUV.rotation);
+
+        Matrix3f rotationMatrix = new Matrix3f(uvLockTransform);
+        Vector3f transformedRotation = rotationMatrix.transform(
+            new Vector3f(
+                MathHelper.cos(rotationRadians),
+                MathHelper.sin(rotationRadians),
+                0.0F
+            )
+        );
+
+        int rotation = Math.floorMod(
+            -((int) Math.round(
+                Math.toDegrees(
+                    Math.atan2(transformedRotation.y(), transformedRotation.x()
+                    )
+                ) / 90.0
+            )) * 90,
+            360
+        );
+        return new BakedUV(new Vector4f(u0, v0, u1, v1), rotation);
+    }
+
+    /**
+     * Gets the uvlock transformation for a given face and model rotation
+     *
+     * @param modelRotation get the transformation matrix based on the model rotation when UV lock is applied
+     * @param face face to do the transform from
+     * @return a matrix that represents the required rotation for uv lock and the given face
+     */
     private static Matrix4f getUVLockTransform(
         Matrix4fc modelRotation,
         ForgeDirection face) {
@@ -355,9 +502,17 @@ public class JSONModel implements UnbakedModel {
         return blockCenterToCorner(result);
     }
 
+    /**
+     * Gets the inverse of the input matrix if it's non-singular, otherwise gets the identity matrix.
+     *
+     * @param matrix matrix to get the inverse of
+     * @return The inverse of the input matrix or the identity if it's singular.
+     */
     private static Matrix4f inverseOrIdentity(Matrix4fc matrix) {
         if (Math.abs(matrix.determinant()) < 1.0e-6f)
         {
+            // pretty sure this can only happen if the scaling values for a given
+            // model are fucked up to have a 0 width
             GTNHLib.error("Failed to invert the UV transformation! Likely something wrong with scaling values.");
             return new Matrix4f();
         }
@@ -365,6 +520,12 @@ public class JSONModel implements UnbakedModel {
         return new Matrix4f(matrix).invert();
     }
 
+    /**
+     * Returns a matrix that is translates something to the corner from the block center
+     *
+     * @param transform input transformation
+     * @return the input transformation with a translation to the corner from the center of a block
+     */
     private static Matrix4f blockCenterToCorner(Matrix4f transform) {
         Matrix4f matrix = new Matrix4f()
             .translation(0.5f, 0.5f, 0.5f);
@@ -375,6 +536,14 @@ public class JSONModel implements UnbakedModel {
         return matrix;
     }
 
+    /**
+     * Rotates a direction using the supplied transformation matrix and returns
+     * the nearest cardinal direction to the transformed result.
+     *
+     * @param matrix the transformation matrix used to rotate the direction
+     * @param direction the direction to rotate
+     * @return the cardinal direction nearest to the transformed direction
+     */
     private static ForgeDirection rotate(
         Matrix4fc matrix,
         ForgeDirection direction) {
@@ -392,6 +561,9 @@ public class JSONModel implements UnbakedModel {
         );
     }
 
+    /**
+     * Gets the nearest forge direction given x y z.
+     */
     private static ForgeDirection getApproximateNearest(
         float x,
         float y,
@@ -417,27 +589,15 @@ public class JSONModel implements UnbakedModel {
         return closest;
     }
 
+    /**
+     * Given a forge direction give the direction vector in that direction
+     */
     private static Vector3f directionVector(ForgeDirection direction) {
         return new Vector3f(
             direction.offsetX,
             direction.offsetY,
             direction.offsetZ
         );
-    }
-
-    protected void bakeSprite(ModelQuadViewMutable quad, String name) {
-        name = name.replaceFirst("^minecraft:", "");
-        final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
-        final float minU = icon.getMinU();
-        final float minV = icon.getMinV();
-        final float dU = icon.getMaxU() - minU;
-        final float dV = icon.getMaxV() - minV;
-        quad.setSprite(icon);
-
-        for (int i = 0; i < 4; ++i) {
-            quad.setTexU(i, fma(dU, quad.getTexU(i) / 16, minU));
-            quad.setTexV(i, fma(dV, quad.getTexV(i) / 16, minV));
-        }
     }
 
     /// @return A JSON model which is the result of model resolution. Note that while this is *usually* the caller, it's
