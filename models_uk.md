@@ -19,7 +19,7 @@
 ### BlockColor
 Використовуйте для застосування кольору до `TintIndex`.
 <p>
-Приклад: Використання реєстрації `BlockColor`
+Приклад: Використання реєстрації BlockColor
 
 <pre>
 BlockColor.registerBlockColors(new IBlockColor() {
