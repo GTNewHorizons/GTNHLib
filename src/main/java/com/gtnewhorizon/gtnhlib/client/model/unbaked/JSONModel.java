@@ -210,60 +210,60 @@ public class JSONModel implements UnbakedModel {
         {
             case DOWN -> new BakedUV(
                 new Vector4f(
-                    from.x,
-                    from.z,
-                    to.x,
-                    to.z
+                    from.x * 16,
+                    from.z * 16,
+                    to.x * 16,
+                    to.z * 16
                 ),
                 rotation
             );
 
             case UP -> new BakedUV(
                 new Vector4f(
-                    from.x,
-                    16.0F - to.z,
-                    to.x,
-                    16.0F - from.z
+                    from.x * 16,
+                    16.0F - to.z * 16,
+                    to.x * 16,
+                    16.0F - from.z * 16
                 ),
                 rotation
             );
 
             case NORTH -> new BakedUV(
                 new Vector4f(
-                    16.0F - to.x,
-                    16.0F - to.y,
-                    16.0F - from.x,
-                    16.0F - from.y
+                    16.0F - to.x * 16,
+                    16.0F - to.y * 16,
+                    16.0F - from.x * 16,
+                    16.0F - from.y * 16
                 ),
                 rotation
             );
 
             case SOUTH -> new BakedUV(
                 new Vector4f(
-                    from.x,
-                    16.0F - to.y,
-                    to.x,
-                    16.0F - from.y
+                    from.x * 16,
+                    16.0F - to.y * 16,
+                    to.x * 16,
+                    16.0F - from.y * 16
                 ),
                 rotation
             );
 
             case WEST -> new BakedUV(
                 new Vector4f(
-                    from.z,
-                    16.0F - to.y,
-                    to.z,
-                    16.0F - from.y
+                    from.z * 16,
+                    16.0F - to.y * 16,
+                    to.z * 16,
+                    16.0F - from.y * 16
                 ),
                 rotation
             );
 
             case EAST -> new BakedUV(
                 new Vector4f(
-                    16.0F - to.z,
-                    16.0F - to.y,
-                    16.0F - from.z,
-                    16.0F - from.y
+                    16.0F - to.z * 16,
+                    16.0F - to.y * 16,
+                    16.0F - from.z * 16,
+                    16.0F - from.y * 16
                 ),
                 rotation
             );
