@@ -167,6 +167,6 @@ BlockPropertyRegistry.registerProperty(Item.getItemFromBlock(block), property);
 
 ### Заплановано
 - Автоматичне завантаження текстур предметів.
-- Додавання м'якого затінення до ModelISBRH.
+- Додавання м’якого затінення до ModelISBRH.
 - Додавання відсікання граней для моделей.
 - Реалізація фіксації UV-координат.
