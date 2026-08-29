@@ -199,6 +199,81 @@ public class JSONModel implements UnbakedModel {
         };
     }
 
+    // Probably possible to marry the logic with what is above, but this is likely the fastest impl.
+    private static BakedUV calculateDefaultUV(
+        Vector3f from,
+        Vector3f to,
+        ForgeDirection face,
+        int rotation)
+    {
+        return switch (face)
+        {
+            case DOWN -> new BakedUV(
+                new Vector4f(
+                    from.x,
+                    from.z,
+                    to.x,
+                    to.z
+                ),
+                rotation
+            );
+
+            case UP -> new BakedUV(
+                new Vector4f(
+                    from.x,
+                    16.0F - to.z,
+                    to.x,
+                    16.0F - from.z
+                ),
+                rotation
+            );
+
+            case NORTH -> new BakedUV(
+                new Vector4f(
+                    16.0F - to.x,
+                    16.0F - to.y,
+                    16.0F - from.x,
+                    16.0F - from.y
+                ),
+                rotation
+            );
+
+            case SOUTH -> new BakedUV(
+                new Vector4f(
+                    from.x,
+                    16.0F - to.y,
+                    to.x,
+                    16.0F - from.y
+                ),
+                rotation
+            );
+
+            case WEST -> new BakedUV(
+                new Vector4f(
+                    from.z,
+                    16.0F - to.y,
+                    to.z,
+                    16.0F - from.y
+                ),
+                rotation
+            );
+
+            case EAST -> new BakedUV(
+                new Vector4f(
+                    16.0F - to.z,
+                    16.0F - to.y,
+                    16.0F - from.z,
+                    16.0F - from.y
+                ),
+                rotation
+            );
+
+            default -> throw new IllegalArgumentException(
+                "Unsupported face: " + face
+            );
+        };
+    }
+
     @Override
     public BakedModel bake(BakeData data) {
 
@@ -239,7 +314,15 @@ public class JSONModel implements UnbakedModel {
                 quad.setHasAmbientOcclusion(this.useAO);
 
                 // Figure out the UV rotations
-                BakedUV bakedUV = f.bakedUV();
+                BakedUV bakedUV;
+                if (f.bakedUV().uv == null)
+                {
+                    bakedUV = calculateDefaultUV(from, to, f.name(), f.bakedUV().rotation());
+                }
+                else
+                {
+                    bakedUV = f.bakedUV();
+                }
 
                 // If uv is locked we need to recompute the UVs based on the rotation of the element
                 // and the model rotation
