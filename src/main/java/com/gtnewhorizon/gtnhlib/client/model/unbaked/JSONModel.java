@@ -226,6 +226,7 @@ public class JSONModel implements UnbakedModel {
                     textures.put(texKey, "minecraft:missing");
                     texName = "minecraft:missing";
                 }
+                texName = texName.replaceFirst("^minecraft:", "");
                 final TextureAtlasSprite icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(texName);
 
                 // Assign vertexes
