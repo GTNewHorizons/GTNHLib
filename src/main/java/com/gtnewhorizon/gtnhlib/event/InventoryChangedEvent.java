@@ -17,8 +17,7 @@ public abstract class InventoryChangedEvent extends PlayerEvent {
     public final ItemStack item;
 
     /** Total amount of {@link #item} the player holds after this change (NBT-insensitive, same identity rules). */
-    @Getter
-    private final int inventoryCount;
+    public final int inventoryCount;
 
     protected InventoryChangedEvent(EntityPlayer player, ItemStack item, int inventoryCount) {
         super(player);

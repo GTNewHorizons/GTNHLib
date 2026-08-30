@@ -32,7 +32,7 @@ public final class InventoryEventDebugHandler {
                 event.getDelta(),
                 event.item.getDisplayName(),
                 event.getCount(),
-                event.getInventoryCount(),
+                event.inventoryCount,
                 player.getCommandSenderName());
 
         if (player.worldObj.isRemote) {
@@ -44,7 +44,7 @@ public final class InventoryEventDebugHandler {
                                     + " x"
                                     + event.getCount()
                                     + " (total "
-                                    + event.getInventoryCount()
+                                    + event.inventoryCount
                                     + ")"));
         }
     }
