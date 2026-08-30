@@ -1,9 +1,10 @@
 package com.gtnewhorizon.gtnhlib.event;
 
-import lombok.Getter;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+
+import lombok.Getter;
 
 /**
  * Fired when a player's inventory changes (both client and server). Not cancelable. Subscribe to concrete
