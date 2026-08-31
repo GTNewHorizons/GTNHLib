@@ -14,6 +14,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.MetaBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.IntegerBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyFactory;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
+import com.gtnewhorizon.gtnhlib.blockstate.storage.NativeBlockStateAware;
 
 public class BlockPropertyInit {
 
@@ -25,12 +26,20 @@ public class BlockPropertyInit {
             @Override
             public BlockProperty<Integer> getProperty(IBlockAccess world, int x, int y, int z, Block block, int meta,
                     @Nullable TileEntity tile) {
-                return metaProperty;
+                if (!(block instanceof NativeBlockStateAware)) {
+                    return metaProperty;
+                } else {
+                    return null;
+                }
             }
 
             @Override
             public BlockProperty<Integer> getProperty(ItemStack stack, Item item, int meta) {
-                return metaProperty;
+                if (!(Block.getBlockFromItem(item) instanceof NativeBlockStateAware)) {
+                    return metaProperty;
+                } else {
+                    return null;
+                }
             }
         });
 

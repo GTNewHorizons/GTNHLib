@@ -4,10 +4,12 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.gson.JsonObject;
 import com.gtnewhorizon.gtnhlib.geometry.TransformLike;
 
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -31,7 +33,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 /// in the world and may depend on state that is not captured by a [BlockState] such as tile data, leading to erroneous
 /// property value modification/removal.
 /// 3. [BlockState]s have opt-in pooling. Use
-/// [BlockPropertyRegistry#getBlockState(BlockStatePool, IBlockAccess, int, int, int)] and
+/// [BlockPropertyRegistry#getBlockState(BlockStatePool, IBlockAccess , int, int, int)] and
 /// [BlockPropertyRegistry#getBlockState(BlockStatePool, ItemStack)] to pool states, which significantly reduce
 /// allocations. [#close()] must be called to return a [BlockState] to the pool. [BlockStatePool]s cannot be overfilled,
 /// so there's no need to worry about memory leaks. [BlockState#close()] can be elided for non-pooled [BlockState]s.
@@ -46,6 +48,13 @@ public interface BlockState extends AutoCloseable, Cloneable {
 
     /// Creates an exact copy of this state, within the same pool (if pooled).
     BlockState clone();
+
+    /// Creates an exact copy of this state, within another pool.
+    /// Note that if this clone is between threads, both pools must be locked to avoid thread safety issues.
+    BlockState clone(@Nullable  BlockStatePool otherPool);
+
+    /// Counts the number of valid properties in this state. Includes all property states.
+    int size();
 
     /// Clears this [BlockState] and sets its block to the given block reference. The [BlockState] will not have any
     /// properties after this method returns.
@@ -71,6 +80,9 @@ public interface BlockState extends AutoCloseable, Cloneable {
     @Nullable
     BlockPropertyState getPropertyState(String name);
 
+    /// Returns true when any properties in this BlockState are unvalidated or deferred.
+    boolean needsReification();
+
     /// Returns true if this state contains the given property (by reference). Deferred properties are not included.
     default boolean hasProperty(BlockProperty<?> property) {
         return getPropertyState(property) != null;
@@ -88,6 +100,9 @@ public interface BlockState extends AutoCloseable, Cloneable {
     /// Removes the property with the given name from this state. Does nothing if not present.
     /// Removes deferred properties as well.
     void removeProperty(String name);
+
+    /// Removes properties when they match a predicate.
+    void removeIf(BlockPropertyValuePredicate test);
 
     /// Gets the value of a property. Does not include deferred properties. Includes unvalidated properties.
     <T> T getPropertyValue(BlockProperty<T> property);
@@ -115,8 +130,24 @@ public interface BlockState extends AutoCloseable, Cloneable {
     /// [BlockProperty#parse(String)]. Other types are undefined behaviour, but they will likely crash or log a message.
     <T> void setPropertyValue(String name, @Nullable T value);
 
+    /// Inserts all property values in `source` into `this`.
+    /// When two properties exist with the same name, the property in `source` takes priority over the property in
+    /// `this`.
+    void putAll(BlockState source);
+
     /// Copies all properties stored in this BlockState into a map. Key=Property Name, Value=Property Value (as text).
     Map<String, String> toMap();
+
+    /// Iterates over all properties in this BlockState and inserts them into a json object.
+    /// Deferred properties are stored as strings. If a deferred value is not already a string, [Object#toString()] is
+    /// called on it.
+    JsonObject toJson();
+
+    /// Iterates over all values in the given json object and tries to load them into this BlockState.
+    /// Properties in this BlockState that are not in the object are ignored.
+    /// Deferred values may be converted to unvalidated values via the same semantics as
+    /// [#setPropertyValue(String, Object)].
+    void fromJson(JsonObject obj);
 
     /// Transforms properties based on a given transform. Ignores deferred properties. Treats unvalidated properties the
     /// same as normal properties.
