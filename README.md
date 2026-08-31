@@ -19,7 +19,7 @@ Shared code library for GTNH mods.
 
 ### Events
 
-- Fires `InventoryChangedEvent` when a player's net item holdings change. Subscribe to `ItemAdded` or `ItemRemoved`, which carry the changed `ItemStack` and a signed delta.
+- Fires `InventoryChangedEvent` when a player's net item holdings change. Subscribe to `ItemAdded` or `ItemRemoved`, which carry the changed `ItemStack`, a signed delta, and `inventoryCount`, the player's total of that item after the change.
 - Items are matched by type and metadata ignoring NBT, so sorting an inventory fires nothing. Scans run every few ticks (configurable).
 - Fires `PickBlockEvent` when a player middle-clicks a block.
 - Mark a class `@EventBusSubscriber` to auto-register its `@SubscribeEvent` methods. Choose the side and load phase in the annotation. No manual registration needed.
