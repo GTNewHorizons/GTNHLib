@@ -33,6 +33,7 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
@@ -69,6 +70,7 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
 
         if (GTNHLibConfig.enableTestBlocks) {
+            BlockLightUnderStair.register();
             BlockTest.register();
             BlockTestLectern.register();
             BlockTestTint.register();

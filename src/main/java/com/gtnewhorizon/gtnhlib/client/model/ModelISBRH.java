@@ -5,6 +5,7 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpac
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.api.util.NormI8.unpackZ;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.DIRECTIONS;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.VALUES;
+import static com.gtnewhorizon.gtnhlib.compat.Mods.ANGELICA;
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Math.max;
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.ENTITY;
@@ -86,6 +87,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         worldContext.set(wrappedContext, x, y, z, RAND);
         final int meta = wrappedContext.getBlockMetadata(x, y, z);
 
+        if (ANGELICA) AngelicaHelper.initAngelicaLighting(tesselator);
+
         final BakedModel model = ModelRegistry.getBakedModel(worldContext);
         int color = model.getColor(world, x, y, z, block, meta, RAND);
 
@@ -125,11 +128,20 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 final int lm = getLightMap(block, quad, quad.getLightFace(), world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
 
-                final float shade = quad.hasDirectionalShading() ? diffuseLight(quad.getComputedFaceNormal()) : 1;
+                final float shade;
+                if (!ANGELICA) {
+                    shade = quad.hasDirectionalShading() ? diffuseLight(quad.getComputedFaceNormal()) : 1;
+                } else {
+                    AngelicaHelper.quadAngelicaLighting(tesselator, !quad.hasDirectionalShading());
+                    shade = 1;
+                }
+
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);
                 renderQuad(quad, x, y, z, tesselator, renderer.overrideBlockTexture);
             }
         }
+
+        if (ANGELICA) AngelicaHelper.resetAngelicaLighting(tesselator);
         worldContext.reset();
         return rendered;
     }
