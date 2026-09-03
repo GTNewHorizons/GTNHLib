@@ -351,7 +351,7 @@ public class JSONModel implements UnbakedModel {
             default -> throw new IllegalArgumentException("There are only 3 axes");
         };
 
-        Quaternionf quaternion = new Quaternionf().rotationAxis(rotation.angle() * DEG2RAD, axis);
+         Quaternionf quaternion = new Quaternionf().rotationAxis(rotation.angle(), axis);
 
         if (rotation.rescale()) {
             if (Math.abs(rotation.angle()) == 22.5F) {
