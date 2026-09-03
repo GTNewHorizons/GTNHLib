@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.client.model.unbaked;
 
-import static com.gtnewhorizon.gtnhlib.client.model.JSONVariant.DEG2RAD;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.POS_Y;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.UNASSIGNED;
 import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing.fromForgeDir;
@@ -351,7 +350,7 @@ public class JSONModel implements UnbakedModel {
             default -> throw new IllegalArgumentException("There are only 3 axes");
         };
 
-         Quaternionf quaternion = new Quaternionf().rotationAxis(rotation.angle(), axis);
+        Quaternionf quaternion = new Quaternionf().rotationAxis(rotation.angle(), axis);
 
         if (rotation.rescale()) {
             if (Math.abs(rotation.angle()) == 22.5F) {
