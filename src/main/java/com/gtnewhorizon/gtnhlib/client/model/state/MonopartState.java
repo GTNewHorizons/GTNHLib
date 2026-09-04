@@ -1,12 +1,14 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
 import java.util.Map;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -35,9 +37,17 @@ public class MonopartState implements StateModelMap {
         while (iter.hasNext()) {
             final var e = iter.next();
             final var match = e.getKey();
-            if (match.matches(properties)) return new MonopartDough(e.getValue());
+            if (match.matches(properties)) {
+                if (GTNHLibConfig.enableModelDebugLogs) {
+                    MODEL_LOGGER.info("selectModel: state={} matched variant '{}'", state, match.getVariantName());
+                }
+                return new MonopartDough(e.getValue());
+            }
         }
 
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("selectModel: state={} matched no variants, returning MISSING_MODEL", state);
+        }
         return MISSING_MODEL;
     }
 

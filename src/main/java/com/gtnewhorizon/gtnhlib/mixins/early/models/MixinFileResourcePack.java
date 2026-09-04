@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelResourcePack;
 import com.gtnewhorizon.gtnhlib.client.model.loading.RPInfo;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
@@ -128,6 +129,16 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
 
             if (this.nhlib$packFormat == -1) {
                 this.nhlib$packFormat = 1;
+            }
+        }
+
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            if (this.nhlib$packFormat < PACK_FORMAT_MC_13_X) {
+                MODEL_LOGGER.warn(
+                        "Rejecting valid model at {} because its pack.mcmeta format is too old (is {}, must be >={})",
+                        resource,
+                        this.nhlib$packFormat,
+                        PACK_FORMAT_MC_13_X);
             }
         }
 
