@@ -1,7 +1,9 @@
 package com.gtnewhorizon.gtnhlib.noise;
 
 /// Scales another sampler by a certain amount in each axis.
-/// Effects are the opposite of what you'd expect - scaling by 2 in an axis shrinks the noise by half along that axis.
+/// Effects are the opposite of what you'd expect - scaling by 2 in an axis shrinks the noise's feature size by half
+/// along that axis.
+/// This does not affect the noise's output domain.
 public class ScaledSampler implements NoiseSampler {
 
     private final NoiseSampler base;
