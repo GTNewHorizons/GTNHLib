@@ -28,6 +28,10 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static boolean blockSoundMixins;
 
+    @Config.Comment("Allow blocks to show multiple AABBs when hovered over")
+    @Config.DefaultBoolean(true)
+    public static boolean enableMultipleHoverAABBs;
+
     @Config.Comment("Enable item rendering modifications to allow rendering some items as translucent")
     @Config.DefaultBoolean(true)
     public static boolean enableTranslucentItemRenders;
