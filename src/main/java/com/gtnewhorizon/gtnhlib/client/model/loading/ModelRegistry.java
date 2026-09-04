@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
@@ -29,6 +30,7 @@ import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateDeserializer;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
+import com.gtnewhorizon.gtnhlib.client.model.unbaked.UnbakedModel;
 import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
 
 import cpw.mods.fml.common.FMLContainerHolder;
@@ -97,23 +99,46 @@ public class ModelRegistry {
             false);
 
     private static BakedModel bakeModel(BlockState state) {
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("Fetching new model for state: {}", state);
+        }
+
         final Block block = state.getBlock();
         final StateModelMap smm = getStateModelMap(block);
 
         // Caching this would be a little pointless, since an UnbakedModel here would map directly to the BakedModel
         // missing from the cache... that's why we're loading one from scratch. The JSONModel *used* by the UnbakedModel
         // will be cached, however.
-        return smm.selectModel(state).bake();
+        UnbakedModel unbakedModel = smm.selectModel(state);
+
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("Selected unbaked model for block {}: {}", block, unbakedModel);
+        }
+
+        return unbakedModel.bake();
     }
 
     private static StateModelMap getStateModelMap(Block block) {
         final var name = BlockName.fromBlock(block);
         final var stateLocation = new ResourceLoc.StateLoc(name.domain, name.name);
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("getStateModelMap: fetching state map for {}:{}", name.domain, name.name);
+        }
         return STATE_MODEL_MAP_CACHE.get(stateLocation);
     }
 
     private static JSONModel loadAndResolveJSONModel(ResourceLoc.ModelLoc loc) {
-        return loc.load(() -> MISSING_MODEL, GSON).resolveParents(JSON_MODEL_CACHE::get);
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("loadAndResolveJSONModel: {}", loc);
+        }
+
+        JSONModel jsonModel = loc.load(() -> MISSING_MODEL, GSON).resolveParents(JSON_MODEL_CACHE::get);
+
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("loadAndResolveJSONModel.jsonModel: {}", jsonModel);
+        }
+
+        return jsonModel;
     }
 
     private static final class BlockName {
@@ -143,6 +168,10 @@ public class ModelRegistry {
 
         @Override
         public void onResourceManagerReload(IResourceManager irm) {
+            if (GTNHLibConfig.enableModelDebugLogs) {
+                MODEL_LOGGER.info("Detected resource reload: reloading models");
+            }
+
             // Flush all caches, we may have new models
             BLOCKSTATE_MODEL_CACHE.clear();
             STATE_MODEL_MAP_CACHE.clear();
@@ -176,10 +205,23 @@ public class ModelRegistry {
 
                 // Skip unregistered mods
                 if (mrp instanceof FMLContainerHolder fmlch
-                        && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId()))
+                        && !PERMITTED_MODIDS.contains(fmlch.getFMLContainer().getModId())) {
+                    if (GTNHLibConfig.enableModelDebugLogs) {
+                        MODEL_LOGGER.info(
+                                "loadModelInfo: skipping unregistered pack '{}'",
+                                fmlch.getFMLContainer().getModId());
+                    }
                     continue;
+                }
 
                 final var info = mrp.nhlib$gatherModelInfo(reader -> GSON.fromJson(reader, JSONModel.class));
+                if (GTNHLibConfig.enableModelDebugLogs) {
+                    MODEL_LOGGER.info(
+                            "loadModelInfo: pack '{}' contributed {} modeled blocks, {} textures",
+                            pack.getClass().getSimpleName(),
+                            info.modeledBlocks().size(),
+                            info.textureNames().size());
+                }
                 modeledBlocks.addAll(info.modeledBlocks());
                 texturesToLoad.addAll(info.textureNames());
             }

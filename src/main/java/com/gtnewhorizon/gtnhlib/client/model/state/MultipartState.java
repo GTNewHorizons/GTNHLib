@@ -1,10 +1,13 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
+
 import java.util.Map;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
@@ -33,6 +36,9 @@ public class MultipartState implements StateModelMap, UnbakedModel {
 
     @Override
     public BakedModel bake(BakeData data) {
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("bake: baking multipart model with {} cases", multipart.size());
+        }
         final var bread = new Object2ObjectArrayMap<Condition, BakedModel>(multipart.size());
         for (var c : multipart) {
             bread.put(c.when, new MonopartDough(c.apply).bake());
