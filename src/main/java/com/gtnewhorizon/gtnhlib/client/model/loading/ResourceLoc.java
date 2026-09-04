@@ -15,8 +15,8 @@ import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
-import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.google.gson.JsonParseException;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 
