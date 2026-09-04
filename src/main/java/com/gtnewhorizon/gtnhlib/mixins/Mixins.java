@@ -28,6 +28,8 @@ public enum Mixins implements IMixins {
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
+            "models.MixinTextureAtlasSprite",
+            "models.MixinTextureMap",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
             "models.particles.MixinEffectRenderer",

@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "gtnhlib:test_two"
+    "all": "gtnhlib:blocks/test_two"
   }
 }

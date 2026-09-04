@@ -254,7 +254,6 @@ public class JSONModel implements UnbakedModel {
 
     // TODO Doesn't account for UV rotation settings atm
     protected void bakeSprite(ModelQuadViewMutable quad, String name) {
-        name = name.replaceFirst("^minecraft:", "");
         final var icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
         final float minU = icon.getMinU();
         final float minV = icon.getMinV();

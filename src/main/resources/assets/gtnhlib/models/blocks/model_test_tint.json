@@ -1,10 +1,10 @@
 {
   "parent": "block/cube",
   "textures": {
-    "particle": "gtnhlib:block/test",
-    "north": "gtnhlib:block/test",
-    "south": "gtnhlib:block/test",
-    "east":  "gtnhlib:block/test",
+    "particle": "gtnhlib:blocks/test",
+    "north": "gtnhlib:blocks/test",
+    "south": "gtnhlib:blocks/test",
+    "east":  "gtnhlib:blocks/test",
     "west":  "gtnhlib:blocks/test",
     "up":    "gtnhlib:blocks/test",
     "down":  "gtnhlib:blocks/test"

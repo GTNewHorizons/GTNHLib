@@ -4,8 +4,6 @@ import static com.gtnewhorizon.gtnhlib.GTNHLibConfig.modelCacheSize;
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
-import java.util.List;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.resources.FallbackResourceManager;
 import net.minecraft.client.resources.IResourceManager;
@@ -38,8 +36,6 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
@@ -199,7 +195,7 @@ public class ModelRegistry {
 
             // Gather the list of modeled blocks and their textures
             final var modeledBlocks = new ObjectOpenHashSet<String>();
-            final var texturesToLoad = new ObjectArrayList<String>();
+            final var texturesToLoad = new ObjectOpenHashSet<String>();
             for (var pack : resourcePacks) {
                 if (!(pack instanceof ModelResourcePack mrp)) continue;
 
@@ -226,6 +222,8 @@ public class ModelRegistry {
                 texturesToLoad.addAll(info.textureNames());
             }
 
+            // Sadly, this field is untyped and we can't do anything about it... not easily, anyway.
+            // noinspection unchecked
             GameData.getBlockRegistry().registryObjects.forEach((s, b) -> {
                 if (!(s instanceof String name)) return;
                 if (!(b instanceof Block block)) return;
@@ -258,15 +256,15 @@ public class ModelRegistry {
 
     public static class EventHandler {
 
-        private static @NotNull List<String> texturesToLoad = ObjectLists.emptyList();
+        private static @NotNull ObjectOpenHashSet<String> texturesToLoad = ObjectOpenHashSet.of();
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
         public void onTextureStitch(TextureStitchEvent.Pre event) {
             for (var texture : texturesToLoad) {
-                event.map.registerIcon(texture.replaceFirst("^minecraft:", ""));
+                TexHelper.registerTexture(event.map, texture);
             }
-            texturesToLoad = ObjectLists.emptyList(); // don't need it anymore
+            texturesToLoad = ObjectOpenHashSet.of(); // don't need it anymore
         }
     }
 }
