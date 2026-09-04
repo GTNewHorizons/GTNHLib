@@ -9,6 +9,7 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -61,7 +62,8 @@ public class MonopartState implements StateModelMap {
         public StateMatch(String s) {
             variantName = s;
 
-            if (s.isEmpty()) {
+            // "normal" is the vanilla key for a block with no properties
+            if (s.isEmpty() || "normal".equals(s)) {
                 matchAll = true;
                 states = null;
                 return;
@@ -73,7 +75,7 @@ public class MonopartState implements StateModelMap {
             for (String c : s.split(",")) {
                 final int eqIndex = c.indexOf("=");
 
-                if (eqIndex == -1) throw new RuntimeException(
+                if (eqIndex == -1) throw new JsonParseException(
                         "Model variant predicate is missing an equals; expected it to be of the format 'property name=property value': '"
                                 + c
                                 + "'!");
