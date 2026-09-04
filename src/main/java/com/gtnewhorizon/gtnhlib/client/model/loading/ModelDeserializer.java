@@ -7,7 +7,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -106,8 +105,6 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private static Pattern TEXEX = Pattern.compile("^([^:]+:)blocks?/");
-
     private static Object2ObjectOpenHashMap<String, String> loadTextures(JsonObject in) {
 
         final var textures = new Object2ObjectOpenHashMap<String, String>();
@@ -115,15 +112,6 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         if (in.has("textures")) {
             for (Map.Entry<String, JsonElement> e : in.getAsJsonObject("textures").entrySet()) {
                 String s = e.getValue().getAsString();
-
-                // If it's a texture variable, no munging is needed
-                if (!s.startsWith("#")) {
-                    // Add the default domain, if it's absent.
-                    if (!s.contains(":")) s = "minecraft:" + s;
-
-                    // Strip "block/" if present
-                    s = TEXEX.matcher(s).replaceFirst("$1");
-                }
 
                 // The key is always a variable, so prepend accordingly
                 final var key = e.getKey();
