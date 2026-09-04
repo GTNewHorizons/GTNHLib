@@ -15,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.client.model.state.StateModelMap;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 
@@ -26,8 +27,8 @@ public interface ResourceLoc<T> {
         try {
             final InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(jsonPath).getInputStream();
             return gson.fromJson(new InputStreamReader(is), clazz());
-        } catch (JsonException e) {
-            MODEL_LOGGER.error("Failed to parse {}:{}", owner(), jsonPath.getResourcePath());
+        } catch (JsonException | JsonParseException e) {
+            MODEL_LOGGER.error("Failed to parse {}:{}", owner(), jsonPath.getResourcePath(), e);
         } catch (IOException e) {
             MODEL_LOGGER.error("Could not load {}:{}", owner(), jsonPath.getResourcePath());
         }

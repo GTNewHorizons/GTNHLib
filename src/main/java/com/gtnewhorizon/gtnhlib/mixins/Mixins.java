@@ -25,11 +25,16 @@ public enum Mixins implements IMixins {
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load models, textures, and metadata.").addClientMixins(
             "models.FRMAccessor",
-            "models.MixinEffectRenderer_FixParticleIcons",
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
+    MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
+            "models.particles.MixinEffectRenderer",
+            "models.particles.MixinEntity",
+            "models.particles.MixinRenderGlobal",
+            "models.particles.RenderGlobalAccessor",
+            "models.particles.WorldAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
     MODEL_BLOCK_CRACKS(new MixinBuilder("Fix crack texture appearance for modeled blocks")
@@ -65,6 +70,16 @@ public enum Mixins implements IMixins {
     MODDED_FLOWERS_IN_FLOWER_POT(new MixinBuilder()
             .addCommonMixins("MixinBlockFlowerPot", "MixinTileEntityFlowerPot", "MixinRenderBlocks_FlowerPot")
             .setApplyIf(() -> GTNHLibConfig.enableMoreFlowerPottage).setPhase(Phase.EARLY)),
+    BIOMES_O_PLENTY_FLOWER_POT(new MixinBuilder("Implement IFlowerPottable on BoP blocks")
+            .setApplyIf(() -> GTNHLibConfig.enableMoreFlowerPottage).setPhase(Phase.LATE)
+            .addCommonMixins(
+                    "flowerpotcompat.MixinBOPColorizedSapling",
+                    "flowerpotcompat.MixinBOPSapling",
+                    "flowerpotcompat.MixinBOPFlower",
+                    "flowerpotcompat.MixinBOPFlower2",
+                    "flowerpotcompat.MixinBOPPlant",
+                    "flowerpotcompat.MixinBOPMushroom")
+            .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
     //
     ;
 
