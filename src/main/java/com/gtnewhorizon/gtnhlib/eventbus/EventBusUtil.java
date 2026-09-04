@@ -17,21 +17,16 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import lombok.Getter;
 
 public final class EventBusUtil {
 
-    public static final Boolean DEBUG_EVENT_BUS = Boolean.getBoolean("gtnhlib.debug.eventbus");
+    public static final boolean DEBUG_EVENT_BUS = Boolean.getBoolean("gtnhlib.debug.eventbus");
     private static final String CURRENT_SIDE = FMLLaunchHandler.side().name();
 
-    @Getter
-    private static final ObjectSet<String> classesToVisit = new ObjectOpenHashSet<>();
-    @Getter
-    private static final Object2ObjectMap<String, ObjectSet<MethodInfo>> methodsToSubscribe = new Object2ObjectOpenHashMap<>();
-    @Getter
-    private static final Object2ObjectMap<String, String> conditionsToCheck = new Object2ObjectOpenHashMap<>();
-    @Getter
-    private static final ObjectList<String> invalidMethods = new ObjectArrayList<>();
+    public static final ObjectSet<String> classesToVisit = new ObjectOpenHashSet<>();
+    public static final Object2ObjectMap<String, ObjectSet<MethodInfo>> methodsToSubscribe = new Object2ObjectOpenHashMap<>();
+    public static final Object2ObjectMap<String, String> conditionsToCheck = new Object2ObjectOpenHashMap<>();
+    public static final ObjectList<String> invalidMethods = new ObjectArrayList<>();
 
     static String getParameterClassInternal(String desc) {
         return desc.substring(desc.indexOf("(") + 2, desc.indexOf(";"));
@@ -47,7 +42,7 @@ public final class EventBusUtil {
 
     public static void harvestData(ASMDataTable table) {
         Set<ASMDataTable.ASMData> asmData = table.getAll(EventBusSubscriber.class.getName());
-        ObjectSet<String> excludedClasses = getExcludedClasses(table);;
+        ObjectSet<String> excludedClasses = getExcludedClasses(table);
         for (ASMDataTable.ASMData data : asmData) {
             Map<String, Object> info = data.getAnnotationInfo();
             String className = data.getClassName();
@@ -99,4 +94,5 @@ public final class EventBusUtil {
 
         return !StringUtils.containsIgnoreCase(className, "client") && !side.equals("CLIENT");
     }
+
 }
