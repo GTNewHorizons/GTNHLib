@@ -18,7 +18,7 @@ public final class JSONVariant implements BakeData {
         return new Weighted<>(v, weight);
     }
 
-    private static final float DEG2RAD = (float) (Math.PI / 180);
+    public static final float DEG2RAD = (float) (Math.PI / 180);
     private final ResourceLoc.ModelLoc model;
     private final int x;
     private final int y;
@@ -35,10 +35,12 @@ public final class JSONVariant implements BakeData {
         this.uvLock = uvLock;
     }
 
+    // Modern doesn't use block centered rotation for the matrices.
+    // You might ask why do we take the - sign? Modern MC is describing how the model is rotated
+    // around its own coordinate/rendering convention rather than mathematical consistency is all I can tell.
     @Override
     public Matrix4fc getAffineMatrix() {
-        return new Matrix4f().translation(-.5f, -.5f, -.5f).rotateLocalX(x * DEG2RAD).rotateLocalY(y * DEG2RAD)
-                .translateLocal(.5f, .5f, .5f);
+        return new Matrix4f().rotateLocalX(-x * DEG2RAD).rotateLocalY(-y * DEG2RAD);
     }
 
     @Override
