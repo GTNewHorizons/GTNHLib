@@ -132,17 +132,19 @@ public abstract class MixinFileResourcePack extends AbstractResourcePack impleme
             }
         }
 
-        if (GTNHLibConfig.enableModelDebugLogs) {
-            if (this.nhlib$packFormat < PACK_FORMAT_MC_13_X) {
+        if (this.nhlib$packFormat < PACK_FORMAT_MC_13_X) {
+            if (GTNHLibConfig.enableModelDebugLogs) {
                 MODEL_LOGGER.warn(
                         "Rejecting valid model at {} because its pack.mcmeta format is too old (is {}, must be >={})",
                         resource,
                         this.nhlib$packFormat,
                         PACK_FORMAT_MC_13_X);
             }
-        }
 
-        // Reject it if it's too old.
-        return this.nhlib$packFormat < PACK_FORMAT_MC_13_X;
+            // Reject it if it's too old.
+            return true;
+        } else {
+            return false;
+        }
     }
 }
