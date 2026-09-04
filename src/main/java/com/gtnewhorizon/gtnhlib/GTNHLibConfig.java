@@ -23,6 +23,10 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static int modelCacheSize;
 
+    @Config.Comment("Enables many log messages for the model system.")
+    @Config.DefaultBoolean(false)
+    public static boolean enableModelDebugLogs;
+
     @Config.Comment("Enables various mixins that allow blocks to dynamically change their sound.")
     @Config.DefaultBoolean(true)
     @Config.RequiresMcRestart

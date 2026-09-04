@@ -30,6 +30,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import com.google.common.base.Objects;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.client.model.BakeData;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.baked.PileOfQuads;
@@ -145,6 +146,10 @@ public class JSONModel implements UnbakedModel {
 
     @Override
     public BakedModel bake(BakeData data) {
+
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("bake: baking model {}", this);
+        }
 
         final var vRot = data.getAffineMatrix();
         final var sidedQuadStore = new HashMap<ModelQuadFacing, ArrayList<ModelQuadView>>(7);
@@ -270,9 +275,18 @@ public class JSONModel implements UnbakedModel {
             return this;
         }
 
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("resolveParents: resolving parent '{}'", parentId);
+        }
+
         // Inherit properties
         this.parent = modelLoader.apply(this.parentId).resolveParents(modelLoader);
-        if (parent instanceof MissingModel) return parent;
+        if (parent instanceof MissingModel) {
+            if (GTNHLibConfig.enableModelDebugLogs) {
+                MODEL_LOGGER.info("resolveParents: parent '{}' resolved to MissingModel, propagating", parentId);
+            }
+            return parent;
+        }
 
         if (this.elements.isEmpty()) this.elements = this.parent.elements;
 
