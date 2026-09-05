@@ -82,6 +82,9 @@ public enum Mixins implements IMixins {
                     "flowerpotcompat.MixinBOPPlant",
                     "flowerpotcompat.MixinBOPMushroom")
             .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
+    MULTIPLE_BLOCK_PREVIEW_AABBS(new MixinBuilder("Allow blocks to render multiple preview collision boxes")
+            .addClientMixins("MixinRenderGlobal_MultiplePreviewHitboxes")
+            .setApplyIf(() -> GTNHLibConfig.enableMultipleHoverAABBs).setPhase(Phase.EARLY)),
     //
     ;
 
