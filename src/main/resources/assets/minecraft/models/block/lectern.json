@@ -13,12 +13,12 @@
     }
   },
   "textures": {
-    "particle": "minecraft:lectern_sides",
-    "bottom": "minecraft:oak_planks",
-    "base": "minecraft:lectern_base",
-    "front": "minecraft:lectern_front",
-    "sides": "minecraft:lectern_sides",
-    "top": "minecraft:lectern_top"
+    "particle": "minecraft:blocks/lectern_sides",
+    "bottom": "minecraft:blocks/oak_planks",
+    "base": "minecraft:blocks/lectern_base",
+    "front": "minecraft:blocks/lectern_front",
+    "sides": "minecraft:blocks/lectern_sides",
+    "top": "minecraft:blocks/lectern_top"
   },
   "elements": [
     {
