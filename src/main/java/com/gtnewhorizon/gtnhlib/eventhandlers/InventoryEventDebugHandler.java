@@ -26,18 +26,26 @@ public final class InventoryEventDebugHandler {
         final String side = player.worldObj.isRemote ? "CLIENT" : "SERVER";
         final String verb = event.getDelta() > 0 ? "ADDED" : "REMOVED";
         GTNHLib.LOG.info(
-                "[InvEvent/{}] {} (delta {}) {} x{} for {}",
+                "[InvEvent/{}] {} (delta {}) {} x{} (total {}) for {}",
                 side,
                 verb,
                 event.getDelta(),
                 event.item.getDisplayName(),
                 event.getCount(),
+                event.inventoryCount,
                 player.getCommandSenderName());
 
         if (player.worldObj.isRemote) {
             player.addChatMessage(
                     new ChatComponentText(
-                            "[InvEvent] " + verb + " " + event.item.getDisplayName() + " x" + event.getCount()));
+                            "[InvEvent] " + verb
+                                    + " "
+                                    + event.item.getDisplayName()
+                                    + " x"
+                                    + event.getCount()
+                                    + " (total "
+                                    + event.inventoryCount
+                                    + ")"));
         }
     }
 }

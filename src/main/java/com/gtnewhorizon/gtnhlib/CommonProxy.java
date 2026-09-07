@@ -35,6 +35,7 @@ import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestAo;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
@@ -72,6 +73,7 @@ public class CommonProxy {
 
         if (GTNHLibConfig.enableTestBlocks) {
             BlockTest.register();
+            BlockTestAo.register();
             BlockTestLectern.register();
             BlockTestTint.register();
             BlockTestTintMul.register();

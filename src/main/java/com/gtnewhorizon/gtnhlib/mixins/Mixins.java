@@ -25,11 +25,18 @@ public enum Mixins implements IMixins {
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load models, textures, and metadata.").addClientMixins(
             "models.FRMAccessor",
-            "models.MixinEffectRenderer_FixParticleIcons",
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
+            "models.MixinTextureAtlasSprite",
+            "models.MixinTextureMap",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
+    MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
+            "models.particles.MixinEffectRenderer",
+            "models.particles.MixinEntity",
+            "models.particles.MixinRenderGlobal",
+            "models.particles.RenderGlobalAccessor",
+            "models.particles.WorldAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
     MODEL_BLOCK_CRACKS(new MixinBuilder("Fix crack texture appearance for modeled blocks")

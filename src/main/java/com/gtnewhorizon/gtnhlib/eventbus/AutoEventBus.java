@@ -38,18 +38,19 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AutoEventBus {
 
     private static final Logger LOGGER = LogManager.getLogger("GTNHLib EventBus");
-    private static final DummyEvent INVALID_EVENT = new DummyEvent();
     private static final Object2ObjectMap<String, Event> eventCache = new Object2ObjectOpenHashMap<>();
     private static final Object2BooleanMap<String> optionalMods = new Object2BooleanOpenHashMap<>();
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     private static final MethodType CONDITION_TYPE = MethodType.methodType(boolean.class);
+
+    private static final DummyEvent INVALID_EVENT = new DummyEvent();
+    private static final DummyEvent NOT_AN_EVENT = new DummyEvent();
+
+    private AutoEventBus() {}
 
     private enum EventBusType {
 
@@ -87,15 +88,15 @@ public class AutoEventBus {
             for (String className : entry.getValue()) {
                 try {
                     Class<?> clazz = Class.forName(className, false, Loader.instance().getModClassLoader());
-                    String conditionToCheck = EventBusUtil.getConditionsToCheck().get(className);
+                    String conditionToCheck = EventBusUtil.conditionsToCheck.get(className);
                     if (conditionToCheck != null && !isConditionMet(clazz, conditionToCheck)) {
                         if (DEBUG_EVENT_BUS) {
-                            LOGGER.info("Skipping registration for {}, condition not met", clazz.getSimpleName());
+                            LOGGER.info("Skipping registration for {}, condition not met", className);
                         }
                         continue;
                     }
 
-                    ObjectSet<MethodInfo> methods = EventBusUtil.getMethodsToSubscribe().get(className);
+                    ObjectSet<MethodInfo> methods = EventBusUtil.methodsToSubscribe.get(className);
                     if (methods == null || methods.isEmpty()) continue;
                     register(entry.getKey(), clazz, methods);
                 } catch (ClassNotFoundException e) {
@@ -105,15 +106,14 @@ public class AutoEventBus {
         }
 
         if (phase == Phase.INIT) {
-            ObjectList<String> invalidMethods = EventBusUtil.getInvalidMethods();
+            ObjectList<String> invalidMethods = EventBusUtil.invalidMethods;
             if (invalidMethods.size() == 1) {
                 throw new IllegalArgumentException(invalidMethods.get(0));
             } else if (invalidMethods.size() > 1) {
-                int i;
-                for (i = 0; i < invalidMethods.size() - 1; i++) {
-                    LOGGER.error(invalidMethods.get(i));
-                }
-                throw new IllegalArgumentException("Encountered" + i + "invalid methods. " + invalidMethods.get(i));
+                throw new IllegalArgumentException(
+                        "Encountered " + invalidMethods.size()
+                                + " invalid methods.\n - "
+                                + String.join("\n - ", invalidMethods));
             }
         }
     }
@@ -128,7 +128,17 @@ public class AutoEventBus {
                 }
 
                 Event event = getCachedEvent(EventBusUtil.getParameterClassName(method.desc));
-                if (INVALID_EVENT.equals(event)) continue;
+                if (event == INVALID_EVENT) {
+                    continue;
+                } else if (event == NOT_AN_EVENT) {
+                    EventBusUtil.invalidMethods.add(
+                            "Invalid event handler method: " + method.declaringClass
+                                    + " "
+                                    + method.name
+                                    + method.desc
+                                    + ". The parameter of an event handler method must extend cpw.mods.fml.common.eventhandler.Event");
+                    continue;
+                }
 
                 StaticASMEventHandler listener = new StaticASMEventHandler(method);
                 for (EventBusType bus : EventBusType.VALUES) {
@@ -153,6 +163,9 @@ public class AutoEventBus {
         return eventCache.computeIfAbsent(eventClass, e -> {
             try {
                 Class<?> clazz = Class.forName(eventClass, false, Loader.instance().getModClassLoader());
+
+                if (!Event.class.isAssignableFrom(clazz)) return NOT_AN_EVENT;
+
                 return (Event) ConstructorUtils.invokeConstructor(clazz);
             } catch (NoClassDefFoundError | ExceptionInInitializerError | Exception ex) {
                 // Event was likely for a mod that is not loaded or an invalid side.
@@ -168,6 +181,10 @@ public class AutoEventBus {
         try {
             MethodHandle handle = MethodHandles.publicLookup()
                     .findStatic(clazz, condition.substring(0, condition.indexOf("(")), CONDITION_TYPE);
+
+            // Note: `LambdaMetafactory` allows us to run the method without loading the full class, so if any of the
+            // event handlers use event classes that are not present on the class path, we don't crash the game by
+            // loading them before testing the `@EventBusSubscriber.Condition`.
             CallSite call = LambdaMetafactory.metafactory(
                     LOOKUP,
                     "getAsBoolean",
