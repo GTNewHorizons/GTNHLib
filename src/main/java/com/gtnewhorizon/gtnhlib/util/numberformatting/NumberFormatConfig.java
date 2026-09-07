@@ -54,6 +54,22 @@ public final class NumberFormatConfig {
     public static ExponentialFormat EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
 
     /**
+     * Locale the JVM was started with. Captured before mod loading, because some mods call
+     * {@link Locale#setDefault(Locale)} during pre-initialization and never restore it, which would otherwise make
+     * SYSTEM_DEFAULT resolve to whatever locale that mod happened to set.
+     */
+    @Config.Ignore
+    private static Locale systemLocale = null;
+
+    /**
+     * Captures the JVM format locale. Called during mod construction, before any mod pre-initialization runs. Until
+     * then SYSTEM_DEFAULT follows the live JVM locale.
+     */
+    public static void captureSystemLocale() {
+        systemLocale = Locale.getDefault(Locale.Category.FORMAT);
+    }
+
+    /**
      * Enum representing available locale options for number formatting
      */
     public enum LocaleOption {
@@ -90,7 +106,7 @@ public final class NumberFormatConfig {
 
         public Locale getLocale() {
             if (this == SYSTEM_DEFAULT || locale == null) {
-                return Locale.getDefault(Locale.Category.FORMAT);
+                return systemLocale != null ? systemLocale : Locale.getDefault(Locale.Category.FORMAT);
             }
             return locale;
         }

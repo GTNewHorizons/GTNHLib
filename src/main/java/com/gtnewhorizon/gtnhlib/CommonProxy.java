@@ -61,6 +61,8 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class CommonProxy {
 
     public void construct(FMLConstructionEvent event) {
+        // Must run before any mod pre-initialization, some mods overwrite the JVM default locale there.
+        NumberFormatConfig.captureSystemLocale();
         AutoEventBus.executePhase(Phase.CONSTRUCT);
     }
 
