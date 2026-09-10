@@ -14,7 +14,7 @@ fml.configgui.tooltip.defaultNumeric=[діапазон: %2$s ~ %3$s, типов�
 # Професії селян
 description.villager.profession.farmer=Фермер
 description.villager.profession.librarian=Бібліотекар
-description.villager.profession.priest=Священник
+description.villager.profession.priest=Церковник
 description.villager.profession.blacksmith=Коваль
 description.villager.profession.butcher=М’ясник
 description.villager.profession.zombie=Зомбі
