@@ -284,7 +284,7 @@ gtnhlib.gui.teams.select_screen.get_team_merge=Прийняти запити н�
 gtnhlib.gui.teams.admin.force_disband_team=Примусово розформувати
 gtnhlib.gui.teams.admin.confirm_force_disband_team=Примусово розформувати команду %s?
 gtnhlib.gui.teams.admin.force_edit_team_name=Примусово змінити назву
-gtnhlib.gui.teams.admin.force_merge_into_team=Примусово об’єднати першу вибрану з цією командою
+gtnhlib.gui.teams.admin.force_merge_into_team=Примусово об’єднати першу вибрану команду з цією
 gtnhlib.gui.teams.admin.force_merge_confirmation=Примусово об’єднати %s з %s? %s та всі її дані будуть видалені!
 
 commands.title.cleared.single=Очищено заголовок для %s
