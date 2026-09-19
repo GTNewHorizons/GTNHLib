@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.datastructs.extensions;
 
 import java.util.BitSet;
+import java.util.NoSuchElementException;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -14,14 +15,16 @@ public class IterableBitSet extends BitSet implements IntIterable {
         return new IntIterator() {
 
             private int current = nextSetBit(0);
+            private int lastReturned = -1;
 
             @Override
             public int nextInt() {
-                int value = current;
-
+                if (current < 0) {
+                    throw new NoSuchElementException();
+                }
+                lastReturned = current;
                 current = nextSetBit(current + 1);
-
-                return value;
+                return lastReturned;
             }
 
             @Override
@@ -31,7 +34,12 @@ public class IterableBitSet extends BitSet implements IntIterable {
 
             @Override
             public void remove() {
-                clear(current);
+                if (lastReturned < 0) {
+                    throw new IllegalStateExpression();
+                }
+                
+                clear(lastReturned);
+                lastReturned = -1;
             }
         };
     }
