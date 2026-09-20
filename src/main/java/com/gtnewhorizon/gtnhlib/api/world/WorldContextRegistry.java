@@ -163,6 +163,16 @@ public final class WorldContextRegistry {
                 ChunkCoordIntPair hostChunk) {
             return Collections.emptyMap();
         }
+
+        /**
+         * Gets the host-world player represented by a player in one of this handler's worlds.
+         * <p>
+         * Virtual worlds may represent a player with a replaceable proxy entity. Returning the host player lets
+         * callers keep identity-based state independently of that proxy's lifetime.
+         */
+        default EntityPlayerMP getHostPlayer(EntityPlayerMP player) {
+            return player;
+        }
     }
 
     private static final Map<String, Handler> handlers = new LinkedHashMap<>();
@@ -245,6 +255,22 @@ public final class WorldContextRegistry {
         }
         return visible == null ? Collections.<World, Collection<ChunkCoordIntPair>>emptyMap() : visible;
     }
+
+    /**
+     * Gets the host-world player represented by a player in a virtual world, through the handler owning that world.
+     *
+     * @return the resolved player, or the supplied player when nothing claims the world or the handler returns null.
+     */
+    public static EntityPlayerMP getHostPlayer(World world, EntityPlayerMP player) {
+        if (world == null || player == null) return player;
+        for (Handler handler : handlers.values()) {
+            if (handler.getSubId(world) == UNKNOWN_SUB_ID) continue;
+            EntityPlayerMP hostPlayer = handler.getHostPlayer(player);
+            return hostPlayer == null ? player : hostPlayer;
+        }
+        return player;
+    }
+
     /**
      * Gets the host world for a subworld, returning the argument itself for an ordinary world.
      */
