@@ -37,7 +37,6 @@ public class IterableBitSet extends BitSet implements IntIterable {
                 if (lastReturned < 0) {
                     throw new IllegalStateException();
                 }
-                
                 clear(lastReturned);
                 lastReturned = -1;
             }
