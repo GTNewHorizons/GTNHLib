@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
@@ -132,6 +134,35 @@ public final class WorldContextRegistry {
         default Collection<World> getSubWorlds(World hostWorld) {
             return Collections.emptyList();
         }
+
+        /**
+         * Gets the chunk of the host world through which a chunk of one of this handler's worlds is visible.
+         *
+         * <p>
+         * A virtual world that is watched in its own right — one with a player manager of its own, posting ordinary
+         * {@link net.minecraftforge.event.world.ChunkWatchEvent}s — returns {@code null}, and remains authoritative for
+         * its own visibility. A virtual world embedded in its host's chunks answers with the host chunk that carries
+         * this one.
+         *
+         * @return {@code null} for worlds this handler does not own, and for worlds watched in their own right.
+         */
+        default ChunkCoordIntPair getHostChunk(World subWorld, ChunkCoordIntPair subChunk) {
+            return null;
+        }
+
+        /**
+         * Gets the chunks from this handler's worlds that are currently visible through {@code hostChunk}.
+         *
+         * <p>
+         * Only report chunks that currently exist, not every chunk coordinate that could map to this host chunk. In
+         * practice, this usually means returning the embedded chunks already backed by data held by the host chunk.
+         *
+         * @return the currently visible embedded chunks, or an empty map if there are none
+         */
+        default Map<World, Collection<ChunkCoordIntPair>> getVisibleChunks(World hostWorld,
+                ChunkCoordIntPair hostChunk) {
+            return Collections.emptyMap();
+        }
     }
 
     private static final Map<String, Handler> handlers = new LinkedHashMap<>();
@@ -183,6 +214,37 @@ public final class WorldContextRegistry {
         return new WorldAddress(world.provider.dimensionId, ROOT_NAMESPACE, ROOT_SUB_ID);
     }
 
+    /**
+     * Gets the host chunk through which a virtual-world chunk is visible.
+     *
+     * @return the host chunk, or {@code null} if the world is not embedded in another world
+     */
+    public static ChunkCoordIntPair getHostChunk(World subWorld, ChunkCoordIntPair subChunk) {
+        if (subWorld == null || subChunk == null) return null;
+        for (Handler handler : handlers.values()) {
+            if (handler.getSubId(subWorld) == UNKNOWN_SUB_ID) continue;
+            return handler.getHostChunk(subWorld, subChunk);
+        }
+        return null;
+    }
+
+    /**
+     * Gets every virtual-world chunk currently visible through a chunk of a host world, gathered from all handlers.
+     *
+     * @return an empty map when no virtual world is visible through that chunk.
+     */
+    public static Map<World, Collection<ChunkCoordIntPair>> getVisibleChunks(World hostWorld,
+            ChunkCoordIntPair hostChunk) {
+        if (hostWorld == null || hostChunk == null) return Collections.emptyMap();
+        Map<World, Collection<ChunkCoordIntPair>> visible = null;
+        for (Handler handler : handlers.values()) {
+            Map<World, Collection<ChunkCoordIntPair>> owned = handler.getVisibleChunks(hostWorld, hostChunk);
+            if (owned == null || owned.isEmpty()) continue;
+            if (visible == null) visible = new LinkedHashMap<>();
+            visible.putAll(owned);
+        }
+        return visible == null ? Collections.<World, Collection<ChunkCoordIntPair>>emptyMap() : visible;
+    }
     /**
      * Gets the host world for a subworld, returning the argument itself for an ordinary world.
      */
