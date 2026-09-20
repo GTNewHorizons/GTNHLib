@@ -10,6 +10,8 @@ import java.util.Map;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
+import com.gtnewhorizon.gtnhlib.hash.Fnv1a32;
+
 /**
  * Registry for mods Like LittleBlocks or MetaWorlds that add virtual subworlds that need to be rendered into another
  * parent world. A subworld is addressed by a {@link WorldAddress}: a host dimension, a namespace, and a sub ID. The
@@ -73,7 +75,11 @@ public final class WorldContextRegistry {
 
         @Override
         public int hashCode() {
-            return (this.hostDimensionId * 31 + this.namespace.hashCode()) * 31 + this.subId;
+            int hash = Fnv1a32.initialState();
+            hash = Fnv1a32.hashStep(hash, this.hostDimensionId);
+            hash = Fnv1a32.hashStep(hash, this.namespace);
+            hash = Fnv1a32.hashStep(hash, this.subId);
+            return hash;
         }
 
         @Override
