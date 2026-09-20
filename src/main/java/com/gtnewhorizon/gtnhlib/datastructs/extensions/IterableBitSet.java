@@ -35,7 +35,7 @@ public class IterableBitSet extends BitSet implements IntIterable {
             @Override
             public void remove() {
                 if (lastReturned < 0) {
-                    throw new IllegalStateExpression();
+                    throw new IllegalStateException();
                 }
                 
                 clear(lastReturned);
