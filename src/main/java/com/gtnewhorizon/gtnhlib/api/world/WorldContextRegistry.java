@@ -167,8 +167,8 @@ public final class WorldContextRegistry {
         /**
          * Gets the host-world player represented by a player in one of this handler's worlds.
          * <p>
-         * Virtual worlds may represent a player with a replaceable proxy entity. Returning the host player lets
-         * callers keep identity-based state independently of that proxy's lifetime.
+         * Virtual worlds may represent a player with a replaceable proxy entity. Returning the host player lets callers
+         * keep identity-based state independently of that proxy's lifetime.
          */
         default EntityPlayerMP getHostPlayer(EntityPlayerMP player) {
             return player;
@@ -181,8 +181,8 @@ public final class WorldContextRegistry {
 
     /**
      * Registers a handler under a namespace unique to the owning mod, such as {@code "littleblocks"}. The namespace is
-     * chosen by the mod and must be stable across versions and between client and server, because the on-wire key is
-     * derived from it.
+     * chosen by the mod and must be stable across versions and between client and server, because it is part of the
+     * world address sent over the wire.
      *
      * @throws IllegalArgumentException if the namespace is empty or already registered.
      */
