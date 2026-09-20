@@ -1,5 +1,7 @@
 # Model API
 
+🌐 **Languages:** [English](models.md) | [Українська](models_uk.md)
+
 In general, it is designed to mimic the latest version.
 
 ### Intentional deviations
