@@ -67,6 +67,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
     private static Stack<GuiView> windowHistory = new Stack<>();
     private static final List<DisplayItem> pendingDisplayList = new ArrayList<>();
     private static final List<DisplayItem> displayList = new ArrayList<>();
+    private static ListWidget<IWidget, ?> displayListWidget;
     private static Team selectedTeam = null;
     private static boolean isFirstRequest = true;
 
@@ -288,7 +289,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         EntityPlayer player = data.getPlayer();
         String currentPlayer = ServerPlayerUtils.getPlayerName(player);
 
-        ListWidget<IWidget, ?> displayListWidget = new ListWidget<>().name("display_list").width(164).height(120)
+        displayListWidget = new ListWidget<>().name("display_list").width(164).height(120)
                 .background(CustomGuiTextures.TEXT_FIELD_BACKGROUND).horizontalCenter().top(40)
                 .child(Flow.row().height(2));
 
@@ -1147,6 +1148,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         data.currentView = newView;
         syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(newView);
         selectedTeam = null;
+        displayListWidget.getScrollArea().getScrollY().scrollTo(displayListWidget.getScrollArea(), 0);
     }
 
     public void restoreView(TeamGuiData data, PanelSyncManager syncManager) {
@@ -1154,6 +1156,7 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         data.currentView = windowHistory.pop();
         syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(data.currentView);
         selectedTeam = null;
+        displayListWidget.getScrollArea().getScrollY().scrollTo(displayListWidget.getScrollArea(), 0);
     }
 
 }
