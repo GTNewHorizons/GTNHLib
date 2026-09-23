@@ -2,14 +2,16 @@
     "identifier": "falsepatternlib_dependencies",
     "repositories": [
         "https://repo1.maven.org/maven2/",
-        "https://libraries.minecraft.net/"
+        "https://libraries.minecraft.net/",
+        "https://nexus.gtnewhorizons.com/repository/public/"
     ],
     "dependencies": {
         "always": {
             "common": [
                 "it.unimi.dsi:fastutil:8.5.18",
                 "org.joml:joml:1.10.8",
-                "com.mojang:brigadier:1.0.18"
+                "com.mojang:brigadier:1.0.18",
+                "com.github.GTNewHorizons:DataFixerUpper-J8:10.0.21-1"
             ],
             "client": [],
             "server": []
