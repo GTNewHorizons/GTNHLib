@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.codec.minecraft;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -176,11 +177,14 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         return DataResult.success(result);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public DataResult<Stream<Pair<NBTBase, NBTBase>>> getMapValues(NBTBase input) {
         if (input instanceof NBTTagCompound compound) {
+            Map<String, NBTBase> nbtBaseMap = (Map<String, NBTBase>) compound.tagMap.entrySet();
             return DataResult.success(
-                    compound.func_150296_c().stream().map(key -> Pair.of(createString(key), compound.getTag(key))));
+                    nbtBaseMap.entrySet().stream()
+                            .map(entry -> Pair.of(createString(entry.getKey()), entry.getValue())));
         }
         return DataResult.error(() -> "Not a map: " + input);
     }
@@ -225,7 +229,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     public DataResult<ByteBuffer> getByteBuffer(NBTBase input) {
         if (input instanceof NBTTagByteArray array) {
             byte[] bytes = array.func_150292_c();
-            return DataResult.success(ByteBuffer.wrap(Arrays.copyOf(bytes, bytes.length)));
+            return DataResult.success(ByteBuffer.wrap(bytes.clone()));
         }
         return DynamicOps.super.getByteBuffer(input);
     }
@@ -242,7 +246,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     public DataResult<IntStream> getIntStream(NBTBase input) {
         if (input instanceof NBTTagIntArray array) {
             int[] values = array.func_150302_c();
-            return DataResult.success(Arrays.stream(Arrays.copyOf(values, values.length)));
+            return DataResult.success(Arrays.stream(values.clone()));
         }
         return DynamicOps.super.getIntStream(input);
     }
