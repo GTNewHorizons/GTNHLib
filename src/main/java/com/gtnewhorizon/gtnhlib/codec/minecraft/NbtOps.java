@@ -181,7 +181,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public DataResult<Stream<Pair<NBTBase, NBTBase>>> getMapValues(NBTBase input) {
         if (input instanceof NBTTagCompound compound) {
-            Map<String, NBTBase> nbtBaseMap = (Map<String, NBTBase>) compound.tagMap.entrySet();
+            Map<String, NBTBase> nbtBaseMap = (Map<String, NBTBase>) compound.tagMap;
             return DataResult.success(
                     nbtBaseMap.entrySet().stream()
                             .map(entry -> Pair.of(createString(entry.getKey()), entry.getValue())));
