@@ -13,7 +13,7 @@ dependencies {
     compileOnlyApi("it.unimi.dsi:fastutil:8.5.18") // Apache 2.0
     compileOnlyApi("org.joml:joml:1.10.8") { transitive = false } // MIT
     compileOnlyApi("com.mojang:brigadier:1.0.18") // MIT
-    compileOnlyApi("com.github.GTNewHorizons:DataFixerUpper-J8:10.0.21-1") // MIT
+    compileOnlyApi("com.github.GTNewHorizons:DataFixerUpper-J8:10.0.21-2:preshadow") // MIT
     compileOnlyApi("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${jvmDgVersion}:downgraded-8") { transitive = false } // LGPL 2.1
 
     // Slow-moving fat lib holding external deps
@@ -24,7 +24,7 @@ dependencies {
     testRuntimeOnly("it.unimi.dsi:fastutil:8.5.18")
     testRuntimeOnly("org.joml:joml:1.10.8") { transitive = false }
     testRuntimeOnly("com.mojang:brigadier:1.0.18")
-    testRuntimeOnly("com.github.GTNewHorizons:DataFixerUpper-J8:10.0.21-1")
+    testRuntimeOnly("com.github.GTNewHorizons:DataFixerUpper-J8:10.0.21-2:preshadow")
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")

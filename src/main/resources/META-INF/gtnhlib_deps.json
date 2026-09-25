@@ -11,7 +11,7 @@
                 "it.unimi.dsi:fastutil:8.5.18",
                 "org.joml:joml:1.10.8",
                 "com.mojang:brigadier:1.0.18",
-                "com.github.GTNewHorizons:DataFixerUpper-J8:10.0.21-1"
+                "com.github.GTNewHorizons:DataFixerUpper-J8:10.0.21-2:preshadow"
             ],
             "client": [],
             "server": []
