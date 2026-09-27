@@ -2,6 +2,8 @@ package com.gtnewhorizon.gtnhlib.codec.minecraft;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -154,20 +156,68 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
     @Override
     public DataResult<NBTBase> mergeToList(NBTBase list, NBTBase value) {
-        if (list.getId() != 0 && !(list instanceof NBTTagList)) {
-            return DataResult.error(() -> "Not a list: " + list, list);
-        }
+        return mergeToList(list, Collections.singletonList(value));
+    }
 
-        NBTTagList result = list instanceof NBTTagList ? (NBTTagList) list.copy() : new NBTTagList();
-        if (value.getId() == 0) return DataResult.success(result);
-        if (result.tagCount() > 0 && result.func_150303_d() != value.getId()) {
-            return DataResult.error(
-                    () -> "Cannot add " + NBTBase.NBTTypes[value.getId()]
-                            + " to a list of "
-                            + NBTBase.NBTTypes[result.func_150303_d()],
-                    list);
+    @Override
+    public DataResult<NBTBase> mergeToList(NBTBase list, List<NBTBase> values) {
+        if (list instanceof NBTTagByteArray byteArray) return mergeToByteArray(byteArray, values);
+        if (list instanceof NBTTagIntArray intArray) return mergeToIntArray(intArray, values);
+        if (list.getId() == 0 || list instanceof NBTTagList) return mergeToTagList(list, values);
+        return DataResult.error(() -> "Not a list: " + list, list);
+    }
+
+    private DataResult<NBTBase> mergeToByteArray(NBTTagByteArray list, List<NBTBase> values) {
+        int added = 0;
+        for (NBTBase value : values) {
+            if (value.getId() == 0) continue;
+            if (value.getId() != Constants.NBT.TAG_BYTE) {
+                return DataResult
+                        .error(() -> "Cannot add " + NBTBase.NBTTypes[value.getId()] + " to a byte array", list);
+            }
+            added++;
         }
-        result.appendTag(value);
+        byte[] original = list.func_150292_c();
+        byte[] result = Arrays.copyOf(original, original.length + added);
+        int index = original.length;
+        for (NBTBase value : values) {
+            if (value.getId() != 0) result[index++] = ((NBTBase.NBTPrimitive) value).func_150290_f();
+        }
+        return DataResult.success(new NBTTagByteArray(result));
+    }
+
+    private DataResult<NBTBase> mergeToIntArray(NBTTagIntArray list, List<NBTBase> values) {
+        int added = 0;
+        for (NBTBase value : values) {
+            if (value.getId() == 0) continue;
+            if (value.getId() != Constants.NBT.TAG_INT) {
+                return DataResult
+                        .error(() -> "Cannot add " + NBTBase.NBTTypes[value.getId()] + " to an int array", list);
+            }
+            added++;
+        }
+        int[] original = list.func_150302_c();
+        int[] result = Arrays.copyOf(original, original.length + added);
+        int index = original.length;
+        for (NBTBase value : values) {
+            if (value.getId() != 0) result[index++] = ((NBTBase.NBTPrimitive) value).func_150287_d();
+        }
+        return DataResult.success(new NBTTagIntArray(result));
+    }
+
+    private DataResult<NBTBase> mergeToTagList(NBTBase list, List<NBTBase> values) {
+        NBTTagList result = list instanceof NBTTagList ? (NBTTagList) list.copy() : new NBTTagList();
+        for (NBTBase value : values) {
+            if (value.getId() == 0) continue;
+            if (result.tagCount() > 0 && result.func_150303_d() != value.getId()) {
+                return DataResult.error(
+                        () -> "Cannot add " + NBTBase.NBTTypes[value.getId()]
+                                + " to a list of "
+                                + NBTBase.NBTTypes[result.func_150303_d()],
+                        list);
+            }
+            result.appendTag(value);
+        }
         return DataResult.success(result);
     }
 
