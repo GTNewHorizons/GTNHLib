@@ -255,14 +255,40 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         return DataResult.success(result);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public DataResult<Stream<Pair<NBTBase, NBTBase>>> getMapValues(NBTBase input) {
         if (input instanceof NBTTagCompound compound) {
-            Map<String, NBTBase> nbtBaseMap = (Map<String, NBTBase>) compound.tagMap;
-            return DataResult.success(
-                    nbtBaseMap.entrySet().stream()
-                            .map(entry -> Pair.of(createString(entry.getKey()), entry.getValue())));
+            return DataResult.success(streamMapEntries(compound));
+        }
+        return DataResult.error(() -> "Not a map: " + input);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Stream<Pair<NBTBase, NBTBase>> streamMapEntries(NBTTagCompound compound) {
+        Map<String, NBTBase> tags = (Map<String, NBTBase>) compound.tagMap;
+        return tags.entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
+    }
+
+    @Override
+    public DataResult<MapLike<NBTBase>> getMap(NBTBase input) {
+        if (input instanceof NBTTagCompound compound) {
+            return DataResult.success(new MapLike<>() {
+
+                @Override
+                public NBTBase get(NBTBase key) {
+                    return key instanceof NBTTagString stringKey ? get(stringKey.func_150285_a_()) : null;
+                }
+
+                @Override
+                public NBTBase get(String key) {
+                    return compound.getTag(key);
+                }
+
+                @Override
+                public Stream<Pair<NBTBase, NBTBase>> entries() {
+                    return streamMapEntries(compound);
+                }
+            });
         }
         return DataResult.error(() -> "Not a map: " + input);
     }
