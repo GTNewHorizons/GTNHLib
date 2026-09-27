@@ -23,6 +23,7 @@ import net.minecraft.nbt.NBTTagString;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import net.minecraftforge.common.util.Constants;
 
 public final class NbtOps implements DynamicOps<NBTBase> {
 
@@ -36,18 +37,18 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public <U> U convertTo(DynamicOps<U> outOps, NBTBase input) {
         return switch (input.getId()) {
-            case 0 -> outOps.empty();
-            case 1 -> outOps.createByte(((NBTBase.NBTPrimitive) input).func_150290_f());
-            case 2 -> outOps.createShort(((NBTBase.NBTPrimitive) input).func_150289_e());
-            case 3 -> outOps.createInt(((NBTBase.NBTPrimitive) input).func_150287_d());
-            case 4 -> outOps.createLong(((NBTBase.NBTPrimitive) input).func_150291_c());
-            case 5 -> outOps.createFloat(((NBTBase.NBTPrimitive) input).func_150288_h());
-            case 6 -> outOps.createDouble(((NBTBase.NBTPrimitive) input).func_150286_g());
-            case 7 -> outOps.createByteList(ByteBuffer.wrap(((NBTTagByteArray) input).func_150292_c()));
-            case 8 -> outOps.createString(((NBTTagString) input).func_150285_a_());
-            case 9 -> convertList(outOps, input);
-            case 10 -> convertMap(outOps, input);
-            case 11 -> outOps.createIntList(Arrays.stream(((NBTTagIntArray) input).func_150302_c()));
+            case Constants.NBT.TAG_END -> outOps.empty();
+            case Constants.NBT.TAG_BYTE -> outOps.createByte(((NBTBase.NBTPrimitive) input).func_150290_f());
+            case Constants.NBT.TAG_SHORT -> outOps.createShort(((NBTBase.NBTPrimitive) input).func_150289_e());
+            case Constants.NBT.TAG_INT -> outOps.createInt(((NBTBase.NBTPrimitive) input).func_150287_d());
+            case Constants.NBT.TAG_LONG -> outOps.createLong(((NBTBase.NBTPrimitive) input).func_150291_c());
+            case Constants.NBT.TAG_FLOAT -> outOps.createFloat(((NBTBase.NBTPrimitive) input).func_150288_h());
+            case Constants.NBT.TAG_DOUBLE -> outOps.createDouble(((NBTBase.NBTPrimitive) input).func_150286_g());
+            case Constants.NBT.TAG_BYTE_ARRAY -> outOps.createByteList(ByteBuffer.wrap(((NBTTagByteArray) input).func_150292_c()));
+            case Constants.NBT.TAG_STRING -> outOps.createString(((NBTTagString) input).func_150285_a_());
+            case Constants.NBT.TAG_LIST -> convertList(outOps, input);
+            case Constants.NBT.TAG_COMPOUND -> convertMap(outOps, input);
+            case Constants.NBT.TAG_INT_ARRAY -> outOps.createIntList(Arrays.stream(((NBTTagIntArray) input).func_150302_c()));
             default -> throw new IllegalStateException("Unknown NBT tag type: " + input.getId());
         };
     }
