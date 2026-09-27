@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -311,7 +312,19 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         if (input instanceof NBTTagList list) {
             return DataResult.success(list.tagList.stream());
         }
+        if (input instanceof NBTTagByteArray array) {
+            byte[] bytes = array.func_150292_c().clone();
+            return DataResult.success(streamArray(bytes.length, i -> createByte(bytes[i])));
+        }
+        if (input instanceof NBTTagIntArray array) {
+            int[] values = array.func_150302_c().clone();
+            return DataResult.success(streamArray(values.length, i -> createInt(values[i])));
+        }
         return DataResult.error(() -> "Not a list: " + input);
+    }
+
+    private Stream<NBTBase> streamArray(int length, IntFunction<NBTBase> tagAt) {
+        return IntStream.range(0, length).mapToObj(tagAt);
     }
 
     @Override
