@@ -19,11 +19,11 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraftforge.common.util.Constants;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import net.minecraftforge.common.util.Constants;
 
 public final class NbtOps implements DynamicOps<NBTBase> {
 
@@ -44,11 +44,13 @@ public final class NbtOps implements DynamicOps<NBTBase> {
             case Constants.NBT.TAG_LONG -> outOps.createLong(((NBTBase.NBTPrimitive) input).func_150291_c());
             case Constants.NBT.TAG_FLOAT -> outOps.createFloat(((NBTBase.NBTPrimitive) input).func_150288_h());
             case Constants.NBT.TAG_DOUBLE -> outOps.createDouble(((NBTBase.NBTPrimitive) input).func_150286_g());
-            case Constants.NBT.TAG_BYTE_ARRAY -> outOps.createByteList(ByteBuffer.wrap(((NBTTagByteArray) input).func_150292_c()));
+            case Constants.NBT.TAG_BYTE_ARRAY -> outOps
+                    .createByteList(ByteBuffer.wrap(((NBTTagByteArray) input).func_150292_c()));
             case Constants.NBT.TAG_STRING -> outOps.createString(((NBTTagString) input).func_150285_a_());
             case Constants.NBT.TAG_LIST -> convertList(outOps, input);
             case Constants.NBT.TAG_COMPOUND -> convertMap(outOps, input);
-            case Constants.NBT.TAG_INT_ARRAY -> outOps.createIntList(Arrays.stream(((NBTTagIntArray) input).func_150302_c()));
+            case Constants.NBT.TAG_INT_ARRAY -> outOps
+                    .createIntList(Arrays.stream(((NBTTagIntArray) input).func_150302_c()));
             default -> throw new IllegalStateException("Unknown NBT tag type: " + input.getId());
         };
     }
