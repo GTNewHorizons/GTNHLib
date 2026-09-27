@@ -128,7 +128,12 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
     @Override
     public DataResult<Boolean> getBooleanValue(NBTBase input) {
-        return getNumberValue(input).map(number -> number.byteValue() != 0);
+        if (input instanceof NBTTagByte tag) {
+            byte value = tag.func_150290_f();
+            if (value == 0) return DataResult.success(false);
+            if (value == 1) return DataResult.success(true);
+        }
+        return DataResult.error(() -> "Not a boolean: " + input);
     }
 
     @Override
