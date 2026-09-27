@@ -59,12 +59,12 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     public DataResult<Number> getNumberValue(NBTBase input) {
         if (input instanceof NBTBase.NBTPrimitive primitive) {
             return DataResult.success(switch (input.getId()) {
-                case 1 -> primitive.func_150290_f();
-                case 2 -> primitive.func_150289_e();
-                case 3 -> primitive.func_150287_d();
-                case 4 -> primitive.func_150291_c();
-                case 5 -> primitive.func_150288_h();
-                case 6 -> primitive.func_150286_g();
+                case Constants.NBT.TAG_BYTE -> primitive.func_150290_f();
+                case Constants.NBT.TAG_SHORT -> primitive.func_150289_e();
+                case Constants.NBT.TAG_INT -> primitive.func_150287_d();
+                case Constants.NBT.TAG_LONG -> primitive.func_150291_c();
+                case Constants.NBT.TAG_FLOAT -> primitive.func_150288_h();
+                case Constants.NBT.TAG_DOUBLE -> primitive.func_150286_g();
                 default -> throw new IllegalStateException("Unknown numeric NBT tag type: " + input.getId());
             });
         }
