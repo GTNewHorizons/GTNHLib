@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.codec.minecraft;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -26,6 +27,7 @@ import net.minecraftforge.common.util.Constants;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapLike;
 
 public final class NbtOps implements DynamicOps<NBTBase> {
 
@@ -232,6 +234,24 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
         NBTTagCompound result = map instanceof NBTTagCompound ? (NBTTagCompound) map.copy() : new NBTTagCompound();
         if (value.getId() != 0) result.setTag(stringKey.func_150285_a_(), value);
+        return DataResult.success(result);
+    }
+
+    @Override
+    public DataResult<NBTBase> mergeToMap(NBTBase map, MapLike<NBTBase> values) {
+        if (map.getId() != 0 && !(map instanceof NBTTagCompound)) {
+            return DataResult.error(() -> "Not a map: " + map, map);
+        }
+
+        NBTTagCompound result = map instanceof NBTTagCompound ? (NBTTagCompound) map.copy() : new NBTTagCompound();
+        Iterator<Pair<NBTBase, NBTBase>> entries = values.entries().iterator();
+        while (entries.hasNext()) {
+            Pair<NBTBase, NBTBase> entry = entries.next();
+            if (!(entry.getFirst() instanceof NBTTagString key)) {
+                return DataResult.error(() -> "Map key is not a string: " + entry.getFirst(), result);
+            }
+            if (entry.getSecond().getId() != 0) result.setTag(key.func_150285_a_(), entry.getSecond());
+        }
         return DataResult.success(result);
     }
 
