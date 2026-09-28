@@ -60,6 +60,9 @@ public enum Mixins implements IMixins {
     MULTI_RELEASE_JAR_FILTER(new MixinBuilder("Skip multi-release JAR entries in mod discovery")
             .addCommonMixins("fml.MixinJarDiscoverer").setPhase(Phase.EARLY).addExcludedMod(TargetMods.LWJGL3IFY)),
     PICK_BLOCK_TRAP(Side.CLIENT, "MixinMinecraft_PickBlockTrap"),
+    DEBUG_WORLD(new MixinBuilder("Disable random block ticks and mod world generators in the debug world")
+            .addCommonMixins("MixinWorldServer_DebugWorld", "MixinChunkProviderServer_DebugWorld")
+            .setPhase(Phase.EARLY)),
 
     ENHANCED_INFUSION_RECIPE(new MixinBuilder(
             "Allow Thaumcraft Infusion Recipes to transform items instead of consuming them in an EnhancedInfusionRecipe")

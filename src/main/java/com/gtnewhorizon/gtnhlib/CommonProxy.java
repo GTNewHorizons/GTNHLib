@@ -23,6 +23,7 @@ import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentNumber;
 import com.gtnewhorizon.gtnhlib.commands.TitleCommand;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
+import com.gtnewhorizon.gtnhlib.debugworld.DebugWorldType;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
@@ -116,6 +117,8 @@ public class CommonProxy {
         if (GTNHLibConfig.debugInventoryEvents) {
             MinecraftForge.EVENT_BUS.register(new InventoryEventDebugHandler());
         }
+
+        DebugWorldType.register();
     }
 
     public void postInit(FMLPostInitializationEvent event) {}
