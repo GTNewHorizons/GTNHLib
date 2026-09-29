@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.codec.minecraft;
 
+import static net.minecraftforge.common.util.Constants.NBT;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +25,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraftforge.common.util.Constants;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
@@ -42,20 +43,19 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public <U> U convertTo(DynamicOps<U> outOps, NBTBase input) {
         return switch (input.getId()) {
-            case Constants.NBT.TAG_END -> outOps.empty();
-            case Constants.NBT.TAG_BYTE -> outOps.createByte(((NBTBase.NBTPrimitive) input).func_150290_f());
-            case Constants.NBT.TAG_SHORT -> outOps.createShort(((NBTBase.NBTPrimitive) input).func_150289_e());
-            case Constants.NBT.TAG_INT -> outOps.createInt(((NBTBase.NBTPrimitive) input).func_150287_d());
-            case Constants.NBT.TAG_LONG -> outOps.createLong(((NBTBase.NBTPrimitive) input).func_150291_c());
-            case Constants.NBT.TAG_FLOAT -> outOps.createFloat(((NBTBase.NBTPrimitive) input).func_150288_h());
-            case Constants.NBT.TAG_DOUBLE -> outOps.createDouble(((NBTBase.NBTPrimitive) input).func_150286_g());
-            case Constants.NBT.TAG_BYTE_ARRAY -> outOps
+            case NBT.TAG_END -> outOps.empty();
+            case NBT.TAG_BYTE -> outOps.createByte(((NBTBase.NBTPrimitive) input).func_150290_f());
+            case NBT.TAG_SHORT -> outOps.createShort(((NBTBase.NBTPrimitive) input).func_150289_e());
+            case NBT.TAG_INT -> outOps.createInt(((NBTBase.NBTPrimitive) input).func_150287_d());
+            case NBT.TAG_LONG -> outOps.createLong(((NBTBase.NBTPrimitive) input).func_150291_c());
+            case NBT.TAG_FLOAT -> outOps.createFloat(((NBTBase.NBTPrimitive) input).func_150288_h());
+            case NBT.TAG_DOUBLE -> outOps.createDouble(((NBTBase.NBTPrimitive) input).func_150286_g());
+            case NBT.TAG_BYTE_ARRAY -> outOps
                     .createByteList(ByteBuffer.wrap(((NBTTagByteArray) input).func_150292_c()));
-            case Constants.NBT.TAG_STRING -> outOps.createString(((NBTTagString) input).func_150285_a_());
-            case Constants.NBT.TAG_LIST -> convertList(outOps, input);
-            case Constants.NBT.TAG_COMPOUND -> convertMap(outOps, input);
-            case Constants.NBT.TAG_INT_ARRAY -> outOps
-                    .createIntList(Arrays.stream(((NBTTagIntArray) input).func_150302_c()));
+            case NBT.TAG_STRING -> outOps.createString(((NBTTagString) input).func_150285_a_());
+            case NBT.TAG_LIST -> convertList(outOps, input);
+            case NBT.TAG_COMPOUND -> convertMap(outOps, input);
+            case NBT.TAG_INT_ARRAY -> outOps.createIntList(Arrays.stream(((NBTTagIntArray) input).func_150302_c()));
             default -> throw new IllegalStateException("Unknown NBT tag type: " + input.getId());
         };
     }
@@ -64,12 +64,12 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     public DataResult<Number> getNumberValue(NBTBase input) {
         if (input instanceof NBTBase.NBTPrimitive primitive) {
             return DataResult.success(switch (input.getId()) {
-                case Constants.NBT.TAG_BYTE -> primitive.func_150290_f();
-                case Constants.NBT.TAG_SHORT -> primitive.func_150289_e();
-                case Constants.NBT.TAG_INT -> primitive.func_150287_d();
-                case Constants.NBT.TAG_LONG -> primitive.func_150291_c();
-                case Constants.NBT.TAG_FLOAT -> primitive.func_150288_h();
-                case Constants.NBT.TAG_DOUBLE -> primitive.func_150286_g();
+                case NBT.TAG_BYTE -> primitive.func_150290_f();
+                case NBT.TAG_SHORT -> primitive.func_150289_e();
+                case NBT.TAG_INT -> primitive.func_150287_d();
+                case NBT.TAG_LONG -> primitive.func_150291_c();
+                case NBT.TAG_FLOAT -> primitive.func_150288_h();
+                case NBT.TAG_DOUBLE -> primitive.func_150286_g();
                 default -> throw new IllegalStateException("Unknown numeric NBT tag type: " + input.getId());
             });
         }
@@ -174,7 +174,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         int added = 0;
         for (NBTBase value : values) {
             if (value.getId() == 0) continue;
-            if (value.getId() != Constants.NBT.TAG_BYTE) {
+            if (value.getId() != NBT.TAG_BYTE) {
                 return DataResult
                         .error(() -> "Cannot add " + NBTBase.NBTTypes[value.getId()] + " to a byte array", list);
             }
@@ -193,7 +193,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         int added = 0;
         for (NBTBase value : values) {
             if (value.getId() == 0) continue;
-            if (value.getId() != Constants.NBT.TAG_INT) {
+            if (value.getId() != NBT.TAG_INT) {
                 return DataResult
                         .error(() -> "Cannot add " + NBTBase.NBTTypes[value.getId()] + " to an int array", list);
             }
