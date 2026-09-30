@@ -81,6 +81,11 @@ public enum Mixins implements IMixins {
                     "flowerpotcompat.MixinBOPFlower2",
                     "flowerpotcompat.MixinBOPPlant",
                     "flowerpotcompat.MixinBOPMushroom")
+            .addClientMixins(
+                    "flowerpotcompat.MixinBOPFlower_Render",
+                    "flowerpotcompat.MixinBOPFlower2_Render",
+                    "flowerpotcompat.MixinBOPPlant_Render",
+                    "flowerpotcompat.MixinBOPMushroom_Render")
             .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
     //
     ;
