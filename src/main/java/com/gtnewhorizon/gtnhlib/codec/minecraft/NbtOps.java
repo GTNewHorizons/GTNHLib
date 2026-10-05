@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -30,6 +32,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 
 public final class NbtOps implements DynamicOps<NBTBase> {
 
@@ -223,6 +226,16 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         return DataResult.error(() -> "Not a map: " + input);
     }
 
+    @Override
+    public DataResult<Consumer<BiConsumer<NBTBase, NBTBase>>> getMapEntries(NBTBase input) {
+        if (input instanceof NBTTagCompound compound) {
+            return DataResult.success(
+                    consumer -> streamMapEntries(compound)
+                            .forEach(entry -> consumer.accept(entry.getFirst(), entry.getSecond())));
+        }
+        return DataResult.error(() -> "Not a map: " + input);
+    }
+
     private Stream<Pair<NBTBase, NBTBase>> streamMapEntries(NBTTagCompound compound) {
         return compound.tagMap.entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
     }
@@ -360,6 +373,12 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public String toString() {
         return "NBT";
+    }
+
+    @Override
+    public RecordBuilder<NBTBase> mapBuilder() {
+        return new NbtRecordBuilder();
+    }
 
     private static NBTTagCompound shallowCopy(NBTTagCompound compound) {
         NBTTagCompound copy = new NBTTagCompound();
@@ -447,5 +466,32 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         }
     }
 
+    private final class NbtRecordBuilder extends RecordBuilder.AbstractStringBuilder<NBTBase, NBTTagCompound> {
+
+        private NbtRecordBuilder() {
+            super(NbtOps.this);
+        }
+
+        @Override
+        protected NBTTagCompound initBuilder() {
+            return new NBTTagCompound();
+        }
+
+        @Override
+        protected NBTTagCompound append(String key, NBTBase value, NBTTagCompound builder) {
+            put(builder, key, value);
+            return builder;
+        }
+
+        @Override
+        protected DataResult<NBTBase> build(NBTTagCompound builder, NBTBase prefix) {
+            if (prefix == null || prefix.getId() == 0) return DataResult.success(builder);
+            if (!(prefix instanceof NBTTagCompound compound)) {
+                return DataResult.error(() -> "mergeToMap called with not a map: " + prefix, prefix);
+            }
+            NBTTagCompound result = shallowCopy(compound);
+            result.tagMap.putAll(builder.tagMap);
+            return DataResult.success(result);
+        }
     }
 }
