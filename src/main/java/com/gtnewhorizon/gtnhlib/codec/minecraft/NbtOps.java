@@ -159,64 +159,10 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
     @Override
     public DataResult<NBTBase> mergeToList(NBTBase list, List<NBTBase> values) {
-        if (list instanceof NBTTagByteArray byteArray) return mergeToByteArray(byteArray, values);
-        if (list instanceof NBTTagIntArray intArray) return mergeToIntArray(intArray, values);
-        if (list.getId() == 0 || list instanceof NBTTagList) return mergeToTagList(list, values);
-        return DataResult.error(() -> "Not a list: " + list, list);
-    }
-
-    private DataResult<NBTBase> mergeToByteArray(NBTTagByteArray list, List<NBTBase> values) {
-        int added = 0;
-        for (NBTBase value : values) {
-            if (value.getId() == 0) continue;
-            if (value.getId() != NBT.TAG_BYTE) {
-                return DataResult
-                        .error(() -> "Cannot add " + NBTBase.NBTTypes[value.getId()] + " to a byte array", list);
-            }
-            added++;
-        }
-        byte[] original = list.func_150292_c();
-        byte[] result = Arrays.copyOf(original, original.length + added);
-        int index = original.length;
-        for (NBTBase value : values) {
-            if (value.getId() != 0) result[index++] = ((NBTBase.NBTPrimitive) value).func_150290_f();
-        }
-        return DataResult.success(new NBTTagByteArray(result));
-    }
-
-    private DataResult<NBTBase> mergeToIntArray(NBTTagIntArray list, List<NBTBase> values) {
-        int added = 0;
-        for (NBTBase value : values) {
-            if (value.getId() == 0) continue;
-            if (value.getId() != NBT.TAG_INT) {
-                return DataResult
-                        .error(() -> "Cannot add " + NBTBase.NBTTypes[value.getId()] + " to an int array", list);
-            }
-            added++;
-        }
-        int[] original = list.func_150302_c();
-        int[] result = Arrays.copyOf(original, original.length + added);
-        int index = original.length;
-        for (NBTBase value : values) {
-            if (value.getId() != 0) result[index++] = ((NBTBase.NBTPrimitive) value).func_150287_d();
-        }
-        return DataResult.success(new NBTTagIntArray(result));
-    }
-
-    private DataResult<NBTBase> mergeToTagList(NBTBase list, List<NBTBase> values) {
-        NBTTagList result = list instanceof NBTTagList ? (NBTTagList) list.copy() : new NBTTagList();
-        for (NBTBase value : values) {
-            if (value.getId() == 0) continue;
-            if (result.tagCount() > 0 && result.func_150303_d() != value.getId()) {
-                return DataResult.error(
-                        () -> "Cannot add " + NBTBase.NBTTypes[value.getId()]
-                                + " to a list of "
-                                + NBTBase.NBTTypes[result.func_150303_d()],
-                        list);
-            }
-            result.appendTag(value);
-        }
-        return DataResult.success(result);
+        ListCollector collector = createCollector(list);
+        if (collector == null) return DataResult.error(() -> "mergeToList called with not a list: " + list, list);
+        values.forEach(collector::accept);
+        return DataResult.success(collector.result());
     }
 
     @Override
@@ -424,6 +370,53 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
     private static NBTBase tryUnwrap(NBTTagCompound compound) {
         return isWrapper(compound) ? compound.getTag("") : compound;
+    }
+
+    private @Nullable ListCollector createCollector(NBTBase tag) {
+        if (tag.getId() == 0) return new ListCollector(0);
+        Stream<NBTBase> elements = elements(tag);
+        if (elements == null) return null;
+        ListCollector collector = new ListCollector(
+                tag instanceof NBTTagByteArray ? NBT.TAG_BYTE : tag instanceof NBTTagIntArray ? NBT.TAG_INT : 0);
+        elements.forEach(collector.tags::add);
+        if (collector.tags.isEmpty()) collector.arrayType = 0;
+        return collector;
+    }
+
+    // Stays a byte/int array until a different tag type is added, then becomes a generic list for good
+    private static final class ListCollector {
+
+        private final List<NBTBase> tags = new ArrayList<>();
+        private int arrayType;
+
+        private ListCollector(int arrayType) {
+            this.arrayType = arrayType;
+        }
+
+        private void accept(NBTBase tag) {
+            if (tag.getId() != arrayType) arrayType = 0;
+            tags.add(tag);
+        }
+
+        private NBTBase result() {
+            return switch (arrayType) {
+                case NBT.TAG_BYTE -> {
+                    byte[] bytes = new byte[tags.size()];
+                    for (int i = 0; i < bytes.length; i++) bytes[i] = primitive(i).func_150290_f();
+                    yield new NBTTagByteArray(bytes);
+                }
+                case NBT.TAG_INT -> {
+                    int[] ints = new int[tags.size()];
+                    for (int i = 0; i < ints.length; i++) ints[i] = primitive(i).func_150287_d();
+                    yield new NBTTagIntArray(ints);
+                }
+                default -> toTagList(tags);
+            };
+        }
+
+        private NBTBase.NBTPrimitive primitive(int index) {
+            return (NBTBase.NBTPrimitive) tags.get(index);
+        }
     }
 
     }
