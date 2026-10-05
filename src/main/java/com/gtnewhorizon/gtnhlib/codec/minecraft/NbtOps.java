@@ -1,0 +1,485 @@
+package com.gtnewhorizon.gtnhlib.codec.minecraft;
+
+import static net.minecraftforge.common.util.Constants.NBT;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
+import net.minecraft.nbt.NBTTagByteArray;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagEnd;
+import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagIntArray;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagLong;
+import net.minecraft.nbt.NBTTagShort;
+import net.minecraft.nbt.NBTTagString;
+
+import org.jetbrains.annotations.Nullable;
+
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
+
+public final class NbtOps implements DynamicOps<NBTBase> {
+
+    public static final NbtOps INSTANCE = new NbtOps();
+
+    private static final NBTBase EMPTY = new NBTTagEnd();
+
+    @Override
+    public NBTBase empty() {
+        return EMPTY;
+    }
+
+    @Override
+    public NBTBase emptyList() {
+        return new NBTTagList();
+    }
+
+    @Override
+    public NBTBase emptyMap() {
+        return new NBTTagCompound();
+    }
+
+    @Override
+    public <U> U convertTo(DynamicOps<U> outOps, NBTBase input) {
+        return switch (input.getId()) {
+            case NBT.TAG_END -> outOps.empty();
+            case NBT.TAG_BYTE -> outOps.createByte(((NBTBase.NBTPrimitive) input).func_150290_f());
+            case NBT.TAG_SHORT -> outOps.createShort(((NBTBase.NBTPrimitive) input).func_150289_e());
+            case NBT.TAG_INT -> outOps.createInt(((NBTBase.NBTPrimitive) input).func_150287_d());
+            case NBT.TAG_LONG -> outOps.createLong(((NBTBase.NBTPrimitive) input).func_150291_c());
+            case NBT.TAG_FLOAT -> outOps.createFloat(((NBTBase.NBTPrimitive) input).func_150288_h());
+            case NBT.TAG_DOUBLE -> outOps.createDouble(((NBTBase.NBTPrimitive) input).func_150286_g());
+            case NBT.TAG_BYTE_ARRAY -> outOps
+                    .createByteList(ByteBuffer.wrap(((NBTTagByteArray) input).func_150292_c()));
+            case NBT.TAG_STRING -> outOps.createString(((NBTTagString) input).func_150285_a_());
+            case NBT.TAG_LIST -> convertList(outOps, input);
+            case NBT.TAG_COMPOUND -> convertMap(outOps, input);
+            case NBT.TAG_INT_ARRAY -> outOps.createIntList(Arrays.stream(((NBTTagIntArray) input).func_150302_c()));
+            default -> throw new IllegalStateException("Unknown NBT tag type: " + input.getId());
+        };
+    }
+
+    @Override
+    public DataResult<Number> getNumberValue(NBTBase input) {
+        if (input instanceof NBTBase.NBTPrimitive primitive) {
+            return DataResult.success(switch (input.getId()) {
+                case NBT.TAG_BYTE -> primitive.func_150290_f();
+                case NBT.TAG_SHORT -> primitive.func_150289_e();
+                case NBT.TAG_INT -> primitive.func_150287_d();
+                case NBT.TAG_LONG -> primitive.func_150291_c();
+                case NBT.TAG_FLOAT -> primitive.func_150288_h();
+                case NBT.TAG_DOUBLE -> primitive.func_150286_g();
+                default -> throw new IllegalStateException("Unknown numeric NBT tag type: " + input.getId());
+            });
+        }
+        return DataResult.error(() -> "Not a number");
+    }
+
+    @Override
+    public NBTBase createNumeric(Number value) {
+        if (value instanceof Byte) return createByte(value.byteValue());
+        if (value instanceof Short) return createShort(value.shortValue());
+        if (value instanceof Integer) return createInt(value.intValue());
+        if (value instanceof Long) return createLong(value.longValue());
+        if (value instanceof Float) return createFloat(value.floatValue());
+        return createDouble(value.doubleValue());
+    }
+
+    @Override
+    public NBTBase createByte(byte value) {
+        return new NBTTagByte(value);
+    }
+
+    @Override
+    public NBTBase createShort(short value) {
+        return new NBTTagShort(value);
+    }
+
+    @Override
+    public NBTBase createInt(int value) {
+        return new NBTTagInt(value);
+    }
+
+    @Override
+    public NBTBase createLong(long value) {
+        return new NBTTagLong(value);
+    }
+
+    @Override
+    public NBTBase createFloat(float value) {
+        return new NBTTagFloat(value);
+    }
+
+    @Override
+    public NBTBase createDouble(double value) {
+        return new NBTTagDouble(value);
+    }
+
+    @Override
+    public DataResult<Boolean> getBooleanValue(NBTBase input) {
+        if (input instanceof NBTTagByte tag) {
+            byte value = tag.func_150290_f();
+            if (value == 0) return DataResult.success(false);
+            if (value == 1) return DataResult.success(true);
+        }
+        return DataResult.error(() -> "Not a boolean: " + input);
+    }
+
+    @Override
+    public NBTBase createBoolean(boolean value) {
+        return createByte((byte) (value ? 1 : 0));
+    }
+
+    @Override
+    public DataResult<String> getStringValue(NBTBase input) {
+        if (input instanceof NBTTagString string) return DataResult.success(string.func_150285_a_());
+        return DataResult.error(() -> "Not a string");
+    }
+
+    @Override
+    public NBTBase createString(String value) {
+        return new NBTTagString(value);
+    }
+
+    @Override
+    public DataResult<NBTBase> mergeToList(NBTBase list, NBTBase value) {
+        return mergeToList(list, Collections.singletonList(value));
+    }
+
+    @Override
+    public DataResult<NBTBase> mergeToList(NBTBase list, List<NBTBase> values) {
+        ListCollector collector = createCollector(list);
+        if (collector == null) return DataResult.error(() -> "mergeToList called with not a list: " + list, list);
+        values.forEach(collector::accept);
+        return DataResult.success(collector.result());
+    }
+
+    @Override
+    public DataResult<NBTBase> mergeToMap(NBTBase map, NBTBase key, NBTBase value) {
+        if (!(map instanceof NBTTagCompound) && map.getId() != 0) {
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
+        }
+        if (!(key instanceof NBTTagString stringKey)) {
+            return DataResult.error(() -> "key is not a string: " + key, map);
+        }
+        NBTTagCompound output = map instanceof NBTTagCompound compound ? shallowCopy(compound) : new NBTTagCompound();
+        put(output, stringKey.func_150285_a_(), value);
+        return DataResult.success(output);
+    }
+
+    @Override
+    public DataResult<NBTBase> mergeToMap(NBTBase map, MapLike<NBTBase> values) {
+        if (!(map instanceof NBTTagCompound) && map.getId() != 0) {
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
+        }
+        Iterator<Pair<NBTBase, NBTBase>> entries = values.entries().iterator();
+        if (!entries.hasNext()) return DataResult.success(map.getId() == 0 ? emptyMap() : map);
+
+        NBTTagCompound output = map instanceof NBTTagCompound compound ? shallowCopy(compound) : new NBTTagCompound();
+        List<NBTBase> missed = new ArrayList<>();
+        entries.forEachRemaining(entry -> {
+            if (entry.getFirst() instanceof NBTTagString key) put(output, key.func_150285_a_(), entry.getSecond());
+            else missed.add(entry.getFirst());
+        });
+        return missed.isEmpty() ? DataResult.success(output)
+                : DataResult.error(() -> "some keys are not strings: " + missed, output);
+    }
+
+    @Override
+    public DataResult<NBTBase> mergeToMap(NBTBase map, Map<NBTBase, NBTBase> values) {
+        if (!(map instanceof NBTTagCompound) && map.getId() != 0) {
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
+        }
+        if (values.isEmpty()) return DataResult.success(map.getId() == 0 ? emptyMap() : map);
+
+        NBTTagCompound output = map instanceof NBTTagCompound compound ? shallowCopy(compound) : new NBTTagCompound();
+        List<NBTBase> missed = new ArrayList<>();
+        for (Map.Entry<NBTBase, NBTBase> entry : values.entrySet()) {
+            if (entry.getKey() instanceof NBTTagString key) put(output, key.func_150285_a_(), entry.getValue());
+            else missed.add(entry.getKey());
+        }
+        return missed.isEmpty() ? DataResult.success(output)
+                : DataResult.error(() -> "some keys are not strings: " + missed, output);
+    }
+
+    @Override
+    public DataResult<Stream<Pair<NBTBase, NBTBase>>> getMapValues(NBTBase input) {
+        if (input instanceof NBTTagCompound compound) {
+            return DataResult.success(streamMapEntries(compound));
+        }
+        return DataResult.error(() -> "Not a map: " + input);
+    }
+
+    @Override
+    public DataResult<Consumer<BiConsumer<NBTBase, NBTBase>>> getMapEntries(NBTBase input) {
+        if (input instanceof NBTTagCompound compound) {
+            return DataResult.success(
+                    consumer -> streamMapEntries(compound)
+                            .forEach(entry -> consumer.accept(entry.getFirst(), entry.getSecond())));
+        }
+        return DataResult.error(() -> "Not a map: " + input);
+    }
+
+    private Stream<Pair<NBTBase, NBTBase>> streamMapEntries(NBTTagCompound compound) {
+        return compound.tagMap.entrySet().stream()
+                .map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
+    }
+
+    @Override
+    public DataResult<MapLike<NBTBase>> getMap(NBTBase input) {
+        if (input instanceof NBTTagCompound compound) {
+            return DataResult.success(new MapLike<>() {
+
+                @Override
+                public NBTBase get(NBTBase key) {
+                    if (key instanceof NBTTagString stringKey) return get(stringKey.func_150285_a_());
+                    throw new UnsupportedOperationException("Cannot get map entry with non-string key: " + key);
+                }
+
+                @Override
+                public NBTBase get(String key) {
+                    return compound.getTag(key);
+                }
+
+                @Override
+                public Stream<Pair<NBTBase, NBTBase>> entries() {
+                    return streamMapEntries(compound);
+                }
+
+                @Override
+                public String toString() {
+                    return "MapLike[" + compound + "]";
+                }
+            });
+        }
+        return DataResult.error(() -> "Not a map: " + input);
+    }
+
+    @Override
+    public NBTBase createMap(Stream<Pair<NBTBase, NBTBase>> input) {
+        NBTTagCompound result = new NBTTagCompound();
+        input.forEach(entry -> {
+            if (!(entry.getFirst() instanceof NBTTagString key)) {
+                throw new UnsupportedOperationException("Cannot create map with non-string key: " + entry.getFirst());
+            }
+            put(result, key.func_150285_a_(), entry.getSecond());
+        });
+        return result;
+    }
+
+    @Override
+    public DataResult<Stream<NBTBase>> getStream(NBTBase input) {
+        Stream<NBTBase> elements = elements(input);
+        return elements != null ? DataResult.success(elements) : DataResult.error(() -> "Not a list");
+    }
+
+    @Override
+    public DataResult<Consumer<Consumer<NBTBase>>> getList(NBTBase input) {
+        if (elements(input) == null) return DataResult.error(() -> "Not a list: " + input);
+        return DataResult.success(consumer -> elements(input).forEach(consumer));
+    }
+
+    private @Nullable Stream<NBTBase> elements(NBTBase input) {
+        if (input instanceof NBTTagList list) {
+            Stream<NBTBase> tags = list.tagList.stream();
+            return list.func_150303_d() == NBT.TAG_COMPOUND ? tags.map(tag -> tryUnwrap((NBTTagCompound) tag)) : tags;
+        }
+        if (input instanceof NBTTagByteArray array) {
+            byte[] bytes = array.func_150292_c();
+            return IntStream.range(0, bytes.length).mapToObj(i -> createByte(bytes[i]));
+        }
+        if (input instanceof NBTTagIntArray array) {
+            return Arrays.stream(array.func_150302_c()).mapToObj(this::createInt);
+        }
+        return null;
+    }
+
+    @Override
+    public DataResult<ByteBuffer> getByteBuffer(NBTBase input) {
+        if (input instanceof NBTTagByteArray array) {
+            byte[] bytes = array.func_150292_c();
+            return DataResult.success(ByteBuffer.wrap(bytes.clone()));
+        }
+        return DynamicOps.super.getByteBuffer(input);
+    }
+
+    @Override
+    public NBTBase createByteList(ByteBuffer input) {
+        ByteBuffer copy = input.duplicate();
+        byte[] bytes = new byte[copy.remaining()];
+        copy.get(bytes);
+        return new NBTTagByteArray(bytes);
+    }
+
+    @Override
+    public DataResult<IntStream> getIntStream(NBTBase input) {
+        if (input instanceof NBTTagIntArray array) {
+            int[] values = array.func_150302_c();
+            return DataResult.success(Arrays.stream(values.clone()));
+        }
+        return DynamicOps.super.getIntStream(input);
+    }
+
+    @Override
+    public NBTBase createIntList(IntStream input) {
+        return new NBTTagIntArray(input.toArray());
+    }
+
+    @Override
+    public NBTBase createList(Stream<NBTBase> input) {
+        List<NBTBase> tags = new ArrayList<>();
+        input.forEach(tags::add);
+        return toTagList(tags);
+    }
+
+    @Override
+    public NBTBase remove(NBTBase input, String key) {
+        if (!(input instanceof NBTTagCompound compound)) return input;
+        NBTTagCompound result = shallowCopy(compound);
+        result.removeTag(key);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "NBT";
+    }
+
+    @Override
+    public RecordBuilder<NBTBase> mapBuilder() {
+        return new NbtRecordBuilder();
+    }
+
+    private static NBTTagCompound shallowCopy(NBTTagCompound compound) {
+        NBTTagCompound copy = new NBTTagCompound();
+        copy.tagMap.putAll(compound.tagMap);
+        return copy;
+    }
+
+    private static void put(NBTTagCompound compound, String key, NBTBase value) {
+        if (value.getId() != 0) compound.setTag(key, value);
+    }
+
+    private static NBTTagList toTagList(List<NBTBase> tags) {
+        NBTTagList list = new NBTTagList();
+        int type = 0;
+        for (NBTBase tag : tags) {
+            if (tag.getId() == 0) continue;
+            if (type == 0) type = tag.getId();
+            else if (type != tag.getId()) type = NBT.TAG_COMPOUND;
+        }
+        for (NBTBase tag : tags) {
+            if (tag.getId() != 0) list.appendTag(type == NBT.TAG_COMPOUND ? wrapIfNeeded(tag) : tag);
+        }
+        return list;
+    }
+
+    private static boolean isWrapper(NBTTagCompound compound) {
+        return compound.tagMap.size() == 1 && compound.hasKey("");
+    }
+
+    private static NBTBase wrapIfNeeded(NBTBase tag) {
+        if (tag instanceof NBTTagCompound compound && !isWrapper(compound)) return compound;
+        NBTTagCompound wrapper = new NBTTagCompound();
+        wrapper.setTag("", tag);
+        return wrapper;
+    }
+
+    private static NBTBase tryUnwrap(NBTTagCompound compound) {
+        return isWrapper(compound) ? compound.getTag("") : compound;
+    }
+
+    private @Nullable ListCollector createCollector(NBTBase tag) {
+        if (tag.getId() == 0) return new ListCollector(0);
+        Stream<NBTBase> elements = elements(tag);
+        if (elements == null) return null;
+        ListCollector collector = new ListCollector(
+                tag instanceof NBTTagByteArray ? NBT.TAG_BYTE : tag instanceof NBTTagIntArray ? NBT.TAG_INT : 0);
+        elements.forEach(collector.tags::add);
+        if (collector.tags.isEmpty()) collector.arrayType = 0;
+        return collector;
+    }
+
+    // Stays a byte/int array until a different tag type is added, then becomes a generic list for good
+    private static final class ListCollector {
+
+        private final List<NBTBase> tags = new ArrayList<>();
+        private int arrayType;
+
+        private ListCollector(int arrayType) {
+            this.arrayType = arrayType;
+        }
+
+        private void accept(NBTBase tag) {
+            if (tag.getId() != arrayType) arrayType = 0;
+            tags.add(tag);
+        }
+
+        private NBTBase result() {
+            return switch (arrayType) {
+                case NBT.TAG_BYTE -> {
+                    byte[] bytes = new byte[tags.size()];
+                    for (int i = 0; i < bytes.length; i++) bytes[i] = primitive(i).func_150290_f();
+                    yield new NBTTagByteArray(bytes);
+                }
+                case NBT.TAG_INT -> {
+                    int[] ints = new int[tags.size()];
+                    for (int i = 0; i < ints.length; i++) ints[i] = primitive(i).func_150287_d();
+                    yield new NBTTagIntArray(ints);
+                }
+                default -> toTagList(tags);
+            };
+        }
+
+        private NBTBase.NBTPrimitive primitive(int index) {
+            return (NBTBase.NBTPrimitive) tags.get(index);
+        }
+    }
+
+    private final class NbtRecordBuilder extends RecordBuilder.AbstractStringBuilder<NBTBase, NBTTagCompound> {
+
+        private NbtRecordBuilder() {
+            super(NbtOps.this);
+        }
+
+        @Override
+        protected NBTTagCompound initBuilder() {
+            return new NBTTagCompound();
+        }
+
+        @Override
+        protected NBTTagCompound append(String key, NBTBase value, NBTTagCompound builder) {
+            put(builder, key, value);
+            return builder;
+        }
+
+        @Override
+        protected DataResult<NBTBase> build(NBTTagCompound builder, NBTBase prefix) {
+            if (prefix == null || prefix.getId() == 0) return DataResult.success(builder);
+            if (!(prefix instanceof NBTTagCompound compound)) {
+                return DataResult.error(() -> "mergeToMap called with not a map: " + prefix, prefix);
+            }
+            NBTTagCompound result = shallowCopy(compound);
+            result.tagMap.putAll(builder.tagMap);
+            return DataResult.success(result);
+        }
+    }
+}
