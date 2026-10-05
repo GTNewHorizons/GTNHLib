@@ -95,22 +95,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         if (value instanceof Integer) return createInt(value.intValue());
         if (value instanceof Long) return createLong(value.longValue());
         if (value instanceof Float) return createFloat(value.floatValue());
-        if (value instanceof Double) return createDouble(value.doubleValue());
-        return inferNumeric(value);
-    }
-
-    // Gson hands over a LazilyParsedNumber, so a whole number has to be told apart from a fraction by its text
-    private NBTBase inferNumeric(Number value) {
-        String text = value.toString();
-        if (text.indexOf('.') >= 0 || text.indexOf('e') >= 0 || text.indexOf('E') >= 0) {
-            return createDouble(value.doubleValue());
-        }
-        try {
-            long whole = Long.parseLong(text);
-            return whole == (int) whole ? createInt((int) whole) : createLong(whole);
-        } catch (NumberFormatException tooBig) {
-            return createDouble(value.doubleValue());
-        }
+        return createDouble(value.doubleValue());
     }
 
     @Override
