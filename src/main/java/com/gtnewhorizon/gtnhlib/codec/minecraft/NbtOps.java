@@ -7,8 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -261,10 +259,8 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         return DataResult.error(() -> "Not a map: " + input);
     }
 
-    @SuppressWarnings("unchecked")
     private Stream<Pair<NBTBase, NBTBase>> streamMapEntries(NBTTagCompound compound) {
-        Map<String, NBTBase> tags = (Map<String, NBTBase>) compound.tagMap;
-        return tags.entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
+        return compound.tagMap.entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
     }
 
     @Override
@@ -303,25 +299,34 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public DataResult<Stream<NBTBase>> getStream(NBTBase input) {
-        if (input instanceof NBTTagList list) {
-            return DataResult.success(list.tagList.stream());
-        }
-        if (input instanceof NBTTagByteArray array) {
-            byte[] bytes = array.func_150292_c().clone();
-            return DataResult.success(streamArray(bytes.length, i -> createByte(bytes[i])));
-        }
-        if (input instanceof NBTTagIntArray array) {
-            int[] values = array.func_150302_c().clone();
-            return DataResult.success(streamArray(values.length, i -> createInt(values[i])));
-        }
-        return DataResult.error(() -> "Not a list: " + input);
+        Stream<NBTBase> elements = elements(input);
+        return elements != null ? DataResult.success(elements) : DataResult.error(() -> "Not a list");
     }
 
-    private Stream<NBTBase> streamArray(int length, IntFunction<NBTBase> tagAt) {
-        return IntStream.range(0, length).mapToObj(tagAt);
+    @Override
+    public DataResult<Consumer<Consumer<NBTBase>>> getList(NBTBase input) {
+        if (elements(input) == null) return DataResult.error(() -> "Not a list: " + input);
+        return DataResult.success(consumer -> elements(input).forEach(consumer));
+    }
+
+    private @Nullable Stream<NBTBase> elements(NBTBase input) {
+        if (input instanceof NBTTagList list) {
+            return DataResult.success(list.tagList.stream());
+            Stream<NBTBase> tags = list.tagList.stream();
+            return list.func_150303_d() == NBT.TAG_COMPOUND ? tags.map(tag -> tryUnwrap((NBTTagCompound) tag)) : tags;
+        }
+        if (input instanceof NBTTagByteArray array) {
+            byte[] bytes = array.func_150292_c();
+            return DataResult.success(IntStream.range(0, bytes.length).mapToObj(i -> createByte(bytes[i])));
+            return IntStream.range(0, bytes.length).mapToObj(i -> createByte(bytes[i]));
+        }
+        if (input instanceof NBTTagIntArray array) {
+            int[] values = array.func_150302_c();
+            return DataResult.success(Arrays.stream(values).mapToObj(this::createInt));
+        }
+        return DataResult.error(() -> "Not a list: " + input);
     }
 
     @Override
@@ -337,6 +342,9 @@ public final class NbtOps implements DynamicOps<NBTBase> {
             result.appendTag(tag);
         });
         return result;
+            return Arrays.stream(array.func_150302_c()).mapToObj(this::createInt);
+        }
+        return null;
     }
 
     @Override
@@ -371,6 +379,13 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     }
 
     @Override
+    public NBTBase createList(Stream<NBTBase> input) {
+        List<NBTBase> tags = new ArrayList<>();
+        input.forEach(tags::add);
+        return toTagList(tags);
+    }
+
+    @Override
     public NBTBase remove(NBTBase input, String key) {
         if (!(input instanceof NBTTagCompound compound)) return input;
         NBTTagCompound result = (NBTTagCompound) compound.copy();
@@ -381,5 +396,35 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public String toString() {
         return "NBT";
+
+    private static NBTTagList toTagList(List<NBTBase> tags) {
+        NBTTagList list = new NBTTagList();
+        int type = 0;
+        for (NBTBase tag : tags) {
+            if (tag.getId() == 0) continue;
+            if (type == 0) type = tag.getId();
+            else if (type != tag.getId()) type = NBT.TAG_COMPOUND;
+        }
+        for (NBTBase tag : tags) {
+            if (tag.getId() != 0) list.appendTag(type == NBT.TAG_COMPOUND ? wrapIfNeeded(tag) : tag);
+        }
+        return list;
+    }
+
+    private static boolean isWrapper(NBTTagCompound compound) {
+        return compound.tagMap.size() == 1 && compound.hasKey("");
+    }
+
+    private static NBTBase wrapIfNeeded(NBTBase tag) {
+        if (tag instanceof NBTTagCompound compound && !isWrapper(compound)) return compound;
+        NBTTagCompound wrapper = new NBTTagCompound();
+        wrapper.setTag("", tag);
+        return wrapper;
+    }
+
+    private static NBTBase tryUnwrap(NBTTagCompound compound) {
+        return isWrapper(compound) ? compound.getTag("") : compound;
+    }
+
     }
 }
