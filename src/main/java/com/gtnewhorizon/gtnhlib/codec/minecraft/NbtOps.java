@@ -35,9 +35,21 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
     public static final NbtOps INSTANCE = new NbtOps();
 
+    private static final NBTBase EMPTY = new NBTTagEnd();
+
     @Override
     public NBTBase empty() {
-        return new NBTTagEnd();
+        return EMPTY;
+    }
+
+    @Override
+    public NBTBase emptyList() {
+        return new NBTTagList();
+    }
+
+    @Override
+    public NBTBase emptyMap() {
+        return new NBTTagCompound();
     }
 
     @Override
