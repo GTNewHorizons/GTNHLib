@@ -14,7 +14,7 @@ import com.gtnewhorizon.gtnhlib.api.transformation.ITransformation;
 import com.gtnewhorizon.gtnhlib.api.transformation.TransformationRegistry;
 import com.gtnewhorizon.gtnhlib.mixins.early.AccessorEntity;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
-import com.gtnewhorizon.gtnhlib.network.TransformationPacket;
+import com.gtnewhorizon.gtnhlib.network.transformation.TransformationAnnouncePacket;
 import com.gtnewhorizon.gtnhlib.network.base.IPacket;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -145,7 +145,7 @@ public class TransformationProperty implements IExtendedEntityProperties {
         if (!player.worldObj.isRemote) {
             if (player.getExtendedProperties(BASE_KEY) instanceof final TransformationProperty prop) {
                 final String id = prop.getTransformation() != null ? prop.getTransformation().getId() : "";
-                final IPacket packet = new TransformationPacket(player.getEntityId(), id);
+                final IPacket packet = new TransformationAnnouncePacket(player.getEntityId(), id);
 
                 NetworkHandler.instance.sendToAllAround(packet, new NetworkRegistry.TargetPoint(
                     player.dimension,

@@ -11,7 +11,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import com.gtnewhorizon.gtnhlib.api.transformation.ITransformation;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
-import com.gtnewhorizon.gtnhlib.network.TransformationPacket;
+import com.gtnewhorizon.gtnhlib.network.transformation.TransformationAnnouncePacket;
 import com.gtnewhorizon.gtnhlib.transformation.TransformationProperty;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -51,7 +51,7 @@ public class TransformationEventHandler {
         if (!event.world.isRemote && event.entity instanceof final EntityPlayerMP player) {
             final ITransformation tf = TransformationProperty.getTransformation(player);
             if (tf != null) {
-                NetworkHandler.instance.sendTo(new TransformationPacket(player, tf), player);
+                NetworkHandler.instance.sendTo(new TransformationAnnouncePacket(player, tf), player);
             }
         }
     }
@@ -133,7 +133,7 @@ public class TransformationEventHandler {
             final ITransformation tf = TransformationProperty.getTransformation(targetPlayer);
             if (tf != null) {
                 NetworkHandler.instance.sendTo(
-                    new TransformationPacket(targetPlayer, tf),
+                    new TransformationAnnouncePacket(targetPlayer, tf),
                     (EntityPlayerMP) event.entityPlayer
                 );
             }

@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.network;
+package com.gtnewhorizon.gtnhlib.network.transformation;
 
 import java.io.IOException;
 
@@ -15,19 +15,19 @@ import com.gtnewhorizon.gtnhlib.transformation.TransformationProperty;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 
-public class TransformationPacket implements IPacket {
+public class TransformationAnnouncePacket implements IPacket {
 
     private int entityId;
     private String transformId;
 
-    public TransformationPacket() {}
+    public TransformationAnnouncePacket() {}
 
-    public TransformationPacket(final int entityId, final String transformId) {
+    public TransformationAnnouncePacket(final int entityId, final String transformId) {
         this.entityId = entityId;
         this.transformId = transformId;
     }
 
-    public TransformationPacket(final EntityPlayer player, final ITransformation tf) {
+    public TransformationAnnouncePacket(final EntityPlayer player, final ITransformation tf) {
         this(player.getEntityId(), tf.getId());
     }
 
