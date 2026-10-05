@@ -28,6 +28,8 @@ import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -88,7 +90,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
                 default -> throw new IllegalStateException("Unknown numeric NBT tag type: " + input.getId());
             });
         }
-        return DataResult.error(() -> "Not a number: " + input);
+        return DataResult.error(() -> "Not a number");
     }
 
     @Override
@@ -149,7 +151,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public DataResult<String> getStringValue(NBTBase input) {
         if (input instanceof NBTTagString string) return DataResult.success(string.func_150285_a_());
-        return DataResult.error(() -> "Not a string: " + input);
+        return DataResult.error(() -> "Not a string");
     }
 
     @Override
@@ -237,7 +239,8 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     }
 
     private Stream<Pair<NBTBase, NBTBase>> streamMapEntries(NBTTagCompound compound) {
-        return compound.tagMap.entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
+        return compound.tagMap.entrySet().stream()
+                .map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
     }
 
     @Override
@@ -247,7 +250,8 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
                 @Override
                 public NBTBase get(NBTBase key) {
-                    return key instanceof NBTTagString stringKey ? get(stringKey.func_150285_a_()) : null;
+                    if (key instanceof NBTTagString stringKey) return get(stringKey.func_150285_a_());
+                    throw new UnsupportedOperationException("Cannot get map entry with non-string key: " + key);
                 }
 
                 @Override
@@ -259,6 +263,11 @@ public final class NbtOps implements DynamicOps<NBTBase> {
                 public Stream<Pair<NBTBase, NBTBase>> entries() {
                     return streamMapEntries(compound);
                 }
+
+                @Override
+                public String toString() {
+                    return "MapLike[" + compound + "]";
+                }
             });
         }
         return DataResult.error(() -> "Not a map: " + input);
@@ -269,9 +278,9 @@ public final class NbtOps implements DynamicOps<NBTBase> {
         NBTTagCompound result = new NBTTagCompound();
         input.forEach(entry -> {
             if (!(entry.getFirst() instanceof NBTTagString key)) {
-                throw new IllegalArgumentException("Map key is not a string: " + entry.getFirst());
+                throw new UnsupportedOperationException("Cannot create map with non-string key: " + entry.getFirst());
             }
-            if (entry.getSecond().getId() != 0) result.setTag(key.func_150285_a_(), entry.getSecond());
+            put(result, key.func_150285_a_(), entry.getSecond());
         });
         return result;
     }
@@ -290,35 +299,14 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
     private @Nullable Stream<NBTBase> elements(NBTBase input) {
         if (input instanceof NBTTagList list) {
-            return DataResult.success(list.tagList.stream());
             Stream<NBTBase> tags = list.tagList.stream();
             return list.func_150303_d() == NBT.TAG_COMPOUND ? tags.map(tag -> tryUnwrap((NBTTagCompound) tag)) : tags;
         }
         if (input instanceof NBTTagByteArray array) {
             byte[] bytes = array.func_150292_c();
-            return DataResult.success(IntStream.range(0, bytes.length).mapToObj(i -> createByte(bytes[i])));
             return IntStream.range(0, bytes.length).mapToObj(i -> createByte(bytes[i]));
         }
         if (input instanceof NBTTagIntArray array) {
-            int[] values = array.func_150302_c();
-            return DataResult.success(Arrays.stream(values).mapToObj(this::createInt));
-        }
-        return DataResult.error(() -> "Not a list: " + input);
-    }
-
-    @Override
-    public NBTBase createList(Stream<NBTBase> input) {
-        NBTTagList result = new NBTTagList();
-        input.filter(tag -> tag.getId() != 0).forEach(tag -> {
-            if (result.tagCount() > 0 && result.func_150303_d() != tag.getId()) {
-                throw new IllegalArgumentException(
-                        "Cannot add " + NBTBase.NBTTypes[tag.getId()]
-                                + " to a list of "
-                                + NBTBase.NBTTypes[result.func_150303_d()]);
-            }
-            result.appendTag(tag);
-        });
-        return result;
             return Arrays.stream(array.func_150302_c()).mapToObj(this::createInt);
         }
         return null;
