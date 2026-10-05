@@ -3,10 +3,12 @@ package com.gtnewhorizon.gtnhlib.codec.minecraft;
 import static net.minecraftforge.common.util.Constants.NBT;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -167,34 +169,50 @@ public final class NbtOps implements DynamicOps<NBTBase> {
 
     @Override
     public DataResult<NBTBase> mergeToMap(NBTBase map, NBTBase key, NBTBase value) {
-        if (map.getId() != 0 && !(map instanceof NBTTagCompound)) {
-            return DataResult.error(() -> "Not a map: " + map, map);
+        if (!(map instanceof NBTTagCompound) && map.getId() != 0) {
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
         }
         if (!(key instanceof NBTTagString stringKey)) {
-            return DataResult.error(() -> "Map key is not a string: " + key, map);
+            return DataResult.error(() -> "key is not a string: " + key, map);
         }
-
-        NBTTagCompound result = map instanceof NBTTagCompound ? (NBTTagCompound) map.copy() : new NBTTagCompound();
-        if (value.getId() != 0) result.setTag(stringKey.func_150285_a_(), value);
-        return DataResult.success(result);
+        NBTTagCompound output = map instanceof NBTTagCompound compound ? shallowCopy(compound) : new NBTTagCompound();
+        put(output, stringKey.func_150285_a_(), value);
+        return DataResult.success(output);
     }
 
     @Override
     public DataResult<NBTBase> mergeToMap(NBTBase map, MapLike<NBTBase> values) {
-        if (map.getId() != 0 && !(map instanceof NBTTagCompound)) {
-            return DataResult.error(() -> "Not a map: " + map, map);
+        if (!(map instanceof NBTTagCompound) && map.getId() != 0) {
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
         }
-
-        NBTTagCompound result = map instanceof NBTTagCompound ? (NBTTagCompound) map.copy() : new NBTTagCompound();
         Iterator<Pair<NBTBase, NBTBase>> entries = values.entries().iterator();
-        while (entries.hasNext()) {
-            Pair<NBTBase, NBTBase> entry = entries.next();
-            if (!(entry.getFirst() instanceof NBTTagString key)) {
-                return DataResult.error(() -> "Map key is not a string: " + entry.getFirst(), result);
-            }
-            if (entry.getSecond().getId() != 0) result.setTag(key.func_150285_a_(), entry.getSecond());
+        if (!entries.hasNext()) return DataResult.success(map.getId() == 0 ? emptyMap() : map);
+
+        NBTTagCompound output = map instanceof NBTTagCompound compound ? shallowCopy(compound) : new NBTTagCompound();
+        List<NBTBase> missed = new ArrayList<>();
+        entries.forEachRemaining(entry -> {
+            if (entry.getFirst() instanceof NBTTagString key) put(output, key.func_150285_a_(), entry.getSecond());
+            else missed.add(entry.getFirst());
+        });
+        return missed.isEmpty() ? DataResult.success(output)
+                : DataResult.error(() -> "some keys are not strings: " + missed, output);
+    }
+
+    @Override
+    public DataResult<NBTBase> mergeToMap(NBTBase map, Map<NBTBase, NBTBase> values) {
+        if (!(map instanceof NBTTagCompound) && map.getId() != 0) {
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
         }
-        return DataResult.success(result);
+        if (values.isEmpty()) return DataResult.success(map.getId() == 0 ? emptyMap() : map);
+
+        NBTTagCompound output = map instanceof NBTTagCompound compound ? shallowCopy(compound) : new NBTTagCompound();
+        List<NBTBase> missed = new ArrayList<>();
+        for (Map.Entry<NBTBase, NBTBase> entry : values.entrySet()) {
+            if (entry.getKey() instanceof NBTTagString key) put(output, key.func_150285_a_(), entry.getValue());
+            else missed.add(entry.getKey());
+        }
+        return missed.isEmpty() ? DataResult.success(output)
+                : DataResult.error(() -> "some keys are not strings: " + missed, output);
     }
 
     @Override
@@ -334,7 +352,7 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public NBTBase remove(NBTBase input, String key) {
         if (!(input instanceof NBTTagCompound compound)) return input;
-        NBTTagCompound result = (NBTTagCompound) compound.copy();
+        NBTTagCompound result = shallowCopy(compound);
         result.removeTag(key);
         return result;
     }
@@ -342,6 +360,16 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     @Override
     public String toString() {
         return "NBT";
+
+    private static NBTTagCompound shallowCopy(NBTTagCompound compound) {
+        NBTTagCompound copy = new NBTTagCompound();
+        copy.tagMap.putAll(compound.tagMap);
+        return copy;
+    }
+
+    private static void put(NBTTagCompound compound, String key, NBTBase value) {
+        if (value.getId() != 0) compound.setTag(key, value);
+    }
 
     private static NBTTagList toTagList(List<NBTBase> tags) {
         NBTTagList list = new NBTTagList();
