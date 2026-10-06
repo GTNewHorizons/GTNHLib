@@ -3,11 +3,11 @@ package com.gtnewhorizon.gtnhlib.api.transformation;
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import org.jetbrains.annotations.Nullable;
 
 final public class TransformationRegistry {
 
@@ -15,6 +15,7 @@ final public class TransformationRegistry {
 
     /**
      * Get a registered transformation
+     * 
      * @param id The ID of the transformation to get
      * @return the transformation, or null if it cannot be found
      */
@@ -26,6 +27,7 @@ final public class TransformationRegistry {
     /**
      * Registers the transformation with the game. {@link ITransformation#getId() The transformation's ID} must be
      * unique. It is recommended to prefix the ID with your mod's name to avoid collisions.
+     * 
      * @param transformation The new transformation to add
      */
     @SuppressWarnings("unused")

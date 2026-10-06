@@ -14,8 +14,8 @@ import com.gtnewhorizon.gtnhlib.api.transformation.ITransformation;
 import com.gtnewhorizon.gtnhlib.api.transformation.TransformationRegistry;
 import com.gtnewhorizon.gtnhlib.mixins.early.AccessorEntity;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
-import com.gtnewhorizon.gtnhlib.network.transformation.TransformationAnnouncePacket;
 import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.network.transformation.TransformationAnnouncePacket;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;

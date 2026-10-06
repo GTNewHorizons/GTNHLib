@@ -1,15 +1,18 @@
 package com.gtnewhorizon.gtnhlib.network.transformation;
 
-import com.gtnewhorizon.gtnhlib.api.transformation.TransformationRegistry;
-import com.gtnewhorizon.gtnhlib.network.base.IPacket;
-import com.gtnewhorizon.gtnhlib.transformation.TransformationProperty;
-import cpw.mods.fml.common.network.ByteBufUtils;
+import java.io.IOException;
+
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.PacketBuffer;
 
-import java.io.IOException;
+import com.gtnewhorizon.gtnhlib.api.transformation.TransformationRegistry;
+import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.transformation.TransformationProperty;
+
+import cpw.mods.fml.common.network.ByteBufUtils;
 
 public class TransformationRequestPacket implements IPacket {
+
     private String transformId;
 
     public TransformationRequestPacket() {}
