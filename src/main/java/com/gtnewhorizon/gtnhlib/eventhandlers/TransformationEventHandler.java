@@ -68,7 +68,7 @@ public class TransformationEventHandler {
                     form.onTick(player);
                     data.updatePlayerSize(form.getWidth(), form.getHeight());
 
-                    final float eyeHeight = getEyeHeight(player, form);
+                    final float eyeHeight = getModifiedEyeHeight(player, form);
 
                     player.eyeHeight = eyeHeight - player.yOffset;
                 } else {
@@ -89,7 +89,7 @@ public class TransformationEventHandler {
                 case START -> {
                     final ITransformation tf = TransformationProperty.getTransformation(player);
                     if (tf != null) {
-                        final float targetEyeHeight = getEyeHeight(player, tf);
+                        final float targetEyeHeight = getModifiedEyeHeight(player, tf);
                         final float defaultEyeHeight = player.getDefaultEyeHeight();
 
                         renderYOffset = player.yOffset - targetEyeHeight + defaultEyeHeight;
@@ -140,12 +140,12 @@ public class TransformationEventHandler {
         }
     }
 
-    private static float getEyeHeight(final EntityPlayer player, final ITransformation form) {
+    public static float getModifiedEyeHeight(final EntityPlayer player, final ITransformation form) {
         float eyeHeight = form.getEyeHeight();
         if (player.isPlayerSleeping()) {
             eyeHeight = 0.2f;
         } else if (player.isSneaking()) {
-            eyeHeight -= 0.08f * (form.getHeight() / ITransformation.DEFAULT_HEIGHT);
+            eyeHeight -= 0.08f;
         }
         return eyeHeight;
     }
