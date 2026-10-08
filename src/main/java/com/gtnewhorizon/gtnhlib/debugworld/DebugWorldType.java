@@ -12,12 +12,9 @@ import net.minecraft.world.biome.WorldChunkManager;
 import net.minecraft.world.biome.WorldChunkManagerHell;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -110,27 +107,6 @@ public class DebugWorldType extends WorldType {
         event.world.getWorldInfo().setWorldTime(MIDDAY);
 
         event.setCanceled(true);
-    }
-
-    /**
-     * Keeps the grid close to how it was generated. Right-clicking a block still does what the block does (like opening
-     * a machine GUI), but the held item is never used, so nothing can be placed into the grid. Left-clicking (breaking)
-     * is blocked completely.
-     */
-    @SubscribeEvent
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!isDebugWorld(event.world)) return;
-
-        if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
-            event.useItem = Event.Result.DENY;
-        } else if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public void onBlockBreak(BlockEvent.BreakEvent event) {
-        if (isDebugWorld(event.world)) event.setCanceled(true);
     }
 
     @SubscribeEvent

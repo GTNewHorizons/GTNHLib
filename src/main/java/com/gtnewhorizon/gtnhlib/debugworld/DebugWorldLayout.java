@@ -10,11 +10,13 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.IFluidBlock;
 
 import com.google.common.collect.ImmutableSet;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
@@ -81,6 +83,9 @@ public final class DebugWorldLayout {
             if (block == Blocks.air || SKIPPED.contains(Block.blockRegistry.getNameForObject(block))) continue;
             // Blocks the crosshair can't target (and WAILA can't show) are render helpers of multiblocks and similar
             if (!block.isCollidable()) continue;
+            // Vanilla (BlockLiquid) and Forge (IFluidBlock) fluids, they would start flowing as soon as anything nearby
+            // changes
+            if (block instanceof BlockLiquid || block instanceof IFluidBlock) continue;
             sortedBlocks.add(block);
         }
         sortedBlocks.sort(Comparator.comparing(block -> Block.blockRegistry.getNameForObject(block)));

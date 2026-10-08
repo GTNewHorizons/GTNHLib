@@ -21,82 +21,97 @@ import net.minecraftforge.common.util.FakePlayerFactory;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
+import cpw.mods.fml.common.registry.GameRegistry;
+
 /**
- * Generates the debug world: an empty void with every block laid out on a single layer.
+ * Generates the debug world: an empty void with every block laid out on a single layer, above a barrier floor when Et
+ * Futurum is installed.
  * <p>
  * Blocks are written straight into the chunk's storage instead of using {@link World#setBlock}. That skips all the
  * usual "a block was placed" logic, so sand does not fall, water does not flow and torches do not pop off.
  */
 public class DebugChunkProvider implements IChunkProvider {
 
-    /** Bottom of the 16 block tall slice of the chunk that holds the grid layer. */
-    private static final int GRID_SECTION_Y = DebugWorldLayout.GRID_Y & ~15;
-    private static final int GRID_Y_IN_SECTION = DebugWorldLayout.GRID_Y & 15;
+    /** The floor sits under the grid, with two blocks of air in between. */
+    private static final int FLOOR_Y = DebugWorldLayout.GRID_Y - 3;
     /** Blocks are placed as if clicking the top of the block below. */
     private static final int SIDE_TOP = 1;
 
     private final World world;
     private final DebugWorldLayout layout;
+    /** Et Futurum's barrier, or null when that mod isn't installed, in which case there is no floor. */
+    private final Block floorBlock;
 
     public DebugChunkProvider(World world) {
         this.world = world;
         this.layout = DebugWorldLayout.create();
+        this.floorBlock = GameRegistry.findBlock("etfuturum", "barrier");
     }
 
     @Override
     public Chunk provideChunk(int chunkX, int chunkZ) {
         Chunk chunk = new Chunk(world, chunkX, chunkZ);
-        ExtendedBlockStorage section = null;
 
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
+                if (floorBlock != null) setBlockInChunk(chunk, x, FLOOR_Y, z, floorBlock, 0);
+
                 int index = layout.getIndexAt(chunkX * 16 + x, chunkZ * 16 + z);
                 // Blocks that need their item are placed later, in populate()
                 if (index < 0 || layout.getPlacementItem(index) != null) continue;
-
-                if (section == null) {
-                    section = new ExtendedBlockStorage(GRID_SECTION_Y, !world.provider.hasNoSky);
-                    chunk.getBlockStorageArray()[GRID_SECTION_Y >> 4] = section;
-                }
-                Block block = layout.getBlock(index);
-                section.func_150818_a(x, GRID_Y_IN_SECTION, z, block);
-                section.setExtBlockMetadata(x, GRID_Y_IN_SECTION, z, layout.getMeta(index));
-                section.setExtBlocklightValue(x, GRID_Y_IN_SECTION, z, block.getLightValue());
+                setBlockInChunk(chunk, x, DebugWorldLayout.GRID_Y, z, layout.getBlock(index), layout.getMeta(index));
             }
         }
 
         // The biome array is left untouched on purpose. Unset entries are looked up from DebugWorldType's chunk
         // manager (plains everywhere), and EndlessIDs crashes if a mod writes the vanilla biome array directly.
-        generateSkylight(chunk, section);
+        generateSkylight(chunk);
         return chunk;
+    }
+
+    private void setBlockInChunk(Chunk chunk, int x, int y, int z, Block block, int meta) {
+        ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
+        ExtendedBlockStorage section = sections[y >> 4];
+        if (section == null) {
+            section = new ExtendedBlockStorage(y & ~15, !world.provider.hasNoSky);
+            sections[y >> 4] = section;
+        }
+        section.func_150818_a(x, y & 15, z, block);
+        section.setExtBlockMetadata(x, y & 15, z, meta);
+        section.setExtBlocklightValue(x, y & 15, z, block.getLightValue());
     }
 
     /**
      * Replaces {@link Chunk#generateSkylightMap()}, which asks every block how much light it blocks using the world
      * position. Some blocks (like Railcraft machines) answer that by looking themselves up in the world, but this chunk
      * is not in the world yet, so the game tries to generate it again, forever. Here the position-free version of the
-     * question is used instead, which is enough for a single layer of blocks in a void.
+     * question is used instead, which is enough for a few layers of blocks in a void.
      */
-    private void generateSkylight(Chunk chunk, ExtendedBlockStorage section) {
+    private void generateSkylight(Chunk chunk) {
+        ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
+        int topY = chunk.getTopFilledSegment() + 15;
         int lowestHeight = Integer.MAX_VALUE;
 
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
-                int opacity = section == null ? 0 : section.getBlockByExtId(x, GRID_Y_IN_SECTION, z).getLightOpacity();
-                int height = opacity > 0 ? DebugWorldLayout.GRID_Y + 1 : 0;
+                int height = 0;
+                int light = 15;
+
+                for (int y = topY; y >= 0; y--) {
+                    ExtendedBlockStorage section = sections[y >> 4];
+                    int opacity = section == null ? 0 : section.getBlockByExtId(x, y & 15, z).getLightOpacity();
+                    // The height map points at the air block above the highest block that blocks light
+                    if (opacity > 0 && height == 0) height = y + 1;
+
+                    // Same rule as vanilla: full sunlight until the first block, then one level less for every
+                    // block below
+                    if (opacity == 0 && light != 15) opacity = 1;
+                    light = Math.max(0, light - opacity);
+                    if (section != null && !world.provider.hasNoSky) section.setExtSkylightValue(x, y & 15, z, light);
+                }
+
                 chunk.heightMap[z << 4 | x] = height;
                 lowestHeight = Math.min(lowestHeight, height);
-
-                if (section == null || world.provider.hasNoSky) continue;
-
-                // Same rule as vanilla: full sunlight until the first block, then one level less for every block below
-                int light = 15;
-                for (int y = 15; y >= 0; y--) {
-                    int blockOpacity = y == GRID_Y_IN_SECTION ? opacity : 0;
-                    if (blockOpacity == 0 && light != 15) blockOpacity = 1;
-                    light = Math.max(0, light - blockOpacity);
-                    section.setExtSkylightValue(x, y, z, light);
-                }
             }
         }
 
