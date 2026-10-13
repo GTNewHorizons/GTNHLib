@@ -8,9 +8,12 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 
+import org.jetbrains.annotations.NotNull;
+
+import com.google.common.base.Objects;
 import com.gtnewhorizon.gtnhlib.api.transformation.ITransformation;
-import com.gtnewhorizon.gtnhlib.api.transformation.TransformationRegistry;
 import com.gtnewhorizon.gtnhlib.network.base.IPacket;
+import com.gtnewhorizon.gtnhlib.transformation.TransformationController;
 import com.gtnewhorizon.gtnhlib.transformation.TransformationProperty;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -24,15 +27,11 @@ public class TransformationAnnouncePacket implements IPacket {
 
     public TransformationAnnouncePacket(final int entityId, final String transformId) {
         this.entityId = entityId;
-        this.transformId = transformId;
+        this.transformId = Objects.firstNonNull(transformId, "");
     }
 
-    public TransformationAnnouncePacket(final EntityPlayer player, final ITransformation tf) {
+    public TransformationAnnouncePacket(@NotNull final EntityPlayer player, @NotNull final ITransformation tf) {
         this(player.getEntityId(), tf.getId());
-    }
-
-    public static TransformationAnnouncePacket untransformPacket(final EntityPlayer player) {
-        return new TransformationAnnouncePacket(player.getEntityId(), "");
     }
 
     @Override
@@ -56,7 +55,7 @@ public class TransformationAnnouncePacket implements IPacket {
                 if (transformId.isEmpty()) {
                     property.removeTransformation();
                 } else {
-                    property.setTransformation(TransformationRegistry.getTransformation(transformId));
+                    property.setTransformation(TransformationController.getTransformationById(transformId));
                 }
             }
         }

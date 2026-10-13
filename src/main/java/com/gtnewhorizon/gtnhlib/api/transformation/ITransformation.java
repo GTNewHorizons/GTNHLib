@@ -4,8 +4,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
-import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
-import com.gtnewhorizon.gtnhlib.network.transformation.TransformationRequestPacket;
+import com.gtnewhorizon.gtnhlib.transformation.TransformationController;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -13,7 +12,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 /**
  * Describes a player transforming into a new shape and/or size (e.g. transforming into a wolf.)
  * <p>
- * Make sure to register all instances with {@link TransformationRegistry#registerTransformation(ITransformation)}, or
+ * Make sure to register all instances with {@link TransformationController#registerTransformation(ITransformation)}, or
  * you won't be able to use them. Registration should be done in the common proxy of your mod.
  */
 @SuppressWarnings("unused")
@@ -120,15 +119,4 @@ public interface ITransformation {
      * @param tag data loaded for the transformation to consume
      */
     default void loadNBTData(final NBTTagCompound tag) {}
-
-    /**
-     * Convenience method for sending the packet that tells the server to transform the player into this form.
-     * <p>
-     * Do not override this function in your implementing classes; code that should run when the player transforms into
-     * your new form should be in {@link #onTransform(EntityPlayer)}.
-     */
-    @SideOnly(Side.CLIENT)
-    default void transform() {
-        NetworkHandler.instance.sendToServer(new TransformationRequestPacket(getId()));
-    }
 }

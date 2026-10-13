@@ -11,8 +11,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
 
 import com.gtnewhorizon.gtnhlib.api.transformation.ITransformation;
-import com.gtnewhorizon.gtnhlib.api.transformation.TransformationRegistry;
-import com.gtnewhorizon.gtnhlib.mixins.early.AccessorEntity;
+import com.gtnewhorizon.gtnhlib.mixins.early.transformation.AccessorEntity;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.base.IPacket;
 import com.gtnewhorizon.gtnhlib.network.transformation.TransformationAnnouncePacket;
@@ -55,7 +54,8 @@ public class TransformationProperty implements IExtendedEntityProperties {
     public void loadNBTData(final NBTTagCompound compound) {
         final NBTTagCompound tag = compound.getCompoundTag(BASE_KEY);
         if (tag.hasKey(TRANSFORM_ID_KEY)) {
-            final ITransformation form = TransformationRegistry.getTransformation(tag.getString(TRANSFORM_ID_KEY));
+            final ITransformation form = TransformationController
+                    .getTransformationById(tag.getString(TRANSFORM_ID_KEY));
             if (form != null) {
                 transformation = form;
                 transformation.loadNBTData(tag.getCompoundTag(TRANSFORM_DATA_KEY));

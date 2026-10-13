@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.mixins.early;
+package com.gtnewhorizon.gtnhlib.mixins.early.transformation;
 
 import net.minecraft.entity.Entity;
 
