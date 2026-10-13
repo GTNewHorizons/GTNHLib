@@ -26,6 +26,7 @@ public class TransformationProperty implements IExtendedEntityProperties {
 
     public static final String BASE_KEY = "TransformationProperty";
     public static final String TRANSFORM_ID_KEY = "TransformID";
+    public static final String TRANSFORM_DATA_KEY = "TransformData";
 
     private final EntityPlayer player;
     @Getter
@@ -42,6 +43,9 @@ public class TransformationProperty implements IExtendedEntityProperties {
     public void saveNBTData(final NBTTagCompound compound) {
         final NBTTagCompound tag = new NBTTagCompound();
         if (transformation != null) {
+            final NBTTagCompound formTag = new NBTTagCompound();
+            transformation.saveNBTData(formTag);
+            tag.setTag(TRANSFORM_DATA_KEY, formTag);
             tag.setString(TRANSFORM_ID_KEY, transformation.getId());
         }
         compound.setTag(BASE_KEY, tag);
@@ -54,12 +58,15 @@ public class TransformationProperty implements IExtendedEntityProperties {
             final ITransformation form = TransformationRegistry.getTransformation(tag.getString(TRANSFORM_ID_KEY));
             if (form != null) {
                 transformation = form;
+                transformation.loadNBTData(tag.getCompoundTag(TRANSFORM_DATA_KEY));
             }
         }
     }
 
     @Override
-    public void init(final Entity entity, final World world) {}
+    public void init(final Entity entity, final World world) {
+
+    }
 
     @Nullable
     public static TransformationProperty get(@Nullable final EntityPlayer player) {
@@ -99,7 +106,7 @@ public class TransformationProperty implements IExtendedEntityProperties {
 
         if (transformation != null) {
             transformation.onTransform(player);
-            updatePlayerSize(transformation.getWidth(), transformation.getHeight());
+            updatePlayerSize(transformation);
         } else {
             updatePlayerSize(ITransformation.DEFAULT_WIDTH, ITransformation.DEFAULT_HEIGHT);
         }
@@ -125,6 +132,10 @@ public class TransformationProperty implements IExtendedEntityProperties {
         }
 
         return null;
+    }
+
+    public void updatePlayerSize(ITransformation form) {
+        updatePlayerSize(form.getWidth(), form.getHeight());
     }
 
     public void updatePlayerSize(final float width, final float height) {

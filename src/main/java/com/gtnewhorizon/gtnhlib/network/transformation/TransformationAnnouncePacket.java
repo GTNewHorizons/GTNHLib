@@ -31,6 +31,10 @@ public class TransformationAnnouncePacket implements IPacket {
         this(player.getEntityId(), tf.getId());
     }
 
+    public static TransformationAnnouncePacket untransformPacket(final EntityPlayer player) {
+        return new TransformationAnnouncePacket(player.getEntityId(), "");
+    }
+
     @Override
     public void encode(final PacketBuffer buf) throws IOException {
         buf.writeInt(entityId);

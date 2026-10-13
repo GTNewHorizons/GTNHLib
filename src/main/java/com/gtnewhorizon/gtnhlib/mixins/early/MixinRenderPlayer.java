@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.gtnewhorizon.gtnhlib.eventhandlers.TransformationEventHandler;
+import com.gtnewhorizon.gtnhlib.transformation.TransformationClientState;
 import com.gtnewhorizon.gtnhlib.transformation.TransformationProperty;
 
 @SuppressWarnings("UnusedMixin")
@@ -95,7 +95,7 @@ public class MixinRenderPlayer {
         }
 
         if (player == Minecraft.getMinecraft().thePlayer && !inInventory) {
-            renderY += TransformationEventHandler.renderYOffset;
+            renderY += TransformationClientState.getRenderYOffset();
         }
 
         // Logic for lightmap adapted from vanilla

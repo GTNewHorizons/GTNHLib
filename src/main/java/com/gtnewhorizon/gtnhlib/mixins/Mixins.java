@@ -84,6 +84,8 @@ public enum Mixins implements IMixins {
             .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
     MINECRAFT_ENTITY_ACCESSOR(new MixinBuilder().setPhase(Phase.EARLY).addCommonMixins("AccessorEntity")),
     MINECRAFT_RENDER_PLAYER(new MixinBuilder().setPhase(Phase.EARLY).addClientMixins("MixinRenderPlayer")),
+    MINECRAFT_ENTITY_LIVING_BASE_CLIENT(
+            new MixinBuilder().setPhase(Phase.EARLY).addClientMixins("MixinEntityLivingBase_Client"))
     //
     ;
 
