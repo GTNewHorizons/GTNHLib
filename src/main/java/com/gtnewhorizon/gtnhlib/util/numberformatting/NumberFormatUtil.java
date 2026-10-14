@@ -142,6 +142,7 @@ public final class NumberFormatUtil {
     /* ========================= Fluids ========================= */
 
     public static String getFluidUnit() {
+        if (debugFluidUnit) return "X";
         return useForgeFluidMillibuckets ? "mB" : "L";
     }
 
