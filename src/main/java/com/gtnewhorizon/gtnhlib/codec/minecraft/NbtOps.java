@@ -239,8 +239,8 @@ public final class NbtOps implements DynamicOps<NBTBase> {
     }
 
     private Stream<Pair<NBTBase, NBTBase>> streamMapEntries(NBTTagCompound compound) {
-        return compound.tagMap.entrySet().stream()
-                .map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
+        Map<String, NBTBase> nbtBaseMap = (Map<String, NBTBase>) compound.tagMap;
+        return nbtBaseMap.entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue()));
     }
 
     @Override
