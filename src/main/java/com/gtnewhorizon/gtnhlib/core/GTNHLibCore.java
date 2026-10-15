@@ -74,7 +74,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
             cleF.setAccessible(true);
             @SuppressWarnings("unchecked")
             Set<String> cle = (Set<String>) cleF.get(Launch.classLoader);
-            // for Brigadier
+            // for Brigadier and DFU
             cle.remove("com.mojang.");
             // Thermos console log compat
             boolean hybridServer = Launch.classLoader.getResource("org/bukkit/World.class") != null
