@@ -14,6 +14,8 @@ import static org.objectweb.asm.Type.BOOLEAN_TYPE;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 
@@ -34,8 +36,6 @@ import org.objectweb.asm.tree.VarInsnNode;
 import com.gtnewhorizon.gtnhlib.asm.ByteCodeUtil;
 import com.gtnewhorizon.gtnhlib.asm.SafeClassWriter;
 import com.gtnewhorizon.gtnhlib.core.shared.GTNHLibClassDump;
-
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public class BlockIconTransformer implements IClassTransformer {
 
@@ -75,7 +75,8 @@ public class BlockIconTransformer implements IClassTransformer {
                     GI_SIDE_SRG,
                     GI_SIDE_OBF));
 
-    private final ObjectOpenHashSet<String> blockFamily = new ObjectOpenHashSet<>();
+    // every class passes through here, possibly on several threads at once
+    private final Set<String> blockFamily = ConcurrentHashMap.newKeySet();
 
     public BlockIconTransformer() {
         blockFamily.add("net/minecraft/block/Block");
