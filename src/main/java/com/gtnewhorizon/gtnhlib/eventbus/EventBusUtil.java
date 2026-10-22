@@ -12,21 +12,27 @@ import cpw.mods.fml.common.discovery.ASMDataTable;
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectSets;
 
 public final class EventBusUtil {
 
     public static final boolean DEBUG_EVENT_BUS = Boolean.getBoolean("gtnhlib.debug.eventbus");
     private static final String CURRENT_SIDE = FMLLaunchHandler.side().name();
 
-    public static final ObjectSet<String> classesToVisit = new ObjectOpenHashSet<>();
-    public static final Object2ObjectMap<String, ObjectSet<MethodInfo>> methodsToSubscribe = new Object2ObjectOpenHashMap<>();
-    public static final Object2ObjectMap<String, String> conditionsToCheck = new Object2ObjectOpenHashMap<>();
-    public static final ObjectList<String> invalidMethods = new ObjectArrayList<>();
+    // filled by EventBusSubTransformer, which can run on several class loading threads at once
+    public static final ObjectSet<String> classesToVisit = ObjectSets.synchronize(new ObjectOpenHashSet<>());
+    public static final Object2ObjectMap<String, ObjectSet<MethodInfo>> methodsToSubscribe = Object2ObjectMaps
+            .synchronize(new Object2ObjectOpenHashMap<>());
+    public static final Object2ObjectMap<String, String> conditionsToCheck = Object2ObjectMaps
+            .synchronize(new Object2ObjectOpenHashMap<>());
+    public static final ObjectList<String> invalidMethods = ObjectLists.synchronize(new ObjectArrayList<>());
 
     static String getParameterClassInternal(String desc) {
         return desc.substring(desc.indexOf("(") + 2, desc.indexOf(";"));
