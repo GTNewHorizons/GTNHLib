@@ -133,6 +133,7 @@ public class ItemTransfer {
         if (iter == null) return 0;
 
         int itemsTransferred = 0, stacksTransferred = 0;
+        boolean checkCapacity = true;
 
         InsertionItemStack insertion = new InsertionItemStack();
 
@@ -158,6 +159,11 @@ public class ItemTransfer {
 
                 // Filters may depend on stack size. Re-check the exact amount about to be extracted.
                 if (filter != null && !filter.test(insertion.set(available, toExtract))) break;
+
+                if (checkCapacity) {
+                    if (!sink.mayAcceptItems()) break outer;
+                    checkCapacity = false;
+                }
 
                 ItemStack extracted = iter.extract(toExtract, false);
 
@@ -206,6 +212,8 @@ public class ItemTransfer {
 
                 if (transferred <= 0) break;
 
+                // One item may be rejected while another fits. Recheck capacity after a successful insertion.
+                checkCapacity = true;
                 itemsTransferred += transferred;
 
                 stacksTransferred++;

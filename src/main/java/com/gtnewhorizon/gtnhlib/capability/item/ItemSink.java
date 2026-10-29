@@ -33,6 +33,15 @@ public interface ItemSink {
     }
 
     /**
+     * Checks whether this sink may accept items with the current transfer settings. Return false only when every item
+     * would be rejected, and return true when capacity is unknown. Read current inventory state without changing the
+     * inventory.
+     */
+    default boolean mayAcceptItems() {
+        return true;
+    }
+
+    /**
      * Injects a stack into this sink. This operation is not atomic. There is no guarantee that the sink is completely
      * full when items are rejected, this is just a best-effort operation.
      *

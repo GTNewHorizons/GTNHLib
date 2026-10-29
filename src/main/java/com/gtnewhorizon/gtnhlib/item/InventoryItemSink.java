@@ -16,8 +16,22 @@ import it.unimi.dsi.fastutil.ints.IntIterators;
 
 public class InventoryItemSink implements ItemSink {
 
+    private static final ClassValue<Boolean> STANDARD_STORAGE = new ClassValue<>() {
+
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            try {
+                return type.getMethod("store", ImmutableItemStack.class).getDeclaringClass() == InventoryItemSink.class
+                        && type.getMethod("sinkIterator").getDeclaringClass() == InventoryItemSink.class;
+            } catch (NoSuchMethodException | SecurityException | LinkageError ignored) {
+                return false;
+            }
+        }
+    };
+
     public final IInventory inv;
     private final ForgeDirection side;
+    private final boolean standardStorage;
 
     private int[] allowedSlots;
     private int slotStackLimit = Integer.MAX_VALUE;
@@ -25,6 +39,7 @@ public class InventoryItemSink implements ItemSink {
     public InventoryItemSink(IInventory inv, ForgeDirection side) {
         this.inv = inv;
         this.side = side;
+        standardStorage = STANDARD_STORAGE.get(getClass());
     }
 
     protected int[] getSlots() {
@@ -50,6 +65,29 @@ public class InventoryItemSink implements ItemSink {
     @Override
     public void setSlotStackLimit(int limit) {
         this.slotStackLimit = limit;
+    }
+
+    @Override
+    public boolean mayAcceptItems() {
+        // Existing subclasses can accept items independently of the visible inventory's capacity
+        if (!standardStorage) return true;
+        if (slotStackLimit <= 0) return false;
+        // An inaccessible slot can provide a positive hint. The insertion iterator still checks slot permissions.
+        if (inv.getSizeInventory() > 0 && hasCapacity(0)) return true;
+        for (int slot : getSlots()) {
+            if (hasCapacity(slot)) return true;
+        }
+        return false;
+    }
+
+    private boolean hasCapacity(int slot) {
+        ItemStack stored = inv.getStackInSlot(slot);
+        if (stored == null || stored.stackSize <= 0) return true;
+        // Avoid querying slot capacity for a single unstackable item
+        if (stored.stackSize == 1) {
+            return stored.isStackable() && stored.stackSize < Math.min(getSlotStackLimit(slot, stored), slotStackLimit);
+        }
+        return stored.stackSize < Math.min(getSlotStackLimit(slot, stored), slotStackLimit) && stored.isStackable();
     }
 
     @Override
