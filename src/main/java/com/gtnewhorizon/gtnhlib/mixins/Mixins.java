@@ -32,8 +32,8 @@ public enum Mixins implements IMixins {
             "models.MixinTextureMap",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
-            "models.particles.MixinEffectRenderer",
             "models.particles.MixinEntity",
+            "models.particles.MixinEntityDiggingFX",
             "models.particles.MixinRenderGlobal",
             "models.particles.RenderGlobalAccessor",
             "models.particles.WorldAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
