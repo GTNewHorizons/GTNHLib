@@ -8,6 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.primitives.Ints;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
 
@@ -95,7 +96,7 @@ public class InventoryItemSink implements ItemSink {
 
             @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {
-                return InventoryItemSink.this.getSlotStackLimit(slot, stack);
+                return Math.min(InventoryItemSink.this.getSlotStackLimit(slot, stack), slotStackLimit);
             }
         };
     }
@@ -107,7 +108,7 @@ public class InventoryItemSink implements ItemSink {
 
         int baseLimit;
         if (invStackLimit > 64) {
-            baseLimit = invStackLimit / 64 * existingMaxStack;
+            baseLimit = Math.min(invStackLimit, Ints.saturatedCast((long) (invStackLimit / 64) * existingMaxStack));
         } else {
             baseLimit = Math.min(invStackLimit, existingMaxStack);
         }
@@ -126,7 +127,7 @@ public class InventoryItemSink implements ItemSink {
 
             @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {
-                return InventoryItemSink.this.getSlotStackLimit(slot, stack);
+                return Math.min(InventoryItemSink.this.getSlotStackLimit(slot, stack), slotStackLimit);
             }
 
             @Override
