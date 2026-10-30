@@ -8,21 +8,26 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.EnumChatFormatting;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.util.CommandUtils;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.tree.CommandNode;
@@ -31,6 +36,8 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class BrigadierApi {
+
+    private static final int MAX_REPORTED_USAGES = 5;
 
     @Nullable
     private static CommandDispatcher<ICommandSender> dispatcher = new CommandDispatcher<>();
@@ -81,11 +88,64 @@ public class BrigadierApi {
      * @return the result
      */
     public static int executeCommand(ICommandSender sender, String command) {
+        CommandDispatcher<ICommandSender> dispatcher = getCommandDispatcher();
+        ParseResults<ICommandSender> parse = dispatcher.parse(command, sender);
         try {
-            return getCommandDispatcher().execute(command, sender);
+            return dispatcher.execute(parse);
         } catch (CommandSyntaxException e) {
-            // TODO: make the exception message better
-            throw new CommandException(e.getMessage());
+            if (e.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand()) {
+                // nothing matched at all, let vanilla report it like any other unknown command
+                throw new CommandNotFoundException();
+            }
+            reportSyntaxError(sender, parse, e);
+            return 0;
+        }
+    }
+
+    /**
+     * Report a parse failure as what went wrong, where it went wrong and how the matched command is meant to be used.
+     * Brigadier's own message is not a translation key, so it cannot be handed to a {@link CommandException}.
+     *
+     * @param sender the executor
+     * @param parse  the parse results the failure came from
+     * @param e      the failure
+     */
+    private static void reportSyntaxError(ICommandSender sender, ParseResults<ICommandSender> parse,
+            CommandSyntaxException e) {
+        sender.addChatMessage(CommandUtils.colorChatComponent(EnumChatFormatting.RED, e.getRawMessage().getString()));
+
+        String input = e.getInput();
+        int cursor = e.getCursor();
+        if (input != null && cursor >= 0 && cursor < input.length()) {
+            ChatComponentText accepted = CommandUtils
+                    .colorChatComponent(EnumChatFormatting.GRAY, "/" + input.substring(0, cursor));
+            ChatComponentText rejected = CommandUtils
+                    .colorChatComponent(EnumChatFormatting.RED, input.substring(cursor));
+            rejected.getChatStyle().setUnderlined(true);
+            sender.addChatMessage(accepted.appendSibling(rejected));
+        }
+
+        List<ParsedCommandNode<ICommandSender>> nodes = parse.getContext().getNodes();
+        if (nodes.isEmpty()) return;
+
+        StringBuilder path = new StringBuilder("/");
+        for (ParsedCommandNode<ICommandSender> node : nodes) {
+            path.append(node.getNode().getUsageText()).append(' ');
+        }
+
+        String[] usages = getCommandDispatcher().getAllUsage(nodes.get(nodes.size() - 1).getNode(), sender, true);
+        for (int i = 0; i < usages.length && i < MAX_REPORTED_USAGES; i++) {
+            ChatComponentTranslation usage = new ChatComponentTranslation(
+                    "commands.generic.usage",
+                    (path + usages[i]).trim());
+            usage.getChatStyle().setColor(EnumChatFormatting.GRAY);
+            sender.addChatMessage(usage);
+        }
+        if (usages.length > MAX_REPORTED_USAGES) {
+            sender.addChatMessage(
+                    CommandUtils.colorChatComponent(
+                            EnumChatFormatting.GRAY,
+                            "... and " + (usages.length - MAX_REPORTED_USAGES) + " more"));
         }
     }
 
