@@ -26,6 +26,7 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestOutlineShape;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
@@ -70,6 +71,10 @@ public class ClientProxy extends CommonProxy {
 
         if (GTNHLibConfig.enableTestItems) {
             TexturedItemRenderer.register(TestItem.INSTANCE);
+        }
+
+        if (GTNHLibConfig.enableTestBlocks) {
+            BlockTestOutlineShape.registerRenderer();
         }
     }
 
