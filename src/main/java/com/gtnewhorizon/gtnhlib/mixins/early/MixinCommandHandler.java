@@ -31,10 +31,16 @@ public class MixinCommandHandler {
             cancellable = true)
     private void gtnhlib$fallbackToBrigadier(ICommandSender sender, String command,
             CallbackInfoReturnable<Integer> cir) {
-        if (gtnhlib$isServerCommandManager()) {
-            int value = BrigadierApi.executeCommand(sender, command);
-            cir.setReturnValue(value);
+        if (!gtnhlib$isServerCommandManager()) return;
+
+        // an empty console line or a lone slash is not a command, so do not report it as one
+        if (command.trim().isEmpty()) {
+            cir.setReturnValue(0);
+            return;
         }
+
+        int value = BrigadierApi.executeCommand(sender, command);
+        cir.setReturnValue(value);
     }
 
     @Inject(
