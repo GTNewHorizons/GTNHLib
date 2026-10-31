@@ -233,6 +233,7 @@ gtnhlib.chat.teams.admin.help.5=%s demote <team> <player> - Forcibly demote targ
 gtnhlib.chat.teams.admin.help.6=%s kick <team> <player> - Forcibly kick targeted player in team.
 gtnhlib.chat.teams.admin.help.7=%s merge <source team> <target team> - Forcibly merge source team into target team, transferring their members and merging data.
 gtnhlib.chat.teams.admin.help.8=%s disband <team> - Forcibly disband team. Players will be immediately placed into solo teams and the team's data will be permanently lost.
+gtnhlib.chat.comp.block.error=§cWrong Block Name(%s)§r
 
 # GTNHTeams MUI2 Integration Commands
 gtnhlib.chat.teams.error.mui2_not_loaded=MUI2 is required for Teams GUI.
