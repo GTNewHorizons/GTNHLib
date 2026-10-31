@@ -25,6 +25,8 @@ public final class OutlineShape {
 
     private static final int MAX_CELLS = 32 * 32 * 32;
 
+    private static final int SOLID = -1, LINE = 3;
+
     private final List<AxisAlignedBB> boxes;
     private DoubleList lines;
 
@@ -36,7 +38,8 @@ public final class OutlineShape {
         return of(Arrays.asList(boxes));
     }
 
-    /// Boxes with no thickness are ignored.
+    /// A box flat on one axis is a plane: it hides the lines inside it, not on its border, and can be clicked. Flatter
+    /// boxes are ignored, as is a shape with no solid box.
     public static OutlineShape of(List<AxisAlignedBB> boxes) {
         return of(boxes, 0, 0, 0);
     }
@@ -49,18 +52,26 @@ public final class OutlineShape {
     }
 
     private static OutlineShape of(List<AxisAlignedBB> boxes, double dx, double dy, double dz) {
-        List<AxisAlignedBB> solid = new ArrayList<>(boxes.size());
+        List<AxisAlignedBB> kept = new ArrayList<>(boxes.size());
+        boolean hasSolid = false;
         for (AxisAlignedBB box : boxes) {
-            if (isSolid(box)) solid.add(box.getOffsetBoundingBox(dx, dy, dz));
+            int flat = flatAxis(box);
+            if (flat == LINE) continue;
+            hasSolid |= flat == SOLID;
+            kept.add(box.getOffsetBoundingBox(dx, dy, dz));
         }
-        return solid.isEmpty() ? EMPTY : new OutlineShape(Collections.unmodifiableList(solid));
+        return hasSolid ? new OutlineShape(Collections.unmodifiableList(kept)) : EMPTY;
     }
 
-    private static boolean isSolid(AxisAlignedBB box) {
+    /// The axis a plane is flat on, [#SOLID] for a box, or [#LINE] if it is flat on more than one.
+    private static int flatAxis(AxisAlignedBB box) {
+        int flat = SOLID;
         for (int axis = 0; axis < 3; axis++) {
-            if (max(box, axis) - min(box, axis) <= TOLERANCE) return false;
+            if (max(box, axis) - min(box, axis) > TOLERANCE) continue;
+            if (flat != SOLID) return LINE;
+            flat = axis;
         }
-        return true;
+        return flat;
     }
 
     public boolean isEmpty() {
@@ -85,8 +96,15 @@ public final class OutlineShape {
         MovingObjectPosition closest = null;
         double closestDistance = Double.MAX_VALUE;
         for (AxisAlignedBB box : boxes) {
-            MovingObjectPosition hit = box.getOffsetBoundingBox(x, y, z).calculateIntercept(start, end);
+            AxisAlignedBB placed = box.getOffsetBoundingBox(x, y, z);
+            MovingObjectPosition hit = placed.calculateIntercept(start, end);
             if (hit == null) continue;
+            int flat = flatAxis(box);
+            if (flat != SOLID) {
+                // A plane's two faces are in one place: use the one facing the start.
+                double from = flat == 0 ? start.xCoord : flat == 1 ? start.yCoord : start.zCoord;
+                hit.sideHit = (flat == 0 ? 4 : flat == 1 ? 0 : 2) + (from > min(placed, flat) ? 1 : 0);
+            }
             double distance = start.squareDistanceTo(hit.hitVec);
             if (distance < closestDistance) {
                 closest = hit;
@@ -104,14 +122,20 @@ public final class OutlineShape {
         return lines;
     }
 
-    /// Splits the boxes into a grid of cells, then draws each grid line whose four cells aren't alike or a flat face.
+    /// Splits the boxes into a grid of cells, then draws each grid line whose four cells aren't alike or a flat face,
+    /// unless a plane covers it.
     private DoubleList buildLines() {
         double[][] grid = { gridLines(0), gridLines(1), gridLines(2) };
         if ((long) (grid[0].length - 1) * (grid[1].length - 1) * (grid[2].length - 1) > MAX_CELLS) {
             return DoubleLists.EMPTY_LIST;
         }
         boolean[][][] filled = new boolean[grid[0].length - 1][grid[1].length - 1][grid[2].length - 1];
+        List<AxisAlignedBB> planes = new ArrayList<>();
         for (AxisAlignedBB box : boxes) {
+            if (flatAxis(box) != SOLID) {
+                planes.add(box);
+                continue;
+            }
             int[] x = cellRange(grid[0], min(box, 0), max(box, 0));
             int[] y = cellRange(grid[1], min(box, 1), max(box, 1));
             int[] z = cellRange(grid[2], min(box, 2), max(box, 2));
@@ -131,11 +155,13 @@ public final class OutlineShape {
                 for (int v = 0; v < vs.length; v++) {
                     int start = -1;
                     for (int i = 0; i < along.length; i++) {
-                        boolean edge = i < along.length - 1 && isEdge(
-                                isFilled(filled, axis, i, u - 1, v - 1),
-                                isFilled(filled, axis, i, u, v - 1),
-                                isFilled(filled, axis, i, u - 1, v),
-                                isFilled(filled, axis, i, u, v));
+                        boolean edge = i < along.length - 1
+                                && isEdge(
+                                        isFilled(filled, axis, i, u - 1, v - 1),
+                                        isFilled(filled, axis, i, u, v - 1),
+                                        isFilled(filled, axis, i, u - 1, v),
+                                        isFilled(filled, axis, i, u, v))
+                                && !isCovered(planes, axis, (along[i] + along[i + 1]) / 2, us[u], vs[v]);
                         if (edge && start == -1) start = i;
                         if (!edge && start != -1) {
                             addPoint(segments, axis, along[start], us[u], vs[v]);
@@ -187,6 +213,21 @@ public final class OutlineShape {
     /// The cells around a grid line, `a`/`d` and `b`/`c` diagonal. Not an edge if they pair up (flat or no change).
     private static boolean isEdge(boolean a, boolean b, boolean c, boolean d) {
         return !(a == b && c == d) && !(a == c && b == d);
+    }
+
+    /// Whether the point lies on a plane, strictly inside its border.
+    private static boolean isCovered(List<AxisAlignedBB> planes, int axis, double along, double u, double v) {
+        for (AxisAlignedBB plane : planes) {
+            int flat = flatAxis(plane);
+            boolean inside = true;
+            for (int a = 0; a < 3; a++) {
+                double pos = a == axis ? along : a == (axis + 1) % 3 ? u : v;
+                inside &= a == flat ? Math.abs(pos - min(plane, a)) <= TOLERANCE
+                        : pos > min(plane, a) + TOLERANCE && pos < max(plane, a) - TOLERANCE;
+            }
+            if (inside) return true;
+        }
+        return false;
     }
 
     private static void addPoint(DoubleArrayList segments, int axis, double along, double u, double v) {

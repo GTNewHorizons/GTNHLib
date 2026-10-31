@@ -65,6 +65,17 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
                 px(0, 0, 12, 16, 16, 16),
                 px(0, 0, 4, 4, 16, 12),
                 px(12, 0, 4, 16, 16, 12));
+        // A hopper: the bowl's floor is a plane, hiding the middle piece's top edges.
+        register(
+                "hopper",
+                0x757575,
+                px(0, 10, 0, 2, 16, 16),
+                px(14, 10, 0, 16, 16, 16),
+                px(2, 10, 0, 14, 16, 2),
+                px(2, 10, 14, 14, 16, 16),
+                px(2, 10, 2, 14, 10, 14),
+                px(4, 4, 4, 12, 10, 12),
+                px(6, 0, 6, 10, 4, 10));
         // Degenerate sizes.
         register("zero_plate", 0x6D4C41, px(0, 8, 0, 16, 8, 16), px(7, 0, 7, 9, 8, 9));
         register("tiny", 0x546E7A, box(0.5, 0.5, 0.5, 0.505, 0.505, 0.505));
