@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.chat.customcomponents;
 
 import java.util.Objects;
 
+import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
 import net.minecraft.util.StatCollector;
 
@@ -52,19 +53,12 @@ public class ChatComponentBlockName extends AbstractChatComponentCustom {
 
     @Override
     public @NotNull JsonElement serialize() {
-        final JsonObject obj = new JsonObject();
-        obj.addProperty("registryName", registryName);
-
-        return obj;
+        return new JsonPrimitive(registryName);
     }
 
     @Override
     public void deserialize(@NotNull JsonElement jsonElement) {
-        final JsonElement registryNameElement = jsonElement.getAsJsonObject().get("registryName");
-        if (registryNameElement == null) {
-            throw new JsonParseException("Missing 'registryName' property in JSON for ChatComponentBlockName");
-        }
-        this.registryName = registryNameElement.getAsString();
+        this.registryName = jsonElement.getAsString();
         if (registryName.isEmpty() || Block.getBlockFromName(registryName) == null) {
             throw new JsonParseException("Failed to deserialize block from name: " + registryName + ".");
         }
