@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.google.gson.JsonParseException;
 import com.gtnewhorizon.gtnhlib.chat.AbstractChatComponentCustom;
 
 /**
@@ -28,7 +28,7 @@ public class ChatComponentBlockName extends AbstractChatComponentCustom {
         this(Block.blockRegistry.getNameForObject(Objects.requireNonNull(block, "block")));
     }
 
-    public ChatComponentBlockName(@NotNull String registryName) {
+    protected ChatComponentBlockName(@NotNull String registryName) {
         this.registryName = Objects.requireNonNull(registryName, "registryName");
     }
 
@@ -45,7 +45,7 @@ public class ChatComponentBlockName extends AbstractChatComponentCustom {
 
     @Override
     public String getUnformattedTextForChat() {
-        Block block = registryName.isEmpty() ? null : Block.getBlockFromName(registryName);
+        final Block block = Block.getBlockFromName(registryName);
         return block == null ? StatCollector.translateToLocalFormatted("gtnhlib.chat.comp.block.error", registryName)
                 : block.getLocalizedName();
     }
@@ -60,9 +60,13 @@ public class ChatComponentBlockName extends AbstractChatComponentCustom {
 
     @Override
     public void deserialize(@NotNull JsonElement jsonElement) {
-        this.registryName = jsonElement.getAsJsonObject().get("registryName").getAsString();
-        if (!registryName.isEmpty() && Block.getBlockFromName(registryName) == null) {
-            GTNHLib.LOG.error("Failed to deserialize block from name: {}", registryName);
+        final JsonElement registryNameElement = jsonElement.getAsJsonObject().get("registryName");
+        if (registryNameElement == null) {
+            throw new JsonParseException("Missing 'registryName' property in JSON for ChatComponentBlockName");
+        }
+        this.registryName = registryNameElement.getAsString();
+        if (registryName.isEmpty() || Block.getBlockFromName(registryName) == null) {
+            throw new JsonParseException("Failed to deserialize block from name: " + registryName + ".");
         }
     }
 
