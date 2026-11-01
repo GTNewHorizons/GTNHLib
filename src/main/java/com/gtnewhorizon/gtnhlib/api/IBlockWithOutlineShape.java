@@ -20,8 +20,9 @@ import net.minecraft.world.World;
  * </pre>
  *
  * For a different outline, override {@link #getOutlineShape} and return a shape built once, such as
- * {@code OutlineShape.of(box1, box2)}. If the block overrides {@code collisionRayTrace}, it must call {@code super} for
- * the shape to be used.
+ * {@code OutlineShape.of(box1, box2)}. For slopes, use {@link OutlineShape#fromFaces}, adding any boxes with
+ * {@link OutlineShape#faces}. If the block overrides {@code collisionRayTrace}, it must call {@code super} for the
+ * shape to be used.
  */
 public interface IBlockWithOutlineShape {
 

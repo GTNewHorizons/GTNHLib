@@ -16,6 +16,9 @@ tile.outline_test_checker.name=Outline Shape Test (Checkerboard)
 tile.outline_test_sphere.name=Outline Shape Test (Sphere)
 tile.outline_test_precision.name=Outline Shape Test (Float Precision)
 tile.outline_test_empty.name=Outline Shape Test (Empty Shape)
+tile.outline_test_slope.name=Outline Shape Test (Slope)
+tile.outline_test_slope_on_slab.name=Outline Shape Test (Slope on Slab)
+tile.outline_test_pyramid.name=Outline Shape Test (Pyramid)
 tile.rng_test.name=RNG Test Block
 tile.weighted_rng_test.name=Weighted RNG Test Block
 

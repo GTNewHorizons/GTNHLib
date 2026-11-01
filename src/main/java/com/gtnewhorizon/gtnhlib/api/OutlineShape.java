@@ -15,11 +15,11 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleLists;
 
-/// Boxes within a block (0 to 1 coordinates), outlined as one merged shape. Build each shape once and reuse it.
+/// Boxes or faces in a block (0 to 1 coordinates), outlined as one merged shape. Build each shape once and reuse it.
 public final class OutlineShape {
 
     /// No shape: the block's own outline and ray trace are used.
-    public static final OutlineShape EMPTY = new OutlineShape(Collections.emptyList());
+    public static final OutlineShape EMPTY = new OutlineShape(Collections.emptyList(), null);
 
     private static final double TOLERANCE = 1.0E-6;
 
@@ -28,10 +28,13 @@ public final class OutlineShape {
     private static final int SOLID = -1, LINE = 3;
 
     private final List<AxisAlignedBB> boxes;
+    /// Used instead of the boxes, if not null.
+    private final FaceShape faces;
     private DoubleList lines;
 
-    private OutlineShape(List<AxisAlignedBB> boxes) {
+    private OutlineShape(List<AxisAlignedBB> boxes, FaceShape faces) {
         this.boxes = boxes;
+        this.faces = faces;
     }
 
     public static OutlineShape of(AxisAlignedBB... boxes) {
@@ -42,6 +45,24 @@ public final class OutlineShape {
     /// boxes are ignored, as is a shape with no solid box.
     public static OutlineShape of(List<AxisAlignedBB> boxes) {
         return of(boxes, 0, 0, 0);
+    }
+
+    /// Faces that can slope, each `x, y, z` per corner: flat, convex, and anticlockwise seen from outside.
+    public static OutlineShape fromFaces(List<double[]> faces) {
+        FaceShape shape = new FaceShape(faces);
+        return shape.isEmpty() ? EMPTY : new OutlineShape(Collections.emptyList(), shape);
+    }
+
+    /// The six faces of a box, for [#fromFaces].
+    public static List<double[]> faces(AxisAlignedBB box) {
+        double x0 = box.minX, y0 = box.minY, z0 = box.minZ, x1 = box.maxX, y1 = box.maxY, z1 = box.maxZ;
+        return Arrays.asList(
+                new double[] { x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1 },
+                new double[] { x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0 },
+                new double[] { x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0 },
+                new double[] { x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1 },
+                new double[] { x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0 },
+                new double[] { x1, y0, z0, x1, y1, z0, x1, y1, z1, x1, y0, z1 });
     }
 
     public static OutlineShape fromCollision(Block block, World world, int x, int y, int z) {
@@ -60,7 +81,7 @@ public final class OutlineShape {
             hasSolid |= flat == SOLID;
             kept.add(box.getOffsetBoundingBox(dx, dy, dz));
         }
-        return hasSolid ? new OutlineShape(Collections.unmodifiableList(kept)) : EMPTY;
+        return hasSolid ? new OutlineShape(Collections.unmodifiableList(kept), null) : EMPTY;
     }
 
     /// The axis a plane is flat on, [#SOLID] for a box, or [#LINE] if it is flat on more than one.
@@ -75,11 +96,13 @@ public final class OutlineShape {
     }
 
     public boolean isEmpty() {
-        return boxes.isEmpty();
+        return boxes.isEmpty() && faces == null;
     }
 
+    /// A shape made of faces only matches itself.
     public boolean hasSameBoxes(OutlineShape other) {
         if (other == this) return true;
+        if (faces != null || other.faces != null) return false;
         if (other.boxes.size() != boxes.size()) return false;
         for (int n = 0; n < boxes.size(); n++) {
             for (int axis = 0; axis < 3; axis++) {
@@ -93,6 +116,7 @@ public final class OutlineShape {
     }
 
     public MovingObjectPosition rayTrace(int x, int y, int z, Vec3 start, Vec3 end) {
+        if (faces != null) return faces.rayTrace(x, y, z, start, end);
         BoxRay ray = new BoxRay(x, y, z, start, end);
         int box = nearestBox(ray);
         if (box == -1) return null;
@@ -186,7 +210,9 @@ public final class OutlineShape {
     /// cells,
     /// which is too costly to merge.
     public DoubleList getLines() {
-        if (lines == null) lines = isEmpty() ? DoubleLists.EMPTY_LIST : buildLines();
+        if (lines == null) {
+            lines = faces != null ? faces.buildLines() : isEmpty() ? DoubleLists.EMPTY_LIST : buildLines();
+        }
         return lines;
     }
 

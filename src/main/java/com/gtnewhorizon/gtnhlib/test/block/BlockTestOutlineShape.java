@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.IntFunction;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -11,6 +12,7 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -29,14 +31,13 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
 
     private static int renderId;
 
+    /// Drawn and collided with. The outline comes from the collision unless a subclass overrides it.
     private final List<AxisAlignedBB> boxes;
-    private final OutlineShape shape;
     private final int color;
 
     private BlockTestOutlineShape(List<AxisAlignedBB> boxes, int color) {
         super(Material.rock);
         this.boxes = boxes;
-        this.shape = OutlineShape.of(boxes);
         this.color = color;
         setHardness(0.5F);
         setBlockTextureName("gtnhlib:white");
@@ -84,8 +85,26 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
         register("sphere", 0xEC407A, sphere());
         // Grid lines that differ only by float rounding.
         register("precision", 0x5E35B1, box(0, 0, 0, 1.0 / 3.0, 1, 1), box((float) (1.0 / 3.0), 0, 0, 1, 0.5, 1));
-        // No shape: the block's bounds.
-        register("empty", 0xFFFFFF).setBlockBounds(0, 0, 0, 1, 0.5F, 1);
+        // No shape: vanilla's outline of the block's bounds.
+        register("empty", 0xFFFFFF, Collections.emptyList(), OutlineShape.EMPTY).setBlockBounds(0, 0, 0, 1, 0.5F, 1);
+        // Slopes, collided with as one-pixel steps.
+        registerSloped("slope", 0x8E24AA, steps(0, i -> px(0, i, i, 16, i + 1, 16)), wedge(0));
+        // A box and a slope as separate pieces: their shared faces cancel.
+        List<AxisAlignedBB> slopeOnSlab = steps(8, i -> px(0, i, 2 * (i - 8), 16, i + 1, 16));
+        slopeOnSlab.add(px(0, 0, 0, 16, 8, 16));
+        List<double[]> slopeOnSlabFaces = new ArrayList<>(OutlineShape.faces(px(0, 0, 0, 16, 8, 16)));
+        slopeOnSlabFaces.addAll(wedge(0.5));
+        registerSloped("slope_on_slab", 0x43A047, slopeOnSlab, slopeOnSlabFaces);
+        registerSloped(
+                "pyramid",
+                0x039BE5,
+                steps(0, i -> px(i / 2.0, i, i / 2.0, 16 - i / 2.0, i + 1, 16 - i / 2.0)),
+                Arrays.asList(
+                        new double[] { 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1 },
+                        new double[] { 0, 0, 0, 0.5, 1, 0.5, 1, 0, 0 },
+                        new double[] { 1, 0, 0, 0.5, 1, 0.5, 1, 0, 1 },
+                        new double[] { 1, 0, 1, 0.5, 1, 0.5, 0, 0, 1 },
+                        new double[] { 0, 0, 1, 0.5, 1, 0.5, 0, 0, 0 }));
     }
 
     private static BlockTestOutlineShape register(String name, int color, AxisAlignedBB... boxes) {
@@ -93,7 +112,20 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
     }
 
     private static BlockTestOutlineShape register(String name, int color, List<AxisAlignedBB> boxes) {
-        BlockTestOutlineShape block = new BlockTestOutlineShape(boxes, color);
+        return register(name, new BlockTestOutlineShape(boxes, color));
+    }
+
+    private static BlockTestOutlineShape register(String name, int color, List<AxisAlignedBB> boxes,
+            OutlineShape shape) {
+        return register(name, new WithShape(boxes, shape, null, color));
+    }
+
+    /// Drawn and outlined from `faces`, collided with as `boxes`.
+    private static void registerSloped(String name, int color, List<AxisAlignedBB> boxes, List<double[]> faces) {
+        register(name, new WithShape(boxes, OutlineShape.fromFaces(faces), faces, color));
+    }
+
+    private static BlockTestOutlineShape register(String name, BlockTestOutlineShape block) {
         block.setBlockName("outline_test_" + name);
         GameRegistry.registerBlock(block, "outline_test_" + name);
         return block;
@@ -124,6 +156,23 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
         return boxes;
     }
 
+    /// A wedge across the block from height `b` to the top, rising towards the south.
+    private static List<double[]> wedge(double b) {
+        return Arrays.asList(
+                new double[] { 0, b, 0, 1, b, 0, 1, b, 1, 0, b, 1 },
+                new double[] { 0, b, 1, 1, b, 1, 1, 1, 1, 0, 1, 1 },
+                new double[] { 0, b, 0, 0, 1, 1, 1, 1, 1, 1, b, 0 },
+                new double[] { 0, b, 0, 0, b, 1, 0, 1, 1 },
+                new double[] { 1, b, 0, 1, 1, 1, 1, b, 1 });
+    }
+
+    /// One box per pixel layer, from layer `from` to the top.
+    private static List<AxisAlignedBB> steps(int from, IntFunction<AxisAlignedBB> layer) {
+        List<AxisAlignedBB> boxes = new ArrayList<>();
+        for (int i = from; i < 16; i++) boxes.add(layer.apply(i));
+        return boxes;
+    }
+
     /// Half-width in pixels of a radius-8 circle at `distance` from its centre.
     private static int halfWidth(double distance) {
         int half = 0;
@@ -144,9 +193,23 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
         return boxes.isEmpty() ? Collections.singletonList(box(minX, minY, minZ, maxX, maxY, maxZ)) : boxes;
     }
 
-    @Override
-    public OutlineShape getOutlineShape(World world, int x, int y, int z) {
-        return shape;
+    /// An outline other than the collision, built once.
+    private static class WithShape extends BlockTestOutlineShape {
+
+        private final OutlineShape shape;
+        /// Drawn instead of the boxes, if not null.
+        private final List<double[]> faces;
+
+        private WithShape(List<AxisAlignedBB> boxes, OutlineShape shape, List<double[]> faces, int color) {
+            super(boxes, color);
+            this.shape = shape;
+            this.faces = faces;
+        }
+
+        @Override
+        public OutlineShape getOutlineShape(World world, int x, int y, int z) {
+            return shape;
+        }
     }
 
     @Override
@@ -194,6 +257,13 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
             int color = block.getRenderColor(meta);
             Tessellator tessellator = Tessellator.instance;
             GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
+            if (block instanceof WithShape sloped && sloped.faces != null) {
+                tessellator.startDrawingQuads();
+                renderFaces(sloped, block.getIcon(0, meta), 0, 0, 0);
+                tessellator.draw();
+                GL11.glTranslatef(0.5F, 0.5F, 0.5F);
+                return;
+            }
             for (AxisAlignedBB box : ((BlockTestOutlineShape) block).getBoxesOrBounds()) {
                 renderer.setRenderBounds(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
                 tessellator.startDrawingQuads();
@@ -219,6 +289,14 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
         @Override
         public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
                 RenderBlocks renderer) {
+            if (block instanceof WithShape sloped && sloped.faces != null) {
+                Tessellator.instance.setBrightness(block.getMixedBrightnessForBlock(world, x, y, z));
+                // The breaking cracks are drawn by rendering again with an override texture.
+                IIcon icon = renderer.hasOverrideBlockTexture() ? renderer.overrideBlockTexture
+                        : renderer.getBlockIconFromSide(block, 0);
+                renderFaces(sloped, icon, x, y, z);
+                return true;
+            }
             boolean renderAllFaces = renderer.renderAllFaces;
             renderer.renderAllFaces = true;
             for (AxisAlignedBB box : ((BlockTestOutlineShape) block).getBoxesOrBounds()) {
@@ -228,6 +306,43 @@ public class BlockTestOutlineShape extends Block implements IBlockWithOutlineSha
             renderer.setRenderBoundsFromBlock(block);
             renderer.renderAllFaces = renderAllFaces;
             return true;
+        }
+
+        /// Each face split into quads by repeating a corner, and shaded by which way it points.
+        private static void renderFaces(WithShape block, IIcon icon, int x, int y, int z) {
+            Tessellator tessellator = Tessellator.instance;
+            int color = block.getRenderColor(0);
+            float r = (color >> 16 & 255) / 255F, g = (color >> 8 & 255) / 255F, b = (color & 255) / 255F;
+            for (double[] face : block.faces) {
+                double ax = face[3] - face[0], ay = face[4] - face[1], az = face[5] - face[2];
+                double bx = face[6] - face[3], by = face[7] - face[4], bz = face[8] - face[5];
+                double nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+                double length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+                nx /= length;
+                ny /= length;
+                nz /= length;
+                float shade = (float) (0.6 * nx * nx + 0.8 * nz * nz + (ny > 0 ? 1 : 0.5) * ny * ny);
+                tessellator.setColorOpaque_F(r * shade, g * shade, b * shade);
+                tessellator.setNormal((float) nx, (float) ny, (float) nz);
+                for (int k = 1; k < face.length / 3 - 1; k++) {
+                    vertex(icon, face, 0, x, y, z, nx, ny);
+                    vertex(icon, face, k, x, y, z, nx, ny);
+                    vertex(icon, face, k + 1, x, y, z, nx, ny);
+                    vertex(icon, face, k + 1, x, y, z, nx, ny);
+                }
+            }
+        }
+
+        private static void vertex(IIcon icon, double[] face, int i, int x, int y, int z, double nx, double ny) {
+            double px = face[i * 3], py = face[i * 3 + 1], pz = face[i * 3 + 2];
+            // Project the texture along the axis the face points along most.
+            double u = Math.abs(nx) > 0.5 ? pz : px, v = Math.abs(ny) > 0.5 ? pz : py;
+            Tessellator.instance.addVertexWithUV(
+                    x + px,
+                    y + py,
+                    z + pz,
+                    icon.getInterpolatedU(u * 16),
+                    icon.getInterpolatedV((1 - v) * 16));
         }
 
         @Override
