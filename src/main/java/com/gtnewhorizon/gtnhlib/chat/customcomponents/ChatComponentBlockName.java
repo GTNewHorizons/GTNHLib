@@ -2,15 +2,14 @@ package com.gtnewhorizon.gtnhlib.chat.customcomponents;
 
 import java.util.Objects;
 
-import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
 import net.minecraft.util.StatCollector;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.gtnewhorizon.gtnhlib.chat.AbstractChatComponentCustom;
 
 /**
