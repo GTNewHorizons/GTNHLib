@@ -93,25 +93,93 @@ public final class OutlineShape {
     }
 
     public MovingObjectPosition rayTrace(int x, int y, int z, Vec3 start, Vec3 end) {
-        MovingObjectPosition closest = null;
-        double closestDistance = Double.MAX_VALUE;
-        for (AxisAlignedBB box : boxes) {
-            AxisAlignedBB placed = box.getOffsetBoundingBox(x, y, z);
-            MovingObjectPosition hit = placed.calculateIntercept(start, end);
-            if (hit == null) continue;
-            int flat = flatAxis(box);
-            if (flat != SOLID) {
-                // A plane's two faces are in one place: use the one facing the start.
-                double from = flat == 0 ? start.xCoord : flat == 1 ? start.yCoord : start.zCoord;
-                hit.sideHit = (flat == 0 ? 4 : flat == 1 ? 0 : 2) + (from > min(placed, flat) ? 1 : 0);
-            }
-            double distance = start.squareDistanceTo(hit.hitVec);
-            if (distance < closestDistance) {
-                closest = hit;
-                closestDistance = distance;
+        BoxRay ray = new BoxRay(x, y, z, start, end);
+        int box = nearestBox(ray);
+        if (box == -1) return null;
+        double t = ray.test(box);
+        int side = ray.side;
+        int flat = flatAxis(boxes.get(box));
+        if (flat != SOLID) {
+            // A plane's two faces are in one place: use the one facing the start.
+            int lowSide = flat == 0 ? 4 : flat == 1 ? 0 : 2;
+            double from = pick(flat, ray.sx, ray.sy, ray.sz), plane = min(boxes.get(box), flat) + pick(flat, x, y, z);
+            side = lowSide + (from > plane ? 1 : 0);
+        }
+        Vec3 hit = Vec3
+                .createVectorHelper(start.xCoord + ray.dx * t, start.yCoord + ray.dy * t, start.zCoord + ray.dz * t);
+        return new MovingObjectPosition(x, y, z, side, hit);
+    }
+
+    private int nearestBox(BoxRay ray) {
+        double closest = Double.MAX_VALUE;
+        int closestBox = -1;
+        for (int n = 0; n < boxes.size(); n++) {
+            double t = ray.test(n);
+            if (t >= 0 && t < closest) {
+                closest = t;
+                closestBox = n;
             }
         }
-        return closest == null ? null : new MovingObjectPosition(x, y, z, closest.sideHit, closest.hitVec);
+        return closestBox;
+    }
+
+    /// Works in world coordinates, so rays along a box edge round the same way as the edge.
+    private final class BoxRay {
+
+        private final int x, y, z;
+        private final double sx, sy, sz, dx, dy, dz;
+        /// Side of the last box hit.
+        private int side;
+
+        private BoxRay(int x, int y, int z, Vec3 start, Vec3 end) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            sx = start.xCoord;
+            sy = start.yCoord;
+            sz = start.zCoord;
+            dx = end.xCoord - start.xCoord;
+            dy = end.yCoord - start.yCoord;
+            dz = end.zCoord - start.zCoord;
+        }
+
+        /// How far along the ray (0 to 1) it hits box `n`, or -1 for a miss.
+        private double test(int n) {
+            AxisAlignedBB box = boxes.get(n);
+            // Slab method: the ray is inside the box from entering the last axis range to leaving the first.
+            double enter = Double.NEGATIVE_INFINITY, leave = Double.POSITIVE_INFINITY;
+            int enterSide = -1, leaveSide = -1;
+            for (int axis = 0; axis < 3; axis++) {
+                double from = pick(axis, sx, sy, sz), move = pick(axis, dx, dy, dz), offset = pick(axis, x, y, z);
+                double low = min(box, axis) + offset, high = max(box, axis) + offset;
+                if (move == 0) {
+                    if (from < low || from > high) return -1;
+                    continue;
+                }
+                boolean up = move > 0;
+                double tIn = ((up ? low : high) - from) / move, tOut = ((up ? high : low) - from) / move;
+                int lowSide = axis == 0 ? 4 : axis == 1 ? 0 : 2;
+                if (tIn > enter) {
+                    enter = tIn;
+                    enterSide = up ? lowSide : lowSide + 1;
+                }
+                if (tOut < leave) {
+                    leave = tOut;
+                    leaveSide = up ? lowSide + 1 : lowSide;
+                }
+            }
+            if (enter > leave) return -1;
+            // Starting inside, it hits where it leaves.
+            boolean inside = enter < 0;
+            double t = inside ? leave : enter;
+            if (t < 0 || t > 1) return -1;
+            side = inside ? leaveSide : enterSide;
+            return t;
+        }
+    }
+
+    private static double pick(int axis, double x, double y, double z) {
+        return axis == 0 ? x : axis == 1 ? y : z;
     }
 
     /// The outline's lines, flattened to `x1, y1, z1, x2, y2, z2` each. Empty if the boxes make a grid of over 32³
