@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "gtnhlib:blocks/rotation_test_x", "x": 270, "uvlock": true },
+    "facing=south": { "model": "gtnhlib:blocks/rotation_test_x", "x": 90, "uvlock": true },
+    "facing=west": { "model": "gtnhlib:blocks/rotation_test_x", "x": 0, "uvlock": true },
+    "facing=east": { "model": "gtnhlib:blocks/rotation_test_x", "x": 180, "uvlock": true }
+  }
+}
