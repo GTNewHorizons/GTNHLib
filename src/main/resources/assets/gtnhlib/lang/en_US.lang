@@ -20,6 +20,7 @@ tile.outline_test_slope.name=Outline Shape Test (Slope)
 tile.outline_test_slope_on_slab.name=Outline Shape Test (Slope on Slab)
 tile.outline_test_pyramid.name=Outline Shape Test (Pyramid)
 tile.rng_test.name=RNG Test Block
+tile.rotation_test.name=Face Rotation UVLock Test Block
 tile.weighted_rng_test.name=Weighted RNG Test Block
 
 # Configuration
