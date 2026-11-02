@@ -176,11 +176,11 @@ public class JSONModel implements UnbakedModel {
     // Probably possible to marry the logic with what is above, but this is likely the fastest impl.
     private static BakedUV calculateDefaultUV(Vector3f from, Vector3f to, ForgeDirection face, int rotation) {
         return switch (face) {
-            case DOWN -> new BakedUV(new Vector4f(from.x * 16, from.z * 16, to.x * 16, to.z * 16), rotation);
-
-            case UP -> new BakedUV(
+            case DOWN -> new BakedUV(
                     new Vector4f(from.x * 16, 16.0F - to.z * 16, to.x * 16, 16.0F - from.z * 16),
                     rotation);
+
+            case UP -> new BakedUV(new Vector4f(from.x * 16, from.z * 16, to.x * 16, to.z * 16), rotation);
 
             case NORTH -> new BakedUV(
                     new Vector4f(16.0F - to.x * 16, 16.0F - to.y * 16, 16.0F - from.x * 16, 16.0F - from.y * 16),
@@ -357,7 +357,7 @@ public class JSONModel implements UnbakedModel {
         Quaternionf quaternion = new Quaternionf().rotationAxis(rotation.angle(), axis);
 
         if (rotation.rescale()) {
-            if (Math.abs(rotation.angle()) == 22.5F) {
+            if (Math.abs(rotation.angle()) == (float) Math.toRadians(22.5)) {
                 rescale.mul(RESCALE_22_5);
             } else {
                 rescale.mul(RESCALE_45);
