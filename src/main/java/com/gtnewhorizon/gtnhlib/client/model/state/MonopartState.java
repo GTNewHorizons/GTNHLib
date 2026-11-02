@@ -1,12 +1,15 @@
 package com.gtnewhorizon.gtnhlib.client.model.state;
 
 import static com.gtnewhorizon.gtnhlib.client.model.unbaked.MissingModel.MISSING_MODEL;
+import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.MODEL_LOGGER;
 
 import java.util.Map;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.gson.JsonParseException;
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.Weighted;
@@ -35,9 +38,17 @@ public class MonopartState implements StateModelMap {
         while (iter.hasNext()) {
             final var e = iter.next();
             final var match = e.getKey();
-            if (match.matches(properties)) return new MonopartDough(e.getValue());
+            if (match.matches(properties)) {
+                if (GTNHLibConfig.enableModelDebugLogs) {
+                    MODEL_LOGGER.info("selectModel: state={} matched variant '{}'", state, match.getVariantName());
+                }
+                return new MonopartDough(e.getValue());
+            }
         }
 
+        if (GTNHLibConfig.enableModelDebugLogs) {
+            MODEL_LOGGER.info("selectModel: state={} matched no variants, returning MISSING_MODEL", state);
+        }
         return MISSING_MODEL;
     }
 
@@ -51,7 +62,8 @@ public class MonopartState implements StateModelMap {
         public StateMatch(String s) {
             variantName = s;
 
-            if (s.isEmpty()) {
+            // "normal" is the vanilla key for a block with no properties
+            if (s.isEmpty() || "normal".equals(s)) {
                 matchAll = true;
                 states = null;
                 return;
@@ -63,7 +75,7 @@ public class MonopartState implements StateModelMap {
             for (String c : s.split(",")) {
                 final int eqIndex = c.indexOf("=");
 
-                if (eqIndex == -1) throw new RuntimeException(
+                if (eqIndex == -1) throw new JsonParseException(
                         "Model variant predicate is missing an equals; expected it to be of the format 'property name=property value': '"
                                 + c
                                 + "'!");

@@ -27,6 +27,7 @@ public class GTNHLibRfbPlugin implements RfbPlugin {
             DeploaderStub.bootstrap(true);
             DeploaderStub.runDepLoader();
         }
+        RetroFuturaBootstrap.API.compatClassLoader().childDelegations.add("xyz.wagyourtail.jvmdg.");
     }
 
     @Override

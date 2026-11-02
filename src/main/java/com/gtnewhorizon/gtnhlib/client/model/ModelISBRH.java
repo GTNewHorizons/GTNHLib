@@ -82,7 +82,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             RenderBlocks renderer) {
         // Setup for rendering
         final Tessellator tesselator = TessellatorManager.get();
-        final var wrappedContext = new WorldWrapper(world, block, x, y, z);
+        final IBlockAccess wrappedContext = (world.getBlock(x, y, z) == block) ? world
+                : new WorldWrapper(world, block, x, y, z);
         worldContext.set(wrappedContext, x, y, z, RAND);
         final int meta = wrappedContext.getBlockMetadata(x, y, z);
 
@@ -615,7 +616,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         @Override
         public BiomeGenBase getBiomeGenForCoords(int x, int z) {
-            return wrapped.getBiomeGenForCoords(x, y);
+            return wrapped.getBiomeGenForCoords(x, z);
         }
 
         @Override

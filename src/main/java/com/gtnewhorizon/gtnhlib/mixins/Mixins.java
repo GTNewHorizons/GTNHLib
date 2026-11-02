@@ -28,6 +28,8 @@ public enum Mixins implements IMixins {
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
+            "models.MixinTextureAtlasSprite",
+            "models.MixinTextureMap",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
             "models.particles.MixinEffectRenderer",
@@ -55,6 +57,9 @@ public enum Mixins implements IMixins {
             .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
     CUSTOM_CHAT_COMPONENT_REGISTRATION(new MixinBuilder("Custom chat component registration")
             .addCommonMixins("MixinIChatComponentSerializer").setPhase(Phase.EARLY)),
+    ITEM_CHAT_COMPONENT(new MixinBuilder("Localize item names in chat components on the client")
+            .addCommonMixins("MixinItemStack_GetChatComponent").setPhase(Phase.EARLY)
+            .setApplyIf(() -> GTNHLibConfig.enableLocalizedItemChatComponents)),
     MULTI_RELEASE_JAR_FILTER(new MixinBuilder("Skip multi-release JAR entries in mod discovery")
             .addCommonMixins("fml.MixinJarDiscoverer").setPhase(Phase.EARLY).addExcludedMod(TargetMods.LWJGL3IFY)),
     PICK_BLOCK_TRAP(Side.CLIENT, "MixinMinecraft_PickBlockTrap"),
