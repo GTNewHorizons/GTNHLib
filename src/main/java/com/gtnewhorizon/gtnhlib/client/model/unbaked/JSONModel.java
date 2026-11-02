@@ -255,7 +255,7 @@ public class JSONModel implements UnbakedModel {
                 // If uv is locked we need to recompute the UVs based on the rotation of the element
                 // and the model rotation
                 if (data.uvLock()) {
-                    bakedUV = recomputeUVs(f.bakedUV(), f.name(), new Matrix4f(vRot));
+                    bakedUV = recomputeUVs(bakedUV, f.name(), new Matrix4f(vRot));
                 }
 
                 // Bake vertexes
