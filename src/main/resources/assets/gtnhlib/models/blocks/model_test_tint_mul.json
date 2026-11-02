@@ -3,8 +3,8 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/cube",
 	"textures": {
-		"particle": "planks_oak",
-		"down": "planks_oak"
+		"particle": "blocks/planks_oak",
+		"down": "blocks/planks_oak"
 	},
 	"elements": [
 		{

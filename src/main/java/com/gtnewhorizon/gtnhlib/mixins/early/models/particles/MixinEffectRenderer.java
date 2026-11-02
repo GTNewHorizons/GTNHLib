@@ -1,4 +1,4 @@
-package com.gtnewhorizon.gtnhlib.mixins.early.models;
+package com.gtnewhorizon.gtnhlib.mixins.early.models.particles;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.particle.EffectRenderer;
@@ -15,7 +15,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 
 @Mixin(EffectRenderer.class)
-public class MixinEffectRenderer_FixParticleIcons {
+public class MixinEffectRenderer {
 
     @Shadow
     protected World worldObj;

@@ -14,9 +14,13 @@ public abstract class InventoryChangedEvent extends PlayerEvent {
     /** The changed item (representative; identity ignores NBT). Shared across listeners - copy before mutating. */
     public final ItemStack item;
 
-    protected InventoryChangedEvent(EntityPlayer player, ItemStack item) {
+    /** Total amount of {@link #item} the player holds after this change (NBT-insensitive, same identity rules). */
+    public final int inventoryCount;
+
+    protected InventoryChangedEvent(EntityPlayer player, ItemStack item, int inventoryCount) {
         super(player);
         this.item = item;
+        this.inventoryCount = inventoryCount;
     }
 
     /** Absolute amount of the change (always positive). */
@@ -30,8 +34,8 @@ public abstract class InventoryChangedEvent extends PlayerEvent {
     /** Player gained {@link #item}. */
     public static class ItemAdded extends InventoryChangedEvent {
 
-        public ItemAdded(EntityPlayer player, ItemStack item) {
-            super(player, item);
+        public ItemAdded(EntityPlayer player, ItemStack item, int inventoryCount) {
+            super(player, item, inventoryCount);
         }
 
         @Override
@@ -43,8 +47,8 @@ public abstract class InventoryChangedEvent extends PlayerEvent {
     /** Player lost {@link #item}. */
     public static class ItemRemoved extends InventoryChangedEvent {
 
-        public ItemRemoved(EntityPlayer player, ItemStack item) {
-            super(player, item);
+        public ItemRemoved(EntityPlayer player, ItemStack item, int inventoryCount) {
+            super(player, item, inventoryCount);
         }
 
         @Override

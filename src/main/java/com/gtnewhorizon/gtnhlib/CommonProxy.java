@@ -15,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierCommandWrapper;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentBlockName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
@@ -35,6 +36,7 @@ import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestAo;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
@@ -73,6 +75,7 @@ public class CommonProxy {
 
         if (GTNHLibConfig.enableTestBlocks) {
             BlockTest.register();
+            BlockTestAo.register();
             BlockTestLectern.register();
             BlockTestTint.register();
             BlockTestTintMul.register();
@@ -94,6 +97,7 @@ public class CommonProxy {
         ChatComponentCustomRegistry.register(ChatComponentEnergy::new);
         ChatComponentCustomRegistry.register(ChatComponentFluidName::new);
         ChatComponentCustomRegistry.register(ChatComponentItemName::new);
+        ChatComponentCustomRegistry.register(ChatComponentBlockName::new);
 
         // Number formatting config registration. Primarily aimed at client side, but does exist on server side
         // as well, just in-case calls are made to number formatting.

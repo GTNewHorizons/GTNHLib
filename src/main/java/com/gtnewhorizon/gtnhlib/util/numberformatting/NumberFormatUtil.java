@@ -142,6 +142,7 @@ public final class NumberFormatUtil {
     /* ========================= Fluids ========================= */
 
     public static String getFluidUnit() {
+        if (debugFluidUnit) return "X";
         return useForgeFluidMillibuckets ? "mB" : "L";
     }
 
@@ -294,6 +295,20 @@ public final class NumberFormatUtil {
         }
 
         return BigDecimal.valueOf(d);
+    }
+
+    public static String toBinaryString(int i, int minimumWidth) {
+        if (minimumWidth < 1) {
+            throw new IllegalArgumentException("Width must be positive.");
+        }
+
+        String binary = Integer.toBinaryString(i);
+        int currentWidth = binary.length();
+        if (currentWidth < minimumWidth) {
+            binary = String.format("%0" + (minimumWidth - currentWidth) + "d", 0).concat(binary);
+        }
+
+        return binary;
     }
 
 }

@@ -6,7 +6,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
-public class BlockTestLectern extends BlockTest {
+public class BlockTestLectern extends BlockTestAo {
 
     public BlockTestLectern() {
         super();

@@ -43,7 +43,7 @@ public class EventBusSubTransformer implements IClassTransformer {
     private static final List<String> ANNOTATIONS = Arrays
             .asList(OPTIONAL_DESC, SIDEONLY_DESC, SUBSCRIBE_DESC, CONDITION_DESC);
     private static final String CURRENT_SIDE = FMLLaunchHandler.side().name();
-    private static final ObjectSet<String> classesToVisit = EventBusUtil.getClassesToVisit();
+    private static final ObjectSet<String> classesToVisit = EventBusUtil.classesToVisit;
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
@@ -75,7 +75,7 @@ public class EventBusSubTransformer implements IClassTransformer {
             boolean condition = usableAnnotations.containsKey(CONDITION_DESC);
             if ((mn.access & Opcodes.ACC_STATIC) == 0) {
                 if (!condition && subscribe != null) {
-                    EventBusUtil.getInvalidMethods()
+                    EventBusUtil.invalidMethods
                             .add("Encountered unexpected non-static method: " + getMethodKey(transformedName, mn));
                 }
                 continue;
@@ -83,14 +83,21 @@ public class EventBusSubTransformer implements IClassTransformer {
 
             if (condition) {
                 if (mn.desc.equals("()Z")) {
-                    EventBusUtil.getConditionsToCheck().put(transformedName, mn.name + mn.desc);
+                    EventBusUtil.conditionsToCheck.put(transformedName, mn.name + mn.desc);
                     changed |= changeAccess(transformedName, mn);
                 } else {
-                    EventBusUtil.getInvalidMethods().add(
+                    EventBusUtil.invalidMethods.add(
                             "Invalid condition method: " + getMethodKey(transformedName, mn)
                                     + ". Condition method must have no parameters and return a boolean.");
                 }
                 continue;
+            } else {
+                if (!isValidDesc(mn.desc)) {
+                    EventBusUtil.invalidMethods.add(
+                            "Invalid event handler method: " + getMethodKey(transformedName, mn)
+                                    + ". Event handler method must have exactly one Event parameter and return void.");
+                    continue;
+                }
             }
 
             if (subscribe == null) {
@@ -124,7 +131,7 @@ public class EventBusSubTransformer implements IClassTransformer {
                 }
             }
 
-            EventBusUtil.getMethodsToSubscribe().computeIfAbsent(transformedName, k -> new ObjectOpenHashSet<>())
+            EventBusUtil.methodsToSubscribe.computeIfAbsent(transformedName, k -> new ObjectOpenHashSet<>())
                     .add(methodInfo);
             if (DEBUG_EVENT_BUS) {
                 LOGGER.info("Found subscribed method {}", methodInfo.getKey());
@@ -200,5 +207,18 @@ public class EventBusSubTransformer implements IClassTransformer {
 
     private static String getMethodKey(String className, MethodNode mn) {
         return className + " " + mn.name + mn.desc;
+    }
+
+    /**
+     * Check whether this method descriptor is a possible descriptor for an event handler method. Specifically, it
+     * checks that the method takes one non-literal parameter and returns void. Does not check whether that parameter is
+     * a valid Event method, since that would require class-loading
+     *
+     * @param desc The descriptor of the static method.
+     * @return True if the method could potentially be an event handler method, false if the method is guaranteed to be
+     *         an invalid event handler method.
+     */
+    private static boolean isValidDesc(String desc) {
+        return desc.startsWith("(L") && desc.endsWith(";)V") && desc.lastIndexOf(';', desc.length() - 4) == -1;
     }
 }
