@@ -89,6 +89,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         final BakedModel model = ModelRegistry.getBakedModel(worldContext);
         int color = model.getColor(world, x, y, z, block, meta, RAND);
 
+        final int pass = ForgeHooksClient.getWorldRenderPass();
         var rendered = false;
         for (var dir : VALUES) {
             worldContext.quadFacing = dir;
@@ -110,7 +111,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
             // iterates over the quads and dumps em into the tesselator, nothing special
             rendered = true;
             for (final var quad : quads) {
-                if (quad.isTransparent() && ForgeHooksClient.getWorldRenderPass() == 0) continue;
+                if (quad.isTransparent() ? pass == 0 : pass == 1 && block.getRenderBlockPass() == 0) continue;
                 int quadColor = color;
 
                 // If true use tintIndex color
