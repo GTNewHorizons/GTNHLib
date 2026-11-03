@@ -82,7 +82,7 @@ public class BrigadierApi {
 
     /**
      * Execute the command by brigadier.
-     * 
+     *
      * @param sender  the executor
      * @param command the command to execute
      * @return the result
@@ -93,7 +93,7 @@ public class BrigadierApi {
         try {
             return dispatcher.execute(parse);
         } catch (CommandSyntaxException e) {
-            if (e.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand()) {
+            if (parse.getContext().getNodes().isEmpty()) {
                 // nothing matched at all, let vanilla report it like any other unknown command
                 throw new CommandNotFoundException();
             }
@@ -112,7 +112,11 @@ public class BrigadierApi {
      */
     private static void reportSyntaxError(ICommandSender sender, ParseResults<ICommandSender> parse,
             CommandSyntaxException e) {
-        sender.addChatMessage(CommandUtils.colorChatComponent(EnumChatFormatting.RED, e.getRawMessage().getString()));
+        // brigadier reports a command that parsed but has nothing to run as unknown
+        String reason = e.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand()
+                ? "Incomplete command"
+                : e.getRawMessage().getString();
+        sender.addChatMessage(CommandUtils.colorChatComponent(EnumChatFormatting.RED, reason));
 
         String input = e.getInput();
         int cursor = e.getCursor();
@@ -151,7 +155,7 @@ public class BrigadierApi {
 
     /**
      * Return the suggestions for the given sender with the given typed command.
-     * 
+     *
      * @param sender  the given sender
      * @param command the given typed command
      * @return the suggestions in text
@@ -169,7 +173,7 @@ public class BrigadierApi {
 
     /**
      * Return the wrapped commands that the given sender has the permission to execute.
-     * 
+     *
      * @param sender the given sender
      * @return the wrapped commands
      */
