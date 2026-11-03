@@ -128,12 +128,18 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
                 final int lm = getLightMap(block, quad, quad.getLightFace(), world, x, y, z, renderer);
                 tesselator.setBrightness(lm);
 
+                if (ANGELICA) {
+                    AngelicaHelper.quadAngelicaLighting(
+                            tesselator,
+                            quad.hasAmbientOcclusion(),
+                            !quad.hasDirectionalShading());
+                }
+
                 final float shade;
-                if (!ANGELICA) {
-                    shade = quad.hasDirectionalShading() ? diffuseLight(quad.getComputedFaceNormal()) : 1;
-                } else {
-                    AngelicaHelper.quadAngelicaLighting(tesselator, !quad.hasDirectionalShading());
+                if (ANGELICA && quad.hasAmbientOcclusion()) {
                     shade = 1;
+                } else {
+                    shade = quad.hasDirectionalShading() ? diffuseLight(quad.getComputedFaceNormal()) : 1;
                 }
 
                 tesselator.setColorOpaque_F(r * shade, g * shade, b * shade);

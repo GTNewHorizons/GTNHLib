@@ -14,9 +14,10 @@ class AngelicaHelper {
         saTess.angelica$setAppliedAo(true);
     }
 
-    static void quadAngelicaLighting(Tessellator tesselator, boolean noDirectionalShading) {
+    static void quadAngelicaLighting(Tessellator tesselator, boolean ao, boolean noDirectionalShading) {
         if (!(tesselator instanceof StateAwareTessellator saTess)) return;
 
+        saTess.angelica$setAppliedAo(ao);
         saTess.angelica$setNoDirectionalShading(noDirectionalShading);
     }
 
