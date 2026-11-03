@@ -112,11 +112,13 @@ public class BrigadierApi {
      */
     private static void reportSyntaxError(ICommandSender sender, ParseResults<ICommandSender> parse,
             CommandSyntaxException e) {
-        // brigadier reports a command that parsed but has nothing to run as unknown
-        String reason = e.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand()
-                ? "Incomplete command"
-                : e.getRawMessage().getString();
-        sender.addChatMessage(CommandUtils.colorChatComponent(EnumChatFormatting.RED, reason));
+        if (e.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand()) {
+            // brigadier reports a command that parsed but has nothing to run as unknown
+            CommandUtils.error(sender, "gtnhlib.chat.command.incomplete");
+        } else {
+            sender.addChatMessage(
+                    CommandUtils.colorChatComponent(EnumChatFormatting.RED, e.getRawMessage().getString()));
+        }
 
         String input = e.getInput();
         int cursor = e.getCursor();
@@ -146,10 +148,11 @@ public class BrigadierApi {
             sender.addChatMessage(usage);
         }
         if (usages.length > MAX_REPORTED_USAGES) {
-            sender.addChatMessage(
-                    CommandUtils.colorChatComponent(
-                            EnumChatFormatting.GRAY,
-                            "... and " + (usages.length - MAX_REPORTED_USAGES) + " more"));
+            ChatComponentTranslation more = new ChatComponentTranslation(
+                    "gtnhlib.chat.command.more_usages",
+                    usages.length - MAX_REPORTED_USAGES);
+            more.getChatStyle().setColor(EnumChatFormatting.GRAY);
+            sender.addChatMessage(more);
         }
     }
 
