@@ -19,6 +19,7 @@ import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.color.ColorResource;
 import com.gtnewhorizon.gtnhlib.commands.CommandResourcePack;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
+import com.gtnewhorizon.gtnhlib.compat.DashboardHud;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
 import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
@@ -81,6 +82,9 @@ public class ClientProxy extends CommonProxy {
         FMLCommonHandler.instance().bus().register(new ResourcePackUpdateEventHandler());
         UniversiumShader.init();
         ConfigurationManager.applyConfigEntries();
+        if (Mods.DASHBOARD) {
+            DashboardHud.register();
+        }
     }
 
     @Override

@@ -73,6 +73,8 @@ dependencies {
 
     compileOnly("com.github.GTNewHorizons:CodeChickenCore:1.4.22:dev")
 
+    compileOnly("com.github.GTNewHorizons:Dashboard:1.0.2:api")
+
     afterEvaluate {
         dependencies {
             testImplementation(platform('org.junit:junit-bom:5.14.1'))
