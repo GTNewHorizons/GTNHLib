@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.Tessellator;
 
 import org.apache.logging.log4j.LogManager;
@@ -282,12 +283,14 @@ public class TessellatorManager {
     // --------------- DIRECT TESSELLATOR ---------------
 
     public static final int DEFAULT_BUFFER_SIZE = 0x8000; // 32KB, enough to store 1024 full-sized vertices
-    private static final int BUFFER_CAPACITY = Tessellator.byteBuffer.capacity();
+    private static final int BUFFER_CAPACITY = 0x200000 * 4;
     public static final int DIRECT_TESSELLATOR_STACK_DEPTH = 16;
 
+    private static final ByteBuffer byteBuffer = GLAllocation.createDirectByteBuffer(0x200000 * 4);
+
     // Instances to use for capturing to vbo's (Cannot be used outside the tessellator stack)
-    private static final DirectTessellator mainInstance = new DirectTessellator(Tessellator.byteBuffer);
-    private static final CallbackTessellator mainCallbackInstance = new CallbackTessellator(Tessellator.byteBuffer);
+    private static final DirectTessellator mainInstance = new DirectTessellator(byteBuffer);
+    private static final CallbackTessellator mainCallbackInstance = new CallbackTessellator(byteBuffer);
 
     // Any Tessellator that uses the Tessellator.byteBuffer is considered to be the "main instance"
     // This is to prevent new buffer allocations every capture
@@ -313,7 +316,7 @@ public class TessellatorManager {
             directTessellatorIndex--;
             throw new IllegalStateException("DirectTessellator stack overflow");
         }
-        mainInstanceInStack = mainInstanceInStack || tessellator.baseBuffer == Tessellator.byteBuffer;
+        mainInstanceInStack = mainInstanceInStack || tessellator.baseBuffer == byteBuffer;
         directTessellators[directTessellatorIndex] = tessellator;
     }
 
@@ -375,7 +378,7 @@ public class TessellatorManager {
         if (!hasDirectTessellator()) throw new IllegalStateException("Tried to stop capturing when not capturing!");
         final DirectTessellator tessellator = getDirectTessellator();
         directTessellators[directTessellatorIndex--] = null;
-        mainInstanceInStack = mainInstanceInStack && tessellator.baseBuffer != Tessellator.byteBuffer;
+        mainInstanceInStack = mainInstanceInStack && tessellator.baseBuffer != byteBuffer;
         tessellator.onRemovedFromStack();
     }
 
