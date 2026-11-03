@@ -85,6 +85,12 @@ public enum Mixins implements IMixins {
                     "flowerpotcompat.MixinBOPPlant",
                     "flowerpotcompat.MixinBOPMushroom")
             .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
+    TRANSFORMATION_MINECRAFT_ENTITY_ACCESSOR(
+            new MixinBuilder().setPhase(Phase.EARLY).addCommonMixins("transformation.AccessorEntity")),
+    TRANSFORMATION_MINECRAFT_RENDER_PLAYER(
+            new MixinBuilder().setPhase(Phase.EARLY).addClientMixins("transformation.MixinRenderPlayer")),
+    TRANSFORMATION_MINECRAFT_ENTITY_LIVING_BASE_CLIENT(
+            new MixinBuilder().setPhase(Phase.EARLY).addClientMixins("transformation.MixinEntityLivingBase_Client")),
     //
     ;
 

@@ -6,6 +6,8 @@ import com.gtnewhorizon.gtnhlib.keybind.PacketKeyDown;
 import com.gtnewhorizon.gtnhlib.network.base.NetworkChannel;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSync;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamInfoSync;
+import com.gtnewhorizon.gtnhlib.network.transformation.TransformationAnnouncePacket;
+import com.gtnewhorizon.gtnhlib.network.transformation.TransformationRequestPacket;
 
 public class NetworkHandler {
 
@@ -18,8 +20,10 @@ public class NetworkHandler {
         instance.toClient(new MessageTitle());
         instance.toClient(new TeamInfoSync());
         instance.toClient(new TeamDataSync());
+        instance.toClient(new TransformationAnnouncePacket());
 
         instance.toServer(new PacketKeyDown());
+        instance.toServer(new TransformationRequestPacket());
     }
 
 }
