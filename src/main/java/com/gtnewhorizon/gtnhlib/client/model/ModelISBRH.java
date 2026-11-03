@@ -20,6 +20,7 @@ import net.minecraft.client.particle.EntityDiggingFX;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
@@ -306,14 +307,24 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
     @Override
     public void renderItem(ItemRenderType type, ItemStack stack, Object... data) {
+        BakedModel model = ModelRegistry.getItemModel(stack.getItem());
+        if (model == null) {
+            if (Block.getBlockFromItem(stack.getItem()) == null) return;
+            itemContext.set(stack, RAND);
+            model = ModelRegistry.getBakedModel(itemContext);
+            itemContext.reset();
+        }
+        renderItemModel(type, stack, model);
+    }
+
+    public void renderItemModel(ItemRenderType type, ItemStack stack, BakedModel model) {
         Block block = Block.getBlockFromItem(stack.getItem());
-        if (block == null) return;
         int meta = stack.getItemDamage();
 
         final Tessellator tesselator = TessellatorManager.get();
         itemContext.set(stack, RAND);
 
-        final BakedModel model = ModelRegistry.getBakedModel(itemContext);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
 
         GL11.glPushMatrix();
         GL11.glEnable(GL11.GL_BLEND);
@@ -321,7 +332,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         GL11.glDisable(GL11.GL_LIGHTING);
         tesselator.startDrawingQuads();
 
-        int color = model.getColor(null, 0, 0, 0, block, meta, RAND);
+        int color = block == null ? -1 : model.getColor(null, 0, 0, 0, block, meta, RAND);
 
         for (ModelQuadFacing dir : VALUES) {
             // I don't *like* reseeding the RNG before each quad get, but it seems like the only way to ensure a
@@ -337,7 +348,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
                 // If true use tintIndex color
                 if (quad.getColorIndex() != -1) {
-                    quadColor = BlockColor.getColor(block, stack, quad.getColorIndex());
+                    quadColor = block == null ? stack.getItem().getColorFromItemStack(stack, quad.getColorIndex())
+                            : BlockColor.getColor(block, stack, quad.getColorIndex());
                 }
 
                 final float r = (quadColor >> 16 & 255) / 255f;
