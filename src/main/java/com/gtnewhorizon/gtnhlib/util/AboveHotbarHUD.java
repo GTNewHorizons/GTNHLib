@@ -6,6 +6,9 @@ import net.minecraftforge.common.MinecraftForge;
 
 import org.lwjgl.opengl.GL11;
 
+import com.gtnewhorizon.gtnhlib.compat.DashboardHud;
+import com.gtnewhorizon.gtnhlib.compat.Mods;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -72,6 +75,9 @@ public class AboveHotbarHUD {
             color = (alpha << 24);
         }
         if (alpha > 0) {
+            if (Mods.DASHBOARD && !DashboardHud.beginAboveHotbarText(event.resolution)) {
+                return;
+            }
             GL11.glPushMatrix();
             {
                 GL11.glEnable(GL11.GL_BLEND);
@@ -82,6 +88,9 @@ public class AboveHotbarHUD {
                 GL11.glDisable(GL11.GL_BLEND);
             }
             GL11.glPopMatrix();
+            if (Mods.DASHBOARD) {
+                DashboardHud.endRender();
+            }
         }
     }
 }
