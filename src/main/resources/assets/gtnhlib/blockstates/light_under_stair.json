@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "gtnhlib:blocks/light_test_stairs", "y": 270, "uvlock": true },
+    "facing=south": { "model": "gtnhlib:blocks/light_test_stairs", "y": 90, "uvlock": true },
+    "facing=west": { "model": "gtnhlib:blocks/light_test_stairs", "y": 0, "uvlock": true },
+    "facing=east": { "model": "gtnhlib:blocks/light_test_stairs", "y": 180, "uvlock": true }
+  }
+}
