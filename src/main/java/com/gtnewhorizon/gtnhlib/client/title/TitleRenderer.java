@@ -13,6 +13,8 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+import com.gtnewhorizon.gtnhlib.compat.DashboardHud;
+import com.gtnewhorizon.gtnhlib.compat.Mods;
 
 public class TitleRenderer {
 
@@ -86,6 +88,10 @@ public class TitleRenderer {
             TitleEffectSystem.spawn(effectTier, originX, originY, width, height);
         }
 
+        if (Mods.DASHBOARD && !DashboardHud.beginTitle(res)) {
+            mc.mcProfiler.endSection();
+            return;
+        }
         TitleParticleSystem.render(partialTicks);
         float t01 = total > 0 ? MathHelper.clamp_float((total - f) / (float) total, 0.0F, 1.0F) : 1.0F;
         float fInEnd = total > 0 ? (float) fadeIn / (float) total : 0.0F;
@@ -129,6 +135,9 @@ public class TitleRenderer {
 
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopMatrix();
+        if (Mods.DASHBOARD) {
+            DashboardHud.endRender();
+        }
 
         mc.mcProfiler.endSection();
     }
