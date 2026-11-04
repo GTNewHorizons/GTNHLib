@@ -1,0 +1,8 @@
+{
+  "parent": "gtnhlib:blocks/light_under_stair",
+  "textures": {
+    "bottom": "minecraft:planks_oak",
+    "side": "minecraft:planks_oak",
+    "top": "minecraft:planks_oak"
+  }
+}
