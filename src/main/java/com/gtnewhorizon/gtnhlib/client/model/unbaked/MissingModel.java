@@ -29,7 +29,7 @@ public class MissingModel extends JSONModel {
     public static final MissingModel MISSING_MODEL = new MissingModel();
 
     public MissingModel() {
-        super(null, true, null, TEXTURES, new ArrayList<>());
+        super(null, true, null, null, TEXTURES, new ArrayList<>());
 
         final var uv = new Vector4f(0, 0, 16, 16);
         final var faces = new ArrayList<Face>();
