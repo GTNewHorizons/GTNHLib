@@ -1,0 +1,340 @@
+package com.gtnewhorizon.gtnhlib.api;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
+
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.doubles.DoubleLists;
+
+/// Boxes or faces in a block (0 to 1 coordinates), outlined as one merged shape. Build each shape once and reuse it.
+public final class OutlineShape {
+
+    /// No shape: the block's own outline and ray trace are used.
+    public static final OutlineShape EMPTY = new OutlineShape(Collections.emptyList(), null);
+
+    private static final double TOLERANCE = 1.0E-6;
+
+    private static final int MAX_CELLS = 32 * 32 * 32;
+
+    private static final int SOLID = -1, LINE = 3;
+
+    private final List<AxisAlignedBB> boxes;
+    /// Used instead of the boxes, if not null.
+    private final FaceShape faces;
+    private DoubleList lines;
+
+    private OutlineShape(List<AxisAlignedBB> boxes, FaceShape faces) {
+        this.boxes = boxes;
+        this.faces = faces;
+    }
+
+    public static OutlineShape of(AxisAlignedBB... boxes) {
+        return of(Arrays.asList(boxes));
+    }
+
+    /// A box flat on one axis is a plane: it hides the lines inside it, not on its border, and can be clicked. Flatter
+    /// boxes are ignored, as is a shape with no solid box.
+    public static OutlineShape of(List<AxisAlignedBB> boxes) {
+        return of(boxes, 0, 0, 0);
+    }
+
+    /// Faces that can slope, each `x, y, z` per corner: flat, convex, and anticlockwise seen from outside.
+    public static OutlineShape fromFaces(List<double[]> faces) {
+        FaceShape shape = new FaceShape(faces);
+        return shape.isEmpty() ? EMPTY : new OutlineShape(Collections.emptyList(), shape);
+    }
+
+    /// The six faces of a box, for [#fromFaces].
+    public static List<double[]> faces(AxisAlignedBB box) {
+        double x0 = box.minX, y0 = box.minY, z0 = box.minZ, x1 = box.maxX, y1 = box.maxY, z1 = box.maxZ;
+        return Arrays.asList(
+                new double[] { x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1 },
+                new double[] { x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0 },
+                new double[] { x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0 },
+                new double[] { x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1 },
+                new double[] { x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0 },
+                new double[] { x1, y0, z0, x1, y1, z0, x1, y1, z1, x1, y0, z1 });
+    }
+
+    public static OutlineShape fromCollision(Block block, World world, int x, int y, int z) {
+        List<AxisAlignedBB> boxes = new ArrayList<>();
+        AxisAlignedBB mask = AxisAlignedBB.getBoundingBox(x - 1, y - 1, z - 1, x + 2, y + 2, z + 2);
+        block.addCollisionBoxesToList(world, x, y, z, mask, boxes, null);
+        return of(boxes, -x, -y, -z);
+    }
+
+    private static OutlineShape of(List<AxisAlignedBB> boxes, double dx, double dy, double dz) {
+        List<AxisAlignedBB> kept = new ArrayList<>(boxes.size());
+        boolean hasSolid = false;
+        for (AxisAlignedBB box : boxes) {
+            int flat = flatAxis(box);
+            if (flat == LINE) continue;
+            hasSolid |= flat == SOLID;
+            kept.add(box.getOffsetBoundingBox(dx, dy, dz));
+        }
+        return hasSolid ? new OutlineShape(Collections.unmodifiableList(kept), null) : EMPTY;
+    }
+
+    /// The axis a plane is flat on, [#SOLID] for a box, or [#LINE] if it is flat on more than one.
+    private static int flatAxis(AxisAlignedBB box) {
+        int flat = SOLID;
+        for (int axis = 0; axis < 3; axis++) {
+            if (max(box, axis) - min(box, axis) > TOLERANCE) continue;
+            if (flat != SOLID) return LINE;
+            flat = axis;
+        }
+        return flat;
+    }
+
+    public boolean isEmpty() {
+        return boxes.isEmpty() && faces == null;
+    }
+
+    /// A shape made of faces only matches itself.
+    public boolean hasSameBoxes(OutlineShape other) {
+        if (other == this) return true;
+        if (faces != null || other.faces != null) return false;
+        if (other.boxes.size() != boxes.size()) return false;
+        for (int n = 0; n < boxes.size(); n++) {
+            for (int axis = 0; axis < 3; axis++) {
+                if (min(boxes.get(n), axis) != min(other.boxes.get(n), axis)
+                        || max(boxes.get(n), axis) != max(other.boxes.get(n), axis)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public MovingObjectPosition rayTrace(int x, int y, int z, Vec3 start, Vec3 end) {
+        if (faces != null) return faces.rayTrace(x, y, z, start, end);
+        BoxRay ray = new BoxRay(x, y, z, start, end);
+        int box = nearestBox(ray);
+        if (box == -1) return null;
+        double t = ray.test(box);
+        int side = ray.side;
+        int flat = flatAxis(boxes.get(box));
+        if (flat != SOLID) {
+            // A plane's two faces are in one place: use the one facing the start.
+            int lowSide = flat == 0 ? 4 : flat == 1 ? 0 : 2;
+            double from = pick(flat, ray.sx, ray.sy, ray.sz), plane = min(boxes.get(box), flat) + pick(flat, x, y, z);
+            side = lowSide + (from > plane ? 1 : 0);
+        }
+        Vec3 hit = Vec3
+                .createVectorHelper(start.xCoord + ray.dx * t, start.yCoord + ray.dy * t, start.zCoord + ray.dz * t);
+        return new MovingObjectPosition(x, y, z, side, hit);
+    }
+
+    private int nearestBox(BoxRay ray) {
+        double closest = Double.MAX_VALUE;
+        int closestBox = -1;
+        for (int n = 0; n < boxes.size(); n++) {
+            double t = ray.test(n);
+            if (t >= 0 && t < closest) {
+                closest = t;
+                closestBox = n;
+            }
+        }
+        return closestBox;
+    }
+
+    /// Works in world coordinates, so rays along a box edge round the same way as the edge.
+    private final class BoxRay {
+
+        private final int x, y, z;
+        private final double sx, sy, sz, dx, dy, dz;
+        /// Side of the last box hit.
+        private int side;
+
+        private BoxRay(int x, int y, int z, Vec3 start, Vec3 end) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            sx = start.xCoord;
+            sy = start.yCoord;
+            sz = start.zCoord;
+            dx = end.xCoord - start.xCoord;
+            dy = end.yCoord - start.yCoord;
+            dz = end.zCoord - start.zCoord;
+        }
+
+        /// How far along the ray (0 to 1) it hits box `n`, or -1 for a miss.
+        private double test(int n) {
+            AxisAlignedBB box = boxes.get(n);
+            // Slab method: the ray is inside the box from entering the last axis range to leaving the first.
+            double enter = Double.NEGATIVE_INFINITY, leave = Double.POSITIVE_INFINITY;
+            int enterSide = -1, leaveSide = -1;
+            for (int axis = 0; axis < 3; axis++) {
+                double from = pick(axis, sx, sy, sz), move = pick(axis, dx, dy, dz), offset = pick(axis, x, y, z);
+                double low = min(box, axis) + offset, high = max(box, axis) + offset;
+                if (move == 0) {
+                    if (from < low || from > high) return -1;
+                    continue;
+                }
+                boolean up = move > 0;
+                double tIn = ((up ? low : high) - from) / move, tOut = ((up ? high : low) - from) / move;
+                int lowSide = axis == 0 ? 4 : axis == 1 ? 0 : 2;
+                if (tIn > enter) {
+                    enter = tIn;
+                    enterSide = up ? lowSide : lowSide + 1;
+                }
+                if (tOut < leave) {
+                    leave = tOut;
+                    leaveSide = up ? lowSide + 1 : lowSide;
+                }
+            }
+            if (enter > leave) return -1;
+            // Starting inside, it hits where it leaves.
+            boolean inside = enter < 0;
+            double t = inside ? leave : enter;
+            if (t < 0 || t > 1) return -1;
+            side = inside ? leaveSide : enterSide;
+            return t;
+        }
+    }
+
+    private static double pick(int axis, double x, double y, double z) {
+        return axis == 0 ? x : axis == 1 ? y : z;
+    }
+
+    /// The outline's lines, flattened to `x1, y1, z1, x2, y2, z2` each. Empty if the boxes make a grid of over 32³
+    /// cells,
+    /// which is too costly to merge.
+    public DoubleList getLines() {
+        if (lines == null) {
+            lines = faces != null ? faces.buildLines() : isEmpty() ? DoubleLists.EMPTY_LIST : buildLines();
+        }
+        return lines;
+    }
+
+    /// Splits the boxes into a grid of cells, then draws each grid line whose four cells aren't alike or a flat face,
+    /// unless a plane covers it.
+    private DoubleList buildLines() {
+        double[][] grid = { gridLines(0), gridLines(1), gridLines(2) };
+        if ((long) (grid[0].length - 1) * (grid[1].length - 1) * (grid[2].length - 1) > MAX_CELLS) {
+            return DoubleLists.EMPTY_LIST;
+        }
+        boolean[][][] filled = new boolean[grid[0].length - 1][grid[1].length - 1][grid[2].length - 1];
+        List<AxisAlignedBB> planes = new ArrayList<>();
+        for (AxisAlignedBB box : boxes) {
+            if (flatAxis(box) != SOLID) {
+                planes.add(box);
+                continue;
+            }
+            int[] x = cellRange(grid[0], min(box, 0), max(box, 0));
+            int[] y = cellRange(grid[1], min(box, 1), max(box, 1));
+            int[] z = cellRange(grid[2], min(box, 2), max(box, 2));
+            for (int i = x[0]; i < x[1]; i++) {
+                for (int j = y[0]; j < y[1]; j++) {
+                    for (int k = z[0]; k < z[1]; k++) {
+                        filled[i][j][k] = true;
+                    }
+                }
+            }
+        }
+
+        DoubleArrayList segments = new DoubleArrayList();
+        for (int axis = 0; axis < 3; axis++) {
+            double[] along = grid[axis], us = grid[(axis + 1) % 3], vs = grid[(axis + 2) % 3];
+            for (int u = 0; u < us.length; u++) {
+                for (int v = 0; v < vs.length; v++) {
+                    int start = -1;
+                    for (int i = 0; i < along.length; i++) {
+                        boolean edge = i < along.length - 1
+                                && isEdge(
+                                        isFilled(filled, axis, i, u - 1, v - 1),
+                                        isFilled(filled, axis, i, u, v - 1),
+                                        isFilled(filled, axis, i, u - 1, v),
+                                        isFilled(filled, axis, i, u, v))
+                                && !isCovered(planes, axis, (along[i] + along[i + 1]) / 2, us[u], vs[v]);
+                        if (edge && start == -1) start = i;
+                        if (!edge && start != -1) {
+                            addPoint(segments, axis, along[start], us[u], vs[v]);
+                            addPoint(segments, axis, along[i], us[u], vs[v]);
+                            start = -1;
+                        }
+                    }
+                }
+            }
+        }
+        return DoubleLists.unmodifiable(segments);
+    }
+
+    private double[] gridLines(int axis) {
+        double[] coords = new double[boxes.size() * 2];
+        for (int n = 0; n < boxes.size(); n++) {
+            coords[n * 2] = min(boxes.get(n), axis);
+            coords[n * 2 + 1] = max(boxes.get(n), axis);
+        }
+        Arrays.sort(coords);
+
+        int count = 0;
+        for (double coord : coords) {
+            if (count == 0 || coord - coords[count - 1] > TOLERANCE) coords[count++] = coord;
+        }
+        return Arrays.copyOf(coords, count);
+    }
+
+    private static int[] cellRange(double[] coords, double min, double max) {
+        int from = 0;
+        while (from < coords.length - 1 && (coords[from] + coords[from + 1]) / 2 < min) from++;
+        int to = from;
+        while (to < coords.length - 1 && (coords[to] + coords[to + 1]) / 2 < max) to++;
+        return new int[] { from, to };
+    }
+
+    private static boolean isFilled(boolean[][][] filled, int axis, int i, int u, int v) {
+        int x = axis == 0 ? i : axis == 1 ? v : u;
+        int y = axis == 0 ? u : axis == 1 ? i : v;
+        int z = axis == 0 ? v : axis == 1 ? u : i;
+        return x >= 0 && y >= 0
+                && z >= 0
+                && x < filled.length
+                && y < filled[x].length
+                && z < filled[x][y].length
+                && filled[x][y][z];
+    }
+
+    /// The cells around a grid line, `a`/`d` and `b`/`c` diagonal. Not an edge if they pair up (flat or no change).
+    private static boolean isEdge(boolean a, boolean b, boolean c, boolean d) {
+        return !(a == b && c == d) && !(a == c && b == d);
+    }
+
+    /// Whether the point lies on a plane, strictly inside its border.
+    private static boolean isCovered(List<AxisAlignedBB> planes, int axis, double along, double u, double v) {
+        for (AxisAlignedBB plane : planes) {
+            int flat = flatAxis(plane);
+            boolean inside = true;
+            for (int a = 0; a < 3; a++) {
+                double pos = a == axis ? along : a == (axis + 1) % 3 ? u : v;
+                inside &= a == flat ? Math.abs(pos - min(plane, a)) <= TOLERANCE
+                        : pos > min(plane, a) + TOLERANCE && pos < max(plane, a) - TOLERANCE;
+            }
+            if (inside) return true;
+        }
+        return false;
+    }
+
+    private static void addPoint(DoubleArrayList segments, int axis, double along, double u, double v) {
+        segments.add(axis == 0 ? along : axis == 1 ? v : u);
+        segments.add(axis == 0 ? u : axis == 1 ? along : v);
+        segments.add(axis == 0 ? v : axis == 1 ? u : along);
+    }
+
+    private static double min(AxisAlignedBB box, int axis) {
+        return axis == 0 ? box.minX : axis == 1 ? box.minY : box.minZ;
+    }
+
+    private static double max(AxisAlignedBB box, int axis) {
+        return axis == 0 ? box.maxX : axis == 1 ? box.maxY : box.maxZ;
+    }
+}
