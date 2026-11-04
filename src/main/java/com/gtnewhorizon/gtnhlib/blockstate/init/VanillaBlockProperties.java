@@ -34,6 +34,9 @@ import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockTorch;
 import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.tileentity.TileEntitySkull;
@@ -61,6 +64,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.properties.BooleanBlockProperty.FlagB
 import com.gtnewhorizon.gtnhlib.blockstate.properties.DirectionBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.FloatBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.properties.IntegerBlockProperty;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyFactory;
 import com.gtnewhorizon.gtnhlib.geometry.Axis;
 import com.gtnewhorizon.gtnhlib.geometry.DirectionTransform;
 import com.gtnewhorizon.gtnhlib.geometry.VectorTransform;
@@ -320,6 +324,33 @@ class VanillaBlockProperties {
             case 0b100 -> DOWN;
             default -> UP;
         }).setName("up"));
+
+        registerProperty(
+                BlockStairs.class,
+                IntegerBlockProperty.meta("half", 0b100, 2).map(Arrays.asList("bottom", "top")));
+
+        registerProperty(BlockStairs.class, new WorldStringProperty("shape") {
+
+            @Override
+            public String getValue(IBlockAccess world, int x, int y, int z) {
+                return getStairShape(world, x, y, z);
+            }
+        });
+
+        registerProperty(BlockSlab.class, new WorldStringProperty("type") {
+
+            @Override
+            public String getValue(IBlockAccess world, int x, int y, int z) {
+                if (world.getBlock(x, y, z).isOpaqueCube()) return "double";
+
+                return (world.getBlockMetadata(x, y, z) & 0b1000) != 0 ? "top" : "bottom";
+            }
+        });
+
+        registerItemDefault(BlockStairs.class, "facing", "west");
+        registerItemDefault(BlockStairs.class, "half", "bottom");
+        registerItemDefault(BlockStairs.class, "shape", "straight");
+        registerItemDefault(BlockSlab.class, "type", "bottom");
 
         registerProperty(BlockChest.class, DirectionBlockProperty.facing(0b111, 2, 3, 4, 5, -1, -1));
 
@@ -754,4 +785,130 @@ class VanillaBlockProperties {
         };
     }
 
+    private abstract static class WorldStringProperty implements BlockProperty<String> {
+
+        private final String name;
+
+        WorldStringProperty(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Type getType() {
+            return String.class;
+        }
+
+        @Override
+        public boolean hasTrait(BlockPropertyTrait trait) {
+            return trait == BlockPropertyTrait.SupportsWorld;
+        }
+
+        @Override
+        public String stringify(String value) {
+            return value;
+        }
+
+        @Override
+        public String parse(String text) {
+            return text;
+        }
+    }
+
+    private static void registerItemDefault(Class<? extends Block> blockClass, String name, String value) {
+        BlockProperty<String> property = new BlockProperty<>() {
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public Type getType() {
+                return String.class;
+            }
+
+            @Override
+            public boolean hasTrait(BlockPropertyTrait trait) {
+                return trait == BlockPropertyTrait.SupportsStacks;
+            }
+
+            @Override
+            public String getValue(ItemStack stack) {
+                return value;
+            }
+
+            @Override
+            public String stringify(String value) {
+                return value;
+            }
+        };
+
+        registerProperty(new BlockPropertyFactory<String>() {
+
+            @Override
+            public BlockProperty<String> getProperty(ItemStack stack, Item item, int meta) {
+                return item instanceof ItemBlock itemBlock && blockClass.isInstance(itemBlock.field_150939_a) ? property
+                        : null;
+            }
+        });
+    }
+
+    private static String getStairShape(IBlockAccess world, int x, int y, int z) {
+        int meta = world.getBlockMetadata(x, y, z);
+        ForgeDirection facing = getStairFacing(meta);
+
+        ForgeDirection front = getSidewaysStairs(world, x, y, z, meta, facing);
+        if (front != null && canTakeStairShape(world, x, y, z, meta, front.getOpposite())) {
+            return front == getCounterClockwise(facing) ? "outer_left" : "outer_right";
+        }
+
+        ForgeDirection back = getSidewaysStairs(world, x, y, z, meta, facing.getOpposite());
+        if (back != null && canTakeStairShape(world, x, y, z, meta, back)) {
+            return back == getCounterClockwise(facing) ? "inner_left" : "inner_right";
+        }
+
+        return "straight";
+    }
+
+    private static @Nullable ForgeDirection getSidewaysStairs(IBlockAccess world, int x, int y, int z, int meta,
+            ForgeDirection side) {
+        x += side.offsetX;
+        z += side.offsetZ;
+        if (!(world.getBlock(x, y, z) instanceof BlockStairs)) return null;
+
+        int sideMeta = world.getBlockMetadata(x, y, z);
+        if ((sideMeta & 0b100) != (meta & 0b100)) return null;
+
+        ForgeDirection sideFacing = getStairFacing(sideMeta);
+        return (sideFacing.offsetX == 0) != (getStairFacing(meta).offsetX == 0) ? sideFacing : null;
+    }
+
+    private static boolean canTakeStairShape(IBlockAccess world, int x, int y, int z, int meta, ForgeDirection side) {
+        x += side.offsetX;
+        z += side.offsetZ;
+        return !(world.getBlock(x, y, z) instanceof BlockStairs) || world.getBlockMetadata(x, y, z) != meta;
+    }
+
+    private static ForgeDirection getStairFacing(int meta) {
+        return switch (meta & 0b11) {
+            case 0 -> EAST;
+            case 1 -> WEST;
+            case 2 -> SOUTH;
+            default -> NORTH;
+        };
+    }
+
+    private static ForgeDirection getCounterClockwise(ForgeDirection dir) {
+        return switch (dir) {
+            case NORTH -> WEST;
+            case WEST -> SOUTH;
+            case SOUTH -> EAST;
+            default -> NORTH;
+        };
+    }
 }
