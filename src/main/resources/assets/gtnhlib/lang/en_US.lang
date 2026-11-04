@@ -1,4 +1,5 @@
 # Test block names
+tile.light_under_stair.name=Directional Shading Test Block
 tile.model_test.name=Test Block
 tile.model_test_tint.name=Test Block (Tint)
 tile.model_test_tint_mul.name=Test Block (Tint Mul)
@@ -295,3 +296,7 @@ commands.title.show.title.single=Showed title to %s
 commands.title.show.subtitle.single=Showed subtitle to %s
 commands.title.times.single=Changed title display times for %s
 commands.title.icon.single=Changed title icon for %s
+
+# Brigadier command errors
+gtnhlib.chat.command.incomplete=Incomplete command
+gtnhlib.chat.command.more_usages=... and %s more
