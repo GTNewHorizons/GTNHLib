@@ -1,8 +1,6 @@
 package com.gtnewhorizon.gtnhlib.network.payload;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +13,6 @@ import net.minecraft.network.NetHandlerPlayServer;
 import org.jetbrains.annotations.ApiStatus;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
-import com.gtnewhorizon.gtnhlib.codec.stream.IdDispatchCodec;
 import com.gtnewhorizon.gtnhlib.codec.stream.RegistryFriendlyByteBuf;
 import com.gtnewhorizon.gtnhlib.codec.stream.StreamCodec;
 import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
@@ -29,6 +26,7 @@ import cpw.mods.fml.relauncher.Side;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.netty.handler.codec.EncoderException;
 
 @ApiStatus.Internal
 public final class PayloadChannel {
@@ -78,9 +76,21 @@ public final class PayloadChannel {
         }
     }
 
+    @SuppressWarnings("unchecked")
     FMLProxyPacket packet(CustomPacketPayload payload, Side receiver) {
+        String id = payload.type().id().toString();
+        Entry<CustomPacketPayload> entry = (Entry<CustomPacketPayload>) direction(receiver).get(id);
+        if (entry == null) {
+            throw new EncoderException("Payload " + id + " is not registered to be sent to the " + receiver);
+        }
         ByteBuf out = Unpooled.buffer();
-        direction(receiver).codec().encode(new RegistryFriendlyByteBuf(out), payload);
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(out);
+        buf.writeUtf(id);
+        try {
+            entry.codec.encode(buf, payload);
+        } catch (RuntimeException e) {
+            throw new EncoderException("Could not write payload " + id, e);
+        }
         // FMLProxyPacket sends payload.array(), so the array must be exactly sized
         byte[] bytes = new byte[out.readableBytes()];
         out.readBytes(bytes);
@@ -103,15 +113,23 @@ public final class PayloadChannel {
 
     @SuppressWarnings("unchecked")
     private void receive(ByteBuf data, Side side, EntityPlayer player) {
-        Direction direction = direction(side);
-        CustomPacketPayload payload = direction.codec().decode(new RegistryFriendlyByteBuf(data));
-        if (data.isReadable()) {
-            throw new DecoderException("Payload " + payload.type() + " left " + data.readableBytes() + " bytes unread");
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(data);
+        String id = buf.readUtf();
+        Entry<CustomPacketPayload> entry = (Entry<CustomPacketPayload>) direction(side).get(id);
+        if (entry == null) {
+            throw new DecoderException("No payload " + id + " is registered to be received on the " + side);
         }
-        IPayloadHandler<CustomPacketPayload> handler = (IPayloadHandler<CustomPacketPayload>) direction
-                .handler(payload.type());
+        CustomPacketPayload payload;
+        try {
+            payload = entry.codec.decode(buf);
+        } catch (RuntimeException e) {
+            throw new DecoderException("Could not read payload " + id, e);
+        }
+        if (data.isReadable()) {
+            throw new DecoderException("Payload " + id + " left " + data.readableBytes() + " bytes unread");
+        }
         Context context = new Context(payload.type(), side, player);
-        context.enqueueWork(() -> handler.handle(payload, context));
+        context.enqueueWork(() -> entry.handler.handle(payload, context));
     }
 
     private Direction direction(Side receiver) {
@@ -120,34 +138,26 @@ public final class PayloadChannel {
 
     private static final class Direction {
 
-        private final List<CustomPacketPayload.Type<?>> types = new ArrayList<>();
-        private final List<StreamCodec<? super RegistryFriendlyByteBuf, ? extends CustomPacketPayload>> codecs = new ArrayList<>();
-        private final Map<CustomPacketPayload.Type<?>, IPayloadHandler<?>> handlers = new HashMap<>();
-        private IdDispatchCodec<RegistryFriendlyByteBuf, CustomPacketPayload, CustomPacketPayload.Type<?>> codec;
+        private final Map<String, Entry<?>> entries = new ConcurrentHashMap<>();
 
-        synchronized void add(CustomPacketPayload.Type<?> type,
-                StreamCodec<? super RegistryFriendlyByteBuf, ? extends CustomPacketPayload> payloadCodec,
-                IPayloadHandler<?> handler) {
-            types.add(type);
-            codecs.add(payloadCodec);
-            handlers.put(type, handler);
-            codec = null;
+        <T extends CustomPacketPayload> void add(CustomPacketPayload.Type<T> type,
+                StreamCodec<? super RegistryFriendlyByteBuf, T> codec, IPayloadHandler<T> handler) {
+            entries.put(type.id().toString(), new Entry<>(codec, handler));
         }
 
-        synchronized IdDispatchCodec<RegistryFriendlyByteBuf, CustomPacketPayload, CustomPacketPayload.Type<?>> codec() {
-            if (codec == null) {
-                IdDispatchCodec.Builder<RegistryFriendlyByteBuf, CustomPacketPayload, CustomPacketPayload.Type<?>> builder = IdDispatchCodec
-                        .builder(CustomPacketPayload::type);
-                for (int i = 0; i < types.size(); i++) {
-                    builder.add(types.get(i), codecs.get(i));
-                }
-                codec = builder.build();
-            }
-            return codec;
+        Entry<?> get(String id) {
+            return entries.get(id);
         }
+    }
 
-        synchronized IPayloadHandler<?> handler(CustomPacketPayload.Type<?> type) {
-            return handlers.get(type);
+    private static final class Entry<T extends CustomPacketPayload> {
+
+        private final StreamCodec<? super RegistryFriendlyByteBuf, T> codec;
+        private final IPayloadHandler<T> handler;
+
+        Entry(StreamCodec<? super RegistryFriendlyByteBuf, T> codec, IPayloadHandler<T> handler) {
+            this.codec = codec;
+            this.handler = handler;
         }
     }
 

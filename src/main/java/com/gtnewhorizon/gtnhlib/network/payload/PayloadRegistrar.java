@@ -3,7 +3,6 @@ package com.gtnewhorizon.gtnhlib.network.payload;
 import com.gtnewhorizon.gtnhlib.codec.stream.RegistryFriendlyByteBuf;
 import com.gtnewhorizon.gtnhlib.codec.stream.StreamCodec;
 
-/** Register the same payloads in the same order on both sides: wire ids follow registration order. */
 public class PayloadRegistrar {
 
     private final PayloadChannel channel;
