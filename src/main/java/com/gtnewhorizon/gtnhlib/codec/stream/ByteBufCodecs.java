@@ -337,6 +337,10 @@ public interface ByteBufCodecs {
         });
     }
 
+    static <B extends FriendlyByteBuf, V extends Enum<V>> StreamCodec<B, V> enumCodec(Class<V> enumClass) {
+        return StreamCodec.of(FriendlyByteBuf::writeEnum, buf -> buf.readEnum(enumClass));
+    }
+
     static StreamCodec<ByteBuf, JsonElement> lenientJson(int maxStringLength) {
         Gson gson = new GsonBuilder().disableHtmlEscaping().create();
         return StreamCodec.of((buf, json) -> Utf8String.write(buf, gson.toJson(json), maxStringLength), buf -> {
