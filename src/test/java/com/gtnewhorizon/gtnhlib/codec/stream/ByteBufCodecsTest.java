@@ -72,7 +72,13 @@ class ByteBufCodecsTest {
         for (int i = 0; i < 6; i++) {
             buf.writeByte(0x80);
         }
-        assertThrows(RuntimeException.class, () -> VarInt.read(buf));
+        assertThrows(DecoderException.class, () -> VarInt.read(buf));
+
+        ByteBuf longBuf = Unpooled.buffer();
+        for (int i = 0; i < 11; i++) {
+            longBuf.writeByte(0x80);
+        }
+        assertThrows(DecoderException.class, () -> VarLong.read(longBuf));
     }
 
     @Test

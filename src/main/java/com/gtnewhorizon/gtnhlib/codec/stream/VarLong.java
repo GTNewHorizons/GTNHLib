@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.codec.stream;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.DecoderException;
 
 public final class VarLong {
 
@@ -28,7 +29,7 @@ public final class VarLong {
                 return value;
             }
         }
-        throw new RuntimeException("VarLong is longer than " + MAX_VARLONG_SIZE + " bytes");
+        throw new DecoderException("VarLong is longer than " + MAX_VARLONG_SIZE + " bytes");
     }
 
     public static ByteBuf write(ByteBuf output, long value) {
