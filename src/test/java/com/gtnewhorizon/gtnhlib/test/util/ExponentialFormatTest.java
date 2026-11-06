@@ -143,7 +143,7 @@ public class ExponentialFormatTest {
         // Safe thresholds
         FormatOptions formatOptions = new FormatOptions().setExponentialThreshold(BD_TRILLION); // 1T
         CompactOptions compactOptions = new CompactOptions().setCompactThreshold(BD_THOUSAND) // 1K
-            .setExponentialThreshold(BD_TRILLION); // 1T
+                .setExponentialThreshold(BD_TRILLION); // 1T
 
         // Verify formatting respects thresholds
         assertEquals("1e12", NumberFormatUtil.formatNumber(BD_TRILLION, formatOptions));
@@ -156,12 +156,12 @@ public class ExponentialFormatTest {
 
         // Unsafe: compact >= scientific should throw
         assertThrows(
-            IllegalArgumentException.class,
-            () -> new CompactOptions().setExponentialThreshold(500).setCompactThreshold(500));
+                IllegalArgumentException.class,
+                () -> new CompactOptions().setExponentialThreshold(500).setCompactThreshold(500));
 
         assertThrows(
-            IllegalArgumentException.class,
-            () -> new CompactOptions().setCompactThreshold(2 * BD_TRILLION.longValue()));
+                IllegalArgumentException.class,
+                () -> new CompactOptions().setCompactThreshold(2 * BD_TRILLION.longValue()));
     }
 
     @Test

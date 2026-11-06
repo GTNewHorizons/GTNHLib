@@ -87,8 +87,8 @@ public class NumberFormatUtilTest {
     @Test
     void bigIntegerCompactFormattingMatchesLong() {
         assertEquals(
-            NumberFormatUtil.formatNumberCompact(1_234_567L),
-            NumberFormatUtil.formatNumberCompact(new BigInteger("1234567")));
+                NumberFormatUtil.formatNumberCompact(1_234_567L),
+                NumberFormatUtil.formatNumberCompact(new BigInteger("1234567")));
     }
 
     /* ========================= Significant Digits ========================= */
@@ -106,14 +106,14 @@ public class NumberFormatUtilTest {
     @Test
     void decimalPlacesCompactFormattingCases() {
         assertEquals(
-            "9.999481312833312K",
-            NumberFormatUtil.formatNumberCompact(9999.481312833312, new CompactOptions().setDecimalPlaces(1_000)));
+                "9.999481312833312K",
+                NumberFormatUtil.formatNumberCompact(9999.481312833312, new CompactOptions().setDecimalPlaces(1_000)));
         assertEquals(
-            "9.1111111119K",
-            NumberFormatUtil.formatNumberCompact(9111.1111119, new CompactOptions().setDecimalPlaces(10)));
+                "9.1111111119K",
+                NumberFormatUtil.formatNumberCompact(9111.1111119, new CompactOptions().setDecimalPlaces(10)));
         assertEquals(
-            "9.111111112K",
-            NumberFormatUtil.formatNumberCompact(9111.1111119, new CompactOptions().setDecimalPlaces(9)));
+                "9.111111112K",
+                NumberFormatUtil.formatNumberCompact(9111.1111119, new CompactOptions().setDecimalPlaces(9)));
     }
 
     /* ========================= Zero / Edge ========================= */
@@ -203,10 +203,10 @@ public class NumberFormatUtilTest {
     @Test
     void allNumberTypesFormatting() {
         Number[] numbers = { (byte) 123, (short) 1234, 12345, // Integer
-            123456789L, // Long
-            1234.567F, // Float
-            12345.6789, // Double
-            new BigInteger("1234567890123456789"), new BigDecimal("12345.67890123456789") };
+                123456789L, // Long
+                1234.567F, // Float
+                12345.6789, // Double
+                new BigInteger("1234567890123456789"), new BigDecimal("12345.67890123456789") };
 
         for (Number n : numbers) {
             String plain = NumberFormatUtil.formatNumber(n);
@@ -234,8 +234,8 @@ public class NumberFormatUtilTest {
         assertEquals("1Q", NumberFormatUtil.formatNumberCompact(BD_QUADRILLION, options));
         assertEquals("1,000Q", NumberFormatUtil.formatNumberCompact(BD_TRILLION.multiply(BD_MILLION), options));
         assertEquals(
-            "1,000,000,000Q",
-            NumberFormatUtil.formatNumberCompact(BD_TRILLION.multiply(BD_TRILLION), options));
+                "1,000,000,000Q",
+                NumberFormatUtil.formatNumberCompact(BD_TRILLION.multiply(BD_TRILLION), options));
 
         assertEquals("999.99K", NumberFormatUtil.formatNumberCompact(999_999L, options));
     }
