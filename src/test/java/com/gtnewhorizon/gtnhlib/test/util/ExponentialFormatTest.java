@@ -8,43 +8,30 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.math.RoundingMode;
 import java.util.Locale;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
+import com.gtnewhorizon.gtnhlib.extensions.DefaultExponentialFormat;
+import com.gtnewhorizon.gtnhlib.extensions.DisableFormattedNotation;
+import com.gtnewhorizon.gtnhlib.extensions.ForceDisplayLocale;
+import com.gtnewhorizon.gtnhlib.extensions.ForceFormatLocale;
+import com.gtnewhorizon.gtnhlib.extensions.GlobalDisableExponentialNotation;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.ExponentialFormat;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 
+@ForceFormatLocale("en-US")
+@ForceDisplayLocale("en-US")
+@DisableFormattedNotation(false)
+@GlobalDisableExponentialNotation(false)
+@DefaultExponentialFormat(ExponentialFormat.SCIENTIFIC)
 public class ExponentialFormatTest {
 
     private static final double VALUE = 1.23456789e12; // 1.23 trillion
 
-    private String oldFormatPattern;
-    private Locale oldLocale;
-
-    @BeforeEach
-    void setup() {
-        oldFormatPattern = formatPattern;
-        oldLocale = Locale.getDefault(Locale.Category.FORMAT);
-
-        // Ensure deterministic output
-        Locale.setDefault(Locale.Category.FORMAT, Locale.US);
-    }
-
-    @AfterEach
-    void teardown() {
-        NumberFormatConfig.formatPattern = oldFormatPattern;
-        Locale.setDefault(Locale.Category.FORMAT, oldLocale);
-        NumberFormatUtil.postConfiguration();
-    }
-
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.SCIENTIFIC)
     void setScientificLocale() {
-        NumberFormatConfig.formatPattern = "SCIENTIFIC";
-        NumberFormatUtil.postConfiguration();
-
         double value = 1_888_888_888_888L;
 
         Locale.setDefault(Locale.Category.FORMAT, Locale.FRANCE);
@@ -53,10 +40,8 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.SCIENTIFIC)
     void scientificFormat_formatsUsingExponent() {
-        NumberFormatConfig.formatPattern = "SCIENTIFIC";
-        NumberFormatUtil.postConfiguration();
-
         assertEquals("1.23e12", NumberFormatUtil.formatNumber(VALUE));
         assertEquals("1.23e13", NumberFormatUtil.formatNumber(VALUE * 10));
         assertEquals("1.23e14", NumberFormatUtil.formatNumber(VALUE * 100));
@@ -67,20 +52,16 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.ENGINEERING)
     void engineeringFormat_formatsUsingExponent() {
-        NumberFormatConfig.formatPattern = "ENGINEERING";
-        NumberFormatUtil.postConfiguration();
-
         assertEquals("1.23e12", NumberFormatUtil.formatNumber(VALUE));
         assertEquals("12.35e12", NumberFormatUtil.formatNumber(VALUE * 10));
         assertEquals("123.46e12", NumberFormatUtil.formatNumber(VALUE * 100));
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.POWER_OF_TEN)
     void powerOfTenFormat_formatsUsingExplicitPower() {
-        NumberFormatConfig.formatPattern = "POWER_OF_TEN";
-        NumberFormatUtil.postConfiguration();
-
         assertEquals("1.23*10^12", NumberFormatUtil.formatNumber(VALUE));
         assertEquals("1.23*10^13", NumberFormatUtil.formatNumber(VALUE * 10));
         assertEquals("1.23*10^14", NumberFormatUtil.formatNumber(VALUE * 100));
@@ -91,10 +72,8 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.SCIENTIFIC)
     void scientificFormat_roundingBehavior() {
-        NumberFormatConfig.formatPattern = "SCIENTIFIC";
-        NumberFormatUtil.postConfiguration();
-
         assertEquals("1.23e12", NumberFormatUtil.formatNumber(1.234e12));
         assertEquals("1.24e12", NumberFormatUtil.formatNumber(1.235e12));
         assertEquals("1.24e12", NumberFormatUtil.formatNumber(1.239e12));
@@ -104,10 +83,8 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.ENGINEERING)
     void engineeringFormat_roundingBehavior() {
-        NumberFormatConfig.formatPattern = "ENGINEERING";
-        NumberFormatUtil.postConfiguration();
-
         // Mantissa in [1, 10)
         assertEquals("1.23e12", NumberFormatUtil.formatNumber(1.234e12));
         assertEquals("1.24e12", NumberFormatUtil.formatNumber(1.235e12));
@@ -122,10 +99,8 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.POWER_OF_TEN)
     void powerOfTenFormat_roundingBehavior() {
-        NumberFormatConfig.formatPattern = "POWER_OF_TEN";
-        NumberFormatUtil.postConfiguration();
-
         assertEquals("1.23*10^12", NumberFormatUtil.formatNumber(1.234e12));
         assertEquals("1.24*10^12", NumberFormatUtil.formatNumber(1.235e12));
 
@@ -137,10 +112,8 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.ENGINEERING)
     void engineeringFormat_rolloverOnRounding() {
-        NumberFormatConfig.formatPattern = "ENGINEERING";
-        NumberFormatUtil.postConfiguration();
-
         assertEquals("1e15", NumberFormatUtil.formatNumber(9.99995e14));
         assertEquals("10e15", NumberFormatUtil.formatNumber(9.99995e15));
         assertEquals("100e15", NumberFormatUtil.formatNumber(9.99995e16));
@@ -148,19 +121,15 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.ENGINEERING)
     void engineeringFormat_locale() {
-        NumberFormatConfig.formatPattern = "ENGINEERING";
-        NumberFormatUtil.postConfiguration();
-
         Locale.setDefault(Locale.Category.FORMAT, Locale.FRANCE);
         assertEquals("11,11e24", NumberFormatUtil.formatNumber(1.1111111e25));
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.SCIENTIFIC)
     void scientificFormat_cutOff() {
-        NumberFormatConfig.formatPattern = "SCIENTIFIC";
-        NumberFormatUtil.postConfiguration();
-
         long threshold = BD_TRILLION.longValue();
 
         assertEquals("999,999,999,999", NumberFormatUtil.formatNumber(threshold - 1));
@@ -169,14 +138,12 @@ public class ExponentialFormatTest {
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.SCIENTIFIC)
     void scientificThresholdOption() {
-        NumberFormatConfig.formatPattern = "SCIENTIFIC";
-        NumberFormatUtil.postConfiguration();
-
         // Safe thresholds
         FormatOptions formatOptions = new FormatOptions().setExponentialThreshold(BD_TRILLION); // 1T
         CompactOptions compactOptions = new CompactOptions().setCompactThreshold(BD_THOUSAND) // 1K
-                .setExponentialThreshold(BD_TRILLION); // 1T
+            .setExponentialThreshold(BD_TRILLION); // 1T
 
         // Verify formatting respects thresholds
         assertEquals("1e12", NumberFormatUtil.formatNumber(BD_TRILLION, formatOptions));
@@ -189,37 +156,27 @@ public class ExponentialFormatTest {
 
         // Unsafe: compact >= scientific should throw
         assertThrows(
-                IllegalArgumentException.class,
-                () -> new CompactOptions().setExponentialThreshold(500).setCompactThreshold(500));
+            IllegalArgumentException.class,
+            () -> new CompactOptions().setExponentialThreshold(500).setCompactThreshold(500));
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> new CompactOptions().setCompactThreshold(2 * BD_TRILLION.longValue()));
+            IllegalArgumentException.class,
+            () -> new CompactOptions().setCompactThreshold(2 * BD_TRILLION.longValue()));
     }
 
     @Test
+    @DefaultExponentialFormat(ExponentialFormat.SCIENTIFIC)
     void testScientificRoundingAcrossMagnitude() {
-        Locale old = Locale.getDefault(Locale.Category.FORMAT);
-        NumberFormatConfig.formatPattern = "SCIENTIFIC";
-        NumberFormatUtil.postConfiguration();
+        CompactOptions options = new CompactOptions();
 
-        try {
-            Locale.setDefault(Locale.Category.FORMAT, Locale.US);
+        // CEILING crosses magnitude
+        options.setRoundingMode(RoundingMode.CEILING);
+        assertEquals("1.01e12", NumberFormatUtil.formatNumberCompact(1_000_000_000_001L, options));
 
-            CompactOptions options = new CompactOptions();
-
-            // CEILING crosses magnitude
-            options.setRoundingMode(RoundingMode.CEILING);
-            assertEquals("1.01e12", NumberFormatUtil.formatNumberCompact(1_000_000_000_001L, options));
-
-            // HALF_UP rounds based on midpoint
-            options.setRoundingMode(RoundingMode.HALF_UP);
-            assertEquals("2e12", NumberFormatUtil.formatNumberCompact(1_995_000_000_001L, options));
-            assertEquals("1.99e12", NumberFormatUtil.formatNumberCompact(1_990_000_000_001L, options));
-
-        } finally {
-            Locale.setDefault(Locale.Category.FORMAT, old);
-        }
+        // HALF_UP rounds based on midpoint
+        options.setRoundingMode(RoundingMode.HALF_UP);
+        assertEquals("2e12", NumberFormatUtil.formatNumberCompact(1_995_000_000_001L, options));
+        assertEquals("1.99e12", NumberFormatUtil.formatNumberCompact(1_990_000_000_001L, options));
     }
 
 }
