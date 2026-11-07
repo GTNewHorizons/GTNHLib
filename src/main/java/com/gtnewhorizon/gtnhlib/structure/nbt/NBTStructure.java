@@ -48,17 +48,14 @@ public class NBTStructure {
         this(loc, BlockStateConverter.DEFAULT_INSTANCE);
     }
 
-    @SuppressWarnings("unchecked")
     public NBTStructure(String loc, BlockStateConverter converter) {
+        this(readCompound(loc), loc, converter);
+    }
+
+    @SuppressWarnings("unchecked")
+    public NBTStructure(NBTTagCompound compound, String loc, BlockStateConverter converter) {
         this.converter = converter;
-        try {
-            InputStream file = NBTStructure.class.getResourceAsStream(loc);
-            compound = CompressedStreamTools.readCompressed(file);
-            file.close();
-        } catch (Exception e) {
-            GTNHLib.LOG.error("Failed to find or read structure NBT file for " + loc);
-            throw new RuntimeException(e);
-        }
+        this.compound = compound;
         buildMaps = new Map[getPaletteCount()][4];
         palettes = new Map[getPaletteCount()][4];
         location = loc;
@@ -69,6 +66,15 @@ public class NBTStructure {
         init();
         createPalettes();
         createBuildMaps();
+    }
+
+    private static NBTTagCompound readCompound(String loc) {
+        try (InputStream file = NBTStructure.class.getResourceAsStream(loc)) {
+            return CompressedStreamTools.readCompressed(file);
+        } catch (Exception e) {
+            GTNHLib.LOG.error("Failed to find or read structure NBT file for " + loc);
+            throw new RuntimeException(e);
+        }
     }
 
     private void createPalettes() { // These should probably be rearranged
@@ -93,6 +99,9 @@ public class NBTStructure {
                     NBTTagCompound comp = list.getCompoundTagAt(i);
                     BlockPos pos = getListPosFromFacing(comp, facing);
                     BlockStateContainer state = getBuildPalettes()[j][facing].get(comp.getInteger("state"));
+                    if (state == null) {
+                        continue;
+                    }
                     boolean isStructureBlock = false;
                     if (comp.hasKey("nbt", 10)) {
                         if (comp.getCompoundTag("nbt").getString("id").equals("minecraft:structure_block")) {
@@ -328,8 +337,8 @@ public class NBTStructure {
     protected void setBlockState(World world, Random rand, int x, int y, int z, BlockStateContainer state,
             float integrity) {
         if (integrity >= 1 || (0 < integrity && rand.nextFloat() <= integrity)) {
-            BlockStateContainer newState = getBlockStateContainer(world, rand, x, y, z, state);
-            if (newState != null) {
+            state = getBlockStateContainer(world, rand, x, y, z, state);
+            if (state != null) {
                 world.setBlock(x, y, z, state.getBlock(), state.getMeta(), 2);
                 if (state.getType() == BlockStateContainer.BlockStateType.BLOCK_ENTITY) {
                     TileEntity te = world.getTileEntity(x, y, z);

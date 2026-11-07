@@ -4,7 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockSlab;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -14,6 +17,13 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+
+import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
+import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
+import com.gtnewhorizon.gtnhlib.geometry.DirectionTransform;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -27,6 +37,11 @@ public class BlockStateConverter {
         Map<Integer, BlockStateContainer> map = new HashMap<>();
         for (Pair<Integer, NBTTagCompound> pair : paletteNBT) {
             String namespace = NBTStructure.getBlockNamespaceFromNBT(pair.getRight());
+            BlockStateContainer propertyState = createPropertyBlockStateContainer(namespace, pair.getRight(), dir);
+            if (propertyState != null) {
+                map.put(pair.getLeft(), propertyState);
+                continue;
+            }
             // TODO: TileEntity data from some default states (eg potted_poppy)
             // Flower pots and skulls will need some default TE data since some things that are TE data in 1.7.10 are
             // now BlockState data.
@@ -38,6 +53,87 @@ public class BlockStateConverter {
             }
         }
         return map;
+    }
+
+    /** Modded blocks with blockstate properties, null falls back to the vanilla mappings. */
+    @Nullable
+    protected BlockStateContainer createPropertyBlockStateContainer(String blockName, NBTTagCompound paletteEntry,
+            ForgeDirection dir) {
+        int separator = blockName.indexOf(':');
+        if (separator < 0 || blockName.startsWith("minecraft:")) {
+            return null;
+        }
+        Block block = GameRegistry.findBlock(blockName.substring(0, separator), blockName.substring(separator + 1));
+        if (block == null) {
+            return null;
+        }
+        Map<String, String> blockStates = NBTStructure.getProperties(paletteEntry);
+        if (block instanceof BlockSlab) {
+            blockStates = toSlabTop(blockStates);
+        }
+
+        Map<String, BlockProperty<?>> validProperties = new HashMap<>();
+        BlockPropertyRegistry
+                .getPossibleProperties(block, 0, property -> validProperties.put(property.getName(), property));
+        BlockState state = BlockPropertyRegistry.getBlockState(block, 0);
+        boolean anyApplied = false;
+        for (Map.Entry<String, String> entry : blockStates.entrySet()) {
+            BlockProperty<?> property = validProperties.get(entry.getKey());
+            if (property != null) {
+                setParsedValue(state, property, entry.getValue());
+                anyApplied = true;
+            }
+        }
+        if (!anyApplied) {
+            return null;
+        }
+        state.transform(getTransformFromDir(dir));
+        return new BlockStateContainer(block, state.getBlockMeta(0));
+    }
+
+    /** Modern slabs store their half as {@code type}, which 1.7.10 slabs only read from the world. */
+    private static Map<String, String> toSlabTop(Map<String, String> blockStates) {
+        String type = blockStates.get("type");
+        if (!"top".equals(type) && !"bottom".equals(type)) {
+            return blockStates;
+        }
+        Map<String, String> result = new HashMap<>(blockStates);
+        result.remove("type");
+        result.put("top", Boolean.toString("top".equals(type)));
+        return result;
+    }
+
+    private static <T> void setParsedValue(BlockState state, BlockProperty<T> property, String value) {
+        try {
+            state.setPropertyValue(property, property.parse(value));
+        } catch (InvalidPropertyTextException e) {
+            GTNHLib.LOG.warn(
+                    "Could not parse structure block property {}={} for {}",
+                    property.getName(),
+                    value,
+                    state.getBlock(),
+                    e);
+        }
+    }
+
+    /** Turns directions the same way {@link NBTStructure} moves positions for each facing. */
+    private static DirectionTransform getTransformFromDir(ForgeDirection dir) {
+        return switch (dir) {
+            case SOUTH -> d -> d.offsetY == 0 ? d.getOpposite() : d;
+            case WEST -> d -> swap(
+                    swap(d, ForgeDirection.NORTH, ForgeDirection.WEST),
+                    ForgeDirection.SOUTH,
+                    ForgeDirection.EAST);
+            case EAST -> d -> swap(
+                    swap(d, ForgeDirection.NORTH, ForgeDirection.EAST),
+                    ForgeDirection.SOUTH,
+                    ForgeDirection.WEST);
+            default -> DirectionTransform.IDENTITY;
+        };
+    }
+
+    private static ForgeDirection swap(ForgeDirection value, ForgeDirection a, ForgeDirection b) {
+        return value == a ? b : value == b ? a : value;
     }
 
     /**
