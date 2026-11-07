@@ -502,19 +502,19 @@ public final class NumberFormatUtil {
 
         if (abs.compareTo(BD_QUADRILLION) >= 0) {
             divisor = BD_QUADRILLION;
-            suffix = "Q";
+            suffix = LOC_CACHE.getAbbreviationQuadrillion();
         } else if (abs.compareTo(BD_TRILLION) >= 0) {
             divisor = BD_TRILLION;
-            suffix = "T";
+            suffix = LOC_CACHE.abbreviationTrillion;
         } else if (abs.compareTo(BD_BILLION) >= 0) {
             divisor = BD_BILLION;
-            suffix = "B";
+            suffix = LOC_CACHE.abbreviationBillion;
         } else if (abs.compareTo(BD_MILLION) >= 0) {
             divisor = BD_MILLION;
-            suffix = "M";
+            suffix = LOC_CACHE.abbreviationMillion;
         } else {
             divisor = BD_THOUSAND;
-            suffix = "K";
+            suffix = LOC_CACHE.abbreviationThousand;
         }
 
         BigDecimal scaled = value.divide(divisor, MathContext.UNLIMITED);
@@ -535,7 +535,7 @@ public final class NumberFormatUtil {
 
         rounded = rounded.stripTrailingZeros();
 
-        return formatNumber(rounded, options.toFormatOptions()) + suffix;
+        return String.format(LOC_CACHE.abbreviationFormat, formatNumber(rounded, options.toFormatOptions()), suffix);
     }
 
     /* ========================= Exponential ========================= */
