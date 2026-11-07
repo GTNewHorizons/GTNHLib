@@ -20,6 +20,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
@@ -494,39 +496,58 @@ public final class NumberFormatUtil {
 
     /* ========================= Abbreviation ========================= */
 
-    private static String abbreviate(BigDecimal value, NumberOptionsBase<?> options) {
-        BigDecimal abs = value.abs();
+    private static final class CompactDividerThreshold {
 
-        BigDecimal divisor;
-        String suffix;
+        public final BigDecimal number;
+        public final Supplier<String> supplier;
 
-        if (abs.compareTo(BD_QUADRILLION) >= 0) {
-            divisor = BD_QUADRILLION;
-            suffix = LOC_CACHE.getAbbreviationQuadrillion();
-        } else if (abs.compareTo(BD_TRILLION) >= 0) {
-            divisor = BD_TRILLION;
-            suffix = LOC_CACHE.abbreviationTrillion;
-        } else if (abs.compareTo(BD_BILLION) >= 0) {
-            divisor = BD_BILLION;
-            suffix = LOC_CACHE.abbreviationBillion;
-        } else if (abs.compareTo(BD_MILLION) >= 0) {
-            divisor = BD_MILLION;
-            suffix = LOC_CACHE.abbreviationMillion;
-        } else {
-            divisor = BD_THOUSAND;
-            suffix = LOC_CACHE.abbreviationThousand;
+        private CompactDividerThreshold(BigDecimal number, Supplier<String> supplier) {
+            this.number = number;
+            this.supplier = supplier;
         }
+    }
 
-        BigDecimal scaled = value.divide(divisor, MathContext.UNLIMITED);
+    public static class AbbreviatedNumberInfo {
 
-        int dp = options.getDecimalPlaces();
+        public final BigDecimal rounded;
+        public final int exp;
+        public final String abbvr;
+
+        public AbbreviatedNumberInfo(BigDecimal rounded, int exp, String abbvr) {
+            this.rounded = rounded;
+            this.exp = exp;
+            this.abbvr = abbvr;
+        }
+    }
+
+    private static final ImmutableList<CompactDividerThreshold> COMPACT_DIVIDERS = ImmutableList
+            .<CompactDividerThreshold>builder()
+            .add(new CompactDividerThreshold(BD_QUADRILLION, LOC_CACHE::getAbbreviationQuadrillion))
+            .add(new CompactDividerThreshold(BD_TRILLION, LOC_CACHE::getAbbreviationTrillion))
+            .add(new CompactDividerThreshold(BD_BILLION, LOC_CACHE::getAbbreviationBillion))
+            .add(new CompactDividerThreshold(BD_MILLION, LOC_CACHE::getAbbreviationMillion))
+            .add(new CompactDividerThreshold(BD_THOUSAND, LOC_CACHE::getAbbreviationThousand)).build();
+
+    /**
+     * @apiNote The passed number should always be greater than or equal to the minimum compact number threshold!
+     */
+    public static @Nullable AbbreviatedNumberInfo getAbbreviatedNumberInformation(BigDecimal number,
+            NumberOptionsBase<?> options) {
+        final BigDecimal abs = number.abs();
+        Optional<CompactDividerThreshold> maybe = COMPACT_DIVIDERS.stream().filter(x -> x.number.compareTo(abs) <= 0)
+                .findFirst();
+        if (!maybe.isPresent()) return null;
+        CompactDividerThreshold threshold = maybe.get();
+
+        BigDecimal scaled = number.divide(threshold.number, MathContext.UNLIMITED);
+        // Prevent unit rollover caused only by rounding:
+        // If abs(value) is still below the next threshold, do not allow rounded to reach 1000.
+        int dp = options.getMaxDecimalPlaces();
         RoundingMode rm = options.getRoundingMode();
 
         BigDecimal rounded = scaled.setScale(dp, rm);
 
-        // Prevent unit rollover caused only by rounding:
-        // If abs(value) is still below the next threshold, do not allow rounded to reach 1000.
-        BigDecimal nextThreshold = divisor.multiply(BD_THOUSAND);
+        BigDecimal nextThreshold = threshold.number.multiply(BD_THOUSAND);
         if (abs.compareTo(nextThreshold) < 0 && rounded.abs().compareTo(BD_THOUSAND) >= 0) {
             BigDecimal step = BigDecimal.ONE.scaleByPowerOfTen(-dp); // 10^-dp (works for dp <= 0 too)
             BigDecimal maxAbs = BD_THOUSAND.subtract(step).setScale(dp, RoundingMode.UNNECESSARY);
@@ -535,7 +556,20 @@ public final class NumberFormatUtil {
 
         rounded = rounded.stripTrailingZeros();
 
-        return String.format(LOC_CACHE.abbreviationFormat, formatNumber(rounded, options.toFormatOptions()), suffix);
+        return new AbbreviatedNumberInfo(
+                rounded,
+                threshold.number.precision() - 1 - threshold.number.scale(),
+                threshold.supplier.get());
+    }
+
+    private static String abbreviate(BigDecimal value, NumberOptionsBase<?> options) {
+
+        var info = getAbbreviatedNumberInformation(value, options);
+
+        return String.format(
+                LOC_CACHE.abbreviationFormat,
+                formatNumber(info.rounded, options.toFormatOptions()),
+                info.abbvr);
     }
 
     /* ========================= Exponential ========================= */
@@ -851,7 +885,7 @@ public final class NumberFormatUtil {
 
     }
 
-    private static String rawNumberToString(Number value) {
+    public static String rawNumberToString(Number value) {
         if (value instanceof BigDecimal bd) {
             // It seems BigDecimal.toString() may emit exponential notation, but
             // toPlainString() never does.
@@ -877,7 +911,7 @@ public final class NumberFormatUtil {
         return value.toString();
     }
 
-    private static boolean isExponentialFormattingEnabled(BigDecimal absValue, NumberOptionsBase<?> options) {
+    public static boolean isExponentialFormattingEnabled(BigDecimal absValue, NumberOptionsBase<?> options) {
         // Global flag disables exponential formatting entirely
         boolean disabledGlobally = globalDisableExponentialNotation;
 

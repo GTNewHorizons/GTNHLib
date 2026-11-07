@@ -163,6 +163,7 @@ public class TestItem extends Item implements ItemWithTextures {
             case 7 -> "showcase-translation-file-error";
             case 8 -> "showcase-file-error";
             case 9 -> "showcase-missing-file";
+            case 10 -> "showcase-plurality-presets";
             default -> "showcase-all";
         };
 

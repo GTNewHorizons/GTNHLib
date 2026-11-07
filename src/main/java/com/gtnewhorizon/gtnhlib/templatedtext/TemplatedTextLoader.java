@@ -33,6 +33,7 @@ import com.gtnewhorizon.gtnhlib.templatedtext.command.IfDefCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.IsolationCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.ItemCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.LangCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.command.PluralPresetCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.PluralityCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.StaticFormatCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.UnitCommand;
@@ -45,6 +46,7 @@ import com.gtnewhorizon.gtnhlib.templatedtext.lineprocessor.RawLineProcessor;
 import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
 import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
+import com.gtnewhorizon.gtnhlib.util.parsing.CLDRPluralRuleParser;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -274,6 +276,10 @@ public class TemplatedTextLoader {
         addGlobalCommandWithAliases(new IfDefCommand(false), "if-not-exists", "ifne", "if-not-defined", "if-ndef", "ifndef");
         addGlobalCommandWithAliases(new PluralityCommand(true), "singular", "if-1");
         addGlobalCommandWithAliases(new PluralityCommand(false), "plural", "if-n-1");
+        for (Map.Entry<String, CLDRPluralRuleParser> kv : CLDRPluralRuleParser.getKnownRules()) {
+            String name = kv.getKey().replace("_", "-");
+            addGlobalCommandWithAliases(new PluralPresetCommand(kv.getValue(), name.toUpperCase()), "plural-" + name.toLowerCase());
+        }
         // spotless:on
 
         // unit standardization commands
