@@ -1,6 +1,8 @@
 package com.gtnewhorizon.gtnhlib.util;
 
 import java.util.ArrayDeque;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -9,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelines;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
+import com.gtnewhorizon.gtnhlib.templatedtext.command.DynamicFormatCommand;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -320,36 +324,42 @@ public class TextFormatUtil {
         @Override
         public void registerKeys() {
             // assign based on resource
-            this.registerKey("default", this.$default, this::set$default);
-            this.registerKey("unit", this.unit, this::setUnit);
-            this.registerKey("name", this.name, this::setName);
-            this.registerKey("steam", this.steam, this::setSteam);
-            this.registerKey("formula", this.formula, this::setFormula);
-            this.registerKey("note", this.note, this::setNote);
-            this.registerKey("machine_type", this.machineType, this::setMachineType);
-            this.registerKey("voltage", this.voltage, this::setVoltage);
-            this.registerKey("misc", this.misc, this::setMisc);
-            this.registerKey("cold", this.cold, this::setCold);
-            this.registerKey("power_capacity", this.powerCapacity, this::setPowerCapacity);
-            this.registerKey("speed", this.speed, this::setSpeed);
-            this.registerKey("range", this.range, this::setRange);
-            this.registerKey("amount", this.amount, this::setAmount);
-            this.registerKey("hatch_notice", this.hatchNotice, this::setHatchNotice);
-            this.registerKey("loss", this.loss, this::setLoss);
-            this.registerKey("parallel", this.parallel, this::setParallel);
-            this.registerKey("mode", this.mode, this::setMode);
-            this.registerKey("key", this.key, this::setKey);
-            this.registerKey("power_efficiency", this.powerEfficiency, this::setPowerEfficiency);
-            this.registerKey("amperage", this.amperage, this::setAmperage);
-            this.registerKey("heat", this.heat, this::setHeat);
-            this.registerKey("hot", this.hot, this::setHot);
-            this.registerKey("electron_volt", this.electronVolt, this::setElectronVolt);
-            this.registerKey("deprecated", this.deprecated, this::setDeprecated);
-            this.registerKey("cable_loss", this.cableLoss, this::setCableLoss);
-            this.registerKey("danger", this.danger, this::setDanger);
-            this.registerKey("mechanic", this.mechanic, this::setMechanic);
-            this.registerKey("time", this.time, this::setTime);
-            this.registerKey("pollution", this.pollution, this::setPollution);
+            this.registerKey("default", this::getDefault, this::set$default);
+            this.registerKey("unit", this::getUnit, this::setUnit);
+            this.registerKey("name", this::getName, this::setName);
+            this.registerKey("steam", this::getSteam, this::setSteam);
+            this.registerKey("formula", this::getFormula, this::setFormula);
+            this.registerKey("note", this::getNote, this::setNote);
+            this.registerKey("machine_type", this::getMachineType, this::setMachineType);
+            this.registerKey("voltage", this::getVoltage, this::setVoltage);
+            this.registerKey("misc", this::getMisc, this::setMisc);
+            this.registerKey("cold", this::getCold, this::setCold);
+            this.registerKey("power_capacity", this::getPowerCapacity, this::setPowerCapacity);
+            this.registerKey("speed", this::getSpeed, this::setSpeed);
+            this.registerKey("range", this::getRange, this::setRange);
+            this.registerKey("amount", this::getAmount, this::setAmount);
+            this.registerKey("hatch_notice", this::getHatchNotice, this::setHatchNotice);
+            this.registerKey("loss", this::getLoss, this::setLoss);
+            this.registerKey("parallel", this::getParallel, this::setParallel);
+            this.registerKey("mode", this::getMode, this::setMode);
+            this.registerKey("key", this::getKey, this::setKey);
+            this.registerKey("power_efficiency", this::getPowerEfficiency, this::setPowerEfficiency);
+            this.registerKey("amperage", this::getAmperage, this::setAmperage);
+            this.registerKey("heat", this::getHeat, this::setHeat);
+            this.registerKey("hot", this::getHot, this::setHot);
+            this.registerKey("electron_volt", this::getElectronVolt, this::setElectronVolt);
+            this.registerKey("deprecated", this::getDeprecated, this::setDeprecated);
+            this.registerKey("cable_loss", this::getCableLoss, this::setCableLoss);
+            this.registerKey("danger", this::getDanger, this::setDanger);
+            this.registerKey("mechanic", this::getMechanic, this::setMechanic);
+            this.registerKey("time", this::getTime, this::setTime);
+            this.registerKey("pollution", this::getPollution, this::setPollution);
+        }
+
+        @Override
+        protected void registerKey(String name, Supplier<@NotNull String> getter, Consumer<@NotNull String> setter) {
+            super.registerKey(name, getter, setter);
+            TemplatedTextLoader.TOOLTIP_DESCRIPTION.addCommand("color_" + name, new DynamicFormatCommand(getter));
         }
     }
 

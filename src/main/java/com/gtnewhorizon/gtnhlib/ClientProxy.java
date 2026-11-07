@@ -27,6 +27,7 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
@@ -106,6 +107,7 @@ public class ClientProxy extends CommonProxy {
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         resourceManager.registerReloadListener(new ColorResource.CacheReloadListener());
         resourceManager.registerReloadListener(NumberFormatUtil.ReloadListener.INSTANCE);
+        resourceManager.registerReloadListener(TemplatedTextLoader.getReloadListener());
         resourceManager.registerReloadListener(TextThemingGuidelines.getReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
     }
