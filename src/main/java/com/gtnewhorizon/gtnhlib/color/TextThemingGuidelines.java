@@ -141,6 +141,13 @@ public abstract class TextThemingGuidelines {
         this.registerKey(name, defGetter.get(), setter);
     }
 
+    /**
+     * Registers a key handler for a given key.
+     *
+     * @param name   The name of the key.
+     * @param def    The default value of the key.
+     * @param setter The function to call when updating this value.
+     */
     protected void registerKey(@NotNull String name, @NotNull String def, @NotNull Consumer<@NotNull String> setter) {
         this.keyHandlers.put(name, new FormatKey(def, setter));
         setter.accept(def);
