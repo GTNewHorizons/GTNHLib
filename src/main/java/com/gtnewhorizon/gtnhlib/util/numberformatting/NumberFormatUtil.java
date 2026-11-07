@@ -6,31 +6,42 @@ import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_QUADRI
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_THOUSAND;
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_TRILLION;
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig.*;
+import static java.lang.annotation.ElementType.FIELD;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
-import com.gtnewhorizon.gtnhlib.client.ResourceReloadListener;
-import com.gtnewhorizon.gtnhlib.datastructs.caches.LocalisationCache;
+import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
 
 @SuppressWarnings("unused")
@@ -42,7 +53,15 @@ public final class NumberFormatUtil {
 
     /* ========================= Localisation ========================= */
 
-    public static class NumberFormattingLocalisationCache extends LocalisationCache {
+    public static class LocalisationCache {
+
+        @Target({ FIELD })
+        @Retention(RetentionPolicy.RUNTIME)
+        private @interface LangKey {
+
+            @NotNull
+            String value();
+        }
 
         // numeric abbreviation
 
@@ -335,9 +354,86 @@ public final class NumberFormatUtil {
         @LangKey("gtnhlib.unified.measurement.unit_format.speed")
         @Getter
         private @NotNull String unitFormatSpeed = "%s/%s";
+
+        private final @NotNull ImmutableMap<@NotNull String, @NotNull String> defaults;
+
+        private LocalisationCache() {
+            try {
+                ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+                for (final Field field : this.getClass().getDeclaredFields()) {
+                    // we only care about string fields with lang key annotations
+                    if (field.getType() != String.class) continue;
+                    LangKey annotation = field.getAnnotation(LangKey.class);
+                    if (annotation == null) continue;
+
+                    // store the default value for fallbacks
+                    builder.put(annotation.value(), (String) FieldUtils.readField(field, this, true));
+                }
+                defaults = builder.build();
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @SideOnly(Side.CLIENT)
+        private void onResourceManagerReload(IResourceManager resourceManager) {
+            try {
+                // update the field values
+                for (final Field field : this.getClass().getDeclaredFields()) {
+                    // we only care about string fields with the lang key annotation
+                    if (field.getType() != String.class) continue;
+                    LangKey annotation = field.getAnnotation(LangKey.class);
+                    if (annotation == null) continue;
+                    String langKey = annotation.value();
+
+                    // attempt to translate, else fallback to the default value, and then they key itself.
+                    String translated;
+                    if (!StatCollector.canTranslate(langKey)) {
+                        translated = this.defaults.getOrDefault(annotation.value(), langKey);
+                    } else {
+                        translated = StatCollector.translateToLocal(annotation.value());
+                    }
+
+                    // update the field value
+                    FieldUtils.writeField(field, this, translated, true);
+                }
+
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    public final static NumberFormattingLocalisationCache LOC_CACHE = new NumberFormattingLocalisationCache();
+    @SideOnly(Side.CLIENT)
+    public static class ReloadListener implements IResourceManagerReloadListener {
+
+        public static final ReloadListener INSTANCE = new ReloadListener();
+        private final @NotNull LinkedList<@NotNull Consumer<IResourceManager>> callbacks = new LinkedList<>();
+
+        private ReloadListener() {}
+
+        @Override
+        public void onResourceManagerReload(IResourceManager resourceManager) {
+            synchronized (INSTANCE) {
+                LOC_CACHE.onResourceManagerReload(resourceManager);
+                synchronized (callbacks) {
+                    // run the callbacks that pre-cache formatting to an even higher degree.
+                    for (Consumer<IResourceManager> callback : this.callbacks) {
+                        callback.accept(resourceManager);
+                    }
+                }
+            }
+        }
+
+        @SideOnly(Side.CLIENT)
+        public void registerCallback(@NotNull Consumer<IResourceManager> callback) {
+            synchronized (this.callbacks) {
+                this.callbacks.addLast(callback);
+            }
+        }
+    }
+
+    public final static LocalisationCache LOC_CACHE = new LocalisationCache();
 
     /* ========================= Main Formatter ========================= */
 
@@ -758,7 +854,7 @@ public final class NumberFormatUtil {
             this.unit2Supplier = unit2Supplier;
             updateCachedUnitString();
             if (FMLCommonHandler.instance().getSide().isClient()) {
-                ResourceReloadListener.registerLateCallback((manager) -> this.updateCachedUnitString());
+                ReloadListener.INSTANCE.registerCallback(($_) -> this.updateCachedUnitString());
             }
         }
 
