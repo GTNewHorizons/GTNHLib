@@ -23,6 +23,8 @@ import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
  */
 public final class StructureSaver {
 
+    public static final String STRUCTURE_BLOCK = "minecraft:structure_block";
+
     private StructureSaver() {}
 
     public static NBTTagCompound save(World world, int x1, int y1, int z1, int x2, int y2, int z2) {
@@ -36,7 +38,10 @@ public final class StructureSaver {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
-                    NBTTagCompound paletteEntry = createPaletteEntry(world, x, y, z);
+                    TileEntity tile = world.getTileEntity(x, y, z);
+                    boolean marker = tile instanceof TileEntityStructureMarker;
+                    NBTTagCompound paletteEntry = marker ? createMarkerPaletteEntry()
+                            : createPaletteEntry(world, x, y, z);
                     String key = paletteEntry.toString();
                     Integer index = paletteIndices.get(key);
                     if (index == null) {
@@ -48,8 +53,9 @@ public final class StructureSaver {
                     NBTTagCompound blockEntry = new NBTTagCompound();
                     blockEntry.setTag("pos", intList(x - minX, y - minY, z - minZ));
                     blockEntry.setInteger("state", index);
-                    TileEntity tile = world.getTileEntity(x, y, z);
-                    if (tile != null) {
+                    if (marker) {
+                        blockEntry.setTag("nbt", createMarkerNbt(((TileEntityStructureMarker) tile).getData()));
+                    } else if (tile != null) {
                         NBTTagCompound tileNbt = new NBTTagCompound();
                         tile.writeToNBT(tileNbt);
                         tileNbt.removeTag("x");
@@ -76,6 +82,23 @@ public final class StructureSaver {
             throw new IOException("Could not create " + parent);
         }
         CompressedStreamTools.writeCompressed(structure, new FileOutputStream(file));
+    }
+
+    private static NBTTagCompound createMarkerPaletteEntry() {
+        NBTTagCompound properties = new NBTTagCompound();
+        properties.setString("mode", "data");
+        NBTTagCompound entry = new NBTTagCompound();
+        entry.setString("Name", STRUCTURE_BLOCK);
+        entry.setTag("Properties", properties);
+        return entry;
+    }
+
+    private static NBTTagCompound createMarkerNbt(String data) {
+        NBTTagCompound nbt = new NBTTagCompound();
+        nbt.setString("id", STRUCTURE_BLOCK);
+        nbt.setString("mode", "DATA");
+        nbt.setString(TileEntityStructureMarker.TAG_DATA, data);
+        return nbt;
     }
 
     private static NBTTagCompound createPaletteEntry(World world, int x, int y, int z) {

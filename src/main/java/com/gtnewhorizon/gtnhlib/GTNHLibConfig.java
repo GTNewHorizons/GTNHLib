@@ -67,6 +67,11 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static boolean enableTestItems;
 
+    @Config.Comment("Registers the structure data marker block, for authoring structure templates with /structure")
+    @Config.DefaultBoolean(false)
+    @Config.RequiresMcRestart
+    public static boolean enableStructureMarker;
+
     @Config.Comment("Swaps out the block crack texture on modeled blocks, to make it easier to see the rotation.")
     @Config.DefaultBoolean(false)
     public static boolean testCrackTexture;

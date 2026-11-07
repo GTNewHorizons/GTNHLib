@@ -16,12 +16,17 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.structure.nbt.StructureOrientation.Mirror;
 import com.gtnewhorizon.gtnhlib.structure.nbt.StructureOrientation.Rotation;
@@ -32,8 +37,9 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 
 /**
  * {@code /structure save <name> <x1> <y1> <z1> <x2> <y2> <z2>} writes an area to {@code structures/<name>.nbt};
- * {@code /structure load <name> [rotation] [mirror]} places it at the sender's position. Coordinates accept {@code ~}
- * and {@code ~n} relative to the sender.
+ * {@code /structure load <name> [rotation] [mirror]} places it at the sender's position;
+ * {@code /structure marker <data>} sets the text of the looked-at {@link BlockStructureMarker}. Coordinates accept
+ * {@code ~} and {@code ~n} relative to the sender.
  */
 public final class StructureCommand {
 
@@ -65,6 +71,10 @@ public final class StructureCommand {
         BrigadierApi.getCommandDispatcher().register(
                 literal("structure").requires(src -> src.canCommandSenderUseCommand(2, "structure"))
                         .then(literal("save").then(argument("name", StringArgumentType.string()).then(coords)))
+                        .then(
+                                literal("marker").then(
+                                        argument("data", StringArgumentType.greedyString())
+                                                .executes(StructureCommand::marker)))
                         .then(literal("load").then(name)));
     }
 
@@ -145,7 +155,21 @@ public final class StructureCommand {
             return error(sender, "gtnhlib.chat.structure.error.read", file.getPath(), e.getMessage());
         }
         try {
-            NBTStructure structure = new NBTStructure(compound, file.getPath(), BlockStateConverter.DEFAULT_INSTANCE);
+            NBTStructure structure = new NBTStructure(compound, file.getPath(), BlockStateConverter.DEFAULT_INSTANCE) {
+
+                @Override
+                public BlockStateContainer setStructureBlockAction(BlockPos pos, BlockStateContainer below, String data,
+                        StructureOrientation orientation) {
+                    if (BlockStructureMarker.INSTANCE == null) {
+                        return super.setStructureBlockAction(pos, below, data, orientation);
+                    }
+                    BlockStateContainer marker = new BlockStateContainer(BlockStructureMarker.INSTANCE, 0);
+                    NBTTagCompound nbt = new NBTTagCompound();
+                    nbt.setString(TileEntityStructureMarker.TAG_DATA, data);
+                    marker.setCompound(nbt);
+                    return marker;
+                }
+            };
             ChunkCoordinates pos = sender.getPlayerCoordinates();
             structure.placeStructure(
                     sender.getEntityWorld(),
@@ -159,6 +183,30 @@ public final class StructureCommand {
             return error(sender, "gtnhlib.chat.structure.error.exception", e.toString());
         }
         return success(sender, "gtnhlib.chat.structure.loaded", name);
+    }
+
+    private static int marker(CommandContext<ICommandSender> ctx) {
+        ICommandSender sender = ctx.getSource();
+        if (!(sender instanceof EntityPlayerMP player)) {
+            return error(sender, "gtnhlib.chat.structure.error.marker");
+        }
+        MovingObjectPosition hit = getLookedAtBlock(player);
+        TileEntity tile = hit == null ? null : player.worldObj.getTileEntity(hit.blockX, hit.blockY, hit.blockZ);
+        if (!(tile instanceof TileEntityStructureMarker marker)) {
+            return error(sender, "gtnhlib.chat.structure.error.marker");
+        }
+        String data = StringArgumentType.getString(ctx, "data");
+        marker.setData(data);
+        return success(sender, "gtnhlib.chat.structure.marker.data", data);
+    }
+
+    private static MovingObjectPosition getLookedAtBlock(EntityPlayerMP player) {
+        double reach = player.theItemInWorldManager.getBlockReachDistance();
+        Vec3 eyes = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+        Vec3 look = player.getLook(1);
+        Vec3 end = eyes.addVector(look.xCoord * reach, look.yCoord * reach, look.zCoord * reach);
+        MovingObjectPosition hit = player.worldObj.rayTraceBlocks(eyes, end, true);
+        return hit != null && hit.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK ? hit : null;
     }
 
     private static String getName(CommandContext<ICommandSender> ctx) {

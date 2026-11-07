@@ -32,6 +32,7 @@ import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
+import com.gtnewhorizon.gtnhlib.structure.nbt.BlockStructureMarker;
 import com.gtnewhorizon.gtnhlib.structure.nbt.StructureCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
@@ -87,6 +88,10 @@ public class CommonProxy {
             BlockYUVRotationTest.register();
             BlockXUVRotationTest.register();
             BlockXYUVRotationTest.register();
+        }
+
+        if (GTNHLibConfig.enableStructureMarker) {
+            BlockStructureMarker.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
