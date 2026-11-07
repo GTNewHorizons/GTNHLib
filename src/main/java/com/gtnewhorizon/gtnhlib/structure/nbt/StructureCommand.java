@@ -30,6 +30,7 @@ import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.structure.nbt.StructureOrientation.Mirror;
 import com.gtnewhorizon.gtnhlib.structure.nbt.StructureOrientation.Rotation;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -45,14 +46,22 @@ public final class StructureCommand {
 
     private static final Pattern NAME = Pattern.compile("[a-z0-9_-]+(/[a-z0-9_-]+)*");
     private static final String[] COORDS = { "x1", "y1", "z1", "x2", "y2", "z2" };
+    private static final int MAX_SIZE = 64;
+    private static final ArgumentType<String> COORDINATE = reader -> {
+        int start = reader.getCursor();
+        while (reader.canRead() && reader.peek() != ' ') {
+            reader.skip();
+        }
+        return reader.getString().substring(start, reader.getCursor());
+    };
 
     private StructureCommand() {}
 
     public static void register() {
-        RequiredArgumentBuilder<ICommandSender, String> coords = argument(COORDS[5], StringArgumentType.word())
+        RequiredArgumentBuilder<ICommandSender, String> coords = argument(COORDS[5], COORDINATE)
                 .executes(StructureCommand::save);
         for (int i = COORDS.length - 2; i >= 0; i--) {
-            coords = argument(COORDS[i], StringArgumentType.word()).then(coords);
+            coords = argument(COORDS[i], COORDINATE).then(coords);
         }
 
         RequiredArgumentBuilder<ICommandSender, String> mirror = argument("mirror", StringArgumentType.word())
@@ -116,6 +125,11 @@ public final class StructureCommand {
                 return error(sender, "gtnhlib.chat.structure.error.coordinate", text);
             }
             c[i] = value;
+        }
+        for (int i = 0; i < 3; i++) {
+            if (Math.abs((long) c[i] - c[i + 3]) >= MAX_SIZE) {
+                return error(sender, "gtnhlib.chat.structure.error.size", MAX_SIZE);
+            }
         }
         File file = getFile(name);
         try {

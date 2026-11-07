@@ -311,6 +311,7 @@ gtnhlib.chat.structure.error.missing=No structure file at %s
 gtnhlib.chat.structure.error.read=Could not read %s: %s
 gtnhlib.chat.structure.error.write=Could not write %s: %s
 gtnhlib.chat.structure.error.coordinate=Invalid coordinate "%s" (a number, ~ or ~n)
+gtnhlib.chat.structure.error.size=Structures can be at most %s blocks on each side
 gtnhlib.chat.structure.error.exception=Structure failed: %s (see the log)
 gtnhlib.chat.structure.error.marker=Look at a structure marker to set its data
 gtnhlib.chat.structure.marker.data=Structure marker data: %s
