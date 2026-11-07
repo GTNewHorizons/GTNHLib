@@ -541,7 +541,7 @@ public final class NumberFormatUtil {
     /* ========================= Exponential ========================= */
 
     private static String formatExponential(BigDecimal value, NumberOptionsBase<?> options) {
-        return EXPONENTIAL_FORMAT.format(value, options);
+        return options.getExponentialFormat().format(value, options);
     }
 
     /* ========================= Fluids ========================= */
