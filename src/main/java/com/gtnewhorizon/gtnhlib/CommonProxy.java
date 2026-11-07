@@ -33,6 +33,7 @@ import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.structure.nbt.BlockStructureMarker;
+import com.gtnewhorizon.gtnhlib.structure.nbt.BlockStructureVoid;
 import com.gtnewhorizon.gtnhlib.structure.nbt.StructureCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
@@ -92,6 +93,7 @@ public class CommonProxy {
 
         if (GTNHLibConfig.enableStructureMarker) {
             BlockStructureMarker.register();
+            BlockStructureVoid.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {

@@ -315,3 +315,4 @@ gtnhlib.chat.structure.error.exception=Structure failed: %s (see the log)
 gtnhlib.chat.structure.error.marker=Look at a structure marker to set its data
 gtnhlib.chat.structure.marker.data=Structure marker data: %s
 tile.gtnhlib.structure_marker.name=Structure Marker
+tile.gtnhlib.structure_void.name=Structure Void

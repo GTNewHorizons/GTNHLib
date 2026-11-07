@@ -67,7 +67,7 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static boolean enableTestItems;
 
-    @Config.Comment("Registers the structure data marker block, for authoring structure templates with /structure")
+    @Config.Comment("Registers the structure data marker and structure void blocks, for authoring structure templates with /structure")
     @Config.DefaultBoolean(false)
     @Config.RequiresMcRestart
     public static boolean enableStructureMarker;

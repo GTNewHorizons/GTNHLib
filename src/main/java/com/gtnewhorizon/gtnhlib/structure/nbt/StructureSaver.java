@@ -38,6 +38,9 @@ public final class StructureSaver {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
+                    if (world.getBlock(x, y, z) instanceof BlockStructureVoid) {
+                        continue;
+                    }
                     TileEntity tile = world.getTileEntity(x, y, z);
                     boolean marker = tile instanceof TileEntityStructureMarker;
                     NBTTagCompound paletteEntry = marker ? createMarkerPaletteEntry()
