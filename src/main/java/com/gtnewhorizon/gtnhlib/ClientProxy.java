@@ -30,6 +30,7 @@ import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -104,6 +105,7 @@ public class ClientProxy extends CommonProxy {
         final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         resourceManager.registerReloadListener(new ColorResource.CacheReloadListener());
+        resourceManager.registerReloadListener(NumberFormatUtil.LOC_CACHE);
         resourceManager.registerReloadListener(TextThemingGuidelines.getReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
     }
