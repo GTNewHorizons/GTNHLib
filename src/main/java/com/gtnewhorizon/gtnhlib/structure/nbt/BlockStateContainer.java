@@ -34,6 +34,13 @@ public class BlockStateContainer {
         this(block, 0);
     }
 
+    public BlockStateContainer copy() {
+        BlockStateContainer copy = new BlockStateContainer(theBlock, theMeta);
+        copy.theCompound = theCompound == null ? null : (NBTTagCompound) theCompound.copy();
+        copy.lootTable = lootTable;
+        return copy;
+    }
+
     public Block getBlock() {
         return theBlock;
     }
