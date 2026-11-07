@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.init.Blocks;
@@ -23,6 +24,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
+import com.gtnewhorizon.gtnhlib.blockstate.core.MetaBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -31,6 +33,9 @@ import cpw.mods.fml.common.registry.GameRegistry;
 public class BlockStateConverter {
 
     public static final BlockStateConverter DEFAULT_INSTANCE = new BlockStateConverter();
+
+    private static final ForgeDirection[] DOOR_FACINGS = { ForgeDirection.WEST, ForgeDirection.NORTH,
+            ForgeDirection.EAST, ForgeDirection.SOUTH };
 
     public Map<Integer, BlockStateContainer> processPalette(StructureOrientation orientation,
             Set<Pair<Integer, NBTTagCompound>> paletteNBT) {
@@ -134,40 +139,65 @@ public class BlockStateConverter {
         return value.equals(a) ? b : value.equals(b) ? a : value;
     }
 
-    /** Modded blocks with blockstate properties, null falls back to the vanilla mappings. */
+    /**
+     * Entries saved by {@link StructureSaver} (with {@code Meta}) and modded blocks with blockstate properties, null
+     * falls back to the vanilla mappings.
+     */
     @Nullable
     protected BlockStateContainer createPropertyBlockStateContainer(String blockName, NBTTagCompound paletteEntry,
             StructureOrientation orientation) {
+        boolean savedMeta = paletteEntry.hasKey("Meta", 99);
         int separator = blockName.indexOf(':');
-        if (separator < 0 || blockName.startsWith("minecraft:")) {
+        if (separator < 0 || (!savedMeta && blockName.startsWith("minecraft:"))) {
             return null;
         }
         Block block = GameRegistry.findBlock(blockName.substring(0, separator), blockName.substring(separator + 1));
         if (block == null) {
             return null;
         }
+        int baseMeta = savedMeta ? paletteEntry.getInteger("Meta") : 0;
+        if (savedMeta && block instanceof BlockDoor) {
+            return new BlockStateContainer(block, transformDoorMeta(baseMeta, orientation));
+        }
         Map<String, String> blockStates = NBTStructure.getProperties(paletteEntry);
-        if (block instanceof BlockSlab) {
+        if (!savedMeta && block instanceof BlockSlab) {
             blockStates = toSlabTop(blockStates);
         }
 
         Map<String, BlockProperty<?>> validProperties = new HashMap<>();
         BlockPropertyRegistry
-                .getPossibleProperties(block, 0, property -> validProperties.put(property.getName(), property));
-        BlockState state = BlockPropertyRegistry.getBlockState(block, 0);
+                .getPossibleProperties(block, baseMeta, property -> validProperties.put(property.getName(), property));
+        BlockState state = BlockPropertyRegistry.getBlockState(block, baseMeta);
         boolean anyApplied = false;
         for (Map.Entry<String, String> entry : blockStates.entrySet()) {
             BlockProperty<?> property = validProperties.get(entry.getKey());
-            if (property != null) {
+            if (property != null && (!savedMeta || property instanceof MetaBlockProperty<?>)) {
                 setParsedValue(state, property, entry.getValue());
                 anyApplied = true;
             }
         }
-        if (!anyApplied) {
+        if (!savedMeta && !anyApplied) {
             return null;
         }
         state.transform(orientation);
-        return new BlockStateContainer(block, state.getBlockMeta(0));
+        return new BlockStateContainer(block, state.getBlockMeta(baseMeta));
+    }
+
+    /**
+     * Door halves store different data: the lower half has the facing in its two low bits, the upper half has the hinge
+     * side in its lowest bit, which flips in a mirror image.
+     */
+    protected static int transformDoorMeta(int meta, StructureOrientation orientation) {
+        if ((meta & 8) != 0) {
+            return orientation.isMirrored() ? meta ^ 1 : meta;
+        }
+        ForgeDirection facing = orientation.apply(DOOR_FACINGS[meta & 3]);
+        for (int i = 0; i < DOOR_FACINGS.length; i++) {
+            if (DOOR_FACINGS[i] == facing) {
+                return (meta & ~3) | i;
+            }
+        }
+        return meta;
     }
 
     /** Modern slabs store their half as {@code type}, which 1.7.10 slabs only read from the world. */

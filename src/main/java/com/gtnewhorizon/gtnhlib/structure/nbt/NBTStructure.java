@@ -115,7 +115,12 @@ public class NBTStructure {
                     isStructureBlock = true;
                     structureBlocks.put(pos, comp.getCompoundTag("nbt").getString("metadata"));
                 } else if (state.getType() == BlockStateContainer.BlockStateType.BLOCK_ENTITY) {
-                    getNBTAction(pos, state, comp.getCompoundTag("nbt"), orientation);
+                    if (getPaletteEntryFromIndex(paletteIndex, comp.getInteger("state")).hasKey("Meta", 99)) {
+                        state = new BlockStateContainer(state.getBlock(), state.getMeta());
+                        state.setCompound((NBTTagCompound) comp.getCompoundTag("nbt").copy());
+                    } else {
+                        getNBTAction(pos, state, comp.getCompoundTag("nbt"), orientation);
+                    }
                 }
             }
 
