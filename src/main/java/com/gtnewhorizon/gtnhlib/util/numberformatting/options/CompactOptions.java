@@ -15,6 +15,18 @@ public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
 
     public CompactOptions() {}
 
+    @Override
+    public String format(@NotNull Number number) {
+        return NumberFormatUtil.formatNumberCompact(number, this);
+    }
+
+    @Override
+    public @NotNull CompactOptions copy() {
+        CompactOptions ret = this.toCompactOptions();
+        ret.setCompactThreshold(this.compactThreshold);
+        return ret;
+    }
+
     // ---------- Setters ----------
 
     @Override
