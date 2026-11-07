@@ -4,19 +4,21 @@ import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_THOUSA
 
 import java.math.BigDecimal;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 @SuppressWarnings("unchecked")
 public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
 
-    private BigDecimal compactThreshold = BD_THOUSAND;
+    private @NotNull BigDecimal compactThreshold = BD_THOUSAND;
 
     public CompactOptions() {}
 
     // ---------- Setters ----------
 
     @Override
-    public CompactOptions setExponentialThreshold(Number number) {
+    public @NotNull CompactOptions setExponentialThreshold(@NotNull Number number) {
         BigDecimal value = NumberFormatUtil.bigDecimalConverter(number);
         if (value.signum() < 0) throw new IllegalArgumentException("Scientific threshold must be >= 0");
 
@@ -32,7 +34,7 @@ public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
         return this;
     }
 
-    public CompactOptions setCompactThreshold(Number number) {
+    public @NotNull CompactOptions setCompactThreshold(Number number) {
         BigDecimal value = NumberFormatUtil.bigDecimalConverter(number);
         if (value.signum() < 0) throw new IllegalArgumentException("Compact threshold must be >= 0");
 
@@ -50,7 +52,7 @@ public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
 
     // ---------- Getters ----------
 
-    public BigDecimal getCompactThreshold() {
+    public @NotNull BigDecimal getCompactThreshold() {
         return compactThreshold;
     }
 }
