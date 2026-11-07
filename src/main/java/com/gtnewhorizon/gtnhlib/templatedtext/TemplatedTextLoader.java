@@ -78,7 +78,8 @@ public class TemplatedTextLoader {
 
     private static final String FALLBACK_LOCALE = "en_US";
     /** The extension for templated text files. */
-    public static final String FILE_EXT = ".md";
+    public static final String FILE_EXT = ".txt";
+    public static final String FILE_EXT_OLD = ".md";
     /** The prefix for comments */
     public static final String COMMENT_START = "//";
     /** The prefix for escaping command brackets */
@@ -457,12 +458,12 @@ public class TemplatedTextLoader {
     private ResourceLocation getExactPath(ResourceLocation resource, String language) {
         return new ResourceLocation(
                 resource.getResourceDomain(),
-                "lang/" + language + this.style + resource.getResourcePath() + FILE_EXT);
+                "lang/" + language + this.style + resource.getResourcePath());
     }
 
     private void createFileLoadError(List<String> ret, Throwable err, ResourceLocation exactPath) {
         StringBuilder sb = new StringBuilder();
-        appendError(sb, "FILE-ERROR", "file: " + exactPath.getResourceDomain() + "/" + exactPath.getResourcePath());
+        appendError(sb, "FILE-ERROR", "file: " + exactPath + FILE_EXT);
         ret.add(sb.toString());
         for (String errLine : err.getMessage().split("[\r\n]+")) {
             sb.delete(0, sb.length());
@@ -496,7 +497,7 @@ public class TemplatedTextLoader {
         } catch (Throwable t) {
             if (t instanceof FileNotFoundException) {
                 StringBuilder sb = new StringBuilder();
-                appendError(sb, "FILE-NOT-FOUND", exactPath.getResourceDomain() + "/" + exactPath.getResourcePath());
+                appendError(sb, "FILE-NOT-FOUND", exactPath + FILE_EXT);
                 ret.add(sb.toString());
                 return ret;
             }
@@ -517,7 +518,7 @@ public class TemplatedTextLoader {
             for (ResourceLocation rs : includeHistory) {
                 if (rs.equals(resource)) {
                     StringBuilder sb = new StringBuilder();
-                    appendError(sb, "INCLUDE-LOOP", resource.toString());
+                    appendError(sb, "INCLUDE-LOOP", resource + FILE_EXT);
                     return Collections.singletonList(TextFormatUtil.processFormatStacks(formatLine(sb.toString())));
                 }
             }
@@ -525,7 +526,14 @@ public class TemplatedTextLoader {
         includeHistory.push(resource);
 
         try {
-            List<String> lines = ResourceUtil.load(resource);
+            // TODO: remove the .md file extension support for gtnh 2.10
+            List<String> lines;
+            try {
+                lines = ResourceUtil.loadLines(new ResourceLocation(resource.getResourceDomain(), resource.getResourcePath() + FILE_EXT));
+            }
+            catch (FileNotFoundException e) {
+                lines = ResourceUtil.loadLines(new ResourceLocation(resource.getResourceDomain(), resource.getResourcePath() + FILE_EXT_OLD));
+            }
             List<String> out = new ArrayList<>();
             evaluateLines(out, lines, vars, includeHistory);
             out.replaceAll(parsedLine -> TextFormatUtil.processFormatStacks(formatLine(parsedLine)));

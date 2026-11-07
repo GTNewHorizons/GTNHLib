@@ -102,7 +102,7 @@ public class ResourceUtil {
         return getCompleteResourceLocation("textures/items/", ".png", resourceKey);
     }
 
-    public static List<String> load(ResourceLocation loc) throws IOException {
+    public static List<String> loadLines(ResourceLocation loc) throws IOException {
         // Returns server only for dedicated servers
         if (FMLCommonHandler.instance().getSide().isClient()) {
             return loadFromClient(loc);
