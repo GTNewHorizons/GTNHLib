@@ -6,11 +6,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
-import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.io.IOUtils;
@@ -20,7 +18,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.util.internal.ConcurrentSet;
@@ -119,16 +116,8 @@ public abstract class TextThemingGuidelines {
                     resourceLocations[i].getResourceDomain(),
                     ASSET_FOLDER + resourceLocations[i].getResourcePath());
         }
-        this.registerKeys();
         ReloadListener.INSTANCES.add(this);
-        if (FMLCommonHandler.instance().getSide().isClient()) {
-            final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft()
-                    .getResourceManager());
-            this.reload(resourceManager);
-        }
     }
-
-    protected abstract void registerKeys();
 
     /**
      * Registers a key handler for a given key.

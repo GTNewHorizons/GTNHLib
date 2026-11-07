@@ -318,12 +318,7 @@ public class TextFormatUtil {
         private @NotNull String cableLoss = EnumChatFormatting.RED.toString();
 
         public TooltipDescriptionFormatContainer(@NotNull ResourceLocation @NotNull... resoruces) {
-            super(resoruces);
-        }
-
-        @Override
-        public void registerKeys() {
-            // assign based on resource
+            super(resoruces);// assign based on resource
             this.registerKey("default", this::getDefault, this::set$default);
             this.registerKey("unit", this::getUnit, this::setUnit);
             this.registerKey("name", this::getName, this::setName);
