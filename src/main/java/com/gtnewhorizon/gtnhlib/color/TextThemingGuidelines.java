@@ -112,12 +112,12 @@ public abstract class TextThemingGuidelines {
     private final @NotNull ResourceLocation[] resourceLocations;
     private final @NotNull Object2ObjectOpenHashMap<@NotNull String, @NotNull FormatKey> keyHandlers = new Object2ObjectOpenHashMap<>();
 
-    public TextThemingGuidelines(@NotNull ResourceLocation @NotNull... resourceLocation) {
-        this.resourceLocations = new ResourceLocation[resourceLocation.length];
+    public TextThemingGuidelines(@NotNull ResourceLocation @NotNull... resourceLocations) {
+        this.resourceLocations = new ResourceLocation[resourceLocations.length];
         for (int i = 0; i < this.resourceLocations.length; i++) {
             this.resourceLocations[i] = new ResourceLocation(
                     resourceLocations[i].getResourceDomain(),
-                    ASSET_FOLDER + resourceLocation[i].getResourcePath());
+                    ASSET_FOLDER + resourceLocations[i].getResourcePath());
         }
         this.registerKeys();
         ReloadListener.INSTANCES.add(this);
