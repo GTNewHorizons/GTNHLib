@@ -15,8 +15,8 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 @SuppressWarnings({ "unchecked", "unused" })
 public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
 
-    private int decimalPlaces = 2;
-
+    private int minDecimalPlaces = 0;
+    private int maxDecimalPlaces = 2;
     private @NotNull BigDecimal exponentialThreshold = BD_TRILLION;
     private boolean disableExponentialFormatting = false;
     private @NotNull RoundingMode roundingMode = RoundingMode.HALF_UP;
@@ -31,8 +31,16 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
     // ---------- Setters ----------
 
     public @NotNull T setDecimalPlaces(int decimalPlaces) {
-        if (decimalPlaces < 0) throw new IllegalArgumentException("Decimal places must be >= 0");
-        this.decimalPlaces = decimalPlaces;
+        return this.setDecimalPlaces(0, decimalPlaces);
+    }
+
+    public @NotNull T setDecimalPlaces(int minDecimalPlaces, int maxDecimalPlaces) {
+        if (minDecimalPlaces < 0) throw new IllegalArgumentException("Min decimal places must be >= 0");
+        if (maxDecimalPlaces < 0) throw new IllegalArgumentException("Max decimal places must be >= 0");
+        if (minDecimalPlaces > maxDecimalPlaces)
+            throw new IllegalArgumentException("Min decimal places must be <= max");
+        this.minDecimalPlaces = minDecimalPlaces;
+        this.maxDecimalPlaces = maxDecimalPlaces;
         return (T) this;
     }
 
@@ -66,8 +74,20 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
 
     // ---------- Getters ----------
 
+    /**
+     * @deprecated Use {@link #getMaxDecimalPlaces} and {@link #getMinDecimalPlaces} instead
+     */
+    @Deprecated
     public int getDecimalPlaces() {
-        return decimalPlaces;
+        return getMaxDecimalPlaces();
+    }
+
+    public int getMaxDecimalPlaces() {
+        return maxDecimalPlaces;
+    }
+
+    public int getMinDecimalPlaces() {
+        return minDecimalPlaces;
     }
 
     public @NotNull BigDecimal getExponentialThreshold() {
@@ -95,7 +115,7 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
     public @NotNull FormatOptions toFormatOptions() {
         FormatOptions options = new FormatOptions();
         options.setExponentialThreshold(exponentialThreshold);
-        options.setDecimalPlaces(decimalPlaces);
+        options.setDecimalPlaces(minDecimalPlaces, maxDecimalPlaces);
         options.setRoundingMode(roundingMode);
         options.setExponentialFormatOverride(exponentialFormatOverride);
 
@@ -111,7 +131,7 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
     public @NotNull CompactOptions toCompactOptions() {
         CompactOptions options = new CompactOptions();
         options.setExponentialThreshold(exponentialThreshold);
-        options.setDecimalPlaces(decimalPlaces);
+        options.setDecimalPlaces(minDecimalPlaces, maxDecimalPlaces);
         options.setRoundingMode(roundingMode);
         options.setExponentialFormatOverride(exponentialFormatOverride);
 
