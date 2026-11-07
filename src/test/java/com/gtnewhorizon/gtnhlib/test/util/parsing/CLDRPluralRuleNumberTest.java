@@ -315,6 +315,117 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @Test
+    void compact_digitCount_rounding_inflation_minEqualToMax() {
+        CompactOptions opts = new CompactOptions().setDecimalPlaces(1, 1);
+        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
+        // is below the threshold, this may be something good to address in the future.
+        testNumberContainer(999.95, opts, "1,000.0", 1000, 1, 0, 0, 0, 0);
+        // compact should not inflate the unit even when set to a rounding that would cause it to go up.
+        testNumberContainer(999.99e3, opts, "999.9K", 999.9e3, 0, 0, 0, 0, 3);
+        opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
+        // is below the threshold, this may be something good to address in the future.
+        testNumberContainer(999.95, opts, "999.9", 999, 1, 1, 9, 9, 0);
+        // compact should not inflate the unit even when set to a rounding that would cause it to go up.
+        testNumberContainer(999.95e3, opts, "999.9K", 999.9e3, 0, 0, 0, 0, 3);
+    }
+
+    @Test
+    void compact_digitCount_rounding_inflation_minLessThanMax() {
+        CompactOptions opts = getCompactOps().setDecimalPlaces(0, 1);
+        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
+        // is below the threshold, this may be something good to address in the future.
+        testNumberContainer(999.95, opts, "1,000", 1000, 0, 0, 0, 0, 0);
+        // compact should not inflate the unit even when set to a rounding that would cause it to go up.
+        testNumberContainer(999.99e3, opts, "999.9K", 999.9e3, 0, 0, 0, 0, 3);
+        opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        testNumberContainer(1950, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        // compact should not inflate the unit even when set to a rounding that would cause it to go up.
+        testNumberContainer(999.95e3, opts, "999.9K", 999.9e3, 0, 0, 0, 0, 3);
+    }
+
+    @Test
+    void compact_digitCount_rounding_inflation_maxEqualTo0() {
+        CompactOptions opts = getCompactOps().setDecimalPlaces(0, 0);
+        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
+        // is below the threshold, this may be something good to address in the future.
+        testNumberContainer(999.5, opts, "1,000", 1e3, 0, 0, 0, 0, 0);
+        // compact should not inflate the unit even when set to a rounding that would cause it to go up.
+        testNumberContainer(999.5e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
+        opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
+        // is below the threshold, this may be something good to address in the future.
+        testNumberContainer(999.5, opts, "999", 999, 0, 0, 0, 0, 0);
+        // compact should not inflate the unit even when set to a rounding that would cause it to go up.
+        testNumberContainer(999.5e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
+    }
+
+    @Test
+    void compact_digitCount_rounding_minEqualToMax() {
+        CompactOptions opts = new CompactOptions().setDecimalPlaces(1, 1);
+        testNumberContainer(998.95e3, opts, "999.0K", 999e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1950, opts, "2.0K", 2e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900.5, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        testNumberContainer(998.95e3, opts, "998.9K", 998.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1950, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900.5, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+    }
+
+    @Test
+    void compact_digitCount_rounding_minLessThanMax() {
+        CompactOptions opts = getCompactOps().setDecimalPlaces(0, 1);
+        testNumberContainer(998.95e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1950, opts, "2K", 2e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900.5, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        testNumberContainer(998.95e3, opts, "998.9K", 998.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1950, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1900.5, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
+    }
+
+    @Test
+    void compact_digitCount_rounding_maxEqualTo0() {
+        CompactOptions opts = getCompactOps().setDecimalPlaces(0, 0);
+        testNumberContainer(998.5e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1500, opts, "2K", 2e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1000.5, opts, "1K", 1e3, 0, 0, 0, 0, 3);
+        opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        testNumberContainer(998.5e3, opts, "998K", 998e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1500, opts, "1K", 1e3, 0, 0, 0, 0, 3);
+        testNumberContainer(1000.5, opts, "1K", 1e3, 0, 0, 0, 0, 3);
+    }
+
+    @Test
+    void compact_digitCount_minLessThanMax() {
+        CompactOptions opts = getCompactOps().setDecimalPlaces(0, 1);
+        testNumberContainer(1000, opts, "1K", 1000, 0, 0, 0, 0, 3);
+        testNumberContainer(1200, opts, "1.2K", 1200, 0, 0, 0, 0, 3);
+        testNumberContainer(1e6, opts, "1M", 1e6, 0, 0, 0, 0, 6);
+        testNumberContainer(1.2e6, opts, "1.2M", 1.2e6, 0, 0, 0, 0, 6);
+        opts.setDecimalPlaces(0, 3);
+        testNumberContainer(1234, opts, "1.234K", 1234, 0, 0, 0, 0, 3);
+    }
+
+    @Test
+    void compact_digitCount_minEqualToMax() {
+        CompactOptions opts = getCompactOps().setDecimalPlaces(1, 1);
+        testNumberContainer(1000, opts, "1.0K", 1000, 0, 0, 0, 0, 3);
+        testNumberContainer(1200, opts, "1.2K", 1200, 0, 0, 0, 0, 3);
+        testNumberContainer(1e6, opts, "1.0M", 1e6, 0, 0, 0, 0, 6);
+        testNumberContainer(1.2e6, opts, "1.2M", 1.2e6, 0, 0, 0, 0, 6);
+        opts.setDecimalPlaces(3, 3);
+        testNumberContainer(1234, opts, "1.234K", 1234, 0, 0, 0, 0, 3);
+        testNumberContainer(1200, opts, "1.200K", 1200, 0, 0, 0, 0, 3);
+        testNumberContainer(1e6, opts, "1.000M", 1e6, 0, 0, 0, 0, 6);
+        testNumberContainer(1234e3, opts, "1.234M", 1234e3, 0, 0, 0, 0, 6);
+    }
+
+    @Test
     void compact_digitCount_minCanCreateFractionValues() {
         CompactOptions opts = getCompactOps().setDecimalPlaces(5, 5);
         testNumberContainer(1200, opts, "1.20000K", 1200, 2, 0, 0, 0, 3);

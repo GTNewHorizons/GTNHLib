@@ -98,9 +98,15 @@ public class CLDRPluralRuleNumber {
             }
         } else {
             if (options.getMaxDecimalPlaces() < val.scale()) {
+                // if the value has too many digits round it
                 val = val.setScale(options.getMaxDecimalPlaces(), options.getRoundingMode());
                 stripped = val.stripTrailingZeros();
+                // if the value has too many trailing zeros after rounding eg 999.9 -> 1000.0 strip the trailing zeros.
+                if (options.getMinDecimalPlaces() > stripped.scale() && options.getMinDecimalPlaces() < val.scale()) {
+                    val = val.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
+                }
             } else if (options.getMinDecimalPlaces() > val.scale()) {
+                // add 0s when necessary
                 val = val.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
             }
             if (options.getMinDecimalPlaces() <= stripped.scale()) {
