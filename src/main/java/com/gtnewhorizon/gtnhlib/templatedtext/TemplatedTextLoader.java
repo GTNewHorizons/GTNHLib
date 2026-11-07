@@ -12,8 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
@@ -24,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
+import com.gtnewhorizon.gtnhlib.client.ResourceReloadListener;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.ColorPatternCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.CommentCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.DynamicFormatCommand;
@@ -49,9 +48,6 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.parsing.CLDRPluralRuleParser;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import io.netty.util.internal.ConcurrentSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /// A loader that reads a templated text file from a mod's jar or resource pack and converts it to text that can be
@@ -129,30 +125,6 @@ public class TemplatedTextLoader {
      */
     private static final Object2ObjectOpenHashMap<@NotNull String, ITemplatedTextLineProcessor> GLOBAL_LINE_PROCESSORS = new Object2ObjectOpenHashMap<>();
     private static final Object2ObjectOpenHashMap<@NotNull String, ITemplatedTextCommand> GLOBAL_COMMANDS = new Object2ObjectOpenHashMap<>();
-
-    /**
-     * Used to clear the cache when resources are reloaded.
-     */
-    private static class ReloadListener implements IResourceManagerReloadListener {
-
-        private final ConcurrentSet<TemplatedTextLoader> INSTANCES = new ConcurrentSet<>();
-        private static final ReloadListener INSTANCE = new ReloadListener();
-
-        @Override
-        public void onResourceManagerReload(IResourceManager manager) {
-            INSTANCES.forEach(x -> x.cache.clear());
-        }
-
-        private ReloadListener() {
-
-        }
-    }
-
-    @ApiStatus.Internal
-    @SideOnly(Side.CLIENT)
-    public static IResourceManagerReloadListener getReloadListener() {
-        return ReloadListener.INSTANCE;
-    }
 
     public static class MarkdownTooltipParsingException extends IllegalStateException {
 
@@ -326,7 +298,7 @@ public class TemplatedTextLoader {
 
         // throughput unit standardization commands
         // spotless:off
-        NumberFormatUtil.LocalisationCache locs = NumberFormatUtil.LOC_CACHE;
+        NumberFormatUtil.NumberFormattingLocalisationCache locs = NumberFormatUtil.LOC_CACHE;
         addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingFluidThroughput, locs::getUnitFormatFluidThroughput, NumberFormatUtil::getFluidUnit,"fluid/", "fluid-unit/", "L/", "l/", "Liter/", "liter/", "mb/", "mB/");
         addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitRF, "RF/", "rf/");
         addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitMJ, "MJ/", "mj/");
@@ -357,7 +329,9 @@ public class TemplatedTextLoader {
 
     public TemplatedTextLoader(@NotNull String style) {
         this.style = "/" + style + "/";
-        ReloadListener.INSTANCE.INSTANCES.add(this);
+        if (FMLCommonHandler.instance().getSide().isClient()) {
+            ResourceReloadListener.registerEarlyCallback((manager) -> this.cache.clear());
+        }
     }
 
     public void addCommandWithAliases(ITemplatedTextCommand command, String... aliases) {

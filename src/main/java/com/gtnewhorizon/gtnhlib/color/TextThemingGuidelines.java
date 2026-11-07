@@ -8,19 +8,18 @@ import java.util.function.Supplier;
 
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.client.ResourceReloadListener;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import io.netty.util.internal.ConcurrentSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -39,32 +38,6 @@ public abstract class TextThemingGuidelines {
             this.def = def;
             this.setter = setter;
         }
-    }
-
-    /**
-     * Used to clear the cache when resources are reloaded.
-     */
-    private static class ReloadListener implements IResourceManagerReloadListener {
-
-        private static final ConcurrentSet<TextThemingGuidelines> INSTANCES = new ConcurrentSet<>();
-        private static final ReloadListener INSTANCE = new ReloadListener();
-
-        @Override
-        public void onResourceManagerReload(IResourceManager manager) {
-            for (TextThemingGuidelines container : INSTANCES) {
-                INSTANCES.forEach(x -> x.reload(manager));
-            }
-        }
-
-        private ReloadListener() {
-
-        }
-    }
-
-    @ApiStatus.Internal
-    @SideOnly(Side.CLIENT)
-    public static IResourceManagerReloadListener getReloadListener() {
-        return ReloadListener.INSTANCE;
     }
 
     @SideOnly(Side.CLIENT)
@@ -116,7 +89,9 @@ public abstract class TextThemingGuidelines {
                     resourceLocations[i].getResourceDomain(),
                     ASSET_FOLDER + resourceLocations[i].getResourcePath());
         }
-        ReloadListener.INSTANCES.add(this);
+        if (FMLCommonHandler.instance().getSide().isClient()) {
+            ResourceReloadListener.registerEarlyCallback(this::reload);
+        }
     }
 
     /**
