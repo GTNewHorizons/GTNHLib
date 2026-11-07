@@ -32,15 +32,15 @@ public class NBTStructure {
 
     private final NBTTagCompound compound;
     /**
-     * First array is palette index, second is rotation
+     * First array is palette index, second is {@link StructureOrientation#getIndex()}
      */
     private final Map<Integer, BlockStateContainer>[][] palettes;
     /**
      * For storing the results of iterating over the palette and BlockState coords, so we don't have to read the NBT
-     * file every time First array is palette index, second is rotation
+     * file every time First array is palette index, second is {@link StructureOrientation#getIndex()}
      */
     private final Map<BlockPos, BlockStateContainer>[][] buildMaps;
-    private final BlockPos[] sizes;
+    private final BlockPos size;
     private final String location;
     protected final BlockStateConverter converter;
 
@@ -56,16 +56,11 @@ public class NBTStructure {
     public NBTStructure(NBTTagCompound compound, String loc, BlockStateConverter converter) {
         this.converter = converter;
         this.compound = compound;
-        buildMaps = new Map[getPaletteCount()][4];
-        palettes = new Map[getPaletteCount()][4];
+        buildMaps = new Map[getPaletteCount()][StructureOrientation.COUNT];
+        palettes = new Map[getPaletteCount()][StructureOrientation.COUNT];
         location = loc;
-        BlockPos size = getPosFromTagList(compound.getTagList("size", 3));
-        sizes = new BlockPos[] { size, new BlockPos(size.getZ(), size.getY(), size.getX()) }; // sizes[0] is north and
-                                                                                              // south, [1] (z/x
-                                                                                              // flipped) is east/west
+        size = getPosFromTagList(compound.getTagList("size", 3));
         init();
-        createPalettes();
-        createBuildMaps();
     }
 
     private static NBTTagCompound readCompound(String loc) {
@@ -77,64 +72,70 @@ public class NBTStructure {
         }
     }
 
-    private void createPalettes() { // These should probably be rearranged
-        for (int i = 0; i < getPaletteCount(); i++) {
-            palettes[i][0] = createPalette(ForgeDirection.NORTH, getPaletteNBT(i));
-            palettes[i][1] = createPalette(ForgeDirection.SOUTH, getPaletteNBT(i));
-            palettes[i][2] = createPalette(ForgeDirection.WEST, getPaletteNBT(i));
-            palettes[i][3] = createPalette(ForgeDirection.EAST, getPaletteNBT(i));
+    public final Map<Integer, BlockStateContainer> getPalette(int paletteIndex, StructureOrientation orientation) {
+        Map<Integer, BlockStateContainer> palette = palettes[paletteIndex][orientation.getIndex()];
+        if (palette == null) {
+            palette = createPalette(orientation, getPaletteNBT(paletteIndex));
+            palettes[paletteIndex][orientation.getIndex()] = palette;
         }
+        return palette;
+    }
+
+    public final Map<BlockPos, BlockStateContainer> getBuildMap(int paletteIndex, StructureOrientation orientation) {
+        Map<BlockPos, BlockStateContainer> map = buildMaps[paletteIndex][orientation.getIndex()];
+        if (map == null) {
+            map = createBuildMap(paletteIndex, orientation);
+            buildMaps[paletteIndex][orientation.getIndex()] = map;
+        }
+        return map;
     }
 
     /**
-     * Builds the structure map, stores it in the buildMaps field
+     * Builds the structure map for one palette and orientation
      */
-    private void createBuildMaps() {
-        for (int facing = 0; facing < 4; facing++) {
-            for (int j = 0; j < getPaletteCount(); j++) {
-                Map<BlockPos, BlockStateContainer> map = new HashMap<>();
-                Map<BlockPos, String> structureBlocks = new HashMap<>();
-                NBTTagList list = getCompound().getTagList("blocks", 10);
-                for (int i = 0; i < list.tagCount(); i++) {
-                    NBTTagCompound comp = list.getCompoundTagAt(i);
-                    BlockPos pos = getListPosFromFacing(comp, facing);
-                    BlockStateContainer state = getBuildPalettes()[j][facing].get(comp.getInteger("state"));
-                    if (state == null) {
-                        continue;
-                    }
-                    boolean isStructureBlock = false;
-                    if (comp.hasKey("nbt", 10)) {
-                        if (comp.getCompoundTag("nbt").getString("id").equals("minecraft:structure_block")) {
-                            // Save it for later, some structure blocks check a block below them so we want the whole
-                            // map built, so we can check what's below it.
-                            // If a structure block is in a structure file it only really stores a string, so we just
-                            // save its string.
-                            isStructureBlock = true;
-                            structureBlocks.put(pos, comp.getCompoundTag("nbt").getString("metadata"));
-                        } else if (state.getType() == BlockStateContainer.BlockStateType.BLOCK_ENTITY) {
-                            getNBTAction(pos, state, comp.getCompoundTag("nbt"), getFacingFromInt(facing));
-                        }
-                    }
+    private Map<BlockPos, BlockStateContainer> createBuildMap(int paletteIndex, StructureOrientation orientation) {
+        Map<Integer, BlockStateContainer> palette = getPalette(paletteIndex, orientation);
+        Map<BlockPos, BlockStateContainer> map = new HashMap<>();
+        Map<BlockPos, String> structureBlocks = new HashMap<>();
+        NBTTagList list = getCompound().getTagList("blocks", 10);
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound comp = list.getCompoundTagAt(i);
+            BlockPos pos = orientation.transformPos(getPosFromTagList(comp.getTagList("pos", 3)), size);
+            BlockStateContainer state = palette.get(comp.getInteger("state"));
+            if (state == null) {
+                continue;
+            }
+            boolean isStructureBlock = false;
+            if (comp.hasKey("nbt", 10)) {
+                if (comp.getCompoundTag("nbt").getString("id").equals("minecraft:structure_block")) {
+                    // Save it for later, some structure blocks check a block below them so we want the whole
+                    // map built, so we can check what's below it.
+                    // If a structure block is in a structure file it only really stores a string, so we just
+                    // save its string.
+                    isStructureBlock = true;
+                    structureBlocks.put(pos, comp.getCompoundTag("nbt").getString("metadata"));
+                } else if (state.getType() == BlockStateContainer.BlockStateType.BLOCK_ENTITY) {
+                    getNBTAction(pos, state, comp.getCompoundTag("nbt"), orientation);
+                }
+            }
 
-                    // Structure blocks don't exist in 1.7.10 and should not generate anyways.
-                    if (!isStructureBlock) {
-                        map.put(pos, state);
-                    }
-                }
-                for (Map.Entry<BlockPos, String> entry : structureBlocks.entrySet()) {
-                    BlockStateContainer belowState = entry.getKey().getY() <= 0 ? null : map.get(entry.getKey().down());
-                    BlockStateContainer state = setStructureBlockAction(
-                            entry.getKey(),
-                            belowState,
-                            entry.getValue(),
-                            getFacingFromInt(facing));
-                    if (state != null) {
-                        map.put(entry.getKey(), state);
-                    }
-                }
-                buildMaps[j][facing] = map; // Add this to the structure map for this facing direction
+            // Structure blocks don't exist in 1.7.10 and should not generate anyways.
+            if (!isStructureBlock) {
+                map.put(pos, state);
             }
         }
+        for (Map.Entry<BlockPos, String> entry : structureBlocks.entrySet()) {
+            BlockStateContainer belowState = entry.getKey().getY() <= 0 ? null : map.get(entry.getKey().down());
+            BlockStateContainer state = setStructureBlockAction(
+                    entry.getKey(),
+                    belowState,
+                    entry.getValue(),
+                    orientation);
+            if (state != null) {
+                map.put(entry.getKey(), state);
+            }
+        }
+        return map;
     }
 
     /**
@@ -153,10 +154,10 @@ public class NBTStructure {
      * @param state          The BlockState. (block/meta) Use BlockStateContainer#setCompound to set the block's NBT
      *                       tags. Note that just setting it to modernCompound usually will not work.
      * @param modernCompound What the modern NBT tag for this block contains.
-     * @param facing         Which direction the structure is rotated towards.
+     * @param orientation    How the structure is rotated and mirrored.
      */
     public void getNBTAction(BlockPos pos, BlockStateContainer state, NBTTagCompound modernCompound,
-            ForgeDirection facing) {
+            StructureOrientation orientation) {
         if (state.getBlock() instanceof BlockSign) {
             NBTTagCompound signText = new NBTTagCompound();
             if (modernCompound.hasKey("front_text")) { // Post 1.20 sign data
@@ -212,40 +213,23 @@ public class NBTStructure {
      * <p>
      * null = We don't set anything for this block, the game will just create the default NBT for the block.
      *
-     * @param pos    The position (relative to the structure) of this structure block. This is a structure pos, NOT the
-     *               world pos!
-     * @param below  The BlockState (block/meta) below this one. Its nbt could be null, or the value itself may also be
-     *               null so be careful. This will only return BlockState types of BLOCK_ENTITY, so you can be safe in
-     *               giving them NBT. However you'll need to make sure that block entity has an IInventory before
-     *               attempting to give it a loot table (chests, dispensers, etc)
-     * @param data   What string did this structure block have written inside
-     * @param facing Which direction the structure is rotated towards.
+     * @param pos         The position (relative to the structure) of this structure block. This is a structure pos, NOT
+     *                    the world pos!
+     * @param below       The BlockState (block/meta) below this one. Its nbt could be null, or the value itself may
+     *                    also be null so be careful. This will only return BlockState types of BLOCK_ENTITY, so you can
+     *                    be safe in giving them NBT. However you'll need to make sure that block entity has an
+     *                    IInventory before attempting to give it a loot table (chests, dispensers, etc)
+     * @param data        What string did this structure block have written inside
+     * @param orientation How the structure is rotated and mirrored.
      * @return If you want this location to have a BlockState (remember BlockState can store an entity too)
      */
     public BlockStateContainer setStructureBlockAction(BlockPos pos, BlockStateContainer below, String data,
-            ForgeDirection facing) {
+            StructureOrientation orientation) {
         return new BlockStateContainer(Blocks.air);
-    }
-
-    private BlockPos getListPosFromFacing(NBTTagCompound comp, int facing) {
-        BlockPos size = getSize(getFacingFromInt(facing));
-        BlockPos pos = getPosFromTagList(comp.getTagList("pos", 3));
-        if (facing == 1) { // South
-            pos = new BlockPos(size.getX() - pos.getX(), pos.getY(), size.getZ() - pos.getZ());
-        } else if (facing == 2) { // West
-            pos = new BlockPos(pos.getZ(), pos.getY(), pos.getX());
-        } else if (facing == 3) { // East
-            pos = new BlockPos(size.getX() - pos.getZ(), pos.getY(), size.getZ() - pos.getX());
-        }
-        return pos;
     }
 
     public final NBTTagCompound getCompound() {
         return compound;
-    }
-
-    public final Map<Integer, BlockStateContainer>[][] getBuildPalettes() {
-        return palettes;
     }
 
     /**
@@ -266,32 +250,33 @@ public class NBTStructure {
                 x,
                 y,
                 z,
-                getFacingFromInt(rand.nextInt(4)),
+                getRandomOrientation(rand),
                 integrity,
                 rand.nextInt(getPaletteCount()));
     }
 
     public final boolean placeStructure(World world, Random rand, int x, int y, int z) {
-        return placeStructure(world, rand, x, y, z, getFacingFromInt(rand.nextInt(4)));
+        return placeStructure(world, rand, x, y, z, getRandomOrientation(rand));
     }
 
-    public final boolean placeStructure(World world, Random rand, int x, int y, int z, ForgeDirection facing) {
-        return placeStructure(world, rand, x, y, z, facing, 1, rand.nextInt(getPaletteCount()));
+    public final boolean placeStructure(World world, Random rand, int x, int y, int z,
+            StructureOrientation orientation) {
+        return placeStructure(world, rand, x, y, z, orientation, 1, rand.nextInt(getPaletteCount()));
     }
 
-    public final boolean placeStructure(World world, Random rand, int x, int y, int z, ForgeDirection facing,
+    public final boolean placeStructure(World world, Random rand, int x, int y, int z, StructureOrientation orientation,
             float integrity) {
-        return placeStructure(world, rand, x, y, z, facing, integrity, rand.nextInt(getPaletteCount()));
+        return placeStructure(world, rand, x, y, z, orientation, integrity, rand.nextInt(getPaletteCount()));
     }
 
-    public final boolean placeStructure(World world, Random rand, int x, int y, int z, ForgeDirection facing,
+    public final boolean placeStructure(World world, Random rand, int x, int y, int z, StructureOrientation orientation,
             float integrity, int paletteIndex) {
-        return placeStructure(world, rand, x, y, z, facing, integrity, paletteIndex, null);
+        return placeStructure(world, rand, x, y, z, orientation, integrity, paletteIndex, null);
     }
 
-    public final boolean placeStructure(World world, Random rand, int x, int y, int z, ForgeDirection facing,
+    public final boolean placeStructure(World world, Random rand, int x, int y, int z, StructureOrientation orientation,
             float integrity, int paletteIndex, StructureBoundingBox box) {
-        Map<BlockPos, BlockStateContainer> blockSet = buildMaps[paletteIndex][getIntFromFacing(facing)];
+        Map<BlockPos, BlockStateContainer> blockSet = getBuildMap(paletteIndex, orientation);
         Map<BlockPos, BlockStateContainer> entitySet = new HashMap<>(); // Yes entities are stored in the BlockState
                                                                         // class for simplicity.
         for (Map.Entry<BlockPos, BlockStateContainer> entry : blockSet.entrySet()) {
@@ -313,7 +298,7 @@ public class NBTStructure {
             if (box == null || box.isVecInside(pos.getX() + x, pos.getY() + y, pos.getZ() + z)) {
                 Entity entity = entry.getValue().createNewEntity(world);
                 entity.readFromNBT(entry.getValue().getCompound());
-                onEntityCreated(entity, entry.getValue().getCompound(), x, y, z, pos, facing);
+                onEntityCreated(entity, entry.getValue().getCompound(), x, y, z, pos, orientation);
                 world.spawnEntityInWorld(entity);
             }
         }
@@ -321,7 +306,7 @@ public class NBTStructure {
     }
 
     protected final void onEntityCreated(Entity entity, NBTTagCompound containerCompound, int x, int y, int z,
-            BlockPos offsetPos, ForgeDirection dir) {
+            BlockPos offsetPos, StructureOrientation orientation) {
         entity.setPosition(offsetPos.getX() + x + 0.5D, offsetPos.getY() + y, offsetPos.getZ() + z + 0.5D);
         if (entity instanceof EntityHanging) {
             ForgeDirection hangingDir = converter
@@ -392,11 +377,8 @@ public class NBTStructure {
         return state;
     }
 
-    public final BlockPos getSize(ForgeDirection facing) {
-        if (facing.ordinal() < 2 || facing.ordinal() > 5) {
-            throw new IllegalArgumentException("ForgeDirection object must be NORTH, SOUTH, EAST or WEST!");
-        }
-        return facing == ForgeDirection.NORTH || facing == ForgeDirection.SOUTH ? sizes[0] : sizes[1];
+    public final BlockPos getSize(StructureOrientation orientation) {
+        return orientation.transformSize(size);
     }
 
     /**
@@ -514,27 +496,11 @@ public class NBTStructure {
     }
 
     /**
-     * 0 = North (-z) 1 = South (+z) 2 = West (-x) 3 = East (+x)
+     * Picks the orientation for placements that don't specify one. Rotates randomly without mirroring by default.
      */
-    public final ForgeDirection getFacingFromInt(int i) {
-        if (i < 0 || i > 3) {
-            throw new IllegalArgumentException("Facing int must be at least 0 and at most 3!");
-        }
-        return ForgeDirection.VALID_DIRECTIONS[i + 2];
-    }
-
-    public final int getIntFromFacing(ForgeDirection dir) {
-        // switch (dir) {
-        // case NORTH: return 0;
-        // case EAST: return 1;
-        // case SOUTH: return 2;
-        // case WEST: return 3;
-        // }
-        if (dir.ordinal() < 2 || dir.ordinal() > 5) {
-            throw new IllegalArgumentException(
-                    "ForgeDirection object for structure must be NORTH, SOUTH, EAST or WEST!");
-        }
-        return dir.ordinal() - 2;
+    protected StructureOrientation getRandomOrientation(Random rand) {
+        StructureOrientation.Rotation[] rotations = StructureOrientation.Rotation.values();
+        return StructureOrientation.of(rotations[rand.nextInt(rotations.length)]);
     }
 
     public final String getLocation() {
@@ -542,8 +508,7 @@ public class NBTStructure {
     }
 
     /**
-     * Ran four times for each direction, for each palette. This populates four different versions of the structure, for
-     * each palette, for the different rotations.
+     * Ran once for each palette and orientation, the first time that orientation is placed.
      * <p>
      * NOTE: If the palette entry is minecraft:structure_block it doesn't matter what you put here, it's handled later
      * because they store special data. I recommend you don't map it to anything, or just set it to null as it won't
@@ -552,9 +517,9 @@ public class NBTStructure {
      * Also don't set NBT here just yet, the NBT is stored in the block map itself so if you want to give one of your
      * block entities NBT, override that function instead.
      */
-    protected Map<Integer, BlockStateContainer> createPalette(ForgeDirection facing,
+    protected Map<Integer, BlockStateContainer> createPalette(StructureOrientation orientation,
             Set<Pair<Integer, NBTTagCompound>> paletteNBT) {
-        return converter.processPalette(facing, paletteNBT);
+        return converter.processPalette(orientation, paletteNBT);
     }
 
     /**

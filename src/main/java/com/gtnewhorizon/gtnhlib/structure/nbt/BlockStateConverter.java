@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.structure.nbt;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,7 +24,6 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
-import com.gtnewhorizon.gtnhlib.geometry.DirectionTransform;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -32,33 +32,112 @@ public class BlockStateConverter {
 
     public static final BlockStateConverter DEFAULT_INSTANCE = new BlockStateConverter();
 
-    public Map<Integer, BlockStateContainer> processPalette(ForgeDirection dir,
+    public Map<Integer, BlockStateContainer> processPalette(StructureOrientation orientation,
             Set<Pair<Integer, NBTTagCompound>> paletteNBT) {
         Map<Integer, BlockStateContainer> map = new HashMap<>();
         for (Pair<Integer, NBTTagCompound> pair : paletteNBT) {
             String namespace = NBTStructure.getBlockNamespaceFromNBT(pair.getRight());
-            BlockStateContainer propertyState = createPropertyBlockStateContainer(namespace, pair.getRight(), dir);
+            BlockStateContainer propertyState = createPropertyBlockStateContainer(
+                    namespace,
+                    pair.getRight(),
+                    orientation);
             if (propertyState != null) {
                 map.put(pair.getLeft(), propertyState);
                 continue;
             }
+
             // TODO: TileEntity data from some default states (eg potted_poppy)
             // Flower pots and skulls will need some default TE data since some things that are TE data in 1.7.10 are
             // now BlockState data.
 
-            Map<String, String> properties = NBTStructure.getProperties(pair.getRight());
+            Map<String, String> properties = transformProperties(
+                    namespace,
+                    NBTStructure.getProperties(pair.getRight()),
+                    orientation);
             Block block = getBlockFromNamespace(namespace, properties);
             if (block != null) {
-                map.put(pair.getLeft(), createBlockStateContainer(namespace, block, properties, dir));
+                map.put(pair.getLeft(), createBlockStateContainer(namespace, block, properties));
             }
         }
         return map;
     }
 
+    /**
+     * Rotates and mirrors modern block states: {@code facing}, {@code axis}, {@code rotation}, the {@code north},
+     * {@code east}, {@code south} and {@code west} connections, rail {@code shape} and door {@code hinge}.
+     */
+    protected Map<String, String> transformProperties(String blockName, Map<String, String> blockStates,
+            StructureOrientation orientation) {
+        Map<String, String> transformed = new HashMap<>();
+        for (Map.Entry<String, String> entry : blockStates.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            ForgeDirection connection = parseHorizontal(key);
+            if (connection != null) {
+                transformed.put(getName(orientation.apply(connection)), value);
+                continue;
+            }
+            transformed.put(key, switch (key) {
+                case "facing" -> transformDirectionName(value, orientation);
+                case "axis" -> orientation.swapsAxes() ? swap(value, "x", "z") : value;
+                case "rotation" -> Integer.toString(orientation.transformRotation16(Integer.parseInt(value)));
+                case "hinge" -> orientation.isMirrored() ? swap(value, "left", "right") : value;
+                case "shape" -> blockName.endsWith("rail") ? transformRailShape(value, orientation) : value;
+                default -> value;
+            });
+        }
+        return transformed;
+    }
+
+    private static String transformRailShape(String shape, StructureOrientation orientation) {
+        if (shape.startsWith("ascending_")) {
+            return "ascending_" + transformDirectionName(shape.substring("ascending_".length()), orientation);
+        }
+        int separator = shape.indexOf('_');
+        ForgeDirection first = separator < 0 ? null : parseHorizontal(shape.substring(0, separator));
+        ForgeDirection second = separator < 0 ? null : parseHorizontal(shape.substring(separator + 1));
+        if (first == null || second == null) {
+            return shape;
+        }
+        first = orientation.apply(first);
+        second = orientation.apply(second);
+        if (first.offsetZ == 0 && second.offsetZ == 0) {
+            return "east_west";
+        }
+        if (first.offsetX == 0 && second.offsetX == 0) {
+            return "north_south";
+        }
+        return first.offsetZ != 0 ? getName(first) + "_" + getName(second) : getName(second) + "_" + getName(first);
+    }
+
+    private static String transformDirectionName(String name, StructureOrientation orientation) {
+        ForgeDirection dir = parseHorizontal(name);
+        return dir == null ? name : getName(orientation.apply(dir));
+    }
+
+    @Nullable
+    private static ForgeDirection parseHorizontal(String name) {
+        return switch (name) {
+            case "north" -> ForgeDirection.NORTH;
+            case "south" -> ForgeDirection.SOUTH;
+            case "west" -> ForgeDirection.WEST;
+            case "east" -> ForgeDirection.EAST;
+            default -> null;
+        };
+    }
+
+    private static String getName(ForgeDirection dir) {
+        return dir.name().toLowerCase(Locale.ROOT);
+    }
+
+    private static String swap(String value, String a, String b) {
+        return value.equals(a) ? b : value.equals(b) ? a : value;
+    }
+
     /** Modded blocks with blockstate properties, null falls back to the vanilla mappings. */
     @Nullable
     protected BlockStateContainer createPropertyBlockStateContainer(String blockName, NBTTagCompound paletteEntry,
-            ForgeDirection dir) {
+            StructureOrientation orientation) {
         int separator = blockName.indexOf(':');
         if (separator < 0 || blockName.startsWith("minecraft:")) {
             return null;
@@ -87,7 +166,7 @@ public class BlockStateConverter {
         if (!anyApplied) {
             return null;
         }
-        state.transform(getTransformFromDir(dir));
+        state.transform(orientation);
         return new BlockStateContainer(block, state.getBlockMeta(0));
     }
 
@@ -116,35 +195,15 @@ public class BlockStateConverter {
         }
     }
 
-    /** Turns directions the same way {@link NBTStructure} moves positions for each facing. */
-    private static DirectionTransform getTransformFromDir(ForgeDirection dir) {
-        return switch (dir) {
-            case SOUTH -> d -> d.offsetY == 0 ? d.getOpposite() : d;
-            case WEST -> d -> swap(
-                    swap(d, ForgeDirection.NORTH, ForgeDirection.WEST),
-                    ForgeDirection.SOUTH,
-                    ForgeDirection.EAST);
-            case EAST -> d -> swap(
-                    swap(d, ForgeDirection.NORTH, ForgeDirection.EAST),
-                    ForgeDirection.SOUTH,
-                    ForgeDirection.WEST);
-            default -> DirectionTransform.IDENTITY;
-        };
-    }
-
-    private static ForgeDirection swap(ForgeDirection value, ForgeDirection a, ForgeDirection b) {
-        return value == a ? b : value == b ? a : value;
-    }
-
     /**
      * Note that blockName is the ID of the block in the palette mapping, not the object you're mapping it to. TODO:
      * This will be used for mapping BlockState data to what was TE data in 1.7.10.
      */
-    public BlockStateContainer createBlockStateContainer(String blockName, Block block, Map<String, String> blockStates,
-            ForgeDirection dir) {
+    public BlockStateContainer createBlockStateContainer(String blockName, Block block,
+            Map<String, String> blockStates) {
         BlockStateContainer bsc = new BlockStateContainer(
                 block,
-                getMetaFromStateWithSubtypeAdditions(blockName, blockStates, dir));
+                getMetaFromStateWithSubtypeAdditions(blockName, blockStates));
         NBTTagCompound nbt = null;
         if (block instanceof ITileEntityProvider) {
             String truncatedName = blockName.substring(blockName.indexOf(":") + 1);
@@ -226,9 +285,7 @@ public class BlockStateConverter {
                 nbt = new NBTTagCompound();
                 if (!truncatedName.contains("wall")) {
                     if (blockStates.containsKey("rotation")) {
-                        nbt.setByte(
-                                "Rot",
-                                (byte) getRotationFromDir(Integer.parseInt(blockStates.get("rotation")), dir));
+                        nbt.setByte("Rot", (byte) Integer.parseInt(blockStates.get("rotation")));
                     }
                 }
                 int type = 0;
@@ -256,9 +313,9 @@ public class BlockStateConverter {
      * Wall and fence states are completely discarded as all of their connections and states are done directly in the
      * renderer.
      * <p>
-     * The facing direction can only be NORTH, SOUTH, EAST, or WEST.
+     * The states have already been rotated and mirrored by {@link #transformProperties}.
      */
-    public int getMetaFromState(String blockName, Map<String, String> blockStates, ForgeDirection dir) {
+    public int getMetaFromState(String blockName, Map<String, String> blockStates) {
         String truncatedName = blockName.substring(blockName.indexOf(":") + 1);
         // For rotatable pillars like logs
         if (blockStates.containsKey("axis")) {
@@ -270,10 +327,10 @@ public class BlockStateConverter {
                         return 2;
                     }
                     case "x" -> {
-                        return dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 3 : 4;
+                        return 3;
                     }
                     case "z" -> {
-                        return dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 4 : 3;
+                        return 4;
                     }
                 }
             } else {
@@ -282,10 +339,10 @@ public class BlockStateConverter {
                         return 0;
                     }
                     case "x" -> {
-                        return dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 4 : 8;
+                        return 4;
                     }
                     case "z" -> {
-                        return dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 8 : 4;
+                        return 8;
                     }
                 }
             }
@@ -311,24 +368,16 @@ public class BlockStateConverter {
                     }
                     switch (facing) {
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 3 : 0);
+                            return meta;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 2 : 1);
+                            return meta + 1;
                         }
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 1 : 2);
+                            return meta + 2;
                         }
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 0 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.equals("end_portal_frame")) {
@@ -338,47 +387,31 @@ public class BlockStateConverter {
                     }
                     switch (facing) {
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 1 : 0);
+                            return meta;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 0 : 1);
+                            return meta + 1;
                         }
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 3 : 2);
+                            return meta + 2;
                         }
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 2 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.endsWith("anvil")) {
                     switch (facing) {
                         case "north" -> {
-                            return dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 3 : 0;
+                            return 0;
                         }
                         case "east" -> {
-                            return dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 2 : 1;
+                            return 1;
                         }
                         case "south" -> {
-                            return dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 1 : 2;
+                            return 2;
                         }
                         case "west" -> {
-                            return dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 0 : 3;
+                            return 3;
                         }
                     }
                 } else if (truncatedName.endsWith("trapdoor")) {
@@ -391,24 +424,16 @@ public class BlockStateConverter {
                     }
                     switch (facing) {
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 3 : 0);
+                            return meta;
                         }
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 2 : 1);
+                            return meta + 1;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 1 : 2);
+                            return meta + 2;
                         }
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 0 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.endsWith("tripwire_hook")) {
@@ -421,55 +446,37 @@ public class BlockStateConverter {
                     }
                     switch (facing) {
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 1 : 0);
+                            return meta;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 0 : 1);
+                            return meta + 1;
                         }
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 3 : 2);
+                            return meta + 2;
                         }
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 2 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.endsWith("door")) {
                     int meta = 0;
                     if ("upper".equals(blockStates.get("half"))) {
-                        final int rightMeta = dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 9 : 8;
-                        final int leftMeta = dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 8 : 9;
-                        return "right".equals(blockStates.get("hinge")) ? rightMeta : leftMeta;
+                        return "right".equals(blockStates.get("hinge")) ? 9 : 8;
                     } else if (Boolean.parseBoolean(blockStates.get("open"))) {
                         meta += 4;
                     }
                     switch (facing) {
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 3 : 0);
+                            return meta;
                         }
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 2 : 1);
+                            return meta + 1;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 1 : 2);
+                            return meta + 2;
                         }
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 0 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.endsWith("fence_gate")) {
@@ -479,24 +486,16 @@ public class BlockStateConverter {
                     }
                     switch (facing) {
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 1 : 0);
+                            return meta;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 0 : 1);
+                            return meta + 1;
                         }
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 3 : 2);
+                            return meta + 2;
                         }
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 2 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.endsWith("bed")) {
@@ -506,24 +505,16 @@ public class BlockStateConverter {
                     }
                     switch (facing) {
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 1 : 0);
+                            return meta;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 0 : 1);
+                            return meta + 1;
                         }
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 3 : 2);
+                            return meta + 2;
                         }
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 2 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.endsWith("repeater") || truncatedName.endsWith("comparator")) {
@@ -542,41 +533,25 @@ public class BlockStateConverter {
                     // "locked" and "powered" state for repeater is ignored because it's not a meta in 1.7.10
                     switch (facing) {
                         case "south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 0
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 1 : 0);
+                            return meta;
                         }
                         case "west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 0 : 1);
+                            return meta + 1;
                         }
                         case "north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 0
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 3 : 2);
+                            return meta + 2;
                         }
                         case "east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 0 : dir == ForgeDirection.EAST ? 2 : 3);
+                            return meta + 3;
                         }
                     }
                 } else if (truncatedName.endsWith("button")) {
                     int meta = 0;
                     return switch (facing) {
-                        case "north" -> meta + (dir == ForgeDirection.NORTH ? 4
-                                : dir == ForgeDirection.SOUTH ? 3
-                                        : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 1 : 0);
-                        case "south" -> meta + (dir == ForgeDirection.NORTH ? 3
-                                : dir == ForgeDirection.SOUTH ? 4
-                                        : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 2 : 0);
-                        case "west" -> meta + (dir == ForgeDirection.NORTH ? 2
-                                : dir == ForgeDirection.SOUTH ? 1
-                                        : dir == ForgeDirection.WEST ? 4 : dir == ForgeDirection.EAST ? 3 : 0);
-                        case "east" -> meta + (dir == ForgeDirection.NORTH ? 1
-                                : dir == ForgeDirection.SOUTH ? 2
-                                        : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 4 : 0);
+                        case "north" -> meta + 4;
+                        case "south" -> meta + 3;
+                        case "west" -> meta + 2;
+                        case "east" -> meta + 1;
                         default -> 0;
                     };
                 } else if (truncatedName.endsWith("pressure_plate")) {
@@ -587,24 +562,16 @@ public class BlockStateConverter {
                 } else if (truncatedName.endsWith("vine")) {
                     switch (facing) {
                         case "south" -> {
-                            return dir == ForgeDirection.NORTH ? 1
-                                    : dir == ForgeDirection.SOUTH ? 4
-                                            : dir == ForgeDirection.WEST ? 8 : dir == ForgeDirection.EAST ? 2 : 0;
+                            return 1;
                         }
                         case "west" -> {
-                            return dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 8
-                                            : dir == ForgeDirection.WEST ? 4 : dir == ForgeDirection.EAST ? 1 : 0;
+                            return 2;
                         }
                         case "north" -> {
-                            return dir == ForgeDirection.NORTH ? 4
-                                    : dir == ForgeDirection.SOUTH ? 1
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 8 : 0;
+                            return 4;
                         }
                         case "east" -> {
-                            return dir == ForgeDirection.NORTH ? 8
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 1 : dir == ForgeDirection.EAST ? 4 : 0;
+                            return 8;
                         }
                     }
                 } else {
@@ -616,24 +583,16 @@ public class BlockStateConverter {
                             return 1;
                         }
                         case "north" -> {
-                            return dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 4 : dir == ForgeDirection.EAST ? 5 : 0;
+                            return 2;
                         }
                         case "south" -> {
-                            return dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 5 : dir == ForgeDirection.EAST ? 4 : 0;
+                            return 3;
                         }
                         case "west" -> {
-                            return dir == ForgeDirection.NORTH ? 4
-                                    : dir == ForgeDirection.SOUTH ? 5
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 3 : 0;
+                            return 4;
                         }
                         case "east" -> {
-                            return dir == ForgeDirection.NORTH ? 5
-                                    : dir == ForgeDirection.SOUTH ? 4
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 2 : 0;
+                            return 5;
                         }
                     }
                 }
@@ -666,50 +625,34 @@ public class BlockStateConverter {
                     }
                     switch (blockStates.get("shape")) {
                         case "north_south" -> {
-                            return meta + (dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 0 : 1);
+                            return meta;
                         }
                         case "east_west" -> {
-                            return meta + (dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH ? 1 : 0);
+                            return meta + 1;
                         }
                         case "ascending_east" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 2
-                                    : dir == ForgeDirection.SOUTH ? 3
-                                            : dir == ForgeDirection.WEST ? 4 : dir == ForgeDirection.EAST ? 5 : 0);
+                            return meta + 2;
                         }
                         case "ascending_west" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 3
-                                    : dir == ForgeDirection.SOUTH ? 2
-                                            : dir == ForgeDirection.WEST ? 5 : dir == ForgeDirection.EAST ? 4 : 0);
+                            return meta + 3;
                         }
                         case "ascending_north" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 4
-                                    : dir == ForgeDirection.SOUTH ? 5
-                                            : dir == ForgeDirection.WEST ? 2 : dir == ForgeDirection.EAST ? 3 : 0);
+                            return meta + 4;
                         }
                         case "ascending_south" -> {
-                            return meta + (dir == ForgeDirection.NORTH ? 5
-                                    : dir == ForgeDirection.SOUTH ? 4
-                                            : dir == ForgeDirection.WEST ? 3 : dir == ForgeDirection.EAST ? 2 : 0);
+                            return meta + 5;
                         }
                         case "south_east" -> {
-                            return dir == ForgeDirection.NORTH ? 6
-                                    : dir == ForgeDirection.SOUTH ? 7
-                                            : dir == ForgeDirection.WEST ? 8 : dir == ForgeDirection.EAST ? 9 : 0;
+                            return 6;
                         }
                         case "south_west" -> {
-                            return dir == ForgeDirection.NORTH ? 7
-                                    : dir == ForgeDirection.SOUTH ? 6
-                                            : dir == ForgeDirection.WEST ? 9 : dir == ForgeDirection.EAST ? 8 : 0;
+                            return 7;
                         }
                         case "north_west" -> {
-                            return dir == ForgeDirection.NORTH ? 8
-                                    : dir == ForgeDirection.SOUTH ? 9
-                                            : dir == ForgeDirection.WEST ? 6 : dir == ForgeDirection.EAST ? 7 : 0;
+                            return 8;
                         }
                         case "north_east" -> {
-                            return dir == ForgeDirection.NORTH ? 9
-                                    : dir == ForgeDirection.SOUTH ? 8
-                                            : dir == ForgeDirection.WEST ? 7 : dir == ForgeDirection.EAST ? 6 : 0;
+                            return 9;
                         }
                     }
                 } else if (truncatedName.equals("tripwire")) {
@@ -727,7 +670,7 @@ public class BlockStateConverter {
                     meta |= Boolean.parseBoolean(blockStates.get("has_bottle_2")) ? 0x4 : 0;
                     return meta;
                 } else if (truncatedName.endsWith("mushroom_block")) {
-                    return getHugeMushroomMetaFromState(blockName, blockStates, dir);
+                    return getHugeMushroomMetaFromState(blockName, blockStates);
                 } else if (blockStates.containsKey("layers")) {
                     return Integer.parseInt(blockStates.get("layers"));
                 } else if (blockStates.containsKey("power")) {
@@ -737,7 +680,7 @@ public class BlockStateConverter {
                 } else if (blockStates.containsKey("age")) {
                     return Integer.parseInt(blockStates.get("age"));
                 } else if (blockStates.containsKey("rotation")) {
-                    return getRotationFromDir(Integer.parseInt(blockStates.get("rotation")), dir);
+                    return Integer.parseInt(blockStates.get("rotation"));
                 } else if (blockStates.containsKey("moisture")) {
                     return Integer.parseInt(blockStates.get("moisture")) == 7 ? 1 : 0;
                 }
@@ -747,7 +690,7 @@ public class BlockStateConverter {
         return 0;
     }
 
-    public int getHugeMushroomMetaFromState(String blockName, Map<String, String> blockStates, ForgeDirection dir) {
+    public int getHugeMushroomMetaFromState(String blockName, Map<String, String> blockStates) {
         boolean up = Boolean.parseBoolean(blockStates.get("up"));
         boolean down = Boolean.parseBoolean(blockStates.get("down"));
         boolean north = Boolean.parseBoolean(blockStates.get("north"));
@@ -820,16 +763,6 @@ public class BlockStateConverter {
         return blockStates.keySet().stream().anyMatch(stateName -> stateName.contains(string));
     }
 
-    protected final int getRotationFromDir(int rotation, ForgeDirection dir) {
-        return switch (dir) {
-            case NORTH -> rotation;
-            case SOUTH -> (rotation + 8) % 16;
-            case EAST -> (4 - rotation) % 16;
-            case WEST -> (12 - rotation) % 16;
-            default -> 0;
-        };
-    }
-
     public ForgeDirection getItemFrameDirFromRotation(int rotation) {
         return switch (rotation) {
             case 0 -> ForgeDirection.NORTH;
@@ -855,12 +788,10 @@ public class BlockStateConverter {
      *
      * @param blockName
      * @param blockStates
-     * @param dir
      * @return
      */
-    public int getMetaFromStateWithSubtypeAdditions(String blockName, Map<String, String> blockStates,
-            ForgeDirection dir) {
-        int meta = getMetaFromState(blockName, blockStates, dir);
+    public int getMetaFromStateWithSubtypeAdditions(String blockName, Map<String, String> blockStates) {
+        int meta = getMetaFromState(blockName, blockStates);
         if (blockName.startsWith("minecraft:")) {
             String truncatedName = blockName.replace("minecraft:", "");
             switch (truncatedName) {
@@ -873,37 +804,37 @@ public class BlockStateConverter {
                 case "dark_oak_planks" -> meta = 5;
                 case "oak_sapling" -> {
                     meta = 0;
-                    if (getMetaFromState(truncatedName, blockStates, dir) > 7) {
+                    if (getMetaFromState(truncatedName, blockStates) > 7) {
                         meta += 8;
                     }
                 }
                 case "spruce_sapling" -> {
                     meta = 1;
-                    if (getMetaFromState(truncatedName, blockStates, dir) > 7) {
+                    if (getMetaFromState(truncatedName, blockStates) > 7) {
                         meta += 8;
                     }
                 }
                 case "birch_sapling" -> {
                     meta = 2;
-                    if (getMetaFromState(truncatedName, blockStates, dir) > 7) {
+                    if (getMetaFromState(truncatedName, blockStates) > 7) {
                         meta += 8;
                     }
                 }
                 case "jungle_sapling" -> {
                     meta = 3;
-                    if (getMetaFromState(truncatedName, blockStates, dir) > 7) {
+                    if (getMetaFromState(truncatedName, blockStates) > 7) {
                         meta += 8;
                     }
                 }
                 case "acacia_sapling" -> {
                     meta = 4;
-                    if (getMetaFromState(truncatedName, blockStates, dir) > 7) {
+                    if (getMetaFromState(truncatedName, blockStates) > 7) {
                         meta += 8;
                     }
                 }
                 case "dark_oak_sapling" -> {
                     meta = 5;
-                    if (getMetaFromState(truncatedName, blockStates, dir) > 7) {
+                    if (getMetaFromState(truncatedName, blockStates) > 7) {
                         meta += 8;
                     }
                 }
