@@ -4,17 +4,13 @@ import java.io.InputStream;
 import java.util.*;
 
 import net.minecraft.block.BlockSign;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityHanging;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.*;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,9 +22,6 @@ import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
 
 // Adapted from Et Futurum Requiem (LGPL-3.0)
 public class NBTStructure {
-    // TODO: Add crashes when the wrong args are used
-    // Should trigger whenever the palette count does not match the map entry count, etc to prevent misuse and reduce
-    // possibility of user error
 
     private final NBTTagCompound compound;
     /**
@@ -176,8 +169,7 @@ public class NBTStructure {
                 }
             } else if (modernCompound.hasKey("Text1") && modernCompound.hasKey("Text2")
                     && modernCompound.hasKey("Text3")
-                    && modernCompound.hasKey("Text4")) { // Pre-1.20 sign text format. Untested but should theoretically
-                                                         // work.
+                    && modernCompound.hasKey("Text4")) { // Pre-1.20 sign text format
                         for (int i = 1; i <= 4; i++) {
                             signText.setString("Text" + i, getJsonTextValue(modernCompound.getString("Text" + i)));
                         }
@@ -204,14 +196,7 @@ public class NBTStructure {
 
     /**
      * Fires for all of the locations of a structure block Structure blocks are placed around structures in "data" mode
-     * with strings to tell what they are. This includes things such as them being placed above chests to indicate they
-     * have a loot table. They're also used a lot instead of the "entities" list so the entity NBT doesn't have to be
-     * stored over and over.
-     * <p>
-     * For example, end cities use them with the string "Chest" above chests to indicate their loot chests. So you'd set
-     * below. End cities also use them with the string "Sentry" to determine where the Shulkers are, and "Elytra" to
-     * determine where the elytra item frame should be. However igloos use the entity list tag to store its entities
-     * instead, and ruined portal chests do not use structure blocks.
+     * with strings to tell what they are, such as being placed above chests to indicate they have a loot table.
      * <p>
      * Do NOT set the X, Y, or Z coords for below's NBT, if you give it NBT. The game will do it for you. The structure
      * can generate anywhere, you don't know the world coords of this block yet.
@@ -226,7 +211,7 @@ public class NBTStructure {
      *                    IInventory before attempting to give it a loot table (chests, dispensers, etc)
      * @param data        What string did this structure block have written inside
      * @param orientation How the structure is rotated and mirrored.
-     * @return If you want this location to have a BlockState (remember BlockState can store an entity too)
+     * @return If you want this location to have a BlockState
      */
     public BlockStateContainer setStructureBlockAction(BlockPos pos, BlockStateContainer below, String data,
             StructureOrientation orientation) {
@@ -282,46 +267,13 @@ public class NBTStructure {
     public final boolean placeStructure(World world, Random rand, int x, int y, int z, StructureOrientation orientation,
             float integrity, int paletteIndex, StructureBoundingBox box) {
         Map<BlockPos, BlockStateContainer> blockSet = getBuildMap(paletteIndex, orientation);
-        Map<BlockPos, BlockStateContainer> entitySet = new HashMap<>(); // Yes entities are stored in the BlockState
-                                                                        // class for simplicity.
         for (Map.Entry<BlockPos, BlockStateContainer> entry : blockSet.entrySet()) {
-            if (entry.getValue().getType() == BlockStateContainer.BlockStateType.ENTITY) { // We want to do entities
-                                                                                           // last, after all blocks are
-                                                                                           // already placed
-                entitySet.put(entry.getKey(), entry.getValue()); // Put the entity in a list to place it later. This is
-                                                                 // so stuff like item frames or shulkers are less
-                                                                 // likely to pop off
-                continue;
-            }
             BlockPos pos = entry.getKey();
             if (box == null || box.isVecInside(pos.getX() + x, pos.getY() + y, pos.getZ() + z)) {
                 setBlockState(world, rand, pos.getX() + x, pos.getY() + y, pos.getZ() + z, entry.getValue(), integrity);
             }
         }
-        for (Map.Entry<BlockPos, BlockStateContainer> entry : entitySet.entrySet()) {
-            BlockPos pos = entry.getKey();
-            if (box == null || box.isVecInside(pos.getX() + x, pos.getY() + y, pos.getZ() + z)) {
-                Entity entity = entry.getValue().createNewEntity(world);
-                entity.readFromNBT(entry.getValue().getCompound());
-                onEntityCreated(entity, entry.getValue().getCompound(), x, y, z, pos, orientation);
-                world.spawnEntityInWorld(entity);
-            }
-        }
         return true;
-    }
-
-    protected final void onEntityCreated(Entity entity, NBTTagCompound containerCompound, int x, int y, int z,
-            BlockPos offsetPos, StructureOrientation orientation) {
-        entity.setPosition(offsetPos.getX() + x + 0.5D, offsetPos.getY() + y, offsetPos.getZ() + z + 0.5D);
-        if (entity instanceof EntityHanging) {
-            ForgeDirection hangingDir = converter
-                    .getItemFrameDirFromRotation(((EntityHanging) entity).hangingDirection);
-            ((EntityHanging) entity).field_146063_b = MathHelper.floor_double(offsetPos.getX() + x)
-                    + hangingDir.offsetX;
-            ((EntityHanging) entity).field_146064_c = MathHelper.floor_double(offsetPos.getY() + y);
-            ((EntityHanging) entity).field_146062_d = MathHelper.floor_double(offsetPos.getZ() + z)
-                    + hangingDir.offsetZ;
-        }
     }
 
     protected void setBlockState(World world, Random rand, int x, int y, int z, BlockStateContainer state,
@@ -396,10 +348,6 @@ public class NBTStructure {
         return getPaletteObjectFromIndex(paletteIndex).getCompoundTagAt(entryIndex);
     }
 
-    public final String getBlockNamespaceFromPaletteEntry(int paletteIndex, int entryIndex) {
-        return getBlockNamespaceFromNBT(getPaletteEntryFromIndex(paletteIndex, entryIndex));
-    }
-
     public static String getBlockNamespaceFromNBT(NBTTagCompound nbt) {
         return nbt.getString("Name");
     }
@@ -446,10 +394,6 @@ public class NBTStructure {
         return set;
     }
 
-    public final Map<String, String> getPropertiesFromIndex(int paletteIndex, int entryIndex) {
-        return getProperties(getPaletteEntryFromIndex(paletteIndex, entryIndex));
-    }
-
     @SuppressWarnings("unchecked")
     public static Map<String, String> getProperties(NBTTagCompound compound) {
         Map<String, String> map = new HashMap<>();
@@ -460,22 +404,6 @@ public class NBTStructure {
             }
         }
         return map;
-    }
-
-    /**
-     * Gets the namespace ID from a palette entry
-     */
-    public final String getBlockIDFromPalette(int paletteIndex, int entryIndex) {
-        return getPaletteEntryFromIndex(paletteIndex, entryIndex).getString("Name");
-    }
-
-    /**
-     * Gets a properties from the "properties" portion of a BlockState palette entry in structure NBT Returns NULL if
-     * the block has no state properties.
-     */
-    public static String getBlockProperty(NBTTagCompound nbt, String property) {
-        if (!nbt.hasKey("properties")) return null;
-        return nbt.getCompoundTag("properties").getString(property);
     }
 
     /**
@@ -492,9 +420,7 @@ public class NBTStructure {
     protected static int getIntFromTagList(NBTTagList list, int index) {
         if (index >= 0 && index < list.tagCount()) {
             NBTBase nbtbase = (NBTBase) list.tagList.get(index);
-            return nbtbase.getId() == 3 ? ((NBTTagInt) nbtbase).func_150287_d()/* getInt */ : 0; // Ignore error on this
-                                                                                                 // line, fake IntelliJ
-                                                                                                 // error
+            return nbtbase.getId() == 3 ? ((NBTTagInt) nbtbase).func_150287_d()/* getInt */ : 0;
         } else {
             return 0;
         }

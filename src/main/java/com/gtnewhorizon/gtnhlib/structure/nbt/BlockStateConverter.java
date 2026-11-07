@@ -12,12 +12,9 @@ import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
@@ -50,10 +47,6 @@ public class BlockStateConverter {
                 map.put(pair.getLeft(), propertyState);
                 continue;
             }
-
-            // TODO: TileEntity data from some default states (eg potted_poppy)
-            // Flower pots and skulls will need some default TE data since some things that are TE data in 1.7.10 are
-            // now BlockState data.
 
             Map<String, String> properties = transformProperties(
                     namespace,
@@ -226,8 +219,7 @@ public class BlockStateConverter {
     }
 
     /**
-     * Note that blockName is the ID of the block in the palette mapping, not the object you're mapping it to. TODO:
-     * This will be used for mapping BlockState data to what was TE data in 1.7.10.
+     * Note that blockName is the ID of the block in the palette mapping, not the object you're mapping it to.
      */
     public BlockStateContainer createBlockStateContainer(String blockName, Block block,
             Map<String, String> blockStates) {
@@ -714,9 +706,6 @@ public class BlockStateConverter {
                 } else if (blockStates.containsKey("moisture")) {
                     return Integer.parseInt(blockStates.get("moisture")) == 7 ? 1 : 0;
                 }
-        // TODO: skulls
-        // Should we map the "pressed" states of things like pressure plates or buttons, or the state of sleeping in a
-        // bed? Should "temporary" states be mapped at all?
         return 0;
     }
 
@@ -758,57 +747,6 @@ public class BlockStateConverter {
             return 5;
         }
         return 14;
-    }
-
-    /**
-     * Runs startsWith on every BlockState key.
-     *
-     * @param blockStates
-     * @param string
-     * @return
-     */
-    protected final boolean blockStatesStartWith(Map<String, String> blockStates, String string) {
-        return blockStates.keySet().stream().anyMatch(stateName -> stateName.startsWith(string));
-    }
-
-    /**
-     * Runs endsWith on every BlockState key.
-     *
-     * @param blockStates
-     * @param string
-     * @return
-     */
-    protected final boolean blockStatesEndWith(Map<String, String> blockStates, String string) {
-        return blockStates.keySet().stream().anyMatch(stateName -> stateName.endsWith(string));
-    }
-
-    /**
-     * Runs contains on every BlockState key.
-     *
-     * @param blockStates
-     * @param string
-     * @return
-     */
-    protected final boolean blockStatesContain(Map<String, String> blockStates, String string) {
-        return blockStates.keySet().stream().anyMatch(stateName -> stateName.contains(string));
-    }
-
-    public ForgeDirection getItemFrameDirFromRotation(int rotation) {
-        return switch (rotation) {
-            case 0 -> ForgeDirection.NORTH;
-            case 1 -> ForgeDirection.EAST;
-            case 2 -> ForgeDirection.SOUTH;
-            default -> ForgeDirection.WEST;
-        };
-    }
-
-    public int getItemFrameRotationFromDir(ForgeDirection dir) {
-        return switch (dir) {
-            case NORTH -> 0;
-            case EAST -> 1;
-            case SOUTH -> 2;
-            default -> 3;
-        };
     }
 
     /**
@@ -1190,8 +1128,7 @@ public class BlockStateConverter {
 
                 case "daylight_detector":
                     if (Boolean.parseBoolean(blockStates.get("inverted"))) {
-                        return Blocks.stone; // There is no inverted daylight detector in 1.7.10, this goes in the EFR
-                                             // mapping.
+                        return Blocks.stone;
                     } else {
                         return Blocks.daylight_detector;
                     }
@@ -1379,22 +1316,7 @@ public class BlockStateConverter {
             }
         }
 
-        // If the block isn't above, we check the block registry to see if it's there.
-        // Not all blocks are there because their ID is the same in modern versions as here so we don't need to put them
-        // there.
-        // I should check if the above (getting block variable directly) works with mods that do registry replacement.
-        // Should we support that?
-
-        // "stone_slab" is a different block in modern, "smooth_stone_slab" is the stone slab for this version but
-        // "stone_slab" is an ID in 1.7 so it will get recognized
-        // Should we manually override "stone_slab" to return the default of Blocks.stone or should we leave it alone?
-
         Block block = GameRegistry.findBlock(blockName.substring(0, blockName.indexOf(":")), truncatedName);
         return block == null ? Blocks.stone : block;
-    }
-
-    public Pair<Item, Integer> getItemAndMetadataFromNamespace(String itemName) {
-        return new ImmutablePair<>(Items.rotten_flesh, 0); // TODO: Actual mappings (rotten flesh will probably be the
-                                                           // default return value though lol)
     }
 }

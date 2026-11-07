@@ -40,6 +40,4 @@ public abstract class StructureNBTComponent extends StructureComponent {
         int z1 = this.getZWithOffset(sizeX, sizeZ);
         structure.placeStructure(world, rand, x1, y1, z1, orientation, integrity, palette, box);
     }
-    // TODO: Make the "place blocks and fill blocks" in this class return an exception since they're not supposed to be
-    // used
 }
