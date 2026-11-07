@@ -899,7 +899,8 @@ public final class NumberFormatUtil {
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
         df.setDecimalFormatSymbols(symbols);
         df.setGroupingUsed(true);
-        df.setMaximumFractionDigits(options.getDecimalPlaces());
+        df.setMaximumFractionDigits(options.getMaxDecimalPlaces());
+        df.setMinimumFractionDigits(options.getMinDecimalPlaces());
         df.setRoundingMode(options.getRoundingMode());
 
         return df;
