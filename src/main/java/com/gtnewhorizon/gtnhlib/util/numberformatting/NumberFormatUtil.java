@@ -51,7 +51,7 @@ public final class NumberFormatUtil {
 
     /* ========================= Localisation ========================= */
 
-    public static class LocalisationCache implements IResourceManagerReloadListener {
+    public static class LocalisationCache {
 
         @Target({ FIELD })
         @Retention(RetentionPolicy.RUNTIME)
@@ -354,7 +354,6 @@ public final class NumberFormatUtil {
         private @NotNull String unitFormatSpeed = "%s/%s";
 
         private final @NotNull ImmutableMap<@NotNull String, @NotNull String> defaults;
-        private final @NotNull LinkedList<@NotNull Consumer<IResourceManager>> callbacks = new LinkedList<>();
 
         private LocalisationCache() {
             try {
@@ -374,45 +373,58 @@ public final class NumberFormatUtil {
             }
         }
 
-        @Override
         @SideOnly(Side.CLIENT)
-        public void onResourceManagerReload(IResourceManager resourceManager) {
-            synchronized (this.callbacks) {
-                try {
-                    // update the field values
-                    for (final Field field : this.getClass().getDeclaredFields()) {
-                        // we only care about string fields with the lang key annotation
-                        if (field.getType() != String.class) continue;
-                        LangKey annotation = field.getAnnotation(LangKey.class);
-                        if (annotation == null) continue;
-                        String langKey = annotation.value();
+        private void onResourceManagerReload(IResourceManager resourceManager) {
+            try {
+                // update the field values
+                for (final Field field : this.getClass().getDeclaredFields()) {
+                    // we only care about string fields with the lang key annotation
+                    if (field.getType() != String.class) continue;
+                    LangKey annotation = field.getAnnotation(LangKey.class);
+                    if (annotation == null) continue;
+                    String langKey = annotation.value();
 
-                        // attempt to translate, else fallback to the default value, and then they key itself.
-                        String translated;
-                        if (!StatCollector.canTranslate(langKey)) {
-                            translated = this.defaults.getOrDefault(annotation.value(), langKey);
-                        } else {
-                            translated = StatCollector.translateToLocal(annotation.value());
-                        }
-
-                        // update the field value
-                        FieldUtils.writeField(field, this, translated, true);
+                    // attempt to translate, else fallback to the default value, and then they key itself.
+                    String translated;
+                    if (!StatCollector.canTranslate(langKey)) {
+                        translated = this.defaults.getOrDefault(annotation.value(), langKey);
+                    } else {
+                        translated = StatCollector.translateToLocal(annotation.value());
                     }
 
+                    // update the field value
+                    FieldUtils.writeField(field, this, translated, true);
+                }
+
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static class ReloadListener implements IResourceManagerReloadListener {
+
+        public static final ReloadListener INSTANCE = new ReloadListener();
+        private final @NotNull LinkedList<@NotNull Consumer<IResourceManager>> callbacks = new LinkedList<>();
+
+        private ReloadListener() {}
+
+        @Override
+        public void onResourceManagerReload(IResourceManager resourceManager) {
+            synchronized (INSTANCE) {
+                LOC_CACHE.onResourceManagerReload(resourceManager);
+                synchronized (callbacks) {
                     // run the callbacks that pre-cache formatting to an even higher degree.
-                    for (@NotNull
-                    Consumer<IResourceManager> callback : this.callbacks) {
+                    for (Consumer<IResourceManager> callback : this.callbacks) {
                         callback.accept(resourceManager);
                     }
-
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
                 }
             }
         }
 
         @SideOnly(Side.CLIENT)
-        public void registerCacheHandler(@NotNull Consumer<IResourceManager> callback) {
+        public void registerCallback(@NotNull Consumer<IResourceManager> callback) {
             synchronized (this.callbacks) {
                 this.callbacks.addLast(callback);
             }
@@ -808,7 +820,7 @@ public final class NumberFormatUtil {
             this.unit2Supplier = unit2Supplier;
             updateCachedUnitString();
             if (FMLCommonHandler.instance().getSide().isClient()) {
-                LOC_CACHE.registerCacheHandler(($_) -> this.updateCachedUnitString());
+                ReloadListener.INSTANCE.registerCallback(($_) -> this.updateCachedUnitString());
             }
         }
 
