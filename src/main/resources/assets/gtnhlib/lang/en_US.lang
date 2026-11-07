@@ -300,3 +300,190 @@ commands.title.icon.single=Changed title icon for %s
 # Brigadier command errors
 gtnhlib.chat.command.incomplete=Incomplete command
 gtnhlib.chat.command.more_usages=... and %s more
+
+# Unified numeric abbreviation
+# 1 = number, 2 = abbreviation
+gtnhlib.unified.abbreviation.format=%1$s%2$s
+gtnhlib.unified.abbreviation.thousand=K
+gtnhlib.unified.abbreviation.million=M
+gtnhlib.unified.abbreviation.billion=B
+gtnhlib.unified.abbreviation.trillion=T
+gtnhlib.unified.abbreviation.quadrillion=Q
+gtnhlib.unified.abbreviation.quintillion=P
+
+# Exponential number formatting
+# 1 = mantissa, 2 = exponent
+gtnhlib.unified.exponential_format.scientific=%1$se%2$s
+# 1 = mantissa, 2 = exponent
+gtnhlib.unified.exponential_format.engineering=%1$se%2$s
+# 1 = mantissa, 2 = exponent
+gtnhlib.unified.exponential_format.power_of_ten=%1$s*10^%2$s
+
+# Unified tooltip measurements
+gtnhlib.unified.unit.fluid.mb=mB
+gtnhlib.unified.unit.fluid.liter=L
+gtnhlib.unified.unit.RF=RF
+gtnhlib.unified.unit.MJ=MJ
+gtnhlib.unified.unit.AE=AE
+gtnhlib.unified.unit.EU=EU
+gtnhlib.unified.unit.amp=A
+gtnhlib.unified.unit.heat=K
+gtnhlib.unified.unit.acidity=pH
+gtnhlib.unified.unit.radiation=Sv
+gtnhlib.unified.unit.temperature=°C
+gtnhlib.unified.unit.force=N
+gtnhlib.unified.unit.electron_volt=eV
+gtnhlib.unified.unit.kilo_electron_volt=KeV
+gtnhlib.unified.unit.mega_electron_volt=MeV
+gtnhlib.unified.unit.giga_electron_volt=GeV
+gtnhlib.unified.unit.tera_electron_volt=TeV
+gtnhlib.unified.unit.nanogram=ng
+gtnhlib.unified.unit.microgram=μg
+gtnhlib.unified.unit.milligram=mg
+gtnhlib.unified.unit.gram=g
+gtnhlib.unified.unit.kilogram=kg
+gtnhlib.unified.unit.nanometer=nm
+gtnhlib.unified.unit.micrometer=μm
+gtnhlib.unified.unit.millimeter=mm
+gtnhlib.unified.unit.centimeter=cm
+gtnhlib.unified.unit.meter=m
+gtnhlib.unified.unit.kilometer=km
+gtnhlib.unified.unit.nanosecond=ns
+gtnhlib.unified.unit.microsecond=μs
+gtnhlib.unified.unit.millisecond=ms
+gtnhlib.unified.unit.tick=t
+gtnhlib.unified.unit.second=s
+gtnhlib.unified.unit.minute=m
+gtnhlib.unified.unit.hour=h
+gtnhlib.unified.unit.day=d
+
+# Long names for units that are sometimes fully spelt
+gtnhlib.unified.unit.amp.long.singular=amp
+gtnhlib.unified.unit.amp.long.plural=amps
+gtnhlib.unified.unit.amp.long_capitalized.singular=Amp
+gtnhlib.unified.unit.amp.long_capitalized.plural=Amps
+gtnhlib.unified.unit.tick.long.singular=tick
+gtnhlib.unified.unit.tick.long.plural=ticks
+gtnhlib.unified.unit.tick.long_capitalized.singular=Tick
+gtnhlib.unified.unit.tick.long_capitalized.plural=Ticks
+gtnhlib.unified.unit.second.long.singular=second
+gtnhlib.unified.unit.second.long.plural=seconds
+gtnhlib.unified.unit.second.long_capitalized.singular=Second
+gtnhlib.unified.unit.second.long_capitalized.plural=Seconds
+gtnhlib.unified.unit.minute.long.singular=minute
+gtnhlib.unified.unit.minute.long.plural=minutes
+gtnhlib.unified.unit.minute.long_capitalized.singular=Minute
+gtnhlib.unified.unit.minute.long_capitalized.plural=Minutes
+gtnhlib.unified.unit.hour.long.singular=hour
+gtnhlib.unified.unit.hour.long.plural=hours
+gtnhlib.unified.unit.hour.long_capitalized.singular=Hour
+gtnhlib.unified.unit.hour.long_capitalized.plural=Hours
+gtnhlib.unified.unit.day.long.singular=day
+gtnhlib.unified.unit.day.long.plural=days
+gtnhlib.unified.unit.day.long_capitalized.singular=Day
+gtnhlib.unified.unit.day.long_capitalized.plural=Days
+
+# Special Value Names
+gtnhlib.unified.value.infinity=Infinity
+gtnhlib.unified.value.neg_infinity=-Infinity
+gtnhlib.unified.value.nan=NaN
+gtnhlib.unified.value.null=NULL
+
+# Plain Measurements
+
+# Measurement-Unit Spacing:
+# Default is based on: https://physics.nist.gov/cuu/Units/checklist.html which specifies the following:
+# > There is a space between the numerical value and unit symbol, even when the value is used in an adjectival sense,
+# > except in the case of superscript units for plane angle. 
+# 1 = amount, 2 = unit
+gtnhlib.unified.measurement.spacing.fluid=%1$s %2$s
+gtnhlib.unified.measurement.spacing.energy=%1$s %2$s
+gtnhlib.unified.measurement.spacing.amperage=%1$s %2$s
+gtnhlib.unified.measurement.spacing.heat=%1$s %2$s
+gtnhlib.unified.measurement.spacing.electron_volt=%1$s %2$s
+gtnhlib.unified.measurement.spacing.acidity=%1$s %2$s
+gtnhlib.unified.measurement.spacing.radiation=%1$s %2$s
+gtnhlib.unified.measurement.spacing.temperature=%1$s %2$s
+gtnhlib.unified.measurement.spacing.force=%1$s %2$s
+gtnhlib.unified.measurement.spacing.mass=%1$s %2$s
+gtnhlib.unified.measurement.spacing.distance=%1$s %2$s
+gtnhlib.unified.measurement.spacing.time=%1$s %2$s
+
+# Fluid Throughput:
+# {mb/s:amount}
+# {L/h:amount}
+# {l/m}
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.fluid_throughput=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.fluid_throughput=%1$s/%2$s
+
+# Energy Throughput:
+# Uses {rf/t:amount} while active
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.energy_throughput=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.energy_throughput=%1$s/%2$s
+
+# Mass Throughput:
+# {g/s:amount}
+# {kg/h:amount}
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.mass_throughput=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.mass_throughput=%1$s/%2$s
+
+# Distance Throughput:
+# {m/s:amount}
+# {cm/d:amount}
+# {km/h}
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.speed=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.speed=%1$s/%2$s
+
+# Formatted Measurements
+
+# EU Throughput: {color_eu_voltage:{var:amount}} {color_tier:EU/t}
+# 1 = [push]color_eu_voltage, 2 = amount, 3 = color_tier , 4 = throughput_unit, 5 = reset|pop
+gtnhlib.unified.measurement.eu_throughput.amount=%1$s%2$s %3$s%4$s%5$s
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.eu_throughput.amount.no_color=%1$s %2$s
+# 1 = volt_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.eu_throughput.unit=%1$s/%2$s
+
+# EU Capacity: {color_eu_capacity:{var:amount}} {EU}
+# 1 = [push]color_eu_capacity, 2 = amount, 3 = reset|pop, 4 = volt_unit
+gtnhlib.unified.measurement.eu_capacity.formatted=%1$s%2$s %3$s%4$s
+# 1 = amount, 2 = energy unit
+gtnhlib.unified.measurement.eu_capacity.amount=%1$s %2$s
+
+# Amperage: {color_amperage:{var:amount} {A}}
+# 1 = [push]color_amperage, 2 = amount, 3 = amp_unit, 4 = reset|pop
+gtnhlib.unified.measurement.amperage=%1$s%2$s %3$s%4$s
+# 1 = amount, 2 = amp_unit
+gtnhlib.unified.measurement.amperage.no_color=%1$s %2$s
+
+# Heat Values: {color_heat:{var:amount}{K}}
+# 1 = [push]color_amperage, 2 = amount, 3 = heat_unit, 4 = reset|pop
+gtnhlib.unified.measurement.heat=%1$s%2$s%3$s%4$s
+# 1 = amount, 2 = heat_unit
+gtnhlib.unified.measurement.heat.no_color=%1$s%2$s
+
+# Electron-Volt Values: {color_electron_volt:{var:amount}{eV}}
+# 1 = [push]color_amperage, 2 = amount, 3 = electron_volt_unit, 4 = reset|pop
+gtnhlib.unified.measurement.electron_volt=%1$s%2$s%3$s%4$s
+# 1 = amount, 2 = electron_volt_unit
+gtnhlib.unified.measurement.electron_volt.no_color=%1$s%2$s
+
+# Compact Time Measurements: {color_time:{var:amount}{t}}
+# 1 = [push]color_time, 2 = amount, 3 = short_time_unit, 4 = reset|pop
+gtnhlib.unified.measurement.time_short=%1$s%2$s%3$s%4$s
+# 1 = [push]color_time, 2 = short_time_unit
+gtnhlib.unified.measurement.time_short.no_color=%1$s%2$s
+
+# Long Time Measurements: {color_time:{var:amount}} {second{plural:amount:s}}
+# 1 = [push]color_time, 2 = amount, 3 = reset|pop, 4 = long_time_unit
+gtnhlib.unified.measurement.time.long=%1$s%2$s%3$s %4$s
+# 1 = amount, 2 = long_time_unit
+gtnhlib.unified.measurement.time.long.no_color=%1$s %2$s

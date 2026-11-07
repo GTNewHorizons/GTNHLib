@@ -1,0 +1,127 @@
+package com.gtnewhorizon.gtnhlib.util.parsing;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
+
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
+
+import it.unimi.dsi.fastutil.objects.ObjectIntPair;
+
+public class CLDRPluralRuleNumber {
+    // var names based on https://unicode.org/reports/tr35/tr35-numbers.html#Operands
+
+    /**
+     * the absolute value of {@see number}
+     */
+    public @NotNull final BigDecimal n;
+    /**
+     * the integer digits of {@see number}
+     */
+    public @NotNull final BigInteger i;
+    /**
+     * the number of visible fraction digits in N, with trailing zeros.
+     */
+    public final int v;
+    /**
+     * the number of visible fraction digits in N, without trailing zeros.*
+     */
+    public final int w;
+    /**
+     * the visible fraction digits in N, with trailing zeros, expressed as an integer.*
+     */
+    public @NotNull final BigInteger f;
+    /**
+     * the visible fraction digits in N, without trailing zeros, expressed as an integer.*
+     */
+    public @NotNull final BigInteger t;
+    /**
+     * compact decimal exponent value: exponent of the power of 10 used in compact decimal formatting.
+     */
+    public final int c;
+
+    @VisibleForTesting
+    public CLDRPluralRuleNumber(@NotNull BigDecimal n, @NotNull BigInteger i, int v, int w, @NotNull BigInteger f,
+            @NotNull BigInteger t, int c) {
+        this.n = n;
+        this.i = i;
+        this.v = v;
+        this.w = w;
+        this.f = f;
+        this.t = t;
+        this.c = c;
+    }
+
+    public CLDRPluralRuleNumber(@NotNull Number value, @NotNull NumberOptionsBase<?> options) {
+        BigDecimal orig = NumberFormatUtil.bigDecimalConverter(value);
+        BigDecimal val = orig.abs();
+        BigDecimal stripped;
+        boolean fixExponentialValue;
+        if (options instanceof CompactOptions co && val.compareTo(co.getCompactThreshold()) >= 0) {
+            var ret = NumberFormatUtil.getAbbreviatedNumberInformation(val, options);
+            if (ret != null) {
+                stripped = ret.rounded.abs();
+                c = ret.exp;
+                fixExponentialValue = true;
+            } else {
+                stripped = val.stripTrailingZeros();
+                c = 0;
+                fixExponentialValue = false;
+            }
+        } else if (NumberFormatUtil.isExponentialFormattingEnabled(val, options)) {
+            ObjectIntPair<BigDecimal> ret = options.getExponentialFormat().getComponents(orig, options);
+            stripped = ret.left().abs();
+            c = ret.rightInt();
+            fixExponentialValue = true;
+        } else {
+            stripped = val.stripTrailingZeros();
+            c = 0;
+            fixExponentialValue = false;
+        }
+
+        if (fixExponentialValue) {
+            // the mantissa will always be stripped so we just need to check if it has enough decimals
+            if (options.getMinDecimalPlaces() > stripped.scale()) {
+                // add missing zeros if the scale of the mantissa is too low.
+                val = stripped.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
+                // offset values by exponent
+                val = val.scaleByPowerOfTen(c);
+                stripped = stripped.scaleByPowerOfTen(c);
+            } else {
+                // offset values by exponent
+                val = stripped = stripped.scaleByPowerOfTen(c);
+            }
+        } else {
+            if (options.getMaxDecimalPlaces() < val.scale()) {
+                // if the value has too many digits round it
+                val = val.setScale(options.getMaxDecimalPlaces(), options.getRoundingMode());
+                stripped = val.stripTrailingZeros();
+                // if the value has too many trailing zeros after rounding eg 999.9 -> 1000.0 strip the trailing zeros.
+                if (options.getMinDecimalPlaces() > stripped.scale() && options.getMinDecimalPlaces() < val.scale()) {
+                    val = val.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
+                }
+            } else if (options.getMinDecimalPlaces() > val.scale()) {
+                // add 0s when necessary
+                val = val.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
+            }
+            if (options.getMinDecimalPlaces() <= stripped.scale()) {
+                val = val.setScale(stripped.scale(), RoundingMode.UNNECESSARY);
+            }
+        }
+
+        // Below threshold, do exact formatting
+
+        n = stripped;
+        i = n.toBigInteger();
+        v = Math.max(0, val.scale());
+        w = Math.max(0, stripped.scale());
+        f = val.remainder(BigDecimal.ONE).movePointRight(v).toBigInteger();
+        t = stripped.remainder(BigDecimal.ONE).movePointRight(w).toBigInteger();
+
+    }
+}

@@ -1,32 +1,50 @@
 package com.gtnewhorizon.gtnhlib.util.numberformatting.options;
 
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_TRILLION;
+import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig.EXPONENTIAL_FORMAT;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.gtnewhorizon.gtnhlib.util.numberformatting.ExponentialFormat;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 @SuppressWarnings({ "unchecked", "unused" })
 public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
 
-    private int decimalPlaces = 2;
-
-    private BigDecimal exponentialThreshold = BD_TRILLION;
+    private int minDecimalPlaces = 0;
+    private int maxDecimalPlaces = 2;
+    private @NotNull BigDecimal exponentialThreshold = BD_TRILLION;
     private boolean disableExponentialFormatting = false;
-    private RoundingMode roundingMode = RoundingMode.HALF_UP;
+    private @NotNull RoundingMode roundingMode = RoundingMode.HALF_UP;
+    private @Nullable ExponentialFormat exponentialFormatOverride = null;
 
     protected NumberOptionsBase() {}
 
+    public abstract String format(@NotNull Number number);
+
+    public abstract @NotNull T copy();
+
     // ---------- Setters ----------
 
-    public T setDecimalPlaces(int decimalPlaces) {
-        if (decimalPlaces < 0) throw new IllegalArgumentException("Decimal places must be >= 0");
-        this.decimalPlaces = decimalPlaces;
+    public @NotNull T setDecimalPlaces(int decimalPlaces) {
+        return this.setDecimalPlaces(0, decimalPlaces);
+    }
+
+    public @NotNull T setDecimalPlaces(int minDecimalPlaces, int maxDecimalPlaces) {
+        if (minDecimalPlaces < 0) throw new IllegalArgumentException("Min decimal places must be >= 0");
+        if (maxDecimalPlaces < 0) throw new IllegalArgumentException("Max decimal places must be >= 0");
+        if (minDecimalPlaces > maxDecimalPlaces)
+            throw new IllegalArgumentException("Min decimal places must be <= max");
+        this.minDecimalPlaces = minDecimalPlaces;
+        this.maxDecimalPlaces = maxDecimalPlaces;
         return (T) this;
     }
 
-    public T setExponentialThreshold(Number number) {
+    public @NotNull T setExponentialThreshold(Number number) {
         if (number == null) throw new IllegalArgumentException("Number cannot be null");
         BigDecimal value = NumberFormatUtil.bigDecimalConverter(number);
         if (value.signum() < 0) throw new IllegalArgumentException("Exponential threshold must be >= 0");
@@ -34,28 +52,45 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
         return (T) this;
     }
 
-    public T disableExponentialFormatting() {
+    public @NotNull T disableExponentialFormatting() {
         this.disableExponentialFormatting = true;
         return (T) this;
     }
 
-    public T enableExponentialFormatting() {
+    public @NotNull T enableExponentialFormatting() {
         this.disableExponentialFormatting = false;
         return (T) this;
     }
 
-    public T setRoundingMode(RoundingMode roundingMode) {
+    public @NotNull T setRoundingMode(@NotNull RoundingMode roundingMode) {
         this.roundingMode = roundingMode;
+        return (T) this;
+    }
+
+    public @NotNull T setExponentialFormatOverride(@Nullable ExponentialFormat override) {
+        this.exponentialFormatOverride = override;
         return (T) this;
     }
 
     // ---------- Getters ----------
 
+    /**
+     * @deprecated Use {@link #getMaxDecimalPlaces} and {@link #getMinDecimalPlaces} instead
+     */
+    @Deprecated
     public int getDecimalPlaces() {
-        return decimalPlaces;
+        return getMaxDecimalPlaces();
     }
 
-    public BigDecimal getExponentialThreshold() {
+    public int getMaxDecimalPlaces() {
+        return maxDecimalPlaces;
+    }
+
+    public int getMinDecimalPlaces() {
+        return minDecimalPlaces;
+    }
+
+    public @NotNull BigDecimal getExponentialThreshold() {
         return exponentialThreshold;
     }
 
@@ -67,17 +102,22 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
         return disableExponentialFormatting == false;
     }
 
-    public RoundingMode getRoundingMode() {
+    public @NotNull RoundingMode getRoundingMode() {
         return roundingMode;
+    }
+
+    public @NotNull ExponentialFormat getExponentialFormat() {
+        return this.exponentialFormatOverride == null ? EXPONENTIAL_FORMAT : this.exponentialFormatOverride;
     }
 
     // ---------- Converters ----------
 
-    public FormatOptions toFormatOptions() {
+    public @NotNull FormatOptions toFormatOptions() {
         FormatOptions options = new FormatOptions();
         options.setExponentialThreshold(exponentialThreshold);
-        options.setDecimalPlaces(decimalPlaces);
+        options.setDecimalPlaces(minDecimalPlaces, maxDecimalPlaces);
         options.setRoundingMode(roundingMode);
+        options.setExponentialFormatOverride(exponentialFormatOverride);
 
         if (disableExponentialFormatting) {
             options.disableExponentialFormatting();
@@ -88,11 +128,12 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
         return options;
     }
 
-    public CompactOptions toCompactOptions() {
+    public @NotNull CompactOptions toCompactOptions() {
         CompactOptions options = new CompactOptions();
         options.setExponentialThreshold(exponentialThreshold);
-        options.setDecimalPlaces(decimalPlaces);
+        options.setDecimalPlaces(minDecimalPlaces, maxDecimalPlaces);
         options.setRoundingMode(roundingMode);
+        options.setExponentialFormatOverride(exponentialFormatOverride);
 
         if (disableExponentialFormatting) {
             options.disableExponentialFormatting();
@@ -102,5 +143,4 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
 
         return options;
     }
-
 }

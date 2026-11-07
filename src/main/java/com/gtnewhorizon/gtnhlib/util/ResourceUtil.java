@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.FallbackResourceManager;
@@ -11,8 +12,10 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.ResourceLocation;
 
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
@@ -97,5 +100,35 @@ public class ResourceUtil {
 
     public static @NotNull ResourceLocation getCompleteItemTextureResourceLocation(String resourceKey) {
         return getCompleteResourceLocation("textures/items/", ".png", resourceKey);
+    }
+
+    public static List<String> loadLines(ResourceLocation loc) throws IOException {
+        // Returns server only for dedicated servers
+        if (FMLCommonHandler.instance().getSide().isClient()) {
+            return loadFromClient(loc);
+        } else {
+            return loadFromJar(loc);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static List<String> loadFromClient(ResourceLocation loc) throws IOException {
+        IResourceManager manager = Minecraft.getMinecraft().getResourceManager();
+
+        IResource resource = manager.getResource(loc);
+
+        return IOUtils.readLines(resource.getInputStream());
+    }
+
+    private static List<String> loadFromJar(ResourceLocation loc) throws IOException {
+        String path = String.format("assets/%s/%s", loc.getResourceDomain(), loc.getResourcePath());
+
+        try (InputStream is = ResourceUtil.class.getClassLoader().getResourceAsStream(path)) {
+            if (is == null) {
+                throw new IOException("Could not find jar asset " + path);
+            }
+
+            return IOUtils.readLines(is);
+        }
     }
 }
