@@ -46,7 +46,7 @@ public class ExampleLineProcessor implements ITemplatedTextLineProcessor {
             @NotNull Map<String, Object> vars, Stack<ResourceLocation> includeHistory) {
         lineOutput.add(EnumChatFormatting.DARK_GRAY + "Example:" + line);
         final int oldSize = lineOutput.size();
-        loader.evaluateLines(lineOutput, Collections.singletonList(line), vars, includeHistory);
+        loader.evaluateLinesNoFormat(lineOutput, Collections.singletonList(line), vars, includeHistory);
         final int newSize = lineOutput.size();
         if (oldSize == newSize) {
             lineOutput.add(TextFormatUtil.wrapFormatting(EnumChatFormatting.DARK_GRAY.toString(), "[OUTPUT SKIPPED]"));

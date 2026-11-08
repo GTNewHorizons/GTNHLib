@@ -44,6 +44,8 @@ public class IfLineProcessor implements ITemplatedTextLineProcessor {
         }
 
         // check if it's a valid value
-        if (value == wantsTrue) loader.evaluateLines(out, Collections.singletonList(parts[1]), vars, includeHistory);
+        if (value == wantsTrue) {
+            loader.evaluateLinesNoFormat(out, Collections.singletonList(parts[1]), vars, includeHistory);
+        }
     }
 }

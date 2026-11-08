@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -102,8 +103,24 @@ public class TemplatedTextLoader implements AutoCloseable {
      */
     public static final TemplatedTextLoader TOOLTIP_DESCRIPTION = new TemplatedTextLoader("tooltip") {
 
+        {
+            // load in all the tooltip guidelines into the tooltip renderer
+            TextFormatUtil.TOOLTIPS.getEntries()
+                    .forEach(entry -> this.addCommand("color_" + entry.key(), new DynamicFormatCommand(entry.value())));
+
+            // TODO: remove before 2.10 stable
+            // spotless:off
+            // backwards compatibility with some gt5u pre move
+            this.addCommand("color_tier", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getUnit));
+            this.addCommand("color_hatch", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getHatchNotice));
+            this.addCommand("color_efficiency", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getPowerEfficiency));
+            this.addCommand("color_eu_usage", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getVoltage));
+            this.addCommand("color_eu_capacity", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getPowerCapacity));
+            // spotless:on
+        }
+
         @Override
-        public String formatLine(String parsedLine) {
+        protected String formatLine(String parsedLine) {
             return TextFormatUtil.TOOLTIPS.getDefault() + parsedLine;
         }
 
@@ -335,26 +352,78 @@ public class TemplatedTextLoader implements AutoCloseable {
         // throughput unit standardization commands
         // spotless:off
         NumberFormatUtil.LocalisationCache locs = NumberFormatUtil.LOC_CACHE;
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingFluidThroughput, locs::getUnitFormatFluidThroughput, NumberFormatUtil::getFluidUnit,"fluid/", "fluid-unit/", "L/", "l/", "Liter/", "liter/", "mb/", "mB/");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitRF, "RF/", "rf/");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitMJ, "MJ/", "mj/");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitAE, "AE/", "ae/");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, NumberFormatUtil::getEnergyUnit, "energy-unit/", "eu/", "eu", "EU/", "EU");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingSpeed, locs::getUnitFormatSpeed, locs::getUnitMeter, "m/");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingSpeed, locs::getUnitFormatSpeed, locs::getUnitKilogram, "km/", "Km/", "KM/");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingMassThroughput, locs::getUnitFormatMassThroughput, locs::getUnitGram, "g/");
-        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingMassThroughput, locs::getUnitFormatMassThroughput, locs::getUnitKilogram, "kg/", "Kg/", "KG/");
-        // spotless:on
-
-        // TODO: remove before 2.10 stable
-        // spotless:off
-        // backwards compatibility with some gt5u pre move
-        TOOLTIP_DESCRIPTION.addCommand("color_tier", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getUnit));
-        TOOLTIP_DESCRIPTION.addCommand("color_hatch", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getHatchNotice));
-        TOOLTIP_DESCRIPTION.addCommand("color_efficiency", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getPowerEfficiency));
-        TOOLTIP_DESCRIPTION.addCommand("color_eu_usage", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getVoltage));
-        TOOLTIP_DESCRIPTION.addCommand("color_eu_capacity", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getPowerCapacity));
-        // spotless:on
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingFluidThroughput,
+                locs::getUnitFormatFluidThroughput,
+                NumberFormatUtil::getFluidUnit,
+                "fluid/",
+                "fluid-unit/",
+                "L/",
+                "l/",
+                "Liter/",
+                "liter/",
+                "mb/",
+                "mB/");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingEnergyThroughput,
+                locs::getUnitFormatEnergyThroughput,
+                locs::getUnitRF,
+                "RF/",
+                "rf/");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingEnergyThroughput,
+                locs::getUnitFormatEnergyThroughput,
+                locs::getUnitMJ,
+                "MJ/",
+                "mj/");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingEnergyThroughput,
+                locs::getUnitFormatEnergyThroughput,
+                locs::getUnitAE,
+                "AE/",
+                "ae/");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingEnergyThroughput,
+                locs::getUnitFormatEnergyThroughput,
+                NumberFormatUtil::getEnergyUnit,
+                "energy-unit/",
+                "eu/",
+                "eu",
+                "EU/",
+                "EU");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingSpeed,
+                locs::getUnitFormatSpeed,
+                locs::getUnitMeter,
+                "m/");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingSpeed,
+                locs::getUnitFormatSpeed,
+                locs::getUnitKilogram,
+                "km/",
+                "Km/",
+                "KM/");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingMassThroughput,
+                locs::getUnitFormatMassThroughput,
+                locs::getUnitGram,
+                "g/");
+        addThroughputVariations(
+                GLOBAL_COMMANDS,
+                locs::getSpacingMassThroughput,
+                locs::getUnitFormatMassThroughput,
+                locs::getUnitKilogram,
+                "kg/",
+                "Kg/",
+                "KG/");
 
         addGlobalCommand(
                 "throw-err",
@@ -461,13 +530,7 @@ public class TemplatedTextLoader implements AutoCloseable {
     public List<String> loadStandardPath(@NotNull ResourceLocation resource, @NotNull String cacheKeyExtra,
             @NotNull Supplier<@NotNull Map<@NotNull String, Object>> lazyVars) {
         String key = resource + cacheKeyExtra;
-        return cache.computeIfAbsent(key, (k) -> this.loadStandardPath(resource, lazyVars.get(), null));
-    }
-
-    /// Loads a templated text document at `assets/[mod id]/lang/[language id]/tooltip/[path].md`. On the client,
-    /// resource packs are scanned. On the server, the file is loaded directly from the current jar.
-    public List<String> loadStandardPath(ResourceLocation resource, Map<String, Object> vars) {
-        return this.loadStandardPath(resource, vars, null);
+        return cache.computeIfAbsent(key, (k) -> this.loadStandardPath(resource, lazyVars.get()));
     }
 
     private ResourceLocation getExactPath(ResourceLocation resource, String language) {
@@ -487,8 +550,43 @@ public class TemplatedTextLoader implements AutoCloseable {
         }
     }
 
-    @ApiStatus.Internal
-    public List<String> loadStandardPath(ResourceLocation resource, Map<String, Object> vars,
+    /**
+     * Loads and parses a templated text file from the resources.
+     *
+     * @param resource The resource location for the file you want to load.
+     * @param vars     The variables used when processing the file.
+     * @return The parsed lines with processed stacks and the special line formatting if one is specified.
+     */
+    public List<String> loadStandardPath(ResourceLocation resource, Map<String, Object> vars) {
+        List<String> out = loadStandardPathNoFormat(resource, vars, null);
+        out.replaceAll(parsedLine -> TextFormatUtil.processFormatStacks(formatLine(parsedLine)));
+        return out;
+    }
+
+    /**
+     * Parses arbitrary lines of text using the templated text processor.
+     *
+     * @param lines The lines to process
+     * @param vars  The variables used to process the lines.
+     * @return The parsed lines with processed stacks and the special line formatting if one is specified.
+     */
+    public List<String> evaluateLines(Iterable<String> lines, Map<String, Object> vars) {
+        List<String> out = new LinkedList<>();
+        evaluateLinesNoFormat(out, lines, vars, new Stack<>());
+        out.replaceAll(parsedLine -> TextFormatUtil.processFormatStacks(formatLine(parsedLine)));
+        return out;
+    }
+
+    /**
+     * Loads and parses a templated text file from the resources without applying the line formatting or the resolving
+     * format stacks.
+     *
+     * @param resource       The resource location for the file you want to load.
+     * @param vars           The variables used when processing the file.
+     * @param includeHistory The list of files previously included, leave null if you are at the root.
+     * @return The parsed lines without processed stacks or the special line formatting if one is specified.
+     */
+    public List<String> loadStandardPathNoFormat(ResourceLocation resource, Map<String, Object> vars,
             @Nullable Stack<ResourceLocation> includeHistory) {
         List<String> ret = new ArrayList<>();
         String currentLanguage = getCurrentLanguage();
@@ -534,15 +632,17 @@ public class TemplatedTextLoader implements AutoCloseable {
                 if (rs.equals(resource)) {
                     StringBuilder sb = new StringBuilder();
                     appendError(sb, "INCLUDE-LOOP", resource + FILE_EXT);
-                    return Collections.singletonList(TextFormatUtil.processFormatStacks(formatLine(sb.toString())));
+                    List<String> out = new LinkedList<>();
+                    out.add(sb.toString());
+                    return out;
                 }
             }
         }
         includeHistory.push(resource);
 
         try {
-            // TODO: remove the .md file extension support for gtnh 2.10
             List<String> lines;
+            // TODO: remove the .md file extension support for gtnh 2.10
             try {
                 lines = ResourceUtil.loadLines(
                         new ResourceLocation(resource.getResourceDomain(), resource.getResourcePath() + FILE_EXT));
@@ -551,15 +651,23 @@ public class TemplatedTextLoader implements AutoCloseable {
                         new ResourceLocation(resource.getResourceDomain(), resource.getResourcePath() + FILE_EXT_OLD));
             }
             List<String> out = new ArrayList<>();
-            evaluateLines(out, lines, vars, includeHistory);
-            out.replaceAll(parsedLine -> TextFormatUtil.processFormatStacks(formatLine(parsedLine)));
+            evaluateLinesNoFormat(out, lines, vars, includeHistory);
             return out;
         } finally {
             includeHistory.pop();
         }
     }
 
-    public void evaluateLines(List<String> out, List<String> lines, Map<String, Object> vars,
+    /**
+     * Parses arbitrary lines of text using the templated text processor without resolving format stacks or appending
+     * the special line formatting if one is specified.
+     *
+     * @param out            A list to append the output to.
+     * @param lines          The lines to process
+     * @param vars           The variables used to process the lines.
+     * @param includeHistory The list of files previously included files, leave <b>empty</b> if you are at the root.
+     */
+    public void evaluateLinesNoFormat(List<String> out, Iterable<String> lines, Map<String, Object> vars,
             Stack<ResourceLocation> includeHistory) {
         for (String line : lines) {
             // ignore comments
@@ -588,7 +696,7 @@ public class TemplatedTextLoader implements AutoCloseable {
         }
     }
 
-    public String formatLine(String parsedLine) {
+    protected String formatLine(String parsedLine) {
         return parsedLine;
     }
 

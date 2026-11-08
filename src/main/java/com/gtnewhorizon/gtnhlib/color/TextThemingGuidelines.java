@@ -3,8 +3,10 @@ package com.gtnewhorizon.gtnhlib.color;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
@@ -21,7 +23,7 @@ import com.gtnewhorizon.gtnhlib.GTNHLib;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.util.internal.ConcurrentSet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public abstract class TextThemingGuidelines implements AutoCloseable {
@@ -33,11 +35,13 @@ public abstract class TextThemingGuidelines implements AutoCloseable {
     private static final class FormatKey {
 
         private final @NotNull String def;
+        private final @NotNull Supplier<@NotNull String> getter;
         private final @NotNull Consumer<@NotNull String> setter;
 
-        private FormatKey(@NotNull String def, @NotNull Consumer<@NotNull String> setter) {
-            this.def = def;
+        private FormatKey(@NotNull Supplier<@NotNull String> getter, @NotNull Consumer<@NotNull String> setter) {
+            this.def = getter.get();
             this.setter = setter;
+            this.getter = getter;
         }
     }
 
@@ -84,18 +88,18 @@ public abstract class TextThemingGuidelines implements AutoCloseable {
                 return;
             }
 
-            reload(lines, values);
+            parseFields(lines, values);
         }
 
         // update values based on registered handlers.
-        for (Object2ObjectMap.Entry<@NotNull String, @NotNull FormatKey> entry : this.keyHandlers
-                .object2ObjectEntrySet()) {
-            entry.getValue().setter.accept(values.getOrDefault(entry.getKey(), entry.getValue().def));
+        for (Map.Entry<@NotNull String, @NotNull FormatKey> entry : this.keyHandlers.entrySet()) {
+            String newValue = values.getOrDefault(entry.getKey(), entry.getValue().def);
+            entry.getValue().setter.accept(newValue);
         }
     }
 
     @VisibleForTesting
-    public void reload(@NotNull List<@NotNull String> lines, Map<String, String> outputMap) {
+    public void parseFields(@NotNull List<@NotNull String> lines, Map<String, String> outputMap) {
         // skip lines with comments or those that are empty
         lines.removeIf(l -> l.startsWith(COMMENT_START) || l.isEmpty());
 
@@ -109,7 +113,11 @@ public abstract class TextThemingGuidelines implements AutoCloseable {
     }
 
     private final @NotNull ResourceLocation[] resourceLocations;
-    private final @NotNull Object2ObjectOpenHashMap<@NotNull String, @NotNull FormatKey> keyHandlers = new Object2ObjectOpenHashMap<>();
+    private final @NotNull Map<@NotNull String, @NotNull FormatKey> keyHandlers = new ConcurrentHashMap<>();
+
+    public Stream<Pair<String, Supplier<String>>> getEntries() {
+        return this.keyHandlers.entrySet().stream().map(x -> Pair.of(x.getKey(), x.getValue().getter));
+    }
 
     public TextThemingGuidelines(@NotNull ResourceLocation @NotNull... resourceLocations) {
         this.resourceLocations = new ResourceLocation[resourceLocations.length];
@@ -131,23 +139,11 @@ public abstract class TextThemingGuidelines implements AutoCloseable {
     /**
      * Registers a key handler for a given key.
      *
-     * @param name      The name of the key.
-     * @param defGetter A lazy resolver for the default value.
-     * @param setter    The function to call when updating this value.
-     */
-    protected void registerKey(String name, Supplier<@NotNull String> defGetter, Consumer<@NotNull String> setter) {
-        this.registerKey(name, defGetter.get(), setter);
-    }
-
-    /**
-     * Registers a key handler for a given key.
-     *
      * @param name   The name of the key.
-     * @param def    The default value of the key.
+     * @param getter A lazy resolver for the default value.
      * @param setter The function to call when updating this value.
      */
-    protected void registerKey(@NotNull String name, @NotNull String def, @NotNull Consumer<@NotNull String> setter) {
-        this.keyHandlers.put(name, new FormatKey(def, setter));
-        setter.accept(def);
+    protected void registerKey(String name, Supplier<@NotNull String> getter, Consumer<@NotNull String> setter) {
+        this.keyHandlers.put(name, new FormatKey(getter, setter));
     }
 }

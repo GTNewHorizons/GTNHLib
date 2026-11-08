@@ -23,6 +23,6 @@ public class IncludeLineProcessor implements ITemplatedTextLineProcessor {
     public void processLine(@NotNull TemplatedTextLoader loader, @NotNull List<String> lineOutput, @NotNull String line,
             @NotNull Map<String, Object> vars, Stack<ResourceLocation> includeHistory) {
         ResourceLocation loc = new ResourceLocation(line.trim());
-        lineOutput.addAll(loader.loadStandardPath(loc, vars, includeHistory));
+        lineOutput.addAll(loader.loadStandardPathNoFormat(loc, vars, includeHistory));
     }
 }

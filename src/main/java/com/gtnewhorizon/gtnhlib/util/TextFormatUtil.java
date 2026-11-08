@@ -1,8 +1,6 @@
 package com.gtnewhorizon.gtnhlib.util;
 
 import java.util.ArrayDeque;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -11,8 +9,6 @@ import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelines;
-import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
-import com.gtnewhorizon.gtnhlib.templatedtext.command.DynamicFormatCommand;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -318,7 +314,7 @@ public class TextFormatUtil {
         private @NotNull String cableLoss = EnumChatFormatting.RED.toString();
 
         public TooltipDescriptionFormatContainer(@NotNull ResourceLocation @NotNull... resoruces) {
-            super(resoruces);// assign based on resource
+            super(resoruces);
             this.registerKey("default", this::getDefault, this::set$default);
             this.registerKey("unit", this::getUnit, this::setUnit);
             this.registerKey("name", this::getName, this::setName);
@@ -349,12 +345,6 @@ public class TextFormatUtil {
             this.registerKey("mechanic", this::getMechanic, this::setMechanic);
             this.registerKey("time", this::getTime, this::setTime);
             this.registerKey("pollution", this::getPollution, this::setPollution);
-        }
-
-        @Override
-        protected void registerKey(String name, Supplier<@NotNull String> getter, Consumer<@NotNull String> setter) {
-            super.registerKey(name, getter, setter);
-            TemplatedTextLoader.TOOLTIP_DESCRIPTION.addCommand("color_" + name, new DynamicFormatCommand(getter));
         }
     }
 

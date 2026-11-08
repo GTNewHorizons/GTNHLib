@@ -40,7 +40,7 @@ public class IfDefLineProcessor implements ITemplatedTextLineProcessor {
 
         // check if the arg is the correct type
         if (vars.containsKey(parts[0]) == wantsExists) {
-            loader.evaluateLines(out, Collections.singletonList(parts[1]), vars, includeHistory);
+            loader.evaluateLinesNoFormat(out, Collections.singletonList(parts[1]), vars, includeHistory);
         }
 
     }
