@@ -16,7 +16,7 @@ public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
     public CompactOptions() {}
 
     @Override
-    public String format(@NotNull Number number) {
+    public String format(Number number) {
         return NumberFormatUtil.formatNumberCompact(number, this);
     }
 

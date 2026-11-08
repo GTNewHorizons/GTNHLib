@@ -778,19 +778,16 @@ public final class NumberFormatUtil {
         @NotNull
         String format(@Nullable String value);
 
+        @NotNull
+        String format(@Nullable Number value, @NotNull NumberOptionsBase<?> options);
+
         default @NotNull String format(@Nullable Number value) {
             return this.format(value, new FormatOptions());
         }
 
-        @NotNull
-        String format(@Nullable Number value, @NotNull FormatOptions options);
-
         default @NotNull String formatCompact(@Nullable Number value) {
-            return this.formatCompact(value, new CompactOptions());
+            return this.format(value, new CompactOptions());
         }
-
-        @NotNull
-        String formatCompact(@Nullable Number value, @NotNull CompactOptions options);
 
     }
 
@@ -798,6 +795,12 @@ public final class NumberFormatUtil {
 
         private final @NotNull Supplier<@NotNull String> formatSupplier;
         private final @NotNull Supplier<@NotNull String> unitSupplier;
+
+        public UnitFormatter(@NotNull Supplier<@NotNull String> formatSupplier,
+                @NotNull Supplier<@NotNull String> unitSupplier) {
+            this.formatSupplier = formatSupplier;
+            this.unitSupplier = unitSupplier;
+        }
 
         @Override
         public @NotNull String getUnit() {
@@ -809,20 +812,9 @@ public final class NumberFormatUtil {
             return String.format(this.formatSupplier.get(), value, unitSupplier.get());
         }
 
-        public UnitFormatter(@NotNull Supplier<@NotNull String> formatSupplier,
-                @NotNull Supplier<@NotNull String> unitSupplier) {
-            this.formatSupplier = formatSupplier;
-            this.unitSupplier = unitSupplier;
-        }
-
         @Override
-        public @NotNull String format(@Nullable Number value, @NotNull FormatOptions options) {
-            return String.format(this.formatSupplier.get(), formatNumber(value, options), unitSupplier.get());
-        }
-
-        @Override
-        public @NotNull String formatCompact(@Nullable Number value, @NotNull CompactOptions options) {
-            return String.format(this.formatSupplier.get(), formatNumberCompact(value, options), unitSupplier.get());
+        public @NotNull String format(@Nullable Number value, @NotNull NumberOptionsBase<?> options) {
+            return String.format(this.formatSupplier.get(), options.format(value), unitSupplier.get());
         }
 
     }
@@ -868,13 +860,8 @@ public final class NumberFormatUtil {
         }
 
         @Override
-        public @NotNull String format(@Nullable Number value, @NotNull FormatOptions options) {
-            return String.format(this.formatSupplier.get(), formatNumber(value, options), this.cachedUnitText);
-        }
-
-        @Override
-        public @NotNull String formatCompact(@Nullable Number value, @NotNull CompactOptions options) {
-            return String.format(this.formatSupplier.get(), formatNumberCompact(value, options), this.cachedUnitText);
+        public @NotNull String format(@Nullable Number value, @NotNull NumberOptionsBase<?> options) {
+            return String.format(this.formatSupplier.get(), options.format(value), this.cachedUnitText);
         }
 
     }

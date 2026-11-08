@@ -10,7 +10,7 @@ public final class FormatOptions extends NumberOptionsBase<FormatOptions> {
     public FormatOptions() {}
 
     @Override
-    public String format(@NotNull Number number) {
+    public String format(Number number) {
         return NumberFormatUtil.formatNumber(number, this);
     }
 

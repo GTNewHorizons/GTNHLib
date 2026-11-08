@@ -24,7 +24,7 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
 
     protected NumberOptionsBase() {}
 
-    public abstract String format(@NotNull Number number);
+    public abstract String format(Number number);
 
     public abstract @NotNull T copy();
 
