@@ -34,7 +34,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
@@ -42,6 +41,7 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.util.internal.ConcurrentSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 
 @SuppressWarnings("unused")
@@ -355,28 +355,11 @@ public final class NumberFormatUtil {
         @Getter
         private @NotNull String unitFormatSpeed = "%s/%s";
 
-        private final @NotNull ImmutableMap<@NotNull String, @NotNull String> defaults;
-
-        private LocalisationCache() {
-            try {
-                ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
-                for (final Field field : this.getClass().getDeclaredFields()) {
-                    // we only care about string fields with lang key annotations
-                    if (field.getType() != String.class) continue;
-                    LangKey annotation = field.getAnnotation(LangKey.class);
-                    if (annotation == null) continue;
-
-                    // store the default value for fallbacks
-                    builder.put(annotation.value(), (String) FieldUtils.readField(field, this, true));
-                }
-                defaults = builder.build();
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        private final @NotNull Object2ObjectOpenHashMap<@NotNull String, @NotNull String> defaults = new Object2ObjectOpenHashMap<>();
 
         @SideOnly(Side.CLIENT)
-        private void onResourceManagerReload(IResourceManager resourceManager) {
+        private synchronized void onResourceManagerReload(IResourceManager resourceManager) {
+            boolean initDefaults = defaults.isEmpty();
             try {
                 // update the field values
                 for (final Field field : this.getClass().getDeclaredFields()) {
@@ -385,6 +368,17 @@ public final class NumberFormatUtil {
                     LangKey annotation = field.getAnnotation(LangKey.class);
                     if (annotation == null) continue;
                     String langKey = annotation.value();
+
+                    // init defaults if needed
+                    if (initDefaults) {
+                        defaults.computeIfAbsent(annotation.value(), ($_) -> {
+                            try {
+                                return (String) FieldUtils.readField(field, this, true);
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
 
                     // attempt to translate, else fallback to the default value, and then they key itself.
                     String translated;
@@ -397,7 +391,6 @@ public final class NumberFormatUtil {
                     // update the field value
                     FieldUtils.writeField(field, this, translated, true);
                 }
-
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
