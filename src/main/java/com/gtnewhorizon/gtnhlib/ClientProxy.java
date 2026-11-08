@@ -106,7 +106,7 @@ public class ClientProxy extends CommonProxy {
         final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         resourceManager.registerReloadListener(new ColorResource.CacheReloadListener());
-        resourceManager.registerReloadListener(NumberFormatUtil.ReloadListener.INSTANCE);
+        resourceManager.registerReloadListener(NumberFormatUtil.getReloadListener());
         resourceManager.registerReloadListener(TemplatedTextLoader.getReloadListener());
         resourceManager.registerReloadListener(TextThemingGuidelines.getReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());

@@ -24,7 +24,7 @@ import io.netty.util.internal.ConcurrentSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-public abstract class TextThemingGuidelines {
+public abstract class TextThemingGuidelines implements AutoCloseable {
 
     private static final String COMMENT_START = "#";
     private static final String KEY_VALUE_SEPARATOR = "=";
@@ -44,9 +44,9 @@ public abstract class TextThemingGuidelines {
     /**
      * Used to clear the cache when resources are reloaded.
      */
+    @SideOnly(Side.CLIENT)
     private static class ReloadListener implements IResourceManagerReloadListener {
 
-        private static final ConcurrentSet<TextThemingGuidelines> INSTANCES = new ConcurrentSet<>();
         private static final ReloadListener INSTANCE = new ReloadListener();
 
         @Override
@@ -60,6 +60,8 @@ public abstract class TextThemingGuidelines {
 
         }
     }
+
+    private static final ConcurrentSet<TextThemingGuidelines> INSTANCES = new ConcurrentSet<>();
 
     @ApiStatus.Internal
     @SideOnly(Side.CLIENT)
@@ -116,7 +118,14 @@ public abstract class TextThemingGuidelines {
                     resourceLocations[i].getResourceDomain(),
                     ASSET_FOLDER + resourceLocations[i].getResourcePath());
         }
-        ReloadListener.INSTANCES.add(this);
+        INSTANCES.add(this);
+    }
+
+    @VisibleForTesting
+    @Override
+    public void close() throws Exception {
+        INSTANCES.remove(this);
+        this.keyHandlers.clear();
     }
 
     /**

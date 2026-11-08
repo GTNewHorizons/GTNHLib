@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
@@ -74,7 +75,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 /// and are fully responsible for it's rendering. They can also prevent certain lines from being rendered.
 ///
 /// Lines starting with `//` are considered to be comments and will be ignored entirely.
-public class TemplatedTextLoader {
+public class TemplatedTextLoader implements AutoCloseable {
 
     private static final String FALLBACK_LOCALE = "en_US";
     /** The extension for templated text files. */
@@ -133,15 +134,22 @@ public class TemplatedTextLoader {
     /**
      * Used to clear the cache when resources are reloaded.
      */
-    private static class ReloadListener implements IResourceManagerReloadListener {
+    private static class ReloadListener {
 
-        private final ConcurrentSet<TemplatedTextLoader> INSTANCES = new ConcurrentSet<>();
-        private static final ReloadListener INSTANCE = new ReloadListener();
+        @SideOnly(Side.CLIENT)
+        private static class Listener implements IResourceManagerReloadListener {
 
-        @Override
-        public void onResourceManagerReload(IResourceManager manager) {
-            INSTANCES.forEach(x -> x.cache.clear());
+            private static final IResourceManagerReloadListener INSTANCE = new Listener();
+
+            @Override
+            public void onResourceManagerReload(IResourceManager manager) {
+                INSTANCES.forEach(x -> x.cache.clear());
+            }
+
+            private Listener() {}
         }
+
+        private static final ConcurrentSet<TemplatedTextLoader> INSTANCES = new ConcurrentSet<>();
 
         private ReloadListener() {
 
@@ -151,7 +159,7 @@ public class TemplatedTextLoader {
     @ApiStatus.Internal
     @SideOnly(Side.CLIENT)
     public static IResourceManagerReloadListener getReloadListener() {
-        return ReloadListener.INSTANCE;
+        return ReloadListener.Listener.INSTANCE;
     }
 
     public static class MarkdownTooltipParsingException extends IllegalStateException {
@@ -357,7 +365,14 @@ public class TemplatedTextLoader {
 
     public TemplatedTextLoader(@NotNull String style) {
         this.style = "/" + style + "/";
-        ReloadListener.INSTANCE.INSTANCES.add(this);
+        ReloadListener.INSTANCES.add(this);
+    }
+
+    @VisibleForTesting
+    @Override
+    public void close() throws Exception {
+        ReloadListener.INSTANCES.remove(this);
+        this.cache.clear();
     }
 
     public void addCommandWithAliases(ITemplatedTextCommand command, String... aliases) {

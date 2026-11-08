@@ -18,10 +18,8 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import net.minecraft.client.resources.IResourceManager;
@@ -30,8 +28,10 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -39,9 +39,9 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import io.netty.util.internal.ConcurrentSet;
 import lombok.Getter;
 
 @SuppressWarnings("unused")
@@ -404,33 +404,30 @@ public final class NumberFormatUtil {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static class ReloadListener implements IResourceManagerReloadListener {
+    public static class ReloadListener {
 
-        public static final ReloadListener INSTANCE = new ReloadListener();
-        private final @NotNull LinkedList<@NotNull Consumer<IResourceManager>> callbacks = new LinkedList<>();
+        @SideOnly(Side.CLIENT)
+        private static class Listener implements IResourceManagerReloadListener {
 
-        private ReloadListener() {}
+            private static final Listener INSTANCE = new Listener();
 
-        @Override
-        public void onResourceManagerReload(IResourceManager resourceManager) {
-            synchronized (INSTANCE) {
+            @Override
+            public void onResourceManagerReload(IResourceManager resourceManager) {
                 LOC_CACHE.onResourceManagerReload(resourceManager);
-                synchronized (callbacks) {
-                    // run the callbacks that pre-cache formatting to an even higher degree.
-                    for (Consumer<IResourceManager> callback : this.callbacks) {
-                        callback.accept(resourceManager);
-                    }
+                // run the callbacks that pre-cache formatting to an even higher degree.
+                for (ThroughputUnitFormatter formatter : THROUGHPUT_UNIT_FORMATTERS) {
+                    formatter.updateCachedUnitString();
                 }
             }
         }
 
-        @SideOnly(Side.CLIENT)
-        public void registerCallback(@NotNull Consumer<IResourceManager> callback) {
-            synchronized (this.callbacks) {
-                this.callbacks.addLast(callback);
-            }
-        }
+        private static final ConcurrentSet<ThroughputUnitFormatter> THROUGHPUT_UNIT_FORMATTERS = new ConcurrentSet<>();
+    }
+
+    @SideOnly(Side.CLIENT)
+    @ApiStatus.Internal
+    public static IResourceManagerReloadListener getReloadListener() {
+        return ReloadListener.Listener.INSTANCE;
     }
 
     public final static LocalisationCache LOC_CACHE = new LocalisationCache();
@@ -837,7 +834,7 @@ public final class NumberFormatUtil {
 
     }
 
-    public static class ThroughputUnitFormatter implements IUnitFormatter {
+    public static class ThroughputUnitFormatter implements IUnitFormatter, AutoCloseable {
 
         private final @NotNull Supplier<@NotNull String> formatSupplier;
         private final @NotNull Supplier<@NotNull String> unitFormatSupplier;
@@ -852,10 +849,14 @@ public final class NumberFormatUtil {
             this.unitFormatSupplier = unitFormatSupplier;
             this.unit1Supplier = unit1Supplier;
             this.unit2Supplier = unit2Supplier;
+            ReloadListener.THROUGHPUT_UNIT_FORMATTERS.add(this);
             updateCachedUnitString();
-            if (FMLCommonHandler.instance().getSide().isClient()) {
-                ReloadListener.INSTANCE.registerCallback(($_) -> this.updateCachedUnitString());
-            }
+        }
+
+        @VisibleForTesting
+        @Override
+        public void close() throws Exception {
+            ReloadListener.THROUGHPUT_UNIT_FORMATTERS.remove(this);
         }
 
         private void updateCachedUnitString() {
