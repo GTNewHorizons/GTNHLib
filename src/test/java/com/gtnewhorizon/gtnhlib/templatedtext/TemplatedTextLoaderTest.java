@@ -34,4 +34,12 @@ public class TemplatedTextLoaderTest {
         Assertions.assertLinesMatch(expected, actual);
         assertEquals(String.join(System.lineSeparator(), expected), String.join(System.lineSeparator(), actual));
     }
+
+    @Test
+    void tooltip_bad_final_symbol() {
+        List<String> text = Arrays.asList("{red:x} 100§");
+        List<String> expected = Arrays.asList("§cx§r 100");
+        List<String> actual = TemplatedTextLoader.DEFAULT.evaluateLines(text, Collections.emptyMap());
+        Assertions.assertLinesMatch(expected, actual);
+    }
 }

@@ -80,6 +80,9 @@ public class TextFormatUtil {
 
                 // Skip the format escape along with its code
                 start = end + 2;
+            } else {
+                // if there is a lone § at the end abort and don't append the format char.
+                break;
             }
         }
 
