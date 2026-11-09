@@ -26,6 +26,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
+import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelines;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.ColorPatternCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.CommentCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.DynamicFormatCommand;
@@ -105,23 +106,23 @@ public class TemplatedTextLoader implements AutoCloseable {
 
         {
             // load in all the tooltip guidelines into the tooltip renderer
-            TextFormatUtil.TOOLTIPS.getEntries()
+            TextThemingGuidelines.TOOLTIPS.getEntries()
                     .forEach(entry -> this.addCommand("color_" + entry.key(), new DynamicFormatCommand(entry.value())));
 
             // TODO: remove before 2.10 stable
             // spotless:off
             // backwards compatibility with some gt5u pre move
-            this.addCommand("color_tier", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getUnit));
-            this.addCommand("color_hatch", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getHatchNotice));
-            this.addCommand("color_efficiency", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getPowerEfficiency));
-            this.addCommand("color_eu_usage", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getVoltage));
-            this.addCommand("color_eu_capacity", new DynamicFormatCommand(TextFormatUtil.TOOLTIPS::getPowerCapacity));
+            this.addCommand("color_tier", new DynamicFormatCommand(TextThemingGuidelines.TOOLTIPS::getUnit));
+            this.addCommand("color_hatch", new DynamicFormatCommand(TextThemingGuidelines.TOOLTIPS::getHatchNotice));
+            this.addCommand("color_efficiency", new DynamicFormatCommand(TextThemingGuidelines.TOOLTIPS::getEnergyEfficiency));
+            this.addCommand("color_eu_usage", new DynamicFormatCommand(TextThemingGuidelines.TOOLTIPS::getVoltage));
+            this.addCommand("color_eu_capacity", new DynamicFormatCommand(TextThemingGuidelines.TOOLTIPS::getEnergyCapacity));
             // spotless:on
         }
 
         @Override
         protected String formatLine(String parsedLine) {
-            return TextFormatUtil.TOOLTIPS.getDefault() + parsedLine;
+            return TextThemingGuidelines.TOOLTIPS.getDefault() + parsedLine;
         }
 
     };

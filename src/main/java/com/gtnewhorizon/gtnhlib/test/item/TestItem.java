@@ -16,12 +16,12 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.color.RGBColor;
+import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelines;
 import com.gtnewhorizon.gtnhlib.itemrendering.BlockItemTexture;
 import com.gtnewhorizon.gtnhlib.itemrendering.IItemTexture;
 import com.gtnewhorizon.gtnhlib.itemrendering.ItemTexture;
 import com.gtnewhorizon.gtnhlib.itemrendering.ItemWithTextures;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
-import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.ExponentialFormat;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
@@ -170,7 +170,7 @@ public class TestItem extends Item implements ItemWithTextures {
 
         ResourceLocation res = new ResourceLocation(GTNHLib.MODID, file);
         List<String> ret = new ArrayList<>();
-        ret.add(TextFormatUtil.TOOLTIPS.getDefault() + EnumChatFormatting.ITALIC + "showcasing: " + file);
+        ret.add(TextThemingGuidelines.TOOLTIPS.getDefault() + EnumChatFormatting.ITALIC + "showcasing: " + file);
         ret.add("");
         ret.addAll(TemplatedTextLoader.TOOLTIP_DESCRIPTION.loadStandardPath(res, TestItem::getTooltipArgs));
         lines.addAll(ret);
