@@ -19,7 +19,6 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.minecraft.client.resources.IResourceManager;
@@ -519,19 +518,26 @@ public final class NumberFormatUtil {
             .add(new CompactDividerThreshold(BD_THOUSAND, LOC_CACHE::getAbbreviationThousand)).build();
 
     /**
-     * @apiNote The passed number should always be greater than or equal to the minimum compact number threshold!
+     * @return null if the compact divider list was somehow empty (probably due to a loc loading issue)
      */
     public static @Nullable AbbreviatedNumberInfo getAbbreviatedNumberInformation(BigDecimal number,
             NumberOptionsBase<?> options) {
-        final BigDecimal abs = number.abs();
-        Optional<CompactDividerThreshold> maybe = COMPACT_DIVIDERS.stream().filter(x -> x.number.compareTo(abs) <= 0)
-                .findFirst();
-        if (!maybe.isPresent()) return null;
-        CompactDividerThreshold threshold = maybe.get();
+        // localing to prevent race conditions, because O plan on making this a localizable list down the line for
+        // languages like japanese that use compact number thresholds.
+        final ImmutableList<CompactDividerThreshold> compactDividers = COMPACT_DIVIDERS;
+        if (compactDividers.isEmpty()) return null;
 
-        BigDecimal scaled = number.divide(threshold.number, MathContext.UNLIMITED);
+        // find the divider that matches this
+        final BigDecimal abs = number.abs();
+        int dividerIdx = 0;
+        for (; dividerIdx < compactDividers.size() - 1; dividerIdx++) {
+            if (compactDividers.get(dividerIdx).number.compareTo(abs) <= 0) break;
+        }
+        CompactDividerThreshold threshold = compactDividers.get(dividerIdx);
+
         // Prevent unit rollover caused only by rounding:
         // If abs(value) is still below the next threshold, do not allow rounded to reach 1000.
+        BigDecimal scaled = number.divide(threshold.number, MathContext.UNLIMITED);
         int dp = options.getMaxDecimalPlaces();
         RoundingMode rm = options.getRoundingMode();
 

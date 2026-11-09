@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.test.util.parsing;
 
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_MILLION;
-import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_THOUSAND;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -240,9 +239,9 @@ public class CLDRPluralRuleNumberTest {
     void compact_general_positive() {
         CompactOptions opts = getCompactOps();
         // out threshold
-        testNumberContainer(0.99, opts, "0.99", 0, 2, 2, 99, 99, 0);
-        testNumberContainer(999, opts, "999", 999, 0, 0, 0, 0, 0);
-        testNumberContainer(999.99, opts, "999.99", 999, 2, 2, 99, 99, 0);
+        testNumberContainer(0.99, opts, "0K", 0, 0, 0, 0, 0, 3);
+        testNumberContainer(500, opts, "0.5K", 500, 0, 0, 0, 0, 3);
+        testNumberContainer(990, opts, "0.99K", 990, 0, 0, 0, 0, 3);
 
         // in threshold
         Stream.of(
@@ -279,9 +278,9 @@ public class CLDRPluralRuleNumberTest {
     void compact_general_negative() {
         CompactOptions opts = getCompactOps();
         // out threshold
-        testNumberContainer(-0.99, opts, "-0.99", 0, 2, 2, 99, 99, 0);
-        testNumberContainer(-999, opts, "-999", 999, 0, 0, 0, 0, 0);
-        testNumberContainer(-999.99, opts, "-999.99", 999, 2, 2, 99, 99, 0);
+        testNumberContainer(-0.99, opts, "0K", 0, 0, 0, 0, 0, 3);
+        testNumberContainer(-500, opts, "-0.5K", 500, 0, 0, 0, 0, 3);
+        testNumberContainer(-990, opts, "-0.99K", 990, 0, 0, 0, 0, 3);
 
         // in threshold
         Stream.of(
@@ -317,8 +316,6 @@ public class CLDRPluralRuleNumberTest {
     @Test
     void compact_digitCount_rounding_inflation_minEqualToMax() {
         CompactOptions opts = new CompactOptions().setDecimalPlaces(1, 1);
-        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
-        // is below the threshold, this may be something good to address in the future.
         testNumberContainer(999.95, opts, "1,000.0", 1000, 1, 0, 0, 0, 0);
         // compact should not inflate the unit even when set to a rounding that would cause it to go up.
         testNumberContainer(999.99e3, opts, "999.9K", 999.9e3, 0, 0, 0, 0, 3);
@@ -333,9 +330,7 @@ public class CLDRPluralRuleNumberTest {
     @Test
     void compact_digitCount_rounding_inflation_minLessThanMax() {
         CompactOptions opts = getCompactOps().setDecimalPlaces(0, 1);
-        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
-        // is below the threshold, this may be something good to address in the future.
-        testNumberContainer(999.95, opts, "1,000", 1000, 0, 0, 0, 0, 0);
+        testNumberContainer(999.95, opts, "1K", 1000, 0, 0, 0, 0, 3);
         // compact should not inflate the unit even when set to a rounding that would cause it to go up.
         testNumberContainer(999.99e3, opts, "999.9K", 999.9e3, 0, 0, 0, 0, 3);
         opts.setRoundingMode(RoundingMode.HALF_DOWN);
@@ -347,27 +342,22 @@ public class CLDRPluralRuleNumberTest {
     @Test
     void compact_digitCount_rounding_inflation_maxEqualTo0() {
         CompactOptions opts = getCompactOps().setDecimalPlaces(0, 0);
-        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
-        // is below the threshold, this may be something good to address in the future.
-        testNumberContainer(999.5, opts, "1,000", 1e3, 0, 0, 0, 0, 0);
-        // compact should not inflate the unit even when set to a rounding that would cause it to go up.
         testNumberContainer(999.5e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
         opts.setRoundingMode(RoundingMode.HALF_DOWN);
-        // compact notation only triggers once the number is actually reached so it won't inflate if the starting value
-        // is below the threshold, this may be something good to address in the future.
-        testNumberContainer(999.5, opts, "999", 999, 0, 0, 0, 0, 0);
         // compact should not inflate the unit even when set to a rounding that would cause it to go up.
         testNumberContainer(999.5e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
     }
 
     @Test
     void compact_digitCount_rounding_minEqualToMax() {
-        CompactOptions opts = new CompactOptions().setDecimalPlaces(1, 1);
+        CompactOptions opts = getCompactOps().setDecimalPlaces(1, 1);
+        testNumberContainer(950, opts, "1.0K", 1e3, 0, 0, 0, 0, 3);
         testNumberContainer(998.95e3, opts, "999.0K", 999e3, 0, 0, 0, 0, 3);
         testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
         testNumberContainer(1950, opts, "2.0K", 2e3, 0, 0, 0, 0, 3);
         testNumberContainer(1900.5, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
         opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        testNumberContainer(950, opts, "0.9K", 900, 0, 0, 0, 0, 3);
         testNumberContainer(998.95e3, opts, "998.9K", 998.9e3, 0, 0, 0, 0, 3);
         testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
         testNumberContainer(1950, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
@@ -377,11 +367,15 @@ public class CLDRPluralRuleNumberTest {
     @Test
     void compact_digitCount_rounding_minLessThanMax() {
         CompactOptions opts = getCompactOps().setDecimalPlaces(0, 1);
+        testNumberContainer(150, opts, "0.2K", 0.2e3, 0, 0, 0, 0, 3);
+        testNumberContainer(950, opts, "1K", 1e3, 0, 0, 0, 0, 3);
         testNumberContainer(998.95e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
         testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
         testNumberContainer(1950, opts, "2K", 2e3, 0, 0, 0, 0, 3);
         testNumberContainer(1900.5, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
         opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        testNumberContainer(150, opts, "0.1K", 0.1e3, 0, 0, 0, 0, 3);
+        testNumberContainer(950, opts, "0.9K", 900, 0, 0, 0, 0, 3);
         testNumberContainer(998.95e3, opts, "998.9K", 998.9e3, 0, 0, 0, 0, 3);
         testNumberContainer(1900, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
         testNumberContainer(1950, opts, "1.9K", 1.9e3, 0, 0, 0, 0, 3);
@@ -391,10 +385,12 @@ public class CLDRPluralRuleNumberTest {
     @Test
     void compact_digitCount_rounding_maxEqualTo0() {
         CompactOptions opts = getCompactOps().setDecimalPlaces(0, 0);
+        testNumberContainer(500, opts, "1K", 1e3, 0, 0, 0, 0, 3);
         testNumberContainer(998.5e3, opts, "999K", 999e3, 0, 0, 0, 0, 3);
         testNumberContainer(1500, opts, "2K", 2e3, 0, 0, 0, 0, 3);
         testNumberContainer(1000.5, opts, "1K", 1e3, 0, 0, 0, 0, 3);
         opts.setRoundingMode(RoundingMode.HALF_DOWN);
+        testNumberContainer(500, opts, "0K", 0, 0, 0, 0, 0, 3);
         testNumberContainer(998.5e3, opts, "998K", 998e3, 0, 0, 0, 0, 3);
         testNumberContainer(1500, opts, "1K", 1e3, 0, 0, 0, 0, 3);
         testNumberContainer(1000.5, opts, "1K", 1e3, 0, 0, 0, 0, 3);
@@ -507,7 +503,7 @@ public class CLDRPluralRuleNumberTest {
         // spotless:off
         return getBaseOpts().toCompactOptions()
             .disableExponentialFormatting()
-            .setCompactThreshold(BD_THOUSAND);
+            .setCompactThreshold(0);
         // spotless:on
     }
 
