@@ -27,7 +27,7 @@ public class ItemCommand extends TemplatedTextCommand {
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
             @NotNull Map<String, Object> vars) {
-        String[] chunks = arg.split(TemplatedTextLoader.ARG_SPLITTER_PATTERN);
+        String[] chunks = TemplatedTextLoader.splitArgs(arg, -1);
 
         switch (chunks.length) {
             case 2 -> {

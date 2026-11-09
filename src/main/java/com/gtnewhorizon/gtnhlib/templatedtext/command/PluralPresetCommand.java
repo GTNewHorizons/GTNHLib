@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
+import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
@@ -20,25 +21,30 @@ import com.gtnewhorizon.gtnhlib.util.parsing.CLDRPluralRuleParser;
 public class PluralPresetCommand extends TemplatedTextCommand {
 
     private final @NotNull CLDRPluralRuleParser parser;
-    private final int partCount;
+    private final int expectedPluralCount;
 
     public PluralPresetCommand(@NotNull CLDRPluralRuleParser parser, @NotNull String name) {
         super("PLURAL-" + name);
         this.parser = parser;
-        this.partCount = parser.getRuleCount() + 2;
+        this.expectedPluralCount = parser.getRuleCount() + 1;
     }
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
             @NotNull Map<String, Object> vars) {
-        String[] parts = arg.split(TemplatedTextLoader.ARG_SPLITTER_PATTERN, this.partCount);
-
+        String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
         // validate part count
-        if (parts.length != this.partCount) {
-            appendArgCountError(lineOutput, this.partCount, parts.length);
+        if (parts.length != 2) {
+            appendArgCountError(lineOutput, 1 + this.expectedPluralCount, parts.length);
             return;
         }
-
+        List<String> plurals = TemplatedTextLoader
+                .splitArgsWithCommands(loader, parts[1], this.expectedPluralCount, true, vars);
+        // validate validate output counts
+        if (plurals.size() != this.expectedPluralCount) {
+            appendArgCountError(lineOutput, 1 + this.expectedPluralCount, 1 + plurals.size());
+            return;
+        }
         // check if the arg is the correct type
         Object unparsed = vars.get(parts[0]);
         if (!(unparsed instanceof Number number)) {
@@ -54,10 +60,10 @@ public class PluralPresetCommand extends TemplatedTextCommand {
         } else {
             container = new CLDRPluralRuleNumber(number, new FormatOptions());
         }
-        int index = parser.getIndex(container) + 1;
+        int index = parser.getIndex(container);
 
-        if (index <= 0) return;
-        if (index >= parts.length) return;
-        lineOutput.append(parts[index]);
+        if (index < 0) return;
+        if (index >= plurals.size()) return;
+        lineOutput.append(plurals.get(index));
     }
 }

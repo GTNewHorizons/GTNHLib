@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 import java.util.Locale;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -24,7 +25,7 @@ public @interface ForceDisplayLocale {
         }
 
         @Override
-        public void setup(ForceDisplayLocale attr) {
+        public void setup(ExtensionContext context, ForceDisplayLocale attr) {
             Locale codeLocal = Locale.forLanguageTag(attr.value());
             if (codeLocal == null)
                 throw new IllegalArgumentException("local code \"" + attr.value() + "\" is invalid.");

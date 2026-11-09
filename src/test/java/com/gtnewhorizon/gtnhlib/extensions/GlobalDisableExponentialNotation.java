@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 
@@ -25,7 +26,7 @@ public @interface GlobalDisableExponentialNotation {
         }
 
         @Override
-        public void setup(GlobalDisableExponentialNotation attr) {
+        public void setup(ExtensionContext context, GlobalDisableExponentialNotation attr) {
             NumberFormatConfig.globalDisableExponentialNotation = attr.value();
         }
 

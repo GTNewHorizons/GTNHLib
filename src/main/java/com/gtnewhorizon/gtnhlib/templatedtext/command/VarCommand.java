@@ -1,15 +1,12 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.formatNumber;
-import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil.formatNumberCompact;
-
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
-import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
-import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 
 /// Parses a given variable and optionally parses it's contents for more markdown commands.
 ///
@@ -52,12 +49,10 @@ public class VarCommand extends TemplatedTextCommand {
     public static void appendNumericVar(@NotNull Number number, @NotNull String varName,
             @NotNull StringBuilder lineOutput, @NotNull Map<String, Object> vars) {
         Object maybeFormat = vars.get(varName + "-fmt");
-        if (maybeFormat instanceof CompactOptions options) {
-            lineOutput.append(formatNumberCompact(number, options));
-        } else if (maybeFormat instanceof FormatOptions options) {
-            lineOutput.append(formatNumber(number, options));
+        if (maybeFormat instanceof NumberOptionsBase<?>options) {
+            lineOutput.append(options.format(number));
         } else {
-            lineOutput.append(formatNumber(number));
+            lineOutput.append(NumberFormatUtil.formatNumber(number));
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,8 +15,13 @@ import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 ///
 /// Usage Examples:
 /// ```text
-/// {lang:key}
-/// {lang:lang.key:arg1:arg2:...}
+/// # calls StatCollector.translateToLocal("lang.key")
+/// {lang:lang.key}
+/// # regular lang does not support params so this calls StatCollector.translateToLocal("lang.key:arg1:arg2")
+/// {lang:lang.key:arg1:arg2}
+/// # calls emit(StatCollector.translateToLocal("lang.key", "arg1", "arg2", ...))
+/// {lang-veal:lang.key:arg1:arg2:...}
+/// # calls StatCollector.translateToLocal("lang.key", "arg1", "arg2", ...)
 /// {lang-eval:lang.key.that.contains.templated.text:{var:speed}}
 /// ```
 public class LangCommand implements ITemplatedTextCommand {
@@ -33,43 +37,12 @@ public class LangCommand implements ITemplatedTextCommand {
             @NotNull Map<String, Object> vars) {
 
         String translated;
-        if (arg.contains(TemplatedTextLoader.ARG_SPLITTER_PATTERN)) {
-            List<Object> paramList = new ArrayList<>();
-            StringBuilder paramBuffer = new StringBuilder();
-
-            // We use the same parse for eval and no-eval to keep the syntax the same.
-            // If the command 'quoting' isn't desirable, the end-user can escape braces to split on colons within
-            // command-like structures.
-            TemplatedTextLoader.parseCommands(arg, new TemplatedTextLoader.CommandVisitor() {
-
-                @Override
-                public void visitChar(char c) {
-                    if (c == TemplatedTextLoader.ARG_SPLITTER) {
-                        paramList.add(paramBuffer.toString());
-                        paramBuffer.setLength(0);
-                    } else {
-                        paramBuffer.append(c);
-                    }
-                }
-
-                @Override
-                public void visitCommand(String command) {
-                    if (eval) {
-                        paramBuffer.append(loader.eval(command, vars));
-                    } else {
-                        paramBuffer.append(command);
-                    }
-                }
-            });
-
-            if (paramBuffer.length() <= 0) {
-                paramList.add(paramBuffer.toString());
-            }
-
-            String key = paramList.remove(0).toString();
+        if (arg.indexOf(TemplatedTextLoader.ARG_SPLITTER) >= 0) {
+            List<String> paramList = TemplatedTextLoader.splitArgsWithCommands(loader, arg, -1, eval, vars);
+            String key = paramList.remove(0);
 
             // TODO: implement the arg processing of the gt5u localized class or just migrate it to GTNHlib entirely
-            translated = StatCollector.translateToLocalFormatted(key, paramList);
+            translated = StatCollector.translateToLocalFormatted(key, paramList.toArray());
         } else {
             translated = StatCollector.translateToLocal(arg);
         }

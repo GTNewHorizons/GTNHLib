@@ -1,16 +1,29 @@
 package com.gtnewhorizon.gtnhlib.templatedtext;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
+import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelines;
+import com.gtnewhorizon.gtnhlib.extensions.DisableFormattedNotation;
+import com.gtnewhorizon.gtnhlib.extensions.ForceDisplayLocale;
+import com.gtnewhorizon.gtnhlib.extensions.ForceFormatLocale;
+import com.gtnewhorizon.gtnhlib.extensions.GlobalDisableExponentialNotation;
+import com.gtnewhorizon.gtnhlib.extensions.InjectLocalisation;
 import com.gtnewhorizon.gtnhlib.templatedtext.lineprocessor.RawLineProcessor;
 
+@DisableFormattedNotation(false)
+@GlobalDisableExponentialNotation(false)
+@ForceFormatLocale("en-US")
+@ForceDisplayLocale("en-US")
 public class TemplatedTextLoaderTest {
 
     private static final Pattern errPattern = Pattern.compile("§c\\[([^#]+?)\\s#\\s+([^]]+)]", 0);
@@ -33,8 +46,27 @@ public class TemplatedTextLoaderTest {
     }
 
     @Test
-    void tooltip_bad_final_symbol() {
+    void parsing_badFinalFormatCodeIgnoredGracefully() {
         expectString("{red:x} 100§", "§cx§r 100");
+    }
+
+    @Test
+    void parsing_escapedBrackets() {
+        expectString("{red:a\\}b}", "§ca}b");
+        expectString("\\{red:a}b}", "{red:a}b}");
+        expectString("\\{}", "{}");
+        expectString("some text\\{", "some text{");
+    }
+
+    @Test
+    void parsing_escaping() {
+        expectString("\\\\", "\\");
+        expectString("\\", "");
+        expectError("{red\\:asd}");
+        expectString("{plural-en:var\\:int:true:false}", "true", ImmutableMap.of("var:int", 1));
+
+        expectString("{plural-en:var_int:\\{red:true}:false}", "{red:false}", ImmutableMap.of("var_int", 1));
+        expectString("{plural-en:var_int:{red:true}:false}", "§ctrue", ImmutableMap.of("var_int", 1));
     }
 
     @Test
@@ -64,38 +96,205 @@ public class TemplatedTextLoaderTest {
 
     @Test
     void command_colorPattern_errorHandling() {
-        expectError(0, "{color-pattern::sometext}");
+        expectErrorAt(0, "{color-pattern::sometext}");
         // does not error thanks to a quirk of string.split and doesn't cause problems so not counted as an error
         // expectError(0, "{color-pattern:red,:sometext}");
-        expectError(0, "{color-pattern:,red:sometext}");
-        expectError(0, "{color-pattern:x*red:sometext}");
-        expectError(0, "{color-pattern:x*notacolor:sometext}");
-        expectError(0, "{color-pattern:1*notacolor}");
-        expectError(0, "{color-pattern:ret}");
-        expectError(0, "{color-pattern:}");
-        expectError(0, "{color-pattern}");
+        expectErrorAt(0, "{color-pattern:,red:sometext}");
+        expectErrorAt(0, "{color-pattern:x*red:sometext}");
+        expectErrorAt(0, "{color-pattern:x*notacolor:sometext}");
+        expectErrorAt(0, "{color-pattern:1*notacolor}");
+        expectErrorAt(0, "{color-pattern:ret}");
+        expectErrorAt(0, "{color-pattern:}");
+        expectErrorAt(0, "{color-pattern}");
     }
 
+    @Test
+    @InjectLocalisation(key = "templated_text", text = "{red:this is a test}")
+    void command_lang_works() {
+        // does not evaluate
+        expectString("{lang:templated_text}", "{red:this is a test}");
+        // ignores args
+        expectString("{lang:templated_text:asd}", "{red:this is a test}");
+        expectString("{lang:lang.does.not.exist:asd}", "lang.does.not.exist");
+    }
+
+    @Test
+    @InjectLocalisation(key = "templated_text", text = "{red:this is a test}")
+    @InjectLocalisation(key = "text", text = "this is a test")
+    void command_langEval_works() {
+        // ignores extra args safely
+        expectString("{lang-eval:text:one:two}", "this is a test");
+        // does evaluate contents after parsing
+        expectString("{lang-eval:templated_text:one:two}", "§cthis is a test");
+
+        expectString("{lang-eval:%s %s:one:two}", "one two");
+        expectString("{lang-eval:%s %s:one:two}", "one two");
+        expectString("{lang-eval:{var:key}:one:two}", "two one", ImmutableMap.of("key", "%2$s %1$s"));
+        expectString("{lang-eval:%2$s %1$s:{var:one}:{var:two}}", "2 1", ImmutableMap.of("one", 1, "two", 2));
+        expectString(
+                "{lang-eval:{var:key}:{var:one}:{var:two}}",
+                "2 1",
+                ImmutableMap.of("key", "%2$s %1$s", "one", 1, "two", 2));
+        expectString(
+                "{lang-eval:{var:key}:{var:one}:{var:two}}",
+                "§cthis is red",
+                ImmutableMap.of("key", "%s%s", "one", "{red:this is red", "two", "}"));
+    }
+
+    @Test
+    void command_lang_missingKeyHandling() {
+        final String missingKey = "gtnhlib.this.key.does.not.exist";
+        // falls back to key when not found
+        expectString("{lang:" + missingKey + "}", missingKey);
+        expectString("{lang:" + missingKey + ":one}", missingKey);
+        expectString("{lang:" + missingKey + ":{bad-command}:two}", missingKey);
+    }
+
+    @Test
+    void command_langEval_missingKeyHandling() {
+        final String missingKey = "gtnhlib.this.key.does.not.exist";
+        // falls back to key when not found
+        expectString("{lang-eval:" + missingKey + "}", missingKey);
+        expectString("{lang-eval:" + missingKey + ":one}", missingKey);
+        expectString("{lang-eval:" + missingKey + ":{bad-command}:two}", missingKey);
+        expectString(
+                "{lang-eval:{var:key}:{var:one}:{var:two}}",
+                missingKey,
+                ImmutableMap.of("key", missingKey, "one", 1, "two", 2));
+    }
+
+    // region expectString
+
     private static void expectString(String original, String expected) {
-        expectString(TemplatedTextLoaders.STANDARD, original, expected);
+        expectString(TemplatedTextLoaders.STANDARD, original, expected, Collections.emptyMap());
     }
 
     private static void expectString(TemplatedTextLoader loader, String original, String expected) {
-        String actual = loader.evaluateLines(Arrays.asList(original)).get(0);
-        Assertions.assertEquals(expected, actual, "got the wrong value for <" + original + ">");
+        expectString(loader, original, expected, Collections.emptyMap());
     }
 
-    private static void expectError(int expectAt, String original) {
-        expectError(TemplatedTextLoaders.STANDARD, expectAt, original);
+    private static void expectString(String original, String expected, Map<String, Object> vars) {
+        expectString(TemplatedTextLoaders.STANDARD, original, expected, vars);
     }
 
-    private static void expectError(TemplatedTextLoader loader, int expectAt, String original) {
-        String actual = loader.evaluateLines(Arrays.asList(original)).get(0);
+    private static void expectString(TemplatedTextLoader loader, String original, String expected,
+            Map<String, Object> vars) {
+        List<String> lines = loader.evaluateLines(Arrays.asList(original), vars);
+        String actual = lines.get(0);
+        try {
+            Assertions.assertEquals(expected, actual, String.format("got the wrong value for <%s>", original));
+        } catch (AssertionFailedError error) {
+            System.err.println("full output:");
+            for (String line : lines) {
+                System.err.println(line);
+            }
+            throw error;
+        }
+    }
+
+    // endregion expectString
+
+    // region expectNoError
+
+    private static void expectNoError(String original) {
+        expectNoError(TemplatedTextLoaders.STANDARD, original, Collections.emptyMap());
+    }
+
+    private static void expectNoError(TemplatedTextLoader loader, String original) {
+        expectNoError(loader, original, Collections.emptyMap());
+    }
+
+    private static void expectNoError(String original, Map<String, Object> vars) {
+        expectNoError(TemplatedTextLoaders.STANDARD, original, vars);
+    }
+
+    private static void expectNoError(TemplatedTextLoader loader, String original, Map<String, Object> vars) {
+        List<String> lines = loader.evaluateLines(Arrays.asList(original), vars);
+        String actual = lines.get(0);
         Matcher matcher = errPattern.matcher(actual);
-        Assertions.assertTrue(matcher.find(), "Expected an error in: <" + actual + ">");
-        Assertions.assertEquals(
-                expectAt,
-                matcher.start(),
-                "Expected an error at " + expectAt + " in: <" + actual + "> from <" + original + ">");
+        try {
+            Assertions.assertFalse(
+                    matcher.find(),
+                    String.format("Expected no error from <%s> but got <%s>", original, actual));
+        } catch (AssertionFailedError error) {
+            System.err.println("full output:");
+            for (String line : lines) {
+                System.err.println(line);
+            }
+            throw error;
+        }
     }
+
+    // endregion expectNoError
+
+    // region expectErrorAt
+
+    private static void expectErrorAt(int expectAt, String original) {
+        expectErrorAt(TemplatedTextLoaders.STANDARD, expectAt, original, Collections.emptyMap());
+    }
+
+    private static void expectErrorAt(TemplatedTextLoader loader, int expectAt, String original) {
+        expectErrorAt(loader, expectAt, original, Collections.emptyMap());
+    }
+
+    private static void expectErrorAt(int expectAt, String original, Map<String, Object> vars) {
+        expectErrorAt(TemplatedTextLoaders.STANDARD, expectAt, original, vars);
+    }
+
+    private static void expectErrorAt(TemplatedTextLoader loader, int expectAt, String original,
+            Map<String, Object> vars) {
+        List<String> lines = loader.evaluateLines(Arrays.asList(original), vars);
+        String actual = lines.get(0);
+        Matcher matcher = errPattern.matcher(actual);
+        try {
+            Assertions.assertTrue(
+                    matcher.find(),
+                    String.format("Expected an error from <%s> but got <%s>", original, actual));
+            Assertions.assertEquals(
+                    expectAt,
+                    matcher.start(),
+                    String.format("Expected an error at <%d> in: <%s> from <%s>", expectAt, actual, original));
+        } catch (AssertionFailedError error) {
+            System.err.println("full output:");
+            for (String line : lines) {
+                System.err.println(line);
+            }
+            throw error;
+        }
+    }
+
+    // endregion expectErrorAt
+
+    // region expectError
+
+    private static void expectError(String original) {
+        expectError(TemplatedTextLoaders.STANDARD, original, Collections.emptyMap());
+    }
+
+    private static void expectError(TemplatedTextLoader loader, String original) {
+        expectError(loader, original, Collections.emptyMap());
+    }
+
+    private static void expectError(String original, Map<String, Object> vars) {
+        expectError(TemplatedTextLoaders.STANDARD, original, vars);
+    }
+
+    private static void expectError(TemplatedTextLoader loader, String original, Map<String, Object> vars) {
+        List<String> lines = loader.evaluateLines(Arrays.asList(original), vars);
+        String actual = lines.get(0);
+        Matcher matcher = errPattern.matcher(actual);
+        try {
+            Assertions.assertTrue(
+                    matcher.find(),
+                    String.format("Expected an error from <%s> but got <%s>", original, actual));
+        } catch (AssertionFailedError error) {
+            System.err.println("full output:");
+            for (String line : lines) {
+                System.err.println(line);
+            }
+            throw error;
+        }
+    }
+
+    // endregion expectError
 }

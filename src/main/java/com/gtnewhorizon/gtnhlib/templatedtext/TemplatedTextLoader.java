@@ -88,7 +88,7 @@ public class TemplatedTextLoader {
     /** The separator used to split command and line processor arguments. */
     public static final char ARG_SPLITTER = ':';
     /** The regex pattern used for string.split() calls to find simple arguments */
-    public static final String ARG_SPLITTER_PATTERN = ":";
+    public static final String ARG_SPLITTER_PATTERN = ":(?<!\\\\:)";
     /** The character used to begin a command invocation. */
     public static final char COMMAND_START = '{';
     /** The character used to end a command invocation. */
@@ -616,7 +616,7 @@ public class TemplatedTextLoader {
         parseCommands(unparsed, new CommandVisitor() {
 
             @Override
-            public void visitChar(char c) {
+            public void visitChar(char c, boolean escaped) {
                 out.append(c);
             }
 
@@ -640,7 +640,7 @@ public class TemplatedTextLoader {
 
     public interface CommandVisitor {
 
-        void visitChar(char c);
+        void visitChar(char c, boolean escaped);
 
         void visitCommand(String command);
     }
@@ -653,7 +653,7 @@ public class TemplatedTextLoader {
 
             if (curr == ESCAPE_CHAR) {
                 if (i < chars.length - 1) {
-                    visitor.visitChar(chars[i + 1]);
+                    visitor.visitChar(chars[i + 1], true);
                     i++;
                 }
             } else if (curr == COMMAND_START) {
@@ -661,6 +661,12 @@ public class TemplatedTextLoader {
                 int open = 0;
 
                 while (end < chars.length) {
+                    if (chars[end] == ESCAPE_CHAR) {
+                        end++;
+                        if (end < chars.length) end++;
+                        continue;
+                    }
+
                     if (chars[end] == COMMAND_START) {
                         open++;
                     }
@@ -699,7 +705,7 @@ public class TemplatedTextLoader {
 
                 i = end;
             } else {
-                visitor.visitChar(chars[i]);
+                visitor.visitChar(chars[i], false);
             }
         }
     }
@@ -769,6 +775,57 @@ public class TemplatedTextLoader {
     public static void appendError(StringBuilder lineOutput, String commandName, String message) {
         lineOutput.append(TextFormatUtil.FORMAT_PUSH_STACK).append(EnumChatFormatting.RED).append("[")
                 .append(commandName).append(" # ").append(message).append("]").append(TextFormatUtil.FORMAT_POP_STACK);
+    }
+
+    public static String[] splitArgs(String args, int max) {
+        String[] parts = args.split(ARG_SPLITTER_PATTERN, max);
+        // un-escape escaped splitters
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].replace("\\:", ":");
+        }
+        return parts;
+    }
+
+    public static List<String> splitArgsWithCommands(@NotNull TemplatedTextLoader loader, String arg, int max,
+            boolean eval, @NotNull Map<@NotNull String, Object> vars) {
+        if (max == 0) {
+            List<String> ret = new ArrayList<>(1);
+            ret.add(arg);
+            return ret;
+        }
+        StringBuilder paramBuffer = new StringBuilder();
+        List<String> paramList = new ArrayList<>();
+
+        // We use the same parse for eval and no-eval to keep the syntax the same.
+        // If the command 'quoting' isn't desirable, the end-user can escape braces to split on colons within
+        // command-like structures.
+        TemplatedTextLoader.parseCommands(arg, new TemplatedTextLoader.CommandVisitor() {
+
+            @Override
+            public void visitChar(char c, boolean escaped) {
+                if (!escaped && (max < 0 || paramList.size() < max) && c == TemplatedTextLoader.ARG_SPLITTER) {
+                    paramList.add(paramBuffer.toString());
+                    paramBuffer.setLength(0);
+                } else {
+                    paramBuffer.append(c);
+                }
+            }
+
+            @Override
+            public void visitCommand(String command) {
+                if (eval) {
+                    paramBuffer.append(loader.eval(command, vars));
+                } else {
+                    paramBuffer.append(command);
+                }
+            }
+        });
+
+        if (paramBuffer.length() > 0) {
+            paramList.add(paramBuffer.toString());
+        }
+
+        return paramList;
     }
 
     // endregion standardized errors

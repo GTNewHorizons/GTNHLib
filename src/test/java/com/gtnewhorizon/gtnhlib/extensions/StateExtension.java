@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.extensions;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
@@ -17,28 +18,33 @@ public abstract class StateExtension<T extends Annotation> implements BeforeEach
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        T attr = null;
         if (context.getTestMethod().isPresent()) {
-            attr = context.getTestMethod().get().getDeclaredAnnotation(attrClazz);
-        }
-        if (attr == null && context.getTestClass().isPresent()) {
-            attr = context.getTestClass().get().getDeclaredAnnotation(attrClazz);
-        }
-        if (attr == null) {
-            List<Class<?>> enclosingClasses = context.getEnclosingTestClasses();
-            for (int i = enclosingClasses.size() - 1; i >= 0; i--) {
-                attr = context.getTestClass().get().getDeclaredAnnotation(attrClazz);
-                if (attr != null) return;
+            T attr = context.getTestMethod().get().getDeclaredAnnotation(attrClazz);
+            if (attr != null) {
+                this.setup(context, attr);
+                return;
             }
+        }
+        if (context.getTestClass().isPresent()) {
+            T attr = context.getTestClass().get().getDeclaredAnnotation(attrClazz);
+            if (attr != null) {
+                this.setup(context, attr);
+                return;
+            }
+        }
+        List<Class<?>> enclosingClasses = context.getEnclosingTestClasses();
+        for (int i = enclosingClasses.size() - 1; i >= 0; i--) {
+            Class<?> enclosing = enclosingClasses.get(i);
+            T attr = enclosing.getDeclaredAnnotation(attrClazz);
+            if (attr == null) continue;
+            this.setup(context, attr);
+            return;
         }
 
         // can't find annotation, someone probably used the extension directly by accident
-        if (attr == null) {
-            throw new IllegalStateException(
-                    "The " + attrClazz.getName() + " extension lass isn't meant to be used standalone.");
-        }
+        throw new IllegalStateException(
+                "The " + attrClazz.getName() + " extension lass isn't meant to be used standalone.");
 
-        this.setup(attr);
     }
 
     @Override
@@ -46,7 +52,7 @@ public abstract class StateExtension<T extends Annotation> implements BeforeEach
         this.teardown();
     }
 
-    public abstract void setup(T attr);
+    public abstract void setup(ExtensionContext context, T attr) throws IOException;
 
     public abstract void teardown();
 }

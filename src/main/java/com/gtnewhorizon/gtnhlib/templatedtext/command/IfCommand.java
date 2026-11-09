@@ -25,7 +25,7 @@ public class IfCommand extends TemplatedTextCommand {
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
             @NotNull Map<String, Object> vars) {
-        String[] parts = arg.split(TemplatedTextLoader.ARG_SPLITTER_PATTERN, 2);
+        String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
 
         // must have 2 parts
         if (parts.length != 2) {
