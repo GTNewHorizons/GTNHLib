@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
@@ -24,9 +25,8 @@ public class CLDRPluralRuleNumber {
      * the integer digits of {@see number}
      */
     public @NotNull final BigInteger i;
-    /**
-     * the number of visible fraction digits in N, with trailing zeros.
-     */
+    /// The number of visible fraction digits in N, with trailing zeros.
+    /// Set to -1 when a special value is detected, else never negative.
     public final int v;
     /**
      * the number of visible fraction digits in N, without trailing zeros.*
@@ -57,7 +57,24 @@ public class CLDRPluralRuleNumber {
         this.c = c;
     }
 
-    public CLDRPluralRuleNumber(@NotNull Number value, @NotNull NumberOptionsBase<?> options) {
+    public CLDRPluralRuleNumber(@Nullable Number value, @NotNull NumberOptionsBase<?> options) {
+        boolean isSpecialCase = value == null;
+        if (value instanceof Double || value instanceof Float) {
+            double d = value.doubleValue();
+            isSpecialCase = Double.isInfinite(d) || Double.isNaN(d);
+        }
+
+        if (isSpecialCase) {
+            this.n = BigDecimal.ZERO;
+            this.i = BigInteger.ZERO;
+            this.v = -1;
+            this.w = 0;
+            this.f = BigInteger.ZERO;
+            this.t = BigInteger.ZERO;
+            this.c = 0;
+            return;
+        }
+
         BigDecimal orig = NumberFormatUtil.bigDecimalConverter(value);
         BigDecimal val = orig.abs();
         BigDecimal stripped;

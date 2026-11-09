@@ -462,6 +462,14 @@ public class CLDRPluralRuleNumberTest {
         opts = getBaseOpts().setDecimalPlaces(1, 2);
         testNumberContainer("1", opts, "1.0", 1, 1, 0, 0, 0, 0);
 
+        // min decimal places works
+        opts = getBaseOpts();
+        // spotless:off
+        testNumberContainer((Number) Double.POSITIVE_INFINITY, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueInfinity(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
+        testNumberContainer((Number) Double.NEGATIVE_INFINITY, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueNegInfinity(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
+        testNumberContainer((Number) Double.NaN, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueNaN(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
+        testNumberContainer((Number) null, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueNull(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
+        // spotless:on
     }
 
     private static FormatOptions getBaseOpts() {

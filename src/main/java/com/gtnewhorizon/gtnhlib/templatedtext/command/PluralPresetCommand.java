@@ -5,8 +5,8 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
-import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 import com.gtnewhorizon.gtnhlib.util.parsing.CLDRPluralRuleNumber;
 import com.gtnewhorizon.gtnhlib.util.parsing.CLDRPluralRuleParser;
 
@@ -46,17 +46,16 @@ public class PluralPresetCommand extends TemplatedTextCommand {
             return;
         }
 
+        // get plurality index
         Object format = vars.get(parts[0] + "-fmt");
         CLDRPluralRuleNumber container;
-        if (format instanceof CompactOptions options) {
-            container = new CLDRPluralRuleNumber(number, options);
-        } else if (format instanceof FormatOptions options) {
+        if (format instanceof NumberOptionsBase<?>options) {
             container = new CLDRPluralRuleNumber(number, options);
         } else {
             container = new CLDRPluralRuleNumber(number, new FormatOptions());
         }
-
         int index = parser.getIndex(container) + 1;
+
         if (index <= 0) return;
         if (index >= parts.length) return;
         lineOutput.append(parts[index]);

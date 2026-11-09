@@ -264,7 +264,7 @@ public final class NumberFormatUtil {
 
         @LangKey("gtnhlib.unified.value.nan")
         @Getter
-        private @NotNull String specialValueNan = "NaN";
+        private @NotNull String specialValueNaN = "NaN";
 
         @LangKey("gtnhlib.unified.value.null")
         @Getter
@@ -935,7 +935,7 @@ public final class NumberFormatUtil {
         if (value == null) return LOC_CACHE.specialValueNull;
         if (value instanceof Double || value instanceof Float) {
             double d = value.doubleValue();
-            if (Double.isNaN(d)) return LOC_CACHE.specialValueNan;
+            if (Double.isNaN(d)) return LOC_CACHE.specialValueNaN;
             if (Double.isInfinite(d)) return d > 0 ? LOC_CACHE.specialValueInfinity : LOC_CACHE.specialValueNegInfinity;
         }
 
