@@ -24,6 +24,20 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
 
     protected NumberOptionsBase() {}
 
+    /**
+     * Creates a new format option with the value of another format option.
+     * 
+     * @param other The instance to copy from.
+     */
+    protected NumberOptionsBase(NumberOptionsBase<?> other) {
+        this.minDecimalPlaces = other.minDecimalPlaces;
+        this.maxDecimalPlaces = other.maxDecimalPlaces;
+        this.exponentialThreshold = other.exponentialThreshold;
+        this.disableExponentialFormatting = other.disableExponentialFormatting;
+        this.roundingMode = other.roundingMode;
+        this.exponentialFormatOverride = other.exponentialFormatOverride;
+    }
+
     public abstract String format(Number number);
 
     public abstract @NotNull T copy();
@@ -111,6 +125,14 @@ public abstract class NumberOptionsBase<T extends NumberOptionsBase<T>> {
     }
 
     // ---------- Converters ----------
+
+    protected void copy(NumberOptionsBase<?> other) {
+        this.exponentialThreshold = other.exponentialThreshold;
+        this.minDecimalPlaces = other.minDecimalPlaces;
+        this.maxDecimalPlaces = other.maxDecimalPlaces;
+        this.exponentialFormatOverride = other.exponentialFormatOverride;
+        this.disableExponentialFormatting = other.disableExponentialFormatting;
+    }
 
     public @NotNull FormatOptions toFormatOptions() {
         FormatOptions options = new FormatOptions();

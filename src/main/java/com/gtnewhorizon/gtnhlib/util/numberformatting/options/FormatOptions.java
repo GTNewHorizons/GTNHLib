@@ -9,6 +9,15 @@ public final class FormatOptions extends NumberOptionsBase<FormatOptions> {
 
     public FormatOptions() {}
 
+    /**
+     * Creates a new format option with the value of another format option.
+     * 
+     * @param other The instance to copy from.
+     */
+    public FormatOptions(FormatOptions other) {
+        super(other);
+    }
+
     @Override
     public String format(Number number) {
         return NumberFormatUtil.formatNumber(number, this);
@@ -16,6 +25,6 @@ public final class FormatOptions extends NumberOptionsBase<FormatOptions> {
 
     @Override
     public @NotNull FormatOptions copy() {
-        return this.toFormatOptions();
+        return new FormatOptions(this);
     }
 }

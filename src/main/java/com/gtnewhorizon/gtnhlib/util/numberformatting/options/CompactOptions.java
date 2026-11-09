@@ -13,6 +13,16 @@ public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
 
     private @NotNull BigDecimal compactThreshold = BD_THOUSAND;
 
+    /**
+     * Creates a new format option with the value of another format option.
+     * 
+     * @param other The instance to copy from.
+     */
+    public CompactOptions(CompactOptions other) {
+        super(other);
+        this.compactThreshold = other.compactThreshold;
+    }
+
     public CompactOptions() {}
 
     @Override
@@ -22,9 +32,7 @@ public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
 
     @Override
     public @NotNull CompactOptions copy() {
-        CompactOptions ret = this.toCompactOptions();
-        ret.setCompactThreshold(this.compactThreshold);
-        return ret;
+        return new CompactOptions(this);
     }
 
     // ---------- Setters ----------
