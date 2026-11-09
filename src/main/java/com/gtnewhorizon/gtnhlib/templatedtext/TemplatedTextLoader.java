@@ -644,10 +644,10 @@ public class TemplatedTextLoader implements AutoCloseable {
             List<String> lines;
             // TODO: remove the .md file extension support for gtnh 2.10
             try {
-                lines = ResourceUtil.loadLines(
+                lines = ResourceUtil.readLinesFrom(
                         new ResourceLocation(resource.getResourceDomain(), resource.getResourcePath() + FILE_EXT));
             } catch (FileNotFoundException e) {
-                lines = ResourceUtil.loadLines(
+                lines = ResourceUtil.readLinesFrom(
                         new ResourceLocation(resource.getResourceDomain(), resource.getResourcePath() + FILE_EXT_OLD));
             }
             List<String> out = new ArrayList<>();
