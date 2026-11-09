@@ -54,3 +54,6 @@ regardless of writer preference, the outcome is the same to the player.
 #example:{g:1234} {g/s:1234} {g/m:1234} {g/h:1234} {g/d:1234}
 #example:{kg/t} {kg/s} {kg/m} {kg/h} {kg/d}
 #example:{kg:1234} {kg/s:1234} {kg/m:1234} {kg/h:1234} {kg/d:1234}
+
+#example:{fmt-EUt} {fmt-energy-unit/s} {fmt-EU/m} {fmt-eu/h} {fmt-EU/d}
+#example:{fmt-EUt:1234} {fmt-EU/s:1234} {fmt-EU/m:1234} {fmt-EU/h:1234} {fmt-EU/d:1234}

@@ -34,12 +34,12 @@ public class IfLineProcessor implements ITemplatedTextLineProcessor {
 
         // must have 2 parts
         if (parts.length != 2) {
-            throw TemplatedTextLoader.MarkdownTooltipParsingException.lineProcessorStandard("IF", "MUST HAVE 2 ARGS");
+            throw TemplatedTextLoader.TemplatedTextParsingException.lineProcessorStandard("IF", "MUST HAVE 2 ARGS");
         }
 
         // check if the arg is the correct type
         if (!(vars.get(parts[0]) instanceof Boolean value)) {
-            throw TemplatedTextLoader.MarkdownTooltipParsingException
+            throw TemplatedTextLoader.TemplatedTextParsingException
                     .lineProcessorStandard("IF", "UNKNOWN VAR" + parts[0]);
         }
 

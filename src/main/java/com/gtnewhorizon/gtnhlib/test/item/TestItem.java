@@ -21,7 +21,7 @@ import com.gtnewhorizon.gtnhlib.itemrendering.BlockItemTexture;
 import com.gtnewhorizon.gtnhlib.itemrendering.IItemTexture;
 import com.gtnewhorizon.gtnhlib.itemrendering.ItemTexture;
 import com.gtnewhorizon.gtnhlib.itemrendering.ItemWithTextures;
-import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoaders;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.ExponentialFormat;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
@@ -172,7 +172,7 @@ public class TestItem extends Item implements ItemWithTextures {
         List<String> ret = new ArrayList<>();
         ret.add(TextThemingGuidelines.TOOLTIPS.getDefault() + EnumChatFormatting.ITALIC + "showcasing: " + file);
         ret.add("");
-        ret.addAll(TemplatedTextLoader.TOOLTIP_DESCRIPTION.loadStandardPath(res, TestItem::getTooltipArgs));
+        ret.addAll(TemplatedTextLoaders.TOOLTIP.loadStandardPath(res, TestItem::getTooltipArgs));
         lines.addAll(ret);
     }
 

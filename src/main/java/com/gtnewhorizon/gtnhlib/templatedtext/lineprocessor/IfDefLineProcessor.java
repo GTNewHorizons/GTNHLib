@@ -34,7 +34,7 @@ public class IfDefLineProcessor implements ITemplatedTextLineProcessor {
 
         // must have 2 parts
         if (parts.length != 2) {
-            throw TemplatedTextLoader.MarkdownTooltipParsingException
+            throw TemplatedTextLoader.TemplatedTextParsingException
                     .lineProcessorStandard("IF-EXIST", "MUST HAVE 2 ARGS");
         }
 

@@ -19,7 +19,7 @@ public class TemplatedTextLoaderTest {
     void default_working() {
         List<String> text = Arrays.asList("hai", "{green:hello}");
         List<String> expected = Arrays.asList("hai", EnumChatFormatting.GREEN + "hello");
-        List<String> actual = TemplatedTextLoader.DEFAULT.evaluateLines(text, Collections.emptyMap());
+        List<String> actual = TemplatedTextLoaders.DEFAULT.evaluateLines(text, Collections.emptyMap());
         Assertions.assertLinesMatch(expected, actual);
         assertEquals(String.join(System.lineSeparator(), expected), String.join(System.lineSeparator(), actual));
     }
@@ -30,7 +30,7 @@ public class TemplatedTextLoaderTest {
         List<String> expected = Arrays.asList(
                 TextThemingGuidelines.TOOLTIPS.getDefault() + "hai",
                 TextThemingGuidelines.TOOLTIPS.getDefault() + EnumChatFormatting.GREEN + "hello");
-        List<String> actual = TemplatedTextLoader.TOOLTIP_DESCRIPTION.evaluateLines(text, Collections.emptyMap());
+        List<String> actual = TemplatedTextLoaders.TOOLTIP.evaluateLines(text, Collections.emptyMap());
         Assertions.assertLinesMatch(expected, actual);
         assertEquals(String.join(System.lineSeparator(), expected), String.join(System.lineSeparator(), actual));
     }
@@ -39,7 +39,7 @@ public class TemplatedTextLoaderTest {
     void tooltip_bad_final_symbol() {
         List<String> text = Arrays.asList("{red:x} 100§");
         List<String> expected = Arrays.asList("§cx§r 100");
-        List<String> actual = TemplatedTextLoader.DEFAULT.evaluateLines(text, Collections.emptyMap());
+        List<String> actual = TemplatedTextLoaders.DEFAULT.evaluateLines(text, Collections.emptyMap());
         Assertions.assertLinesMatch(expected, actual);
     }
 }
