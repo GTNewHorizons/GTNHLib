@@ -62,7 +62,13 @@ public class ColorPatternCommand extends TemplatedTextCommand {
             int count;
             String params;
             if (repetition.length == 2) {
-                count = Integer.parseInt(repetition[0]);
+                String toParse = repetition[0];
+                try {
+                    count = Integer.parseInt(toParse);
+                } catch (NumberFormatException nfe) {
+                    appendError(lineOutput, "BAD REPETITION COUNT: " + toParse);
+                    return;
+                }
                 params = repetition[1];
             } else {
                 count = 1;
@@ -70,7 +76,12 @@ public class ColorPatternCommand extends TemplatedTextCommand {
             }
 
             for (String format : params.split(FORMAT_SEPARATOR)) {
-                sb.append(EnumChatFormatting.getValueByName(format).toString());
+                var formatting = EnumChatFormatting.getValueByName(format);
+                if (formatting == null) {
+                    appendError(lineOutput, "UNKNOWN COLOR: " + format);
+                    return;
+                }
+                sb.append(formatting);
             }
             parsed.add(IntObjectPair.of(count, sb.toString()));
             sb.delete(0, sb.length());

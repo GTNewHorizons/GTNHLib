@@ -64,7 +64,7 @@ public class ClientProxy extends CommonProxy {
 
         // initialize instances of resource-based providers
         TextThemingGuidelines.TOOLTIPS.onClientPreInit();
-        TemplatedTextLoaders.DEFAULT.onClientPreInit();
+        TemplatedTextLoaders.STANDARD.onClientPreInit();
         TemplatedTextLoaders.TOOLTIP.onClientPreInit();
     }
 
