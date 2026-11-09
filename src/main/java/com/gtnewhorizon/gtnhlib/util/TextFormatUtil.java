@@ -1,8 +1,14 @@
 package com.gtnewhorizon.gtnhlib.util;
 
 import java.util.ArrayDeque;
+import java.util.function.Supplier;
 
 import net.minecraft.util.EnumChatFormatting;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 public class TextFormatUtil {
 
@@ -130,4 +136,158 @@ public class TextFormatUtil {
         return FORMAT_PUSH_STACK + formatting + text + FORMAT_POP_STACK;
     }
 
+    // endregion themed unit formatters
+
+    public static class UnitFormatterWithDualTheme extends NumberFormatUtil.UnitFormatter {
+
+        private final @NotNull Supplier<String> numberThemeSupplier;
+
+        public UnitFormatterWithDualTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull Supplier<@NotNull String> formatSupplier, @NotNull Supplier<@NotNull String> unitThemeSupplier,
+                @NotNull Supplier<@NotNull String> unitSupplier) {
+            super(formatSupplier, () -> unitThemeSupplier.get() + unitSupplier.get());
+            this.numberThemeSupplier = numberThemeSupplier;
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return TextFormatUtil.FORMAT_PUSH_STACK + super.format(this.numberThemeSupplier.get() + value)
+                    + TextFormatUtil.FORMAT_POP_STACK;
+        }
+    }
+
+    public static class UnitFormatterWithTheme extends NumberFormatUtil.UnitFormatter {
+
+        private final @NotNull Supplier<String> themeSupplier;
+
+        public UnitFormatterWithTheme(@NotNull Supplier<@NotNull String> themeSupplier,
+                @NotNull Supplier<@NotNull String> formatSupplier, @NotNull Supplier<@NotNull String> unitSupplier) {
+            super(formatSupplier, unitSupplier);
+            this.themeSupplier = themeSupplier;
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return TextFormatUtil.FORMAT_PUSH_STACK + this.themeSupplier.get()
+                    + super.format(value)
+                    + TextFormatUtil.FORMAT_POP_STACK;
+        }
+    }
+
+    public static class UnitFormatterWithNumberTheme extends NumberFormatUtil.UnitFormatter {
+
+        private final @NotNull Supplier<String> numberThemeSupplier;
+
+        public UnitFormatterWithNumberTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull Supplier<@NotNull String> formatSupplier, @NotNull Supplier<@NotNull String> unitSupplier) {
+            super(formatSupplier, unitSupplier);
+            this.numberThemeSupplier = numberThemeSupplier;
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return super.format(
+                    TextFormatUtil.FORMAT_PUSH_STACK + this.numberThemeSupplier.get()
+                            + value
+                            + TextFormatUtil.FORMAT_POP_STACK);
+        }
+    }
+
+    public static class UnitFormatterWithUnitTheme extends NumberFormatUtil.UnitFormatter {
+
+        public UnitFormatterWithUnitTheme(@NotNull Supplier<@NotNull String> formatSupplier,
+                @NotNull Supplier<@NotNull String> unitThemeSupplier, @NotNull Supplier<@NotNull String> unitSupplier) {
+            super(
+                    formatSupplier,
+                    () -> TextFormatUtil.FORMAT_PUSH_STACK + unitThemeSupplier.get()
+                            + unitSupplier.get()
+                            + TextFormatUtil.FORMAT_POP_STACK);
+        }
+    }
+
+    // endregion themed unit formatters
+
+    // region themed throughput formatters
+
+    public static class ThroughputUnitFormatterWithDualTheme extends NumberFormatUtil.ThroughputUnitFormatter {
+
+        private final @NotNull Supplier<String> numberThemeSupplier;
+
+        public ThroughputUnitFormatterWithDualTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull Supplier<@NotNull String> formatSupplier, @NotNull Supplier<@NotNull String> unitThemeSupplier,
+                @NotNull Supplier<@NotNull String> unitFormatSupplier, @NotNull Supplier<@NotNull String> unit1Supplier,
+                @NotNull Supplier<@NotNull String> unit2Supplier) {
+            super(
+                    formatSupplier,
+                    () -> unitThemeSupplier.get() + unitFormatSupplier.get(),
+                    unit1Supplier,
+                    unit2Supplier);
+            this.numberThemeSupplier = numberThemeSupplier;
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return TextFormatUtil.FORMAT_PUSH_STACK + super.format(this.numberThemeSupplier.get() + value)
+                    + TextFormatUtil.FORMAT_POP_STACK;
+        }
+    }
+
+    public static class ThroughputUnitFormatterWithTheme extends NumberFormatUtil.ThroughputUnitFormatter {
+
+        private final @NotNull Supplier<String> numberThemeSupplier;
+
+        public ThroughputUnitFormatterWithTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull Supplier<@NotNull String> formatSupplier,
+                @NotNull Supplier<@NotNull String> unitFormatSupplier, @NotNull Supplier<@NotNull String> unit1Supplier,
+                @NotNull Supplier<@NotNull String> unit2Supplier) {
+            super(formatSupplier, unitFormatSupplier, unit1Supplier, unit2Supplier);
+            this.numberThemeSupplier = numberThemeSupplier;
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return TextFormatUtil.FORMAT_PUSH_STACK + this.numberThemeSupplier.get()
+                    + super.format(value)
+                    + TextFormatUtil.FORMAT_POP_STACK;
+        }
+    }
+
+    public static class ThroughputUnitFormatterWithNumberTheme extends NumberFormatUtil.ThroughputUnitFormatter {
+
+        private final @NotNull Supplier<String> numberThemeSupplier;
+
+        public ThroughputUnitFormatterWithNumberTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull Supplier<@NotNull String> formatSupplier,
+                @NotNull Supplier<@NotNull String> unitFormatSupplier, @NotNull Supplier<@NotNull String> unit1Supplier,
+                @NotNull Supplier<@NotNull String> unit2Supplier) {
+            super(formatSupplier, unitFormatSupplier, unit1Supplier, unit2Supplier);
+            this.numberThemeSupplier = numberThemeSupplier;
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return super.format(
+                    TextFormatUtil.FORMAT_PUSH_STACK + this.numberThemeSupplier.get()
+                            + value
+                            + TextFormatUtil.FORMAT_POP_STACK);
+        }
+    }
+
+    public static class ThroughputUnitFormatterWithUnitTheme extends NumberFormatUtil.ThroughputUnitFormatter {
+
+        public ThroughputUnitFormatterWithUnitTheme(@NotNull Supplier<@NotNull String> formatSupplier,
+                @NotNull Supplier<@NotNull String> unitThemeSupplier,
+                @NotNull Supplier<@NotNull String> unitFormatSupplier, @NotNull Supplier<@NotNull String> unit1Supplier,
+                @NotNull Supplier<@NotNull String> unit2Supplier) {
+            super(
+                    formatSupplier,
+                    () -> TextFormatUtil.FORMAT_PUSH_STACK + unitThemeSupplier.get()
+                            + unitFormatSupplier.get()
+                            + TextFormatUtil.FORMAT_POP_STACK,
+                    unit1Supplier,
+                    unit2Supplier);
+        }
+    }
+
+    // endregion themed throughput formatters
 }
