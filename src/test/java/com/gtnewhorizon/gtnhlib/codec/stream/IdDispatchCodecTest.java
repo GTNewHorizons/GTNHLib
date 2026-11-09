@@ -30,13 +30,10 @@ class IdDispatchCodecTest {
     }
 
     @Test
-    void roundTripsEachType() {
+    void idsFollowRegistrationOrder() {
         assertEquals(new Ping(7), roundTrip(codec(), new Ping(7)));
         assertEquals(new Chat("hi"), roundTrip(codec(), new Chat("hi")));
-    }
 
-    @Test
-    void idsFollowRegistrationOrder() {
         ByteBuf buf = Unpooled.buffer();
         codec().encode(buf, new Chat("x"));
         assertEquals(1, VarInt.read(buf));

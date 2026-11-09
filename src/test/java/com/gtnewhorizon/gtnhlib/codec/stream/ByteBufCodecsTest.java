@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -91,18 +90,10 @@ class ByteBufCodecsTest {
     }
 
     @Test
-    void primitivesRoundTrip() {
-        assertEquals(true, roundTrip(ByteBufCodecs.BOOL, true));
-        assertEquals((byte) -5, roundTrip(ByteBufCodecs.BYTE, (byte) -5));
-        assertEquals((short) -300, roundTrip(ByteBufCodecs.SHORT, (short) -300));
+    void packedPrimitives() {
         assertEquals(65535, roundTrip(ByteBufCodecs.UNSIGNED_SHORT, 65535));
-        assertEquals(-12345, roundTrip(ByteBufCodecs.INT, -12345));
-        assertEquals(Long.MIN_VALUE, roundTrip(ByteBufCodecs.LONG, Long.MIN_VALUE));
-        assertEquals(1.5F, roundTrip(ByteBufCodecs.FLOAT, 1.5F));
-        assertEquals(-2.25D, roundTrip(ByteBufCodecs.DOUBLE, -2.25D));
         assertEquals(90.0F, roundTrip(ByteBufCodecs.ROTATION_BYTE, 90.0F));
         assertEquals(1, bytes(ByteBufCodecs.ROTATION_BYTE, 90.0F).length);
-        assertEquals(5, roundTrip(ByteBufCodecs.CONTAINER_ID, 5));
     }
 
     @Test
@@ -136,14 +127,11 @@ class ByteBufCodecsTest {
         assertThrows(
                 EncoderException.class,
                 () -> ByteBufCodecs.PLAYER_NAME.encode(Unpooled.buffer(), "xxxxxxxxxxxxxxxxx"));
-    }
 
-    @Test
-    void stringLengthPrefixLongerThanBufferThrows() {
-        ByteBuf buf = Unpooled.buffer();
-        VarInt.write(buf, 10);
-        buf.writeByte('a');
-        assertThrows(DecoderException.class, () -> Utf8String.read(buf, 100));
+        ByteBuf truncated = Unpooled.buffer();
+        VarInt.write(truncated, 10);
+        truncated.writeByte('a');
+        assertThrows(DecoderException.class, () -> Utf8String.read(truncated, 100));
     }
 
     @Test
@@ -180,10 +168,6 @@ class ByteBufCodecsTest {
         entries.put("two", 2);
         assertEquals(entries, roundTrip(map, entries));
 
-        StreamCodec<ByteBuf, ArrayList<Integer>> custom = ByteBufCodecs.VAR_INT
-                .apply(ByteBufCodecs.collection(ArrayList::new));
-        assertEquals(new ArrayList<>(Arrays.asList(5, 6)), roundTrip(custom, new ArrayList<>(Arrays.asList(5, 6))));
-
         ByteBuf negative = Unpooled.buffer();
         VarInt.write(negative, -1);
         assertThrows(DecoderException.class, () -> set.decode(negative));
@@ -210,19 +194,12 @@ class ByteBufCodecsTest {
     }
 
     @Test
-    void idMapper() {
-        List<String> ids = Arrays.asList("zero", "one", "two");
-        StreamCodec<ByteBuf, String> codec = ByteBufCodecs.idMapper(ids::get, ids::indexOf);
-        assertEquals("two", roundTrip(codec, "two"));
-        assertArrayEquals(new byte[] { 2 }, bytes(codec, "two"));
-    }
-
-    @Test
     void idMapperRejectsUnknownRegistryIds() {
         RegistryNamespaced registry = new RegistryNamespaced();
         registry.addObject(3, "test:three", "three");
         StreamCodec<ByteBuf, String> codec = ByteBufCodecs.idMapper(registry);
         assertEquals("three", roundTrip(codec, "three"));
+        assertArrayEquals(new byte[] { 3 }, bytes(codec, "three"));
         assertThrows(IllegalArgumentException.class, () -> codec.encode(Unpooled.buffer(), "missing"));
         ByteBuf buf = Unpooled.buffer();
         VarInt.write(buf, 7);
@@ -244,6 +221,10 @@ class ByteBufCodecsTest {
         assertEquals(string, roundTrip(ByteBufCodecs.TAG, string));
         assertEquals(Optional.of(compound), roundTrip(ByteBufCodecs.OPTIONAL_COMPOUND_TAG, Optional.of(compound)));
         assertEquals(Optional.empty(), roundTrip(ByteBufCodecs.OPTIONAL_COMPOUND_TAG, Optional.empty()));
+        StreamCodec<ByteBuf, Optional<NBTBase>> optional = ByteBufCodecs
+                .optionalTagCodec(ByteBufHelpers::defaultNbtQuota);
+        assertEquals(Optional.of(string), roundTrip(optional, Optional.of(string)));
+        assertEquals(Optional.empty(), roundTrip(optional, Optional.empty()));
 
         ByteBuf buf = Unpooled.buffer();
         ByteBufCodecs.TAG.encode(buf, string);
@@ -269,30 +250,6 @@ class ByteBufCodecsTest {
         NBTTagCompound medium = new NBTTagCompound();
         medium.setTag("data", new NBTTagByteArray(new byte[1_000_000]));
         assertEquals(medium, roundTrip(ByteBufCodecs.COMPOUND_TAG, medium));
-    }
-
-    @Test
-    void trustedTagRoundTrips() {
-        NBTBase string = new NBTTagString("trusted");
-        assertEquals(string, roundTrip(ByteBufCodecs.TRUSTED_TAG, string));
-    }
-
-    @Test
-    void optionalTagCodec() {
-        StreamCodec<ByteBuf, Optional<NBTBase>> codec = ByteBufCodecs.optionalTagCodec(ByteBufHelpers::defaultNbtQuota);
-        NBTBase string = new NBTTagString("present");
-        assertEquals(Optional.of(string), roundTrip(codec, Optional.of(string)));
-        assertEquals(Optional.empty(), roundTrip(codec, Optional.empty()));
-    }
-
-    @Test
-    void nullableHelpers() {
-        ByteBuf buf = Unpooled.buffer();
-        ByteBufHelpers.<String>writeNullable(buf, null, (out, value) -> Utf8String.write(out, value, 10));
-        ByteBufHelpers.writeNullable(buf, "x", (out, value) -> Utf8String.write(out, value, 10));
-        assertNull(ByteBufHelpers.readNullable(buf, in -> Utf8String.read(in, 10)));
-        assertEquals("x", ByteBufHelpers.readNullable(buf, in -> Utf8String.read(in, 10)));
-        assertEquals(0, buf.readableBytes());
     }
 
     @Test

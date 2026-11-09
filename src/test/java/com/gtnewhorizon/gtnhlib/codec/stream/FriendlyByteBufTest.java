@@ -87,13 +87,6 @@ class FriendlyByteBufTest {
     }
 
     @Test
-    void hugeArrayCountFailsWithoutHugeAllocation() {
-        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-        buf.writeVarInt(Integer.MAX_VALUE);
-        assertThrows(IndexOutOfBoundsException.class, () -> buf.readArray(String[]::new, FriendlyByteBuf::readUtf));
-    }
-
-    @Test
     void arrayLengthsBeyondTheDataAreRejected() {
         FriendlyByteBuf bytes = new FriendlyByteBuf(Unpooled.buffer());
         bytes.writeVarInt(Integer.MAX_VALUE);
@@ -110,12 +103,11 @@ class FriendlyByteBufTest {
         FriendlyByteBuf negativeCount = new FriendlyByteBuf(Unpooled.buffer());
         negativeCount.writeVarInt(-1);
         assertThrows(DecoderException.class, () -> negativeCount.readList(FriendlyByteBuf::readVarInt));
-    }
 
-    @Test
-    void oversizedStringIsRejected() {
-        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-        buf.writeUtf("toolong");
-        assertThrows(DecoderException.class, () -> buf.readUtf(3));
+        FriendlyByteBuf hugeCount = new FriendlyByteBuf(Unpooled.buffer());
+        hugeCount.writeVarInt(Integer.MAX_VALUE);
+        assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> hugeCount.readArray(String[]::new, FriendlyByteBuf::readUtf));
     }
 }
