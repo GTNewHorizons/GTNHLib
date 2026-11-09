@@ -533,6 +533,16 @@ public class TemplatedTextLoader {
      * Parses arbitrary lines of text using the templated text processor.
      *
      * @param lines The lines to process
+     * @return The parsed lines with processed stacks and the special line formatting if one is specified.
+     */
+    public List<String> evaluateLines(Iterable<String> lines) {
+        return evaluateLines(lines, Collections.emptyMap());
+    }
+
+    /**
+     * Parses arbitrary lines of text using the templated text processor.
+     *
+     * @param lines The lines to process
      * @param vars  The variables used to process the lines.
      * @return The parsed lines with processed stacks and the special line formatting if one is specified.
      */
