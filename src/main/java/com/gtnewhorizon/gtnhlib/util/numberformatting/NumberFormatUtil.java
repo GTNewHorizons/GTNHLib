@@ -397,30 +397,27 @@ public final class NumberFormatUtil {
         }
     }
 
-    public static class ReloadListener {
+    @SideOnly(Side.CLIENT)
+    private static class ReloadListener implements IResourceManagerReloadListener {
 
-        @SideOnly(Side.CLIENT)
-        private static class Listener implements IResourceManagerReloadListener {
+        private static final ReloadListener INSTANCE = new ReloadListener();
 
-            private static final Listener INSTANCE = new Listener();
-
-            @Override
-            public void onResourceManagerReload(IResourceManager resourceManager) {
-                LOC_CACHE.onResourceManagerReload(resourceManager);
-                // run the callbacks that pre-cache formatting to an even higher degree.
-                for (ThroughputUnitFormatter formatter : THROUGHPUT_UNIT_FORMATTERS) {
-                    formatter.updateCachedUnitString();
-                }
+        @Override
+        public void onResourceManagerReload(IResourceManager resourceManager) {
+            LOC_CACHE.onResourceManagerReload(resourceManager);
+            // run the callbacks that pre-cache formatting to an even higher degree.
+            for (ThroughputUnitFormatter formatter : THROUGHPUT_UNIT_FORMATTERS) {
+                formatter.updateCachedUnitString();
             }
         }
-
-        private static final ConcurrentSet<ThroughputUnitFormatter> THROUGHPUT_UNIT_FORMATTERS = new ConcurrentSet<>();
     }
+
+    private static final ConcurrentSet<ThroughputUnitFormatter> THROUGHPUT_UNIT_FORMATTERS = new ConcurrentSet<>();
 
     @SideOnly(Side.CLIENT)
     @ApiStatus.Internal
     public static IResourceManagerReloadListener getReloadListener() {
-        return ReloadListener.Listener.INSTANCE;
+        return ReloadListener.INSTANCE;
     }
 
     public final static LocalisationCache LOC_CACHE = new LocalisationCache();
@@ -481,7 +478,10 @@ public final class NumberFormatUtil {
         }
 
         // Abbreviated (1K, 2.5M etc)
-        return abbreviate(val, options);
+        String ret = abbreviate(val, options);
+        // fallback in case something goes really wrong
+        if (ret == null) return formatNumber(value, options.toFormatOptions());
+        return ret;
     }
 
     /* ========================= Abbreviation ========================= */
@@ -552,9 +552,10 @@ public final class NumberFormatUtil {
                 threshold.supplier.get());
     }
 
-    private static String abbreviate(BigDecimal value, NumberOptionsBase<?> options) {
+    private static @Nullable String abbreviate(BigDecimal value, NumberOptionsBase<?> options) {
 
-        var info = getAbbreviatedNumberInformation(value, options);
+        AbbreviatedNumberInfo info = getAbbreviatedNumberInformation(value, options);
+        if (info == null) return null;
 
         return String.format(
                 LOC_CACHE.abbreviationFormat,
@@ -834,19 +835,22 @@ public final class NumberFormatUtil {
             this.unitFormatSupplier = unitFormatSupplier;
             this.unit1Supplier = unit1Supplier;
             this.unit2Supplier = unit2Supplier;
-            ReloadListener.THROUGHPUT_UNIT_FORMATTERS.add(this);
+            THROUGHPUT_UNIT_FORMATTERS.add(this);
             updateCachedUnitString();
         }
 
         @VisibleForTesting
         @Override
         public void close() throws Exception {
-            ReloadListener.THROUGHPUT_UNIT_FORMATTERS.remove(this);
+            THROUGHPUT_UNIT_FORMATTERS.remove(this);
         }
 
-        private void updateCachedUnitString() {
-            this.cachedUnitText = String
-                    .format(this.unitFormatSupplier.get(), this.unit1Supplier.get(), this.unit2Supplier.get());
+        protected void updateCachedUnitString() {
+            this.cachedUnitText = this.createCachedUnitString();
+        }
+
+        protected String createCachedUnitString() {
+            return String.format(this.unitFormatSupplier.get(), this.unit1Supplier.get(), this.unit2Supplier.get());
         }
 
         @Override
@@ -861,7 +865,7 @@ public final class NumberFormatUtil {
 
         @Override
         public @NotNull String format(@Nullable Number value, @NotNull NumberOptionsBase<?> options) {
-            return String.format(this.formatSupplier.get(), options.format(value), this.cachedUnitText);
+            return this.format(options.format(value));
         }
 
     }
