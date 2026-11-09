@@ -332,11 +332,11 @@ public class TemplatedTextLoader implements AutoCloseable {
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_MICROGRAM), "microgram-unit", "μg");
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_MILLIGRAM), "milligram-unit", "mg");
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_GRAM), "gram-unit", "g");
-        addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_KILOGRAM), "kilometer-unit", "kg");
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_NANOMETER), "nanometer-unit", "nm");
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_MICROMETER), "micrometer-unit", "μm");
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_MILLIMETER), "millimeter-unit", "mm");
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_CENTIMETER), "centimeter-unit", "cm");
+        addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_KILOGRAM), "kilogram-unit", "kg");
         // no m because minutes would be more common
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_METER), "meter-unit");
         addGlobalCommandWithAliases(new UnitCommand(NumberFormatUtil.FORMAT_KILOMETER), "kilometer-unit", "km", "KM");
@@ -353,78 +353,16 @@ public class TemplatedTextLoader implements AutoCloseable {
         // throughput unit standardization commands
         // spotless:off
         NumberFormatUtil.LocalisationCache locs = NumberFormatUtil.LOC_CACHE;
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingFluidThroughput,
-                locs::getUnitFormatFluidThroughput,
-                NumberFormatUtil::getFluidUnit,
-                "fluid/",
-                "fluid-unit/",
-                "L/",
-                "l/",
-                "Liter/",
-                "liter/",
-                "mb/",
-                "mB/");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingEnergyThroughput,
-                locs::getUnitFormatEnergyThroughput,
-                locs::getUnitRF,
-                "RF/",
-                "rf/");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingEnergyThroughput,
-                locs::getUnitFormatEnergyThroughput,
-                locs::getUnitMJ,
-                "MJ/",
-                "mj/");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingEnergyThroughput,
-                locs::getUnitFormatEnergyThroughput,
-                locs::getUnitAE,
-                "AE/",
-                "ae/");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingEnergyThroughput,
-                locs::getUnitFormatEnergyThroughput,
-                NumberFormatUtil::getEnergyUnit,
-                "energy-unit/",
-                "eu/",
-                "eu",
-                "EU/",
-                "EU");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingSpeed,
-                locs::getUnitFormatSpeed,
-                locs::getUnitMeter,
-                "m/");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingSpeed,
-                locs::getUnitFormatSpeed,
-                locs::getUnitKilogram,
-                "km/",
-                "Km/",
-                "KM/");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingMassThroughput,
-                locs::getUnitFormatMassThroughput,
-                locs::getUnitGram,
-                "g/");
-        addThroughputVariations(
-                GLOBAL_COMMANDS,
-                locs::getSpacingMassThroughput,
-                locs::getUnitFormatMassThroughput,
-                locs::getUnitKilogram,
-                "kg/",
-                "Kg/",
-                "KG/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingFluidThroughput, locs::getUnitFormatFluidThroughput, NumberFormatUtil::getFluidUnit, "fluid/", "fluid-unit/", "L/", "l/", "Liter/", "liter/", "mb/", "mB/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitRF, "RF/", "rf/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitMJ, "MJ/", "mj/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, locs::getUnitAE, "AE/", "ae/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingEnergyThroughput, locs::getUnitFormatEnergyThroughput, NumberFormatUtil::getEnergyUnit, "energy-unit/", "eu/", "eu", "EU/", "EU");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingSpeed, locs::getUnitFormatSpeed, locs::getUnitMeter, "m/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingSpeed, locs::getUnitFormatSpeed, locs::getUnitKilometer, "km/", "Km/", "KM/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingMassThroughput, locs::getUnitFormatMassThroughput, locs::getUnitGram, "g/");
+        addThroughputVariations(GLOBAL_COMMANDS, locs::getSpacingMassThroughput, locs::getUnitFormatMassThroughput, locs::getUnitKilogram, "kg/", "Kg/", "KG/");
+        // spotless:on
 
         addGlobalCommand(
                 "throw-err",
