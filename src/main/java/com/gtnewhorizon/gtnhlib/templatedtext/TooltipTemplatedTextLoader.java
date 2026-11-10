@@ -8,6 +8,8 @@ import com.gtnewhorizon.gtnhlib.templatedtext.command.UnitCommand;
 import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
+import java.util.function.Supplier;
+
 public class TooltipTemplatedTextLoader extends TemplatedTextLoader {
 
     public TooltipTemplatedTextLoader(@NotNull String style) {
@@ -31,8 +33,13 @@ public class TooltipTemplatedTextLoader extends TemplatedTextLoader {
         this.addCommand(new UnitCommand(new ThemedEUCapacityFormatter()), "fmt-eu-capacity");
         this.addCommand(new UnitCommand(new ThemedAmpFormatter()), "fmt-amps");
         this.addCommand(new UnitCommand(new ThemedHeatFormatter()), "fmt-heat");
-        // TODO: make electron volt commands dynamic based on value. (rely on engineering exponential format)
-        // maybe do the same for time
+        // spotless:off
+        this.addCommand(new UnitCommand(new ThemedElectronVoltFormatter(NumberFormatUtil.LOC_CACHE::getUnitElectronVolt)), "fmt-electron-volt-unit");
+        this.addCommand(new UnitCommand(new ThemedElectronVoltFormatter(NumberFormatUtil.LOC_CACHE::getUnitKiloElectronVolt)), "fmt-KeV", "fmt-kev");
+        this.addCommand(new UnitCommand(new ThemedElectronVoltFormatter(NumberFormatUtil.LOC_CACHE::getUnitMegaElectronVolt)), "fmt-MeV", "fmt-mev");
+        this.addCommand(new UnitCommand(new ThemedElectronVoltFormatter(NumberFormatUtil.LOC_CACHE::getUnitGigaElectronVolt)), "fmt-GeV", "fmt-gev");
+        this.addCommand(new UnitCommand(new ThemedElectronVoltFormatter(NumberFormatUtil.LOC_CACHE::getUnitTeraElectronVolt)), "fmt-TeV", "fmt-tev");
+        // spotless:on
     }
 
     private static class ThemedEUThroughputFormatter extends TextFormatUtil.ThroughputUnitFormatterWithDualTheme {
@@ -75,6 +82,16 @@ public class TooltipTemplatedTextLoader extends TemplatedTextLoader {
                     TextThemingGuidelines.TOOLTIPS::getHeat,
                     NumberFormatUtil.LOC_CACHE::getSpacingHeat,
                     NumberFormatUtil::getEnergyUnit);
+        }
+    }
+
+    private static class ThemedElectronVoltFormatter extends TextFormatUtil.UnitFormatterWithTheme {
+
+        public ThemedElectronVoltFormatter(@NotNull Supplier<@NotNull String> unitSupplier) {
+            super(
+                TextThemingGuidelines.TOOLTIPS::getElectronVolt,
+                NumberFormatUtil.LOC_CACHE::getSpacingElectronVolt,
+                unitSupplier);
         }
     }
 
