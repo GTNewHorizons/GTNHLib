@@ -98,9 +98,9 @@ public enum ExponentialFormat {
 
     private static DecimalFormat getMantissaFormatter(NumberOptionsBase<?> options) {
         Locale locale = NumberFormatConfig.getActiveLocale();
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
 
-        DecimalFormat df = new DecimalFormat();
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+        DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
         df.setDecimalFormatSymbols(symbols);
         df.setGroupingUsed(true);
         df.setRoundingMode(options.getRoundingMode());

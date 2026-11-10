@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.config.Config;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 
 @Config(modid = "gtnhlib", category = "number_formatting", filename = "gtnhlib-number-formatting")
 public final class NumberFormatConfig {
@@ -118,6 +119,11 @@ public final class NumberFormatConfig {
             EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
         }
 
+        // recache unit formatter in case some are dependent on configs
+        NumberFormatUtil.recacheUnitFormatters();
+        TemplatedTextLoader.clearCache();
+
+        // log new number format locale
         Locale activeLocale = numberFormatLocale.getLocale();
         GTNHLib.info("Number formatting: Using " + numberFormatLocale.getDisplayName() + " (" + activeLocale + ")");
     }

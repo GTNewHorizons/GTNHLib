@@ -75,7 +75,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 /// and are fully responsible for it's rendering. They can also prevent certain lines from being rendered.
 ///
 /// Lines starting with `//` are considered to be comments and will be ignored entirely.
-public class TemplatedTextLoader {
+public class TemplatedTextLoader implements AutoCloseable {
 
     private static final String FALLBACK_LOCALE = "en_US";
     /** The extension for templated text files. */
@@ -128,24 +128,28 @@ public class TemplatedTextLoader {
 
         @Override
         public void onResourceManagerReload(IResourceManager manager) {
-            INSTANCES.forEach(x -> x.cache.clear());
+            clearCache();
         }
 
         private ReloadListener() {}
     }
 
-    @SideOnly(Side.CLIENT)
     private static final ConcurrentSet<TemplatedTextLoader> INSTANCES = new ConcurrentSet<>();
 
-    @SideOnly(Side.CLIENT)
-    public void onClientPreInit() {
-        INSTANCES.add(this);
+    public void initialize() {
+        // empty on purpose, this just needs to be initialized before post load so the commands can be instantiated
+        // and themed correctly.
     }
 
     @ApiStatus.Internal
     @SideOnly(Side.CLIENT)
     public static IResourceManagerReloadListener getReloadListener() {
         return ReloadListener.INSTANCE;
+    }
+
+    @ApiStatus.Internal
+    public static void clearCache() {
+        INSTANCES.forEach(x -> x.cache.clear());
     }
 
     // endregion reload handler
@@ -303,6 +307,12 @@ public class TemplatedTextLoader {
 
     public TemplatedTextLoader(@NotNull String folder) {
         this.folder = "/" + folder + "/";
+        INSTANCES.add(this);
+    }
+
+    @Override
+    public void close() {
+        INSTANCES.remove(this);
     }
 
     // command adding

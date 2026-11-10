@@ -55,6 +55,8 @@ public abstract class TextThemingGuidelineContainer {
 
         private static final ReloadListener INSTANCE = new ReloadListener();
 
+        private static final ConcurrentSet<TextThemingGuidelineContainer> INSTANCES = new ConcurrentSet<>();
+
         @Override
         public void onResourceManagerReload(IResourceManager manager) {
             INSTANCES.forEach(x -> x.reload(manager));
@@ -66,11 +68,8 @@ public abstract class TextThemingGuidelineContainer {
     }
 
     @SideOnly(Side.CLIENT)
-    private static final ConcurrentSet<TextThemingGuidelineContainer> INSTANCES = new ConcurrentSet<>();
-
-    @SideOnly(Side.CLIENT)
-    public void onClientPreInit() {
-        INSTANCES.add(this);
+    public void onClientConstruct() {
+        ReloadListener.INSTANCES.add(this);
     }
 
     @ApiStatus.Internal
@@ -80,43 +79,53 @@ public abstract class TextThemingGuidelineContainer {
     }
 
     @SideOnly(Side.CLIENT)
-    void reload(IResourceManager manager) {
+    private void reload(IResourceManager manager) {
         Map<String, String> values = new Object2ObjectOpenHashMap<>();
 
         // read theming files associated with this container
-        for (ResourceLocation resource : resourceLocations) {
-            List<String> lines;
+        for (ResourceLocation resource : this.resourceLocations) {
             try {
                 IResource cfgResource = manager.getResource(resource);
                 try (InputStream is = cfgResource.getInputStream()) {
-                    lines = IOUtils.readLines(is, StandardCharsets.UTF_8);
+                    parseResource(values, is);
                 }
             } catch (IOException e) {
                 GTNHLib.LOG.error("failed to open text coloring file", e);
                 return;
             }
-
-            parseFields(lines, values);
         }
 
-        // update values based on registered handlers.
-        for (Map.Entry<@NotNull String, @NotNull FormatKey> entry : this.keyHandlers.entrySet()) {
-            String newValue = values.getOrDefault(entry.getKey(), entry.getValue().def);
-            entry.getValue().setter.accept(newValue);
+        // update the guidelines with the new values
+        this.inject(values);
+    }
+
+    @VisibleForTesting
+    public static void parseResource(@NotNull Map<@NotNull String, @NotNull String> outputMap, @NotNull InputStream is)
+            throws IOException {
+        List<String> lines = IOUtils.readLines(is, StandardCharsets.UTF_8);
+        parseFields(outputMap, lines);
+    }
+
+    @VisibleForTesting
+    public static void parseFields(@NotNull Map<@NotNull String, @NotNull String> outputMap,
+            @NotNull Iterable<@NotNull String> lines) {
+        // parse keys
+        for (String line : lines) {
+            // skip lines with comments or those that are empty
+            if (line.isEmpty() || line.startsWith(COMMENT_START)) continue;
+            // skip if no split
+            int splitIndex = line.indexOf(KEY_VALUE_SEPARATOR);
+            if (splitIndex < 0) continue;
+            outputMap.put(line.substring(0, splitIndex).trim(), line.substring(splitIndex + 1).trim());
         }
     }
 
     @VisibleForTesting
-    public void parseFields(@NotNull List<@NotNull String> lines, Map<String, String> outputMap) {
-        // skip lines with comments or those that are empty
-        lines.removeIf(l -> l.startsWith(COMMENT_START) || l.isEmpty());
-
-        // parse keys
-        for (String line : lines) {
-            // abort if no split
-            int splitIndex = line.indexOf(KEY_VALUE_SEPARATOR);
-            if (splitIndex < 0) continue;
-            outputMap.put(line.substring(0, splitIndex).trim(), line.substring(splitIndex + 1).trim());
+    public void inject(@NotNull Map<@NotNull String, @NotNull String> values) {
+        // update values based on registered handlers.
+        for (Map.Entry<@NotNull String, @NotNull FormatKey> entry : this.keyHandlers.entrySet()) {
+            String newValue = values.getOrDefault(entry.getKey(), entry.getValue().def);
+            entry.getValue().setter.accept(newValue);
         }
     }
 

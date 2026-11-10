@@ -405,13 +405,15 @@ public final class NumberFormatUtil {
         public void onResourceManagerReload(IResourceManager resourceManager) {
             LOC_CACHE.onResourceManagerReload(resourceManager);
             // run the callbacks that pre-cache formatting to an even higher degree.
-            for (ThroughputUnitFormatter formatter : THROUGHPUT_UNIT_FORMATTERS) {
-                formatter.updateCachedUnitString();
-            }
+            recacheUnitFormatters();
         }
     }
 
     private static final ConcurrentSet<ThroughputUnitFormatter> THROUGHPUT_UNIT_FORMATTERS = new ConcurrentSet<>();
+
+    static void recacheUnitFormatters() {
+        THROUGHPUT_UNIT_FORMATTERS.forEach(ThroughputUnitFormatter::updateCachedUnitString);
+    }
 
     @SideOnly(Side.CLIENT)
     @ApiStatus.Internal
@@ -843,11 +845,11 @@ public final class NumberFormatUtil {
 
         @VisibleForTesting
         @Override
-        public void close() throws Exception {
+        public void close() {
             THROUGHPUT_UNIT_FORMATTERS.remove(this);
         }
 
-        protected void updateCachedUnitString() {
+        private void updateCachedUnitString() {
             this.cachedUnitText = this.createCachedUnitString();
         }
 

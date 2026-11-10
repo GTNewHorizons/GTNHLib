@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
@@ -18,13 +19,22 @@ import com.gtnewhorizon.gtnhlib.extensions.ForceDisplayLocale;
 import com.gtnewhorizon.gtnhlib.extensions.ForceFormatLocale;
 import com.gtnewhorizon.gtnhlib.extensions.GlobalDisableExponentialNotation;
 import com.gtnewhorizon.gtnhlib.extensions.InjectLocalisation;
+import com.gtnewhorizon.gtnhlib.extensions.UseDebugFluidUnit;
+import com.gtnewhorizon.gtnhlib.extensions.UseMillibuckets;
 import com.gtnewhorizon.gtnhlib.templatedtext.lineprocessor.RawLineProcessor;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 @DisableFormattedNotation(false)
 @GlobalDisableExponentialNotation(false)
 @ForceFormatLocale("en-US")
 @ForceDisplayLocale("en-US")
 public class TemplatedTextLoaderTest {
+
+    @AfterEach
+    void afterEach() {
+        TemplatedTextLoader.clearCache();
+    }
 
     private static final Pattern errPattern = Pattern.compile("§c\\[([^#]+?)\\s#\\s+([^]]+)]", 0);
 
@@ -76,12 +86,13 @@ public class TemplatedTextLoaderTest {
 
     @Test
     void lineProcessor_local_works() {
-        TemplatedTextLoader loader = new TemplatedTextLoader("text");
-        loader.addLineProcessor(new RawLineProcessor(), "local-test");
-        List<String> text = Arrays.asList("#local-test:this is a {test}");
-        List<String> expected = Arrays.asList("this is a {test}");
-        List<String> actual = loader.evaluateLines(text);
-        Assertions.assertLinesMatch(expected, actual);
+        try (TemplatedTextLoader loader = new TemplatedTextLoader("text")) {
+            loader.addLineProcessor(new RawLineProcessor(), "local-test");
+            List<String> text = Arrays.asList("#local-test:this is a {test}");
+            List<String> expected = Arrays.asList("this is a {test}");
+            List<String> actual = loader.evaluateLines(text);
+            Assertions.assertLinesMatch(expected, actual);
+        }
     }
 
     @Test
@@ -161,6 +172,31 @@ public class TemplatedTextLoaderTest {
                 "{lang-eval:{var:key}:{var:one}:{var:two}}",
                 missingKey,
                 ImmutableMap.of("key", missingKey, "one", 1, "two", 2));
+    }
+
+    @Test
+    @UseDebugFluidUnit(false)
+    @UseMillibuckets(true)
+    void caching_configAffectsFluidUnits() {
+        expectString("{fluid-unit}", "mB");
+        expectString("{fluid-unit:amount}", "1 mB", ImmutableMap.of("amount", 1));
+        expectString("{fluid-unit/s:amount}", "1 mB/s", ImmutableMap.of("amount", 1));
+
+        NumberFormatConfig.useForgeFluidMillibuckets = false;
+        // not pushed so it doesn't update yet
+        expectString("{fluid-unit}", "L");
+        expectString("{fluid-unit:amount}", "1 L", ImmutableMap.of("amount", 1));
+        expectString("{fluid-unit/s:amount}", "1 mB/s", ImmutableMap.of("amount", 1));
+        NumberFormatUtil.postConfiguration();
+        expectString("{fluid-unit}", "L");
+        expectString("{fluid-unit:amount}", "1 L", ImmutableMap.of("amount", 1));
+        expectString("{fluid-unit/s:amount}", "1 L/s", ImmutableMap.of("amount", 1));
+
+        NumberFormatConfig.debugFluidUnit = true;
+        NumberFormatUtil.postConfiguration();
+        expectString("{fluid-unit}", "X");
+        expectString("{fluid-unit:amount}", "1 X", ImmutableMap.of("amount", 1));
+        expectString("{fluid-unit/s:amount}", "1 X/s", ImmutableMap.of("amount", 1));
     }
 
     // region expectString

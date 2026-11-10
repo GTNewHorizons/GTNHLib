@@ -29,7 +29,6 @@ import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
-import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoaders;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
@@ -63,9 +62,7 @@ public class ClientProxy extends CommonProxy {
         FMLCommonHandler.instance().bus().register(new ConfigEventHandler());
 
         // initialize instances of resource-based providers
-        TextThemingGuidelines.TOOLTIPS.onClientPreInit();
-        TemplatedTextLoaders.STANDARD.onClientPreInit();
-        TemplatedTextLoaders.TOOLTIP.onClientPreInit();
+        TextThemingGuidelines.TOOLTIPS.onClientConstruct();
     }
 
     @Override

@@ -34,6 +34,7 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoaders;
 import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
@@ -68,6 +69,8 @@ public class CommonProxy {
 
     public void construct(FMLConstructionEvent event) {
         AutoEventBus.executePhase(Phase.CONSTRUCT);
+        TemplatedTextLoaders.STANDARD.initialize();
+        TemplatedTextLoaders.TOOLTIP.initialize();
     }
 
     public void preInit(FMLPreInitializationEvent event) {
