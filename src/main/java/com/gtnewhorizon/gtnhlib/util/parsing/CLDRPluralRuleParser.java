@@ -255,6 +255,8 @@ public class CLDRPluralRuleParser {
 
         protected abstract @NotNull T applyModulo(@NotNull T value, @NotNull T modulo);
 
+        protected abstract boolean isRound(@NotNull T value);
+
         @Override
         public boolean test(CLDRPluralRuleNumber numberContainer) {
 
@@ -268,9 +270,10 @@ public class CLDRPluralRuleParser {
             }
             // check individual values
             for (T other : this.individualValues) {
-                if (other.equals(value)) return true;
+                if (other.compareTo(value) == 0) return true;
             }
-            // check individual values
+            // Since we don't support the old is and within relationships ranges are always created as integer only.
+            if (!this.isRound(value)) return false;
             for (ValueRange range : this.rangeValues) {
                 if (value.compareTo(range.min) < 0) continue;
                 if (value.compareTo(range.max) > 0) continue;
@@ -291,7 +294,7 @@ public class CLDRPluralRuleParser {
         @Override
         protected @NotNull BigDecimal parseNumber(@NotNull String unparsed, @NotNull MutableInt counter,
                 boolean isModulo) throws NumberFormatException {
-            BigDecimal ret = new BigDecimal(unparsed);
+            BigDecimal ret = new BigDecimal(unparsed).stripTrailingZeros();
             if (isModulo && ret.signum() <= 0) {
                 throw new PluralityRuleParsingException("Modulo value cannot be zero: " + unparsed, counter);
             }
@@ -301,6 +304,12 @@ public class CLDRPluralRuleParser {
         @Override
         protected @NotNull BigDecimal applyModulo(@NotNull BigDecimal value, @NotNull BigDecimal modulo) {
             return value.remainder(modulo);
+        }
+
+        @Override
+        protected boolean isRound(@NotNull BigDecimal value) {
+            // all big decimals used for CLDR testing are stripped.
+            return value.scale() <= 0;
         }
     }
 
@@ -326,6 +335,11 @@ public class CLDRPluralRuleParser {
         protected @NotNull BigInteger applyModulo(@NotNull BigInteger value, @NotNull BigInteger modulo) {
             return value.remainder(modulo);
         }
+
+        @Override
+        protected boolean isRound(@NotNull BigInteger value) {
+            return true;
+        }
     }
 
     public static class PluralityIntRelation extends PluralityRelation<Integer> {
@@ -348,6 +362,11 @@ public class CLDRPluralRuleParser {
         @Override
         protected @NotNull Integer applyModulo(@NotNull Integer value, @NotNull Integer modulo) {
             return value % modulo;
+        }
+
+        @Override
+        protected boolean isRound(@NotNull Integer value) {
+            return true;
         }
     }
 

@@ -99,7 +99,6 @@ public class CLDRPluralRuleParserTest {
         assertEquals(2, parser.getIndex(num(3.0001e3, opts)));
         assertEquals(2, parser.getIndex(num(3.1e3, opts)));
         opts.setExponentialThreshold(BD_TRILLION);
-
     }
 
     @Test
@@ -159,6 +158,43 @@ public class CLDRPluralRuleParserTest {
         assertEquals(3, parser.getIndex(num(10000.0, opts)));
         assertEquals(3, parser.getIndex(num(100000.0, opts)));
         assertEquals(3, parser.getIndex(num(1000000.0, opts)));
+    }
+
+    @Test
+    void rules_inRelation_onlyAcceptsInts() {
+        FormatOptions opts = new FormatOptions();
+        opts.setDecimalPlaces(2, 2);
+        opts.setExponentialThreshold(BD_TRILLION);
+        opts.enableExponentialFormatting();
+        opts.setRoundingMode(RoundingMode.HALF_UP);
+
+        CLDRPluralRuleParser parser = CLDRPluralRuleParser.getParser("n = 1..10");
+        assertEquals(1, parser.getIndex(num(5.3123, opts)));
+        assertEquals(0, parser.getIndex(num(1, opts)));
+        assertEquals(0, parser.getIndex(num(10, opts)));
+        opts.setDecimalPlaces(0, 0);
+        assertEquals(0, parser.getIndex(num(5.1231, opts)));
+    }
+
+    @Test
+    void rules_inRelation_onlyAcceptsInside() {
+        FormatOptions opts = new FormatOptions();
+        opts.setDecimalPlaces(2, 2);
+        opts.setExponentialThreshold(BD_TRILLION);
+        opts.enableExponentialFormatting();
+        opts.setRoundingMode(RoundingMode.HALF_UP);
+
+        CLDRPluralRuleParser parser = CLDRPluralRuleParser.getParser("n = 1..10");
+        assertEquals(0, parser.getIndex(num(1, opts)));
+        assertEquals(0, parser.getIndex(num(5, opts)));
+        assertEquals(0, parser.getIndex(num(10, opts)));
+        opts.setDecimalPlaces(0, 0);
+        assertEquals(1, parser.getIndex(num(10.99, opts)));
+        assertEquals(1, parser.getIndex(num(0.12, opts)));
+        opts.setRoundingMode(RoundingMode.FLOOR);
+        assertEquals(0, parser.getIndex(num(10.99, opts)));
+        opts.setRoundingMode(RoundingMode.CEILING);
+        assertEquals(0, parser.getIndex(num(0.12, opts)));
     }
 
     private CLDRPluralRuleNumber num(Number value, NumberOptionsBase<?> options) {

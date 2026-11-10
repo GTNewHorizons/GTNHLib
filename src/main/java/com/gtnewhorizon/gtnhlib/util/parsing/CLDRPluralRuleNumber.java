@@ -48,7 +48,7 @@ public class CLDRPluralRuleNumber {
     @VisibleForTesting
     public CLDRPluralRuleNumber(@NotNull BigDecimal n, @NotNull BigInteger i, int v, int w, @NotNull BigInteger f,
             @NotNull BigInteger t, int c) {
-        this.n = n;
+        this.n = n.stripTrailingZeros();
         this.i = i;
         this.v = v;
         this.w = w;
