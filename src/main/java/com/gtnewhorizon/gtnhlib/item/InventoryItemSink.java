@@ -150,11 +150,6 @@ public class InventoryItemSink implements ItemSink {
                 GTNHLib.LOG.warn("This simulated sink iterator doesn't support backward traversal");
                 return null;
             }
-
-            @Override
-            public boolean rewind() {
-                return false;
-            }
         };
     }
 }
