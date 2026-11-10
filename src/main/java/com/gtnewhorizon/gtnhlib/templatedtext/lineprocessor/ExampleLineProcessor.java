@@ -2,16 +2,14 @@ package com.gtnewhorizon.gtnhlib.templatedtext.lineprocessor;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 
@@ -43,10 +41,10 @@ public class ExampleLineProcessor implements ITemplatedTextLineProcessor {
 
     @Override
     public void processLine(@NotNull TemplatedTextLoader loader, @NotNull List<String> lineOutput, @NotNull String line,
-            @NotNull Map<String, Object> vars, Stack<ResourceLocation> includeHistory) {
+            @NotNull TemplatedTextContext context) {
         lineOutput.add(EnumChatFormatting.DARK_GRAY + "Example:" + line);
         final int oldSize = lineOutput.size();
-        loader.evaluateLinesNoFormat(lineOutput, Collections.singletonList(line), vars, includeHistory);
+        loader.evaluateLinesNoFormat(lineOutput, Collections.singletonList(line), context);
         final int newSize = lineOutput.size();
         if (oldSize == newSize) {
             lineOutput.add(TextFormatUtil.wrapFormatting(EnumChatFormatting.DARK_GRAY.toString(), "[OUTPUT SKIPPED]"));

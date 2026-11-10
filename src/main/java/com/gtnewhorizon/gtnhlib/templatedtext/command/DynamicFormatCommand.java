@@ -1,11 +1,11 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 
@@ -26,12 +26,12 @@ public class DynamicFormatCommand implements ITemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         if (arg.isEmpty()) {
-            lineOutput.append(formatSupplier.get());
+            lineOutput.append(this.formatSupplier.get());
         } else {
             lineOutput.append(TextFormatUtil.FORMAT_PUSH_STACK).append(formatSupplier.get());
-            loader.emit(arg, lineOutput, vars);
+            loader.emit(arg, lineOutput, context);
             lineOutput.append(TextFormatUtil.FORMAT_POP_STACK);
         }
     }

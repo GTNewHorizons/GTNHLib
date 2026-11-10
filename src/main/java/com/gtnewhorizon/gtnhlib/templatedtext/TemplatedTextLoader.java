@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.ColorPatternCommand;
-import com.gtnewhorizon.gtnhlib.templatedtext.command.CommentCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.FluidCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.IfCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.IfDefCommand;
@@ -204,7 +202,7 @@ public class TemplatedTextLoader implements AutoCloseable {
         // global line processors
         addGlobalLineProcessor(new RawLineProcessor(), "raw");
         addGlobalLineProcessor(new ExampleLineProcessor(), "example");
-        addGlobalLineProcessor(($1, $2, $3, $4, $5) -> {}, "comment", "");
+        addGlobalLineProcessor((loader, out, line, context) -> {}, "comment", "");
         addGlobalLineProcessor(new IncludeLineProcessor(), "include", "import");
         addGlobalLineProcessor(new IfLineProcessor(true), "if-true", "ift", "if");
         addGlobalLineProcessor(new IfLineProcessor(false), "if-false", "iif", "if-not", "ifn");
@@ -232,7 +230,7 @@ public class TemplatedTextLoader implements AutoCloseable {
         addGlobalCommand(new LangCommand(true), "lang-eval");
         addGlobalCommand(new IsolationCommand(), "isolate");
         // spotless:off
-        addGlobalCommand(new CommentCommand(), "comment", "#", "//");
+        addGlobalCommand((loader, arg, out, context) -> {}, "comment", "#", "//");
         addGlobalCommand(new IfCommand(true), "if-true", "if");
         addGlobalCommand(new IfCommand(false), "if-false", "if-not");
         addGlobalCommand(new IfDefCommand(true), "if-exists", "ife", "if-defined", "if-def", "ifdef");
@@ -333,7 +331,7 @@ public class TemplatedTextLoader implements AutoCloseable {
 
     // line processor adding
 
-    public void addLineProcessor(ITemplatedTextLineProcessor processor, @NotNull String name,
+    public void addLineProcessor(@NotNull ITemplatedTextLineProcessor processor, @NotNull String name,
             String @NotNull... aliases) {
         this.lineProcessor.put(name, processor);
         for (String alias : aliases) {
@@ -341,7 +339,7 @@ public class TemplatedTextLoader implements AutoCloseable {
         }
     }
 
-    public static void addGlobalLineProcessor(ITemplatedTextLineProcessor processor, @NotNull String name,
+    public static void addGlobalLineProcessor(@NotNull ITemplatedTextLineProcessor processor, @NotNull String name,
             String @NotNull... aliases) {
         GLOBAL_LINE_PROCESSORS.put(name, processor);
         for (String alias : aliases) {
@@ -351,12 +349,12 @@ public class TemplatedTextLoader implements AutoCloseable {
 
     // resolvers
 
-    private @Nullable ITemplatedTextLineProcessor getLineProcessor(String name) {
+    private @Nullable ITemplatedTextLineProcessor getLineProcessor(@NotNull String name) {
         ITemplatedTextLineProcessor ret = this.lineProcessor.getOrDefault(name, null);
         return ret == null ? GLOBAL_LINE_PROCESSORS.getOrDefault(name, null) : ret;
     }
 
-    private @Nullable ITemplatedTextCommand getCommand(String name) {
+    private @Nullable ITemplatedTextCommand getCommand(@NotNull String name) {
         ITemplatedTextCommand ret = this.commands.getOrDefault(name, null);
         return ret == null ? GLOBAL_COMMANDS.getOrDefault(name, null) : ret;
     }
@@ -401,8 +399,23 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @return The processed output of the file.
      */
     public List<String> loadStandardPath(@NotNull ResourceLocation resource,
-            @NotNull Supplier<@NotNull Map<@NotNull String, Object>> lazyVars) {
+            @NotNull Supplier<@NotNull Map<@NotNull String, @Nullable Object>> lazyVars) {
         return loadStandardPath(resource, "", lazyVars);
+    }
+
+    /**
+     * Loads a templated text document at `assets/[mod id]/lang/[language id]/[style]/[path].md`. On the client,
+     * resource packs are scanned. On the server, the file is loaded directly from the current jar.
+     *
+     * @apiNote The result is memoized until resources are reloaded.
+     *
+     * @param resource    The resource location for the file you want to load.
+     * @param lazyContext A lazy provider for the context with which to parse the file.
+     * @return The processed output of the file.
+     */
+    public List<String> loadStandardPathWithContext(@NotNull ResourceLocation resource,
+            @NotNull Supplier<@NotNull TemplatedTextContext> lazyContext) {
+        return loadStandardPathWithContext(resource, "", lazyContext);
     }
 
     /**
@@ -417,26 +430,26 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @return The processed output of the file.
      */
     public List<String> loadStandardPath(@NotNull ResourceLocation resource, @NotNull String cacheKeyExtra,
-            @NotNull Supplier<@NotNull Map<@NotNull String, Object>> lazyVars) {
+            @NotNull Supplier<@NotNull Map<@NotNull String, @Nullable Object>> lazyVars) {
         String key = resource + cacheKeyExtra;
         return cache.computeIfAbsent(key, (k) -> this.loadStandardPath(resource, lazyVars.get()));
     }
 
-    private static String getCurrentLanguage() {
-        try {
-            if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
-                return Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
-            }
-        } catch (RuntimeException t) {
-            // empty on purpose
-        }
-        return "en_US";
-    }
-
-    private ResourceLocation getExactPath(ResourceLocation resource, String language) {
-        return new ResourceLocation(
-                resource.getResourceDomain(),
-                "lang/" + language + this.folder + resource.getResourcePath());
+    /**
+     * Loads a templated text document at `assets/[mod id]/lang/[language id]/[style]/[path].md`. On the client,
+     * resource packs are scanned. On the server, the file is loaded directly from the current jar.
+     *
+     * @apiNote The result is memoized until resources are reloaded.
+     *
+     * @param resource      The resource location for the file you want to load.
+     * @param cacheKeyExtra A string added to the resource location when computing the cache key.
+     * @param lazyContext   A lazy provider for the context with which to parse the file.
+     * @return The processed output of the file.
+     */
+    public List<String> loadStandardPathWithContext(@NotNull ResourceLocation resource, @NotNull String cacheKeyExtra,
+            @NotNull Supplier<@NotNull TemplatedTextContext> lazyContext) {
+        String key = resource + cacheKeyExtra;
+        return cache.computeIfAbsent(key, (k) -> this.loadStandardPath(resource, lazyContext.get()));
     }
 
     /**
@@ -446,8 +459,20 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @param vars     The variables used when processing the file.
      * @return The parsed lines with processed stacks and the special line formatting if one is specified.
      */
-    public List<String> loadStandardPath(ResourceLocation resource, Map<String, Object> vars) {
-        List<String> out = loadStandardPathNoFormat(resource, vars, null);
+    public List<String> loadStandardPath(@NotNull ResourceLocation resource,
+            @NotNull Map<@NotNull String, @NotNull Object> vars) {
+        return loadStandardPath(resource, new TemplatedTextContext(vars));
+    }
+
+    /**
+     * Loads and parses a templated text file from the resources.
+     *
+     * @param resource The resource location for the file you want to load.
+     * @param context  The context with which to parse the file.
+     * @return The parsed lines with processed stacks and the special line formatting if one is specified.
+     */
+    public List<String> loadStandardPath(@NotNull ResourceLocation resource, @NotNull TemplatedTextContext context) {
+        List<String> out = loadStandardPathNoFormat(resource, context);
         out.replaceAll(parsedLine -> TextFormatUtil.processFormatStacks(formatLine(parsedLine)));
         return out;
     }
@@ -459,19 +484,18 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @apiNote This is mostly an internal function only made public for its use by line processors and testing. Use one
      *          of the {@link #loadStandardPath} functions instead if you want renderable text.
      *
-     * @param resource       The resource location for the file you want to load.
-     * @param vars           The variables used when processing the file.
-     * @param includeHistory The list of files previously included, leave null if you are at the root.
+     * @param resource The resource location for the file you want to load.
+     * @param context  The context with which to parse the file.
      * @return The parsed lines without processed stacks or the special line formatting if one is specified.
      */
-    public List<String> loadStandardPathNoFormat(ResourceLocation resource, Map<String, Object> vars,
-            @Nullable Stack<ResourceLocation> includeHistory) {
+    public List<String> loadStandardPathNoFormat(@NotNull ResourceLocation resource,
+            @NotNull TemplatedTextContext context) {
         List<String> ret = new ArrayList<>();
         String currentLanguage = getCurrentLanguage();
         ResourceLocation exactPath = this.getExactPath(resource, currentLanguage);
         try {
             try {
-                ret.addAll(this.loadExactPath(exactPath, vars, includeHistory));
+                ret.addAll(this.loadExactPath(exactPath, context));
                 return ret;
             } catch (Throwable t) {
                 // don't fall back if there is no fallback
@@ -482,7 +506,7 @@ public class TemplatedTextLoader implements AutoCloseable {
                 }
                 // update the path to the fallback and try to load the fallback file.
                 exactPath = this.getExactPath(resource, FALLBACK_LOCALE);
-                ret.addAll(this.loadExactPath(exactPath, vars, includeHistory));
+                ret.addAll(this.loadExactPath(exactPath, context));
                 return ret;
             }
         } catch (FileNotFoundException fnfe) {
@@ -496,26 +520,36 @@ public class TemplatedTextLoader implements AutoCloseable {
         }
     }
 
+    private static String getCurrentLanguage() {
+        try {
+            if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
+                return Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
+            }
+        } catch (RuntimeException t) {
+            // empty on purpose
+        }
+        return "en_US";
+    }
+
+    private ResourceLocation getExactPath(@NotNull ResourceLocation resource, @NotNull String language) {
+        return new ResourceLocation(
+                resource.getResourceDomain(),
+                "lang/" + language + this.folder + resource.getResourcePath());
+    }
+
     // C0bra5: making this private because realistically no mods should ever attempt to force a locale when loading
     // this.
-    private List<String> loadExactPath(ResourceLocation resource, Map<String, Object> vars,
-            @Nullable Stack<ResourceLocation> includeHistory) throws IOException {
+    private List<String> loadExactPath(@NotNull ResourceLocation resource, @NotNull TemplatedTextContext context)
+            throws IOException {
 
         // prevent infinite loops
-        if (includeHistory == null) {
-            includeHistory = new Stack<>();
-        } else {
-            for (ResourceLocation rs : includeHistory) {
-                if (rs.equals(resource)) {
-                    StringBuilder sb = new StringBuilder();
-                    appendError(sb, "INCLUDE-LOOP", resource + FILE_EXT);
-                    List<String> out = new LinkedList<>();
-                    out.add(sb.toString());
-                    return out;
-                }
-            }
+        if (!context.push(resource)) {
+            StringBuilder sb = new StringBuilder();
+            appendError(sb, "INCLUDE-LOOP", resource + FILE_EXT);
+            List<String> out = new LinkedList<>();
+            out.add(sb.toString());
+            return out;
         }
-        includeHistory.push(resource);
 
         try {
             List<String> lines;
@@ -528,10 +562,10 @@ public class TemplatedTextLoader implements AutoCloseable {
                         new ResourceLocation(resource.getResourceDomain(), resource.getResourcePath() + FILE_EXT_OLD));
             }
             List<String> out = new ArrayList<>();
-            evaluateLinesNoFormat(out, lines, vars, includeHistory);
+            evaluateLinesNoFormat(out, lines, context);
             return out;
         } finally {
-            includeHistory.pop();
+            context.pop();
         }
     }
 
@@ -545,7 +579,7 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @param lines The lines to process
      * @return The parsed lines with processed stacks and the special line formatting if one is specified.
      */
-    public List<String> evaluateLines(Iterable<String> lines) {
+    public List<String> evaluateLines(@NotNull Iterable<String> lines) {
         return evaluateLines(lines, Collections.emptyMap());
     }
 
@@ -556,10 +590,11 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @param vars  The variables used to process the lines.
      * @return The parsed lines with processed stacks and the special line formatting if one is specified.
      */
-    public List<String> evaluateLines(Iterable<String> lines, Map<String, Object> vars) {
+    public List<String> evaluateLines(@NotNull Iterable<String> lines,
+            @NotNull Map<@NotNull String, @Nullable Object> vars) {
         List<String> out = new LinkedList<>();
         try {
-            evaluateLinesNoFormat(out, lines, vars, new Stack<>());
+            evaluateLinesNoFormat(out, lines, new TemplatedTextContext(vars));
             out.replaceAll(parsedLine -> TextFormatUtil.processFormatStacks(formatLine(parsedLine)));
         } catch (RuntimeException e) {
             appendException(out, "UNEXPECTED-ERROR", e);
@@ -574,13 +609,12 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @apiNote This is mostly an internal function only made public for its use by line processors and testing. Use
      *          {@link #evaluateLines(Iterable, Map)} instead if you want renderable text.
      *
-     * @param out            A list to append the output to.
-     * @param lines          The lines to process
-     * @param vars           The variables used to process the lines.
-     * @param includeHistory The list of files previously included files, leave <b>empty</b> if you are at the root.
+     * @param out     A list to append the output to.
+     * @param lines   The lines to process
+     * @param context The context with which to parse the file.
      */
-    public void evaluateLinesNoFormat(List<String> out, Iterable<String> lines, Map<String, Object> vars,
-            Stack<ResourceLocation> includeHistory) {
+    public void evaluateLinesNoFormat(@NotNull List<@NotNull String> out, @NotNull Iterable<@NotNull String> lines,
+            @NotNull TemplatedTextContext context) {
         for (String line : lines) {
             // ignore comments
             if (line.startsWith(COMMENT_START)) continue;
@@ -596,10 +630,10 @@ public class TemplatedTextLoader implements AutoCloseable {
                         throw TemplatedTextParsingException
                                 .lineProcessorStandard("UNKNOWN LINE PROCESSOR", parts[0].trim());
                     }
-                    processor.processLine(this, out, parts[1], vars, includeHistory);
+                    processor.processLine(this, out, parts[1], context);
                     continue;
                 }
-                out.add(eval(line, vars));
+                out.add(eval(line, context));
             } catch (TemplatedTextParsingException ise) {
                 for (String errLine : ise.userLines) {
                     out.add(TextFormatUtil.wrapFormatting(EnumChatFormatting.RED, errLine));
@@ -614,15 +648,15 @@ public class TemplatedTextLoader implements AutoCloseable {
         return parsedLine;
     }
 
-    public String eval(String unparsed, Map<String, Object> vars) {
+    public String eval(String unparsed, @NotNull TemplatedTextContext context) {
         StringBuilder sb = new StringBuilder(unparsed.length());
 
-        emit(unparsed, sb, vars);
+        emit(unparsed, sb, context);
 
         return sb.toString();
     }
 
-    public void emit(String unparsed, StringBuilder out, Map<String, Object> vars) {
+    public void emit(String unparsed, StringBuilder out, @NotNull TemplatedTextContext context) {
         parseCommands(unparsed, new CommandVisitor() {
 
             @Override
@@ -642,7 +676,7 @@ public class TemplatedTextLoader implements AutoCloseable {
                 if (commandHandler == null) {
                     appendError(out, "UNKNOWN COMMAND", commandName.trim());
                 } else {
-                    commandHandler.process(TemplatedTextLoader.this, arg, out, vars);
+                    commandHandler.process(TemplatedTextLoader.this, arg, out, context);
                 }
             }
         });
@@ -797,7 +831,7 @@ public class TemplatedTextLoader implements AutoCloseable {
     }
 
     public static List<String> splitArgsWithCommands(@NotNull TemplatedTextLoader loader, String arg, int max,
-            boolean eval, @NotNull Map<@NotNull String, Object> vars) {
+            boolean eval, @NotNull TemplatedTextContext context) {
         if (max == 0) {
             List<String> ret = new ArrayList<>(1);
             ret.add(arg);
@@ -824,7 +858,7 @@ public class TemplatedTextLoader implements AutoCloseable {
             @Override
             public void visitCommand(String command) {
                 if (eval) {
-                    paramBuffer.append(loader.eval(command, vars));
+                    paramBuffer.append(loader.eval(command, context));
                 } else {
                     paramBuffer.append(command);
                 }

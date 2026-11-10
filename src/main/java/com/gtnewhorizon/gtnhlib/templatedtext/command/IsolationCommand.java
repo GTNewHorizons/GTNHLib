@@ -1,10 +1,9 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 
@@ -21,10 +20,10 @@ public class IsolationCommand implements ITemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         if (arg.isEmpty()) return;
         lineOutput.append(TextFormatUtil.FORMAT_PUSH_STACK);
-        loader.emit(arg, lineOutput, vars);
+        loader.emit(arg, lineOutput, context);
         lineOutput.append(TextFormatUtil.FORMAT_POP_STACK);
     }
 }

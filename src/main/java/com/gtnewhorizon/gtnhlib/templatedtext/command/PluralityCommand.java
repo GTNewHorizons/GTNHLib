@@ -1,9 +1,8 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 
 /// Allows the insertion of plurality suffixes depending on a numeric variable.
@@ -23,7 +22,7 @@ public class PluralityCommand extends TemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
 
         // must have 2 parts
@@ -33,7 +32,7 @@ public class PluralityCommand extends TemplatedTextCommand {
         }
 
         // check if the arg is the correct type
-        Object unparsed = vars.get(parts[0]);
+        Object unparsed = context.getVar(parts[0]);
         boolean result;
         if (unparsed instanceof String v) {
             result = wantsSingular ^ (!v.equals("1") && !v.equals("-1"));
@@ -45,6 +44,6 @@ public class PluralityCommand extends TemplatedTextCommand {
         }
 
         // check if it's a valid value
-        if (result) loader.emit(parts[1], lineOutput, vars);
+        if (result) loader.emit(parts[1], lineOutput, context);
     }
 }

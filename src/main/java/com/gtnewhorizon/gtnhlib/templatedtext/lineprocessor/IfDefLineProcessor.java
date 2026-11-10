@@ -2,14 +2,11 @@ package com.gtnewhorizon.gtnhlib.templatedtext.lineprocessor;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
-import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 
 /// Only renders the line if the given variable is defined (or doesn't)
@@ -29,7 +26,7 @@ public class IfDefLineProcessor implements ITemplatedTextLineProcessor {
 
     @Override
     public void processLine(@NotNull TemplatedTextLoader loader, @NotNull List<String> out, @NotNull String line,
-            @NotNull Map<String, Object> vars, Stack<ResourceLocation> includeHistory) {
+            @NotNull TemplatedTextContext context) {
         String[] parts = line.split(TemplatedTextLoader.ARG_SPLITTER_PATTERN, 2);
 
         // must have 2 parts
@@ -39,8 +36,8 @@ public class IfDefLineProcessor implements ITemplatedTextLineProcessor {
         }
 
         // check if the arg is the correct type
-        if (vars.containsKey(parts[0]) == wantsExists) {
-            loader.evaluateLinesNoFormat(out, Collections.singletonList(parts[1]), vars, includeHistory);
+        if (context.containsVar(parts[0]) == this.wantsExists) {
+            loader.evaluateLinesNoFormat(out, Collections.singletonList(parts[1]), context);
         }
 
     }

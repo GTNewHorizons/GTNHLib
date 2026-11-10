@@ -1,9 +1,8 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 
 /// Only appends the given text if a given variable exists.
@@ -23,7 +22,7 @@ public class IfDefCommand extends TemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
 
         // must have 2 parts
@@ -33,8 +32,8 @@ public class IfDefCommand extends TemplatedTextCommand {
         }
 
         // check if the arg is the correct type
-        if (vars.containsKey(parts[0]) == wantsExist) {
-            loader.emit(parts[1], lineOutput, vars);
+        if (context.containsVar(parts[0]) == this.wantsExist) {
+            loader.emit(parts[1], lineOutput, context);
         }
     }
 }

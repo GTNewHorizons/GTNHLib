@@ -1,13 +1,13 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.util.StatCollector;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 
 /// Appends the localised text associated with a given lang key and optionally processes the args and result for more
@@ -34,11 +34,11 @@ public class LangCommand implements ITemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
 
         String translated;
         if (arg.indexOf(TemplatedTextLoader.ARG_SPLITTER) >= 0) {
-            List<String> paramList = TemplatedTextLoader.splitArgsWithCommands(loader, arg, -1, eval, vars);
+            List<String> paramList = TemplatedTextLoader.splitArgsWithCommands(loader, arg, -1, eval, context);
             String key = paramList.remove(0);
 
             // TODO: implement the arg processing of the gt5u localized class or just migrate it to GTNHlib entirely
@@ -48,7 +48,7 @@ public class LangCommand implements ITemplatedTextCommand {
         }
 
         if (eval) {
-            loader.emit(translated, lineOutput, vars);
+            loader.emit(translated, lineOutput, context);
         } else {
             lineOutput.append(translated);
         }

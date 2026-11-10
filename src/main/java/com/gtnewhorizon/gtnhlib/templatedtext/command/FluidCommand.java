@@ -1,13 +1,12 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.Map;
-
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 
@@ -25,7 +24,7 @@ public class FluidCommand extends TemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         Fluid fluid = FluidRegistry.getFluid(arg);
 
         if (fluid == null) {

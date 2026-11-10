@@ -1,9 +1,8 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
@@ -26,9 +25,9 @@ public class VarCommand extends TemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
 
-        Object value = vars.get(arg);
+        Object value = context.getVar(arg);
 
         if (value == null) {
             appendUnknownVarError(lineOutput, arg);
@@ -36,10 +35,10 @@ public class VarCommand extends TemplatedTextCommand {
         }
 
         if (eval) {
-            loader.emit(value.toString(), lineOutput, vars);
+            loader.emit(value.toString(), lineOutput, context);
         } else {
             if (value instanceof Number v) {
-                appendNumericVar(v, arg, lineOutput, vars);
+                appendNumericVar(v, arg, lineOutput, context);
             } else {
                 lineOutput.append(value);
             }
@@ -47,8 +46,8 @@ public class VarCommand extends TemplatedTextCommand {
     }
 
     public static void appendNumericVar(@NotNull Number number, @NotNull String varName,
-            @NotNull StringBuilder lineOutput, @NotNull Map<String, Object> vars) {
-        Object maybeFormat = vars.get(varName + "-fmt");
+            @NotNull StringBuilder lineOutput, @NotNull TemplatedTextContext context) {
+        Object maybeFormat = context.getVar(varName + "-fmt");
         if (maybeFormat instanceof NumberOptionsBase<?>options) {
             lineOutput.append(options.format(number));
         } else {

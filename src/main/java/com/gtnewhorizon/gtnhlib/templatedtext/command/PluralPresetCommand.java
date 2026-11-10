@@ -1,10 +1,10 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
 import java.util.List;
-import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
@@ -31,7 +31,7 @@ public class PluralPresetCommand extends TemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
         // validate part count
         if (parts.length != 2) {
@@ -39,21 +39,21 @@ public class PluralPresetCommand extends TemplatedTextCommand {
             return;
         }
         List<String> plurals = TemplatedTextLoader
-                .splitArgsWithCommands(loader, parts[1], this.expectedPluralCount, true, vars);
+                .splitArgsWithCommands(loader, parts[1], this.expectedPluralCount, true, context);
         // validate validate output counts
         if (plurals.size() != this.expectedPluralCount) {
             appendArgCountError(lineOutput, 1 + this.expectedPluralCount, 1 + plurals.size());
             return;
         }
         // check if the arg is the correct type
-        Object unparsed = vars.get(parts[0]);
+        Object unparsed = context.getVar(parts[0]);
         if (!(unparsed instanceof Number number)) {
             appendError(lineOutput, "VAR IS NOT A NUMBER");
             return;
         }
 
         // get plurality index
-        Object format = vars.get(parts[0] + "-fmt");
+        Object format = context.getVar(parts[0] + "-fmt");
         CLDRPluralRuleNumber container;
         if (format instanceof NumberOptionsBase<?>options) {
             container = new CLDRPluralRuleNumber(number, options);

@@ -2,12 +2,12 @@ package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.util.EnumChatFormatting;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 
@@ -34,7 +34,7 @@ public class ColorPatternCommand extends TemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         // format should be {command-name:tierVar:text to convert}
         String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
 
@@ -88,7 +88,7 @@ public class ColorPatternCommand extends TemplatedTextCommand {
         }
 
         // evaluate the contents
-        loader.emit(parts[1], sb, vars);
+        loader.emit(parts[1], sb, context);
         char[] arr = sb.toString().toCharArray();
         // render out the patterned text
         IntObjectPair<String> active = parsed.get(0);

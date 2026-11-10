@@ -2,14 +2,11 @@ package com.gtnewhorizon.gtnhlib.templatedtext.lineprocessor;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
-import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 
 /// Only renders the line if the given variable is true (or false)
@@ -29,7 +26,7 @@ public class IfLineProcessor implements ITemplatedTextLineProcessor {
 
     @Override
     public void processLine(@NotNull TemplatedTextLoader loader, @NotNull List<String> out, @NotNull String line,
-            @NotNull Map<String, Object> vars, Stack<ResourceLocation> includeHistory) {
+            @NotNull TemplatedTextContext context) {
         String[] parts = line.split(TemplatedTextLoader.ARG_SPLITTER_PATTERN, 2);
 
         // must have 2 parts
@@ -38,14 +35,14 @@ public class IfLineProcessor implements ITemplatedTextLineProcessor {
         }
 
         // check if the arg is the correct type
-        if (!(vars.get(parts[0]) instanceof Boolean value)) {
+        if (!(context.getVar(parts[0]) instanceof Boolean value)) {
             throw TemplatedTextLoader.TemplatedTextParsingException
                     .lineProcessorStandard("IF", "UNKNOWN VAR" + parts[0]);
         }
 
         // check if it's a valid value
-        if (value == wantsTrue) {
-            loader.evaluateLinesNoFormat(out, Collections.singletonList(parts[1]), vars, includeHistory);
+        if (value == this.wantsTrue) {
+            loader.evaluateLinesNoFormat(out, Collections.singletonList(parts[1]), context);
         }
     }
 }

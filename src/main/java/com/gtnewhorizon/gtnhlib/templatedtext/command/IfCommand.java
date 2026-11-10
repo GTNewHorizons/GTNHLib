@@ -1,9 +1,8 @@
 package com.gtnewhorizon.gtnhlib.templatedtext.command;
 
-import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 
 /// Only appends the given text if the variable parameter has the right boolean value.
@@ -24,7 +23,7 @@ public class IfCommand extends TemplatedTextCommand {
 
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
-            @NotNull Map<String, Object> vars) {
+            @NotNull TemplatedTextContext context) {
         String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
 
         // must have 2 parts
@@ -34,12 +33,12 @@ public class IfCommand extends TemplatedTextCommand {
         }
 
         // check if the arg is the correct type
-        if (!(vars.get(parts[0]) instanceof Boolean value)) {
+        if (!(context.getVar(parts[0]) instanceof Boolean value)) {
             appendUnknownVarError(lineOutput, arg);
             return;
         }
 
         // check if it's a valid value
-        if (value == wantsTrue) loader.emit(parts[1], lineOutput, vars);
+        if (value == this.wantsTrue) loader.emit(parts[1], lineOutput, context);
     }
 }
