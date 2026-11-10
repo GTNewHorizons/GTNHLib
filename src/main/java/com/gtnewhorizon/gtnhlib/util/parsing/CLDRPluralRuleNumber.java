@@ -114,20 +114,20 @@ public class CLDRPluralRuleNumber {
                 val = stripped = stripped.scaleByPowerOfTen(c);
             }
         } else {
-            if (options.getMaxDecimalPlaces() < val.scale()) {
-                // if the value has too many digits round it
-                val = val.setScale(options.getMaxDecimalPlaces(), options.getRoundingMode());
+            // round if needed
+            if (options.getMaxDecimalPlaces() < stripped.scale()) {
+                val = stripped.setScale(options.getMaxDecimalPlaces(), options.getRoundingMode());
                 stripped = val.stripTrailingZeros();
-                // if the value has too many trailing zeros after rounding eg 999.9 -> 1000.0 strip the trailing zeros.
-                if (options.getMinDecimalPlaces() > stripped.scale() && options.getMinDecimalPlaces() < val.scale()) {
-                    val = val.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
-                }
-            } else if (options.getMinDecimalPlaces() > val.scale()) {
-                // add 0s when necessary
-                val = val.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
             }
-            if (options.getMinDecimalPlaces() <= stripped.scale()) {
-                val = val.setScale(stripped.scale(), RoundingMode.UNNECESSARY);
+
+            // add missing zeros if stripped number has too few digits
+            if (options.getMinDecimalPlaces() > stripped.scale()) {
+                val = stripped.setScale(options.getMinDecimalPlaces(), RoundingMode.UNNECESSARY);
+            }
+            // strip extra zeros above min digits if needed
+            else if (options.getMinDecimalPlaces() < val.scale()) {
+                int scaleBy = Math.max(options.getMinDecimalPlaces(), stripped.scale());
+                val = stripped.setScale(scaleBy, RoundingMode.UNNECESSARY);
             }
         }
 

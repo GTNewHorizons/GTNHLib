@@ -468,6 +468,8 @@ public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
         testNumberContainer(1200.50, opts, "1,200.5", 1200, 1, 1, 5, 5, 0);
         testNumberContainer(1.20050e3, opts, "1,200.5", 1200, 1, 1, 5, 5, 0);
 
+        testNumberContainer(10.0, opts, "10", 10, 0, 0, 0, 0, 0);
+
         // check zero values
         testNumberContainer(0, getBaseOpts().setDecimalPlaces(2, 2), "0.00", 0, 2, 0, 0, 0, 0);
         testNumberContainer(0, getBaseOpts().setDecimalPlaces(0, 2), "0", 0, 0, 0, 0, 0, 0);
