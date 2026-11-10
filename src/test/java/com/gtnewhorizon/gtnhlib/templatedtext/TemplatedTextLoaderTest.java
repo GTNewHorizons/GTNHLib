@@ -10,10 +10,13 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.opentest4j.AssertionFailedError;
 
 import com.google.common.collect.ImmutableMap;
 import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelines;
+import com.gtnewhorizon.gtnhlib.extensions.DefaultLineSeparator;
 import com.gtnewhorizon.gtnhlib.extensions.DisableFormattedNotation;
 import com.gtnewhorizon.gtnhlib.extensions.ForceDisplayLocale;
 import com.gtnewhorizon.gtnhlib.extensions.ForceFormatLocale;
@@ -22,6 +25,8 @@ import com.gtnewhorizon.gtnhlib.extensions.InjectLocalisation;
 import com.gtnewhorizon.gtnhlib.extensions.UseDebugFluidUnit;
 import com.gtnewhorizon.gtnhlib.extensions.UseMillibuckets;
 import com.gtnewhorizon.gtnhlib.templatedtext.lineprocessor.RawLineProcessor;
+import com.gtnewhorizon.gtnhlib.util.TextFormatConfig;
+import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
@@ -29,6 +34,7 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 @GlobalDisableExponentialNotation(false)
 @ForceFormatLocale("en-US")
 @ForceDisplayLocale("en-US")
+@DefaultLineSeparator(style = TextFormatUtil.LineSeparatorStyle.Dashes, length = 41)
 public class TemplatedTextLoaderTest {
 
     @AfterEach
@@ -172,6 +178,24 @@ public class TemplatedTextLoaderTest {
                 "{lang-eval:{var:key}:{var:one}:{var:two}}",
                 missingKey,
                 ImmutableMap.of("key", missingKey, "one", 1, "two", 2));
+    }
+
+    @ParameterizedTest
+    @EnumSource
+    void command_hr_works(TextFormatUtil.LineSeparatorStyle style) {
+        TextFormatConfig.lineSeparatorStyle = style;
+        expectNoError("{hr}");
+        expectNoError("{hr:21}");
+    }
+
+    @ParameterizedTest
+    @EnumSource
+    void command_hr_errorHandling(TextFormatUtil.LineSeparatorStyle style) {
+        TextFormatConfig.lineSeparatorStyle = style;
+        expectErrorAt(1, "a{hr:a}");
+        expectErrorAt(1, "a{hr:-1}");
+        expectErrorAt(1, "a{hr:1.0}");
+        expectErrorAt(1, "a{hr:1E3}");
     }
 
     @Test

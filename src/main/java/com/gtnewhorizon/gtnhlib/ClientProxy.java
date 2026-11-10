@@ -26,7 +26,7 @@ import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
-import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
+import com.gtnewhorizon.gtnhlib.eventhandlers.ClientConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
@@ -59,7 +59,7 @@ public class ClientProxy extends CommonProxy {
         super.construct(event);
 
         // ConfigChangedEvent is client-only; register handler only on client.
-        FMLCommonHandler.instance().bus().register(new ConfigEventHandler());
+        FMLCommonHandler.instance().bus().register(new ClientConfigEventHandler());
 
         // initialize instances of resource-based providers
         TextThemingGuidelines.TOOLTIPS.onClientConstruct();

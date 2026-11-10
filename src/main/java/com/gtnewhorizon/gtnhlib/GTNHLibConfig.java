@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib;
 
 import com.gtnewhorizon.gtnhlib.config.Config;
-import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
 
 @Config(modid = GTNHLib.MODID)
 public class GTNHLibConfig {
@@ -132,13 +131,4 @@ public class GTNHLibConfig {
     @Config.Comment("Dev only: log every player inventory add/remove event to the console.")
     @Config.DefaultBoolean(false)
     public static boolean debugInventoryEvents;
-
-    @Config.Comment("The default length for a line separator")
-    @Config.DefaultInt(41)
-    @Config.RangeInt(min = 0, max = 100)
-    public static int defaultLineSeparatorLength;
-
-    @Config.Comment("Which style should tooltip separator lines have? 0: empty line, 1: dashed line, 2+: continuous line.")
-    @Config.DefaultEnum("ContinuousLine")
-    public static TextFormatUtil.LineSeparatorStyle separatorStyle;
 }

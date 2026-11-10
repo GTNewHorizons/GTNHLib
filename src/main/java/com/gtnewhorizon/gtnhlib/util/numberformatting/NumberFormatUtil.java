@@ -411,7 +411,8 @@ public final class NumberFormatUtil {
 
     private static final ConcurrentSet<ThroughputUnitFormatter> THROUGHPUT_UNIT_FORMATTERS = new ConcurrentSet<>();
 
-    static void recacheUnitFormatters() {
+    @ApiStatus.Internal
+    public static void recacheUnitFormatters() {
         THROUGHPUT_UNIT_FORMATTERS.forEach(ThroughputUnitFormatter::updateCachedUnitString);
     }
 
@@ -950,6 +951,8 @@ public final class NumberFormatUtil {
 
     public static void postConfiguration() {
         NumberFormatConfig.syncNumberFormatting();
+        // recache unit formatter in case some are dependent on configs
+        NumberFormatUtil.recacheUnitFormatters();
     }
 
     public static BigDecimal bigDecimalConverter(Number number) {

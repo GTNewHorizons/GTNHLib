@@ -27,6 +27,7 @@ import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextCommand;
 import com.gtnewhorizon.gtnhlib.api.templatedtext.ITemplatedTextLineProcessor;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.ColorPatternCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.FluidCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.command.HorizontalRuleCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.IfCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.IfDefCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.IsolationCommand;
@@ -230,6 +231,7 @@ public class TemplatedTextLoader implements AutoCloseable {
         addGlobalCommand(new LangCommand(false), "lang");
         addGlobalCommand(new LangCommand(true), "lang-eval");
         addGlobalCommand(new IsolationCommand(), "isolate");
+        addGlobalCommand(new HorizontalRuleCommand(), "hr");
         // spotless:off
         addGlobalCommand((loader, arg, out, context) -> {}, "comment", "#", "//");
         addGlobalCommand(new IfCommand(true), "if-true", "if");

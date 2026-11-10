@@ -9,7 +9,6 @@ import net.minecraft.util.EnumChatFormatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 public class TextFormatUtil {
@@ -145,7 +144,7 @@ public class TextFormatUtil {
      * @return The line separator, assume it contains format stacks.
      */
     public static String getLineSeparator() {
-        return getLineSeparator(GTNHLibConfig.defaultLineSeparatorLength);
+        return getLineSeparator(TextFormatConfig.lineSeparatorDefaultLength);
     }
 
     /**
@@ -157,7 +156,7 @@ public class TextFormatUtil {
      * @return The line separator, assume it contains format stacks.
      */
     public static String getLineSeparator(int length) {
-        return GTNHLibConfig.separatorStyle.get(length);
+        return TextFormatConfig.lineSeparatorStyle.get(length);
     }
 
     /**
@@ -169,7 +168,7 @@ public class TextFormatUtil {
      * @param sb The string builder to append the separator to.
      */
     public static void appendLineSeparator(StringBuilder sb) {
-        appendLineSeparator(sb, GTNHLibConfig.defaultLineSeparatorLength);
+        appendLineSeparator(sb, TextFormatConfig.lineSeparatorDefaultLength);
     }
 
     /**
@@ -182,7 +181,7 @@ public class TextFormatUtil {
      * @param length The length of the line separator.
      */
     public static void appendLineSeparator(StringBuilder sb, int length) {
-        GTNHLibConfig.separatorStyle.append(sb, length);
+        TextFormatConfig.lineSeparatorStyle.append(sb, length);
     }
 
     public enum LineSeparatorStyle {
