@@ -32,6 +32,7 @@ import com.gtnewhorizon.gtnhlib.templatedtext.command.IfDefCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.IsolationCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.ItemCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.LangCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.command.PluralCustomCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.PluralPresetCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.PluralityCommand;
 import com.gtnewhorizon.gtnhlib.templatedtext.command.StaticFormatCommand;
@@ -238,9 +239,12 @@ public class TemplatedTextLoader implements AutoCloseable {
         addGlobalCommand(new PluralityCommand(true), "singular", "if-1");
         addGlobalCommand(new PluralityCommand(false), "plural", "if-n-1");
         for (Map.Entry<String, CLDRPluralRuleParser> kv : CLDRPluralRuleParser.getKnownRules()) {
+            // ignore parsers with zero rules
+            if (kv.getValue().getRuleCount() <= 0) continue;
             String name = kv.getKey().replace("_", "-");
             addGlobalCommand(new PluralPresetCommand(kv.getValue(), name.toUpperCase()), "plural-" + name.toLowerCase());
         }
+        addGlobalCommand(new PluralCustomCommand(), "plural-custom");
         // spotless:on
 
         // unit standardization commands
@@ -851,6 +855,9 @@ public class TemplatedTextLoader implements AutoCloseable {
                     paramList.add(paramBuffer.toString());
                     paramBuffer.setLength(0);
                 } else {
+                    if (escaped && !eval) {
+                        paramBuffer.append(ESCAPE_CHAR);
+                    }
                     paramBuffer.append(c);
                 }
             }

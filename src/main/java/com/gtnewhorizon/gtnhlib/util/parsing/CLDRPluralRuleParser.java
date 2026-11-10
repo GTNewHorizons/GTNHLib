@@ -22,25 +22,30 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /// An implementation of the UNICODE CLDR plurality rules.
 ///
-/// See https://www.unicode.org/cldr/charts/43/supplemental/language_plural_rules.html for more details on the rule
-/// formatting.
+/// See [Language Plural Rules Chart](https://www.unicode.org/cldr/charts/43/supplemental/language_plural_rules.html)
+/// for known rules and the [CLDR Plural Rule Syntax
+/// Guidelines](https://unicode.org/reports/tr35/tr35-numbers.html#Language_Plural_Rules).
+/// for more information on how to write your own rules.
 ///
-/// See https://github.com/unicode-org/cldr/blob/main/common/supplemental/plurals.xml for existing specification from
-/// the UNICODE consortium
+/// See https://github.com/unicode-org/cldr/blob/main/common/supplemental/plurals.xml for a simplified version of the
+/// previously linked chart.
 public class CLDRPluralRuleParser {
 
     private static final @NotNull String UNICODE_WHITESPACE_PATTERN = "[\\u0020\\u200E\\u200F\\u0009-\\u000D\\u0085\\u2028\\u2029]+";
 
-    // memoization cache for complex parsing rules
+    /// memoization cache for parsers
     private static final @NotNull Object2ObjectOpenHashMap<@NotNull String, @NotNull CLDRPluralRuleParser> PARSER_CACHE = new Object2ObjectOpenHashMap<>();
+    /// memoization cache for rules
     private static final @NotNull Object2ObjectOpenHashMap<@NotNull String, @NotNull Predicate<CLDRPluralRuleNumber>> PREDICATE_CACHE = new Object2ObjectOpenHashMap<>();
 
+    /// A list of known rules for certain languages.
     private static final @NotNull Map<@NotNull String, @NotNull CLDRPluralRuleParser> KNOWN_LOCALES = createKnownLocales();
 
+    /// A default parser in case something can't be found.
     public static final @NotNull CLDRPluralRuleParser ENGLISH = getParser("i = 1 and v = 0");
 
     /**
-     * @param code one of the codes featured on this page:
+     * @param code One of the codes featured on this page:
      *             https://www.unicode.org/cldr/charts/43/supplemental/language_plural_rules.html
      * @return The parser if there is a known ruleset for the given code else null.
      */
@@ -48,6 +53,10 @@ public class CLDRPluralRuleParser {
         return KNOWN_LOCALES.get(code);
     }
 
+    /**
+     * @return A list of plurality rules for known languages. The key/code is not an ISO country local code, it's a code
+     *         from this page: https://www.unicode.org/cldr/charts/43/supplemental/language_plural_rules.html
+     */
     public static @NotNull Set<Map.Entry<@NotNull String, @NotNull CLDRPluralRuleParser>> getKnownRules() {
         return KNOWN_LOCALES.entrySet();
     }

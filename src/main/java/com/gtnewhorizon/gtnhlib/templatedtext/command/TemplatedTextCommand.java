@@ -17,6 +17,10 @@ public abstract class TemplatedTextCommand implements ITemplatedTextCommand {
         appendError(lineOutput, String.format("NEEDS %d ARGS HAS %d", needs, has));
     }
 
+    protected void appendMinArgCountError(@NotNull StringBuilder lineOutput, int min, int has) {
+        appendError(lineOutput, String.format("NEEDS AT LEAST %d ARGS HAS %d", min, has));
+    }
+
     protected void appendUnknownVarError(@NotNull StringBuilder lineOutput, @NotNull String varName) {
         appendError(lineOutput, "UNKNOWN VAR: " + varName);
     }

@@ -49,7 +49,7 @@ public class TemplatedTextContext {
         return vars.get(varName);
     }
 
-    public <T> @Nullable Object getVar(@NotNull String varName, @NotNull Class<T> t) {
+    public <T> @Nullable T getVar(@NotNull String varName, @NotNull Class<T> t) {
         Object var = vars.get(varName);
         if (var == null) return null;
         return t.isInstance(var) ? t.cast(var) : null;

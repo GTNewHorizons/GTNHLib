@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.templatedtext.command;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
@@ -29,41 +30,52 @@ public class PluralPresetCommand extends TemplatedTextCommand {
         this.expectedPluralCount = parser.getRuleCount() + 1;
     }
 
+    public static @Nullable CLDRPluralRuleNumber getCLDRPluralRuleNumber(@NotNull TemplatedTextContext context,
+            @NotNull String varName) {
+        // check if the arg is the correct type
+        Object unparsed = context.getVar(varName);
+        if (!(unparsed instanceof Number number)) {
+            return null;
+        }
+        // get the format if it exists
+        Object format = context.getVar(varName + "-fmt");
+        if (format instanceof NumberOptionsBase<?>options) {
+            return new CLDRPluralRuleNumber(number, options);
+        }
+        return new CLDRPluralRuleNumber(number, new FormatOptions());
+    }
+
     @Override
     public void process(@NotNull TemplatedTextLoader loader, @NotNull String arg, @NotNull StringBuilder lineOutput,
             @NotNull TemplatedTextContext context) {
-        String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
+
         // validate part count
+        String[] parts = TemplatedTextLoader.splitArgs(arg, 2);
         if (parts.length != 2) {
             appendArgCountError(lineOutput, 1 + this.expectedPluralCount, parts.length);
             return;
         }
-        List<String> plurals = TemplatedTextLoader
-                .splitArgsWithCommands(loader, parts[1], this.expectedPluralCount, true, context);
+
         // validate validate output counts
+        List<String> plurals = TemplatedTextLoader
+                .splitArgsWithCommands(loader, parts[1], this.expectedPluralCount, false, context);
         if (plurals.size() != this.expectedPluralCount) {
             appendArgCountError(lineOutput, 1 + this.expectedPluralCount, 1 + plurals.size());
             return;
         }
-        // check if the arg is the correct type
-        Object unparsed = context.getVar(parts[0]);
-        if (!(unparsed instanceof Number number)) {
+
+        // parse the number
+        CLDRPluralRuleNumber container = getCLDRPluralRuleNumber(context, parts[0]);
+        if (container == null) {
             appendError(lineOutput, "VAR IS NOT A NUMBER");
             return;
         }
 
         // get plurality index
-        Object format = context.getVar(parts[0] + "-fmt");
-        CLDRPluralRuleNumber container;
-        if (format instanceof NumberOptionsBase<?>options) {
-            container = new CLDRPluralRuleNumber(number, options);
-        } else {
-            container = new CLDRPluralRuleNumber(number, new FormatOptions());
-        }
         int index = parser.getIndex(container);
 
         if (index < 0) return;
         if (index >= plurals.size()) return;
-        lineOutput.append(plurals.get(index));
+        loader.emit(plurals.get(index), lineOutput, context);
     }
 }

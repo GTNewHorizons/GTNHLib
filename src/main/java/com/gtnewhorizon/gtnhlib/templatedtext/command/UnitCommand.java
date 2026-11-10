@@ -6,6 +6,20 @@ import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextContext;
 import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
+/// Unit commands provide a way to standardize unit mentions and numeric unit-attached measurement using
+/// {@link NumberFormatUtil.IUnitFormatter} which can provide localizable numeric readouts that fit the user's current
+/// locale.
+///
+/// Unit formatters can localize measurements to ensure the correct number formatting, spacing and element order is
+/// respected for the current user's language.
+///
+/// Usage Example:
+/// ```text
+/// Up to 7{unit-micrometer} of precision!
+/// Has an internal capacity of {blue:{var:capacity}{L}}
+/// Needs {color_amount:{l/s:var_amount}} of water per second to run
+/// Voltage: {fmt-eu-voltage:var_voltage}
+/// ```
 public class UnitCommand extends TemplatedTextCommand {
 
     protected final @NotNull NumberFormatUtil.IUnitFormatter formatter;
