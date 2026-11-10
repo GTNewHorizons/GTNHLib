@@ -352,13 +352,13 @@ public class TemplatedTextLoader implements AutoCloseable {
     // resolvers
 
     private @Nullable ITemplatedTextLineProcessor getLineProcessor(String name) {
-        ITemplatedTextLineProcessor ret = GLOBAL_LINE_PROCESSORS.getOrDefault(name, null);
-        return ret == null ? lineProcessor.getOrDefault(name, null) : ret;
+        ITemplatedTextLineProcessor ret = this.lineProcessor.getOrDefault(name, null);
+        return ret == null ? GLOBAL_LINE_PROCESSORS.getOrDefault(name, null) : ret;
     }
 
     private @Nullable ITemplatedTextCommand getCommand(String name) {
-        ITemplatedTextCommand ret = GLOBAL_COMMANDS.getOrDefault(name, null);
-        return ret == null ? commands.getOrDefault(name, null) : ret;
+        ITemplatedTextCommand ret = this.commands.getOrDefault(name, null);
+        return ret == null ? GLOBAL_COMMANDS.getOrDefault(name, null) : ret;
     }
 
     // region file parsing
