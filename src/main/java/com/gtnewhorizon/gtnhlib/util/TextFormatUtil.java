@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.util;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 import net.minecraft.util.EnumChatFormatting;
@@ -8,17 +9,15 @@ import net.minecraft.util.EnumChatFormatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 public class TextFormatUtil {
 
-    // non-customizable formats
-    public static final String ITALIC = EnumChatFormatting.ITALIC.toString();
-
     // push/pop constants
     public static final char FORMAT_ESCAPE_PREFIX = '§';
-    public static final String FORMAT_PUSH_STACK = FORMAT_ESCAPE_PREFIX + "s";
-    public static final String FORMAT_POP_STACK = FORMAT_ESCAPE_PREFIX + "t";
+    public static final @NotNull String FORMAT_PUSH_STACK = FORMAT_ESCAPE_PREFIX + "s";
+    public static final @NotNull String FORMAT_POP_STACK = FORMAT_ESCAPE_PREFIX + "t";
 
     /**
      * Pre-processes a localized chat message with custom format push/pop instructions. This allows nested localizations
@@ -27,7 +26,7 @@ public class TextFormatUtil {
      * </p>
      * Example: {@code §a§lHello §s§eWorld§t!} is transformed into {@code §a§lHello §eWorld§a§l!}
      */
-    public static String processFormatStacks(String message) {
+    public static @NotNull String processFormatStacks(@NotNull String message) {
         // Short circuit if there aren't any pops, because pops mutate while pushes don't.
         // Invalid codes are ignored by the font renderer so it won't cause problems if we ignore erroneous pushes.
         if (!message.contains(FORMAT_POP_STACK)) return message;
@@ -87,7 +86,7 @@ public class TextFormatUtil {
                 // Skip the format escape along with its code
                 start = end + 2;
             } else {
-                // if there is a lone § at the end abort and don't append the format char.
+                // if there is a lone § at the end abort and don't append the broken format code.
                 break;
             }
         }
@@ -136,7 +135,105 @@ public class TextFormatUtil {
         return FORMAT_PUSH_STACK + formatting + text + FORMAT_POP_STACK;
     }
 
-    // endregion themed unit formatters
+    // region line separator
+
+    /**
+     * Appends a line separator with the user's preferred line separator style to a string builder.
+     *
+     * @see #processFormatStacks(String)
+     *
+     * @return The line separator, assume it contains format stacks.
+     */
+    public static String getLineSeparator() {
+        return getLineSeparator(GTNHLibConfig.defaultLineSeparatorLength);
+    }
+
+    /**
+     * Appends a line separator with the user's preferred line separator style to a string builder.
+     *
+     * @see #processFormatStacks(String)
+     *
+     * @param length The length of the line separator.
+     * @return The line separator, assume it contains format stacks.
+     */
+    public static String getLineSeparator(int length) {
+        return GTNHLibConfig.separatorStyle.get(length);
+    }
+
+    /**
+     * Appends a line separator with the user's preferred line separator style to a string builder.
+     *
+     * @apiNote Assume the added text contains format stacks.
+     * @see #processFormatStacks(String)
+     *
+     * @param sb The string builder to append the separator to.
+     */
+    public static void appendLineSeparator(StringBuilder sb) {
+        appendLineSeparator(sb, GTNHLibConfig.defaultLineSeparatorLength);
+    }
+
+    /**
+     * Appends a line separator with the user's preferred line separator style to a string builder.
+     *
+     * @apiNote Assume the added text contains format stacks.
+     * @see #processFormatStacks(String)
+     *
+     * @param sb     The string builder to append the separator to.
+     * @param length The length of the line separator.
+     */
+    public static void appendLineSeparator(StringBuilder sb, int length) {
+        GTNHLibConfig.separatorStyle.append(sb, length);
+    }
+
+    public enum LineSeparatorStyle {
+
+        Empty {
+
+            @Override
+            public String get(int length) {
+                // not actually empty in case the line gets stripped if it is
+                return " ";
+            }
+
+        },
+        Dashes {
+
+            @Override
+            public String get(int length) {
+                if (length <= 0) return Empty.get(0);
+                final char[] chars = new char[length];
+                Arrays.fill(chars, '-');
+                return new String(chars);
+            }
+
+        },
+        ContinuousLine {
+
+            @Override
+            public String get(int length) {
+                // the java compiler turns this into a string builder so no need to make one.
+                return FORMAT_PUSH_STACK + EnumChatFormatting.STRIKETHROUGH + Dashes.get(length) + FORMAT_POP_STACK;
+            }
+
+            @Override
+            public void append(@NotNull StringBuilder sb, int length) {
+                sb.append(FORMAT_PUSH_STACK).append(EnumChatFormatting.STRIKETHROUGH).append(Dashes.get(length))
+                        .append(FORMAT_POP_STACK);
+            }
+
+        };
+
+        public abstract String get(int length);
+
+        public void append(@NotNull StringBuilder sb, int length) {
+            if (length <= 0) return;
+            sb.append(this.get(length));
+        }
+    }
+
+    // endregion line separator
+
+    // region themed unit formatters
 
     public static class UnitFormatterWithDualTheme extends NumberFormatUtil.UnitFormatter {
 
