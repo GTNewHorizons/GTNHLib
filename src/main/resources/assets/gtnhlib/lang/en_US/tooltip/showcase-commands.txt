@@ -2,6 +2,11 @@
 Lines starting with {color_name://} are completely ignored
 #example:// comment is hidden
 
+{white}Horizontal Rule Command
+#example:{hr}
+#example:{hr:21}
+#example:{red:{hr}}
+
 {white}Static Color Commands
 The simplest form of commands, simply appends the relevant color code
 #example:not colored {red:Colored} not colored
@@ -26,13 +31,18 @@ Only appends it's contents if the given variable exists
 #example:Requires at least 3 wrenches{ifdef:existing_var: and {var:existing_var} screw{plural:existing_var:s}}
 #example:Requires at least 3 wrenches{ifdef:missing_var: and {var:missing_var} screw{plural:missing_var:s}}
 
-{white}Plurality Commands
+{white}Simple Plurality Commands
 Only appends it's content if the value is plural or singular
 #example:{var:1} = There {plural:1:are}{singular:1:is} {var:1} bird{plural:1:s}
 #example:{var:-1} = There {plural:-1:are}{singular:-1:is} {var:-1} bird{plural:-1:s}
 #example:{var:2} = There {plural:2:are}{singular:2:is} {var:2} bird{plural:2:s}
 
-#include:gtnhlib:showcase-plurality-presets
+{white}Localized Plurality Commands
+Uses CLDR Plural Rules to accurately pluralize words based on a numeric variable
+#example:{var:1} screw{plural-custom:1:1:n = 1::s} | {var:2} screw{plural-custom:2:1:n = 1::s}
+Translators can use localized presets commands for their respective language:
+#example:{var:1} {plural-fr:1:litre:de litres:litres} | {var:1M} {plural-fr:1M:litre:de litres:litres} | {var:2} {plural-fr:2:litre:de litres:litres}
+#example:{var:1} корпус{plural-ru:1::а:ов:а} | {var:2} корпус{plural-ru:2::а:ов:а} | {var:5} корпус{plural-ru:5::а:ов:а}
 
 {white}Isolation Command
 Isolates all format changes to itself.
@@ -53,3 +63,5 @@ Length of a pattern can be configured
 #example:{color-pattern:1*dark_red,2*red,3*gold,2*yellow,green,2*aqua,3*light_purple,2*dark_purple:12233344566777881223334456677788§o1223334456677788}
 
 #include:gtnhlib:showcase-loc-units
+
+#include:gtnhlib:showcase-plurality-presets
