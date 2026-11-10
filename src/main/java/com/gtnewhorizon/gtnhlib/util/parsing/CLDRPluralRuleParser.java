@@ -80,7 +80,7 @@ public class CLDRPluralRuleParser {
     }
 
     public int getIndex(CLDRPluralRuleNumber container) {
-        if (container.v < 0) return this.getRuleCount() - 1;
+        if (container.v < 0) return this.getRuleCount();
         int i = 0;
         for (; i < predicates.size(); i++) {
             if (predicates.get(i).test(container)) return i;

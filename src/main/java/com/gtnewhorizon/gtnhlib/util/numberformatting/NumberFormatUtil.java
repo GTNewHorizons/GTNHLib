@@ -434,8 +434,6 @@ public final class NumberFormatUtil {
         BigDecimal val = bigDecimalConverter(value);
         BigDecimal abs = val.abs();
 
-        if (abs.signum() == 0) return "0";
-
         // Exponential for more than 1T by default
         if (isExponentialFormattingEnabled(abs, options)) {
             return formatExponential(val, options);
@@ -463,8 +461,6 @@ public final class NumberFormatUtil {
 
         BigDecimal val = bigDecimalConverter(value);
         BigDecimal abs = val.abs();
-
-        if (abs.signum() == 0) return "0";
 
         // Below threshold, do exact formatting
         if (abs.compareTo(options.getCompactThreshold()) < 0) {

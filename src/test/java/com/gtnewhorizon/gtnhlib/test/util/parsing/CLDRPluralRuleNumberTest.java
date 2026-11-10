@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.gtnewhorizon.gtnhlib.extensions.DisableFormattedNotation;
@@ -36,12 +35,20 @@ import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 @GlobalDisableExponentialNotation(false)
 @ForceFormatLocale("en-US")
 @ForceDisplayLocale("en-US")
-public class CLDRPluralRuleNumberTest {
+public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
 
     // region standard
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
+    void standard_zero(FormatOptions opts) {
+        testNumberContainer(0, opts.setDecimalPlaces(2, 2), "0.00e0", 0, 2, 0, 0, 0, 0);
+        testNumberContainer(0, opts.setDecimalPlaces(0, 2), "0e0", 0, 0, 0, 0, 0, 0);
+        testNumberContainer(0, opts.setDecimalPlaces(0, 0), "0e0", 0, 0, 0, 0, 0, 0);
+    }
+
+    @ParameterizedTest
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_general_positive(FormatOptions opts) {
         testNumberContainer(1, opts, "1e0", 1, 0, 0, 0, 0, 0);
         testNumberContainer(2, opts, "2e0", 2, 0, 0, 0, 0, 0);
@@ -54,7 +61,7 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_general_negative(FormatOptions opts) {
         testNumberContainer(-1, opts, "-1e0", 1, 0, 0, 0, 0, 0);
         testNumberContainer(-2, opts, "-2e0", 2, 0, 0, 0, 0, 0);
@@ -67,7 +74,7 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_digitCount_rounding_minEqualToMax(FormatOptions opts) {
         opts.setDecimalPlaces(1, 1);
         testNumberContainer(12.5, opts, "1.3e1", 13, 0, 0, 0, 0, 1);
@@ -82,7 +89,7 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_digitCount_rounding_minLessThanMax(FormatOptions opts) {
         opts.setDecimalPlaces(0, 1);
         testNumberContainer(12.5, opts, "1.3e1", 13, 0, 0, 0, 0, 1);
@@ -97,7 +104,7 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_digitCount_rounding_maxEqualTo0(FormatOptions opts) {
         opts.setDecimalPlaces(0, 0);
         testNumberContainer(1.5, opts, "2e0", 2, 0, 0, 0, 0, 0);
@@ -112,7 +119,7 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_digitCount_minLessThanMax(FormatOptions opts) {
         opts.setDecimalPlaces(0, 1);
         testNumberContainer(0.99, opts, "9.9e-1", 0, 2, 2, 99, 99, -1);
@@ -120,7 +127,7 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_digitCount_minEqualToMax(FormatOptions opts) {
         opts.setDecimalPlaces(1, 1);
         testNumberContainer(0.9, opts, "9.0e-1", 0, 2, 1, 90, 9, -1);
@@ -128,7 +135,7 @@ public class CLDRPluralRuleNumberTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getStandardNotationOptions")
+    @MethodSource("tryAllStandardNotationOptions")
     void standard_digitCount_minCausesOverflowIntoFraction(FormatOptions opts) {
         opts.setDecimalPlaces(5, 5);
         testNumberContainer(1200, opts, "1.20000e3", 1200, 2, 0, 0, 0, 3);
@@ -138,6 +145,14 @@ public class CLDRPluralRuleNumberTest {
     // endregion standard
 
     // region engineering
+
+    @Test
+    void engineering_zero() {
+        FormatOptions opts = getEngOpts();
+        testNumberContainer(0, opts.setDecimalPlaces(2, 2), "0.00e0", 0, 2, 0, 0, 0, 0);
+        testNumberContainer(0, opts.setDecimalPlaces(0, 2), "0e0", 0, 0, 0, 0, 0, 0);
+        testNumberContainer(0, opts.setDecimalPlaces(0, 0), "0e0", 0, 0, 0, 0, 0, 0);
+    }
 
     @Test
     void engineering_general_positive() {
@@ -234,6 +249,14 @@ public class CLDRPluralRuleNumberTest {
     // endregion engineering
 
     // region compact
+
+    @Test
+    void compact_zero() {
+        CompactOptions opts = getCompactOps();
+        testNumberContainer(0, opts.setDecimalPlaces(2, 2), "0.00K", 0, 0, 0, 0, 0, 3);
+        testNumberContainer(0, opts.setDecimalPlaces(0, 2), "0K", 0, 0, 0, 0, 0, 3);
+        testNumberContainer(0, opts.setDecimalPlaces(0, 0), "0K", 0, 0, 0, 0, 0, 3);
+    }
 
     @Test
     void compact_general_positive() {
@@ -442,16 +465,13 @@ public class CLDRPluralRuleNumberTest {
         testNumberContainer(1.03, opts, "1.03", 1, 2, 2, 3, 3, 0);
         testNumberContainer(1.230, opts, "1.23", 1, 2, 2, 23, 23, 0);
         testNumberContainer(120_000, opts, "120,000", 120_000, 0, 0, 0, 0, 0);
-        testNumberContainer(1_200_000, opts, "1.2e6", 1_200_000, 0, 0, 0, 0, 6);
-        testNumberContainer(1.2e6, opts, "1.2e6", 1200000, 0, 0, 0, 0, 6);
-        testNumberContainer(123e6, opts, "1.23e8", 123_000_000, 0, 0, 0, 0, 8);
-        testNumberContainer(123e5, opts, "1.23e7", 12_300_000, 0, 0, 0, 0, 7);
         testNumberContainer(1200.50, opts, "1,200.5", 1200, 1, 1, 5, 5, 0);
         testNumberContainer(1.20050e3, opts, "1,200.5", 1200, 1, 1, 5, 5, 0);
-        testNumberContainer(1234e6, opts, "1.23e9", 1_230_000_000, 0, 0, 0, 0, 9);
-        testNumberContainer(1236e6, opts, "1.24e9", 1_240_000_000, 0, 0, 0, 0, 9);
-        testNumberContainer(1_236_000_000.10, opts, "1.24e9", 1_240_000_000, 0, 0, 0, 0, 9);
-        testNumberContainer(1_100_000_000.10, opts, "1.1e9", 1_100_000_000, 0, 0, 0, 0, 9);
+
+        // check zero values
+        testNumberContainer(0, getBaseOpts().setDecimalPlaces(2, 2), "0.00", 0, 2, 0, 0, 0, 0);
+        testNumberContainer(0, getBaseOpts().setDecimalPlaces(0, 2), "0", 0, 0, 0, 0, 0, 0);
+        testNumberContainer(0, getBaseOpts().setDecimalPlaces(0, 0), "0", 0, 0, 0, 0, 0, 0);
 
         // min decimal places works
         opts = getBaseOpts().setDecimalPlaces(2, 2);
@@ -461,64 +481,27 @@ public class CLDRPluralRuleNumberTest {
         // min decimal places works
         opts = getBaseOpts().setDecimalPlaces(1, 2);
         testNumberContainer("1", opts, "1.0", 1, 1, 0, 0, 0, 0);
+    }
 
-        // min decimal places works
-        opts = getBaseOpts();
+    @ParameterizedTest
+    @MethodSource("tryAllExponentialOptions")
+    void exponential_threshold(FormatOptions opts) {
+        opts.setExponentialThreshold(BD_MILLION);
+        testNumberContainer(999_999.99, opts, "999,999.99", 999_999, 2, 2, 99, 99, 0);
+        // rounding allows it to cross the threshold without triggering format
+        testNumberContainer(999_999.995, opts, "1,000,000", 1e6, 0, 0, 0, 0, 0);
+        testNumberContainer(1_000_000, opts, "1e6", 1e6, 0, 0, 0, 0, 6);
+    }
+
+    @ParameterizedTest
+    @MethodSource("tryAllOptions")
+    void specialValuesAlwaysReturnOther(NumberOptionsBase<?> opts) {
         // spotless:off
         testNumberContainer((Number) Double.POSITIVE_INFINITY, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueInfinity(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
         testNumberContainer((Number) Double.NEGATIVE_INFINITY, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueNegInfinity(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
         testNumberContainer((Number) Double.NaN, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueNaN(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
-        testNumberContainer((Number) null, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueNull(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
+        testNumberContainer(null, opts, NumberFormatUtil.LOC_CACHE.getSpecialValueNull(), BigDecimal.ZERO, BigInteger.ZERO, -1, 0, BigInteger.ZERO, BigInteger.ZERO, 0);
         // spotless:on
-    }
-
-    private static FormatOptions getBaseOpts() {
-        // spotless:off
-        return new FormatOptions()
-            .setDecimalPlaces(0, 2)
-            .setExponentialThreshold(0)
-            .setRoundingMode(RoundingMode.HALF_UP)
-            .setExponentialThreshold(BD_MILLION).enableExponentialFormatting()
-            .setExponentialFormatOverride(ExponentialFormat.SCIENTIFIC);
-        // spotless:on
-    }
-
-    private static FormatOptions getSciOpts() {
-        // spotless:off
-        return getBaseOpts()
-            .setExponentialThreshold(0)
-            .setExponentialFormatOverride(ExponentialFormat.SCIENTIFIC);
-        // spotless:on
-    }
-
-    private static FormatOptions getEngOpts() {
-        // spotless:off
-        return getBaseOpts()
-            .setExponentialThreshold(0)
-            .setExponentialFormatOverride(ExponentialFormat.ENGINEERING);
-        // spotless:on
-    }
-
-    private static FormatOptions getPoTOpts() {
-        // spotless:off
-        return getBaseOpts()
-            .setExponentialThreshold(0)
-            .setExponentialFormatOverride(ExponentialFormat.POWER_OF_TEN);
-        // spotless:on
-    }
-
-    private static CompactOptions getCompactOps() {
-        // spotless:off
-        return getBaseOpts().toCompactOptions()
-            .disableExponentialFormatting()
-            .setCompactThreshold(0);
-        // spotless:on
-    }
-
-    public static Stream<Arguments> getStandardNotationOptions() {
-        return Stream.of(
-                Arguments.argumentSet("scientific", getSciOpts()),
-                Arguments.argumentSet("power_of_ten", getPoTOpts()));
     }
 
     private void testNumberContainer(String number, NumberOptionsBase<?> options, String expectedOutput, Number i,
