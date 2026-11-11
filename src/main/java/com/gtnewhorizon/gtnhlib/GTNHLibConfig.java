@@ -23,6 +23,10 @@ public class GTNHLibConfig {
     @Config.RequiresMcRestart
     public static int modelCacheSize;
 
+    @Config.Comment("Enables many log messages for the model system.")
+    @Config.DefaultBoolean(false)
+    public static boolean enableModelDebugLogs;
+
     @Config.Comment("Enables various mixins that allow blocks to dynamically change their sound.")
     @Config.DefaultBoolean(true)
     @Config.RequiresMcRestart
@@ -31,6 +35,11 @@ public class GTNHLibConfig {
     @Config.Comment("Enable item rendering modifications to allow rendering some items as translucent")
     @Config.DefaultBoolean(true)
     public static boolean enableTranslucentItemRenders;
+
+    @Config.Comment("Replace item names in chat components (death messages, /give feedback, NEI item linking) with GTNHLib custom components so they are localized on the client. Disable this if vanilla (non-GTNHLib) clients connect to your server, as they cannot deserialize GTNHLib custom chat components.")
+    @Config.DefaultBoolean(true)
+    @Config.RequiresMcRestart
+    public static boolean enableLocalizedItemChatComponents;
 
     @Config.Comment("Enable client-side resource pack update checking for active packs")
     @Config.DefaultBoolean(true)

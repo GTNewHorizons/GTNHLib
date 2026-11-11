@@ -1,6 +1,8 @@
 GTNHLib
 =======
 
+🌐 **Languages:** [English](README.md) | [Українська](README_uk.md)
+
 ## About
 
 Shared code library for GTNH mods.

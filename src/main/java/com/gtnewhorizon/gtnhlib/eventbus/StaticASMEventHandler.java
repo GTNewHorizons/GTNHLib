@@ -1,6 +1,13 @@
 package com.gtnewhorizon.gtnhlib.eventbus;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_SUPER;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static org.objectweb.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.V1_6;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -9,7 +16,6 @@ import org.objectweb.asm.Type;
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.IEventListener;
-import lombok.Getter;
 
 public class StaticASMEventHandler implements IEventListener {
 
@@ -22,7 +28,6 @@ public class StaticASMEventHandler implements IEventListener {
     private final IEventListener handler;
     private final String readable;
     private final boolean receiveCanceled;
-    @Getter
     private final EventPriority priority;
 
     StaticASMEventHandler(MethodInfo method) throws Exception {
@@ -86,6 +91,10 @@ public class StaticASMEventHandler implements IEventListener {
                 EventBusUtil.getSimpleClassName(declaring),
                 method.getName(),
                 EventBusUtil.getSimpleClassName(param));
+    }
+
+    public EventPriority getPriority() {
+        return this.priority;
     }
 
     private static class ASMClassLoader extends ClassLoader {
