@@ -11,6 +11,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -21,12 +22,15 @@ import com.gtnewhorizon.gtnhlib.extensions.DisableFormattedNotation;
 import com.gtnewhorizon.gtnhlib.extensions.ForceDisplayLocale;
 import com.gtnewhorizon.gtnhlib.extensions.ForceFormatLocale;
 import com.gtnewhorizon.gtnhlib.extensions.GlobalDisableExponentialNotation;
+import com.gtnewhorizon.gtnhlib.extensions.InjectLocalisation;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.ExponentialFormat;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 import com.gtnewhorizon.gtnhlib.util.parsing.CLDRPluralRuleNumber;
+
+import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 
 @DisableFormattedNotation(false)
 @GlobalDisableExponentialNotation(false)
@@ -264,34 +268,33 @@ public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
         testNumberContainer(990, opts, "0.99K", 990, 0, 0, 0, 0, 3);
 
         // in threshold
-        // Stream.of(
-        // IntObjectImmutablePair.of(3, NumberFormatUtil.LOC_CACHE.getAbbreviationThousand()),
-        // IntObjectImmutablePair.of(6, NumberFormatUtil.LOC_CACHE.getAbbreviationMillion()),
-        // IntObjectImmutablePair.of(9, NumberFormatUtil.LOC_CACHE.getAbbreviationBillion()),
-        // IntObjectImmutablePair.of(12, NumberFormatUtil.LOC_CACHE.getAbbreviationTrillion()),
-        // IntObjectImmutablePair.of(15, NumberFormatUtil.LOC_CACHE.getAbbreviationQuadrillion()))
-        // .forEach(pair -> {
-        // int exp = pair.leftInt();
-        // String abbvr = pair.right();
-        // // not very memory efficient but eh, this is just testing code
-        // Stream.of(
-        // new BigDecimal("1.12"),
-        // new BigDecimal("1.1"),
-        // new BigDecimal("1"),
-        // new BigDecimal("12.34"),
-        // new BigDecimal("12.3"),
-        // new BigDecimal("12"),
-        // new BigDecimal("10"),
-        // new BigDecimal("123.45"),
-        // new BigDecimal("123.4"),
-        // new BigDecimal("123"),
-        // new BigDecimal("120"),
-        // new BigDecimal("100"),
-        // new BigDecimal("999.99")).forEach(bd -> {
-        // BigInteger bi = bd.scaleByPowerOfTen(exp).toBigInteger();
-        // testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi, 0, 0, 0, 0, exp);
-        // });
-        // });
+        Stream.of(
+                IntObjectImmutablePair.of(3, "K"),
+                IntObjectImmutablePair.of(6, "M"),
+                IntObjectImmutablePair.of(9, "B"),
+                IntObjectImmutablePair.of(12, "T"),
+                IntObjectImmutablePair.of(15, "Q")).forEach(pair -> {
+                    int exp = pair.leftInt();
+                    String abbvr = pair.right();
+                    // not very memory efficient but eh, this is just testing code
+                    Stream.of(
+                            new BigDecimal("1.12"),
+                            new BigDecimal("1.1"),
+                            new BigDecimal("1"),
+                            new BigDecimal("12.34"),
+                            new BigDecimal("12.3"),
+                            new BigDecimal("12"),
+                            new BigDecimal("10"),
+                            new BigDecimal("123.45"),
+                            new BigDecimal("123.4"),
+                            new BigDecimal("123"),
+                            new BigDecimal("120"),
+                            new BigDecimal("100"),
+                            new BigDecimal("999.99")).forEach(bd -> {
+                                BigInteger bi = bd.scaleByPowerOfTen(exp).toBigInteger();
+                                testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi, 0, 0, 0, 0, exp);
+                            });
+                });
     }
 
     @Test
@@ -303,34 +306,51 @@ public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
         testNumberContainer(-990, opts, "-0.99K", 990, 0, 0, 0, 0, 3);
 
         // in threshold
-        // Stream.of(
-        // IntObjectImmutablePair.of(3, NumberFormatUtil.LOC_CACHE.getAbbreviationThousand()),
-        // IntObjectImmutablePair.of(6, NumberFormatUtil.LOC_CACHE.getAbbreviationMillion()),
-        // IntObjectImmutablePair.of(9, NumberFormatUtil.LOC_CACHE.getAbbreviationBillion()),
-        // IntObjectImmutablePair.of(12, NumberFormatUtil.LOC_CACHE.getAbbreviationTrillion()),
-        // IntObjectImmutablePair.of(15, NumberFormatUtil.LOC_CACHE.getAbbreviationQuadrillion()))
-        // .forEach(pair -> {
-        // int exp = pair.leftInt();
-        // String abbvr = pair.right();
-        // // not very memory efficient but eh, this is just testing code
-        // Stream.of(
-        // new BigDecimal("-1.12"),
-        // new BigDecimal("-1.1"),
-        // new BigDecimal("-1"),
-        // new BigDecimal("-12.34"),
-        // new BigDecimal("-12.3"),
-        // new BigDecimal("-12"),
-        // new BigDecimal("-10"),
-        // new BigDecimal("-123.45"),
-        // new BigDecimal("-123.4"),
-        // new BigDecimal("-123"),
-        // new BigDecimal("-120"),
-        // new BigDecimal("-100"),
-        // new BigDecimal("-999.99")).forEach(bd -> {
-        // BigInteger bi = bd.stripTrailingZeros().scaleByPowerOfTen(exp).toBigInteger();
-        // testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi.abs(), 0, 0, 0, 0, exp);
-        // });
-        // });
+        Stream.of(
+                IntObjectImmutablePair.of(3, "K"),
+                IntObjectImmutablePair.of(6, "M"),
+                IntObjectImmutablePair.of(9, "B"),
+                IntObjectImmutablePair.of(12, "T"),
+                IntObjectImmutablePair.of(15, "Q")).forEach(pair -> {
+                    int exp = pair.leftInt();
+                    String abbvr = pair.right();
+                    // not very memory efficient but eh, this is just testing code
+                    Stream.of(
+                            new BigDecimal("-1.12"),
+                            new BigDecimal("-1.1"),
+                            new BigDecimal("-1"),
+                            new BigDecimal("-12.34"),
+                            new BigDecimal("-12.3"),
+                            new BigDecimal("-12"),
+                            new BigDecimal("-10"),
+                            new BigDecimal("-123.45"),
+                            new BigDecimal("-123.4"),
+                            new BigDecimal("-123"),
+                            new BigDecimal("-120"),
+                            new BigDecimal("-100"),
+                            new BigDecimal("-999.99")).forEach(bd -> {
+                                BigInteger bi = bd.stripTrailingZeros().scaleByPowerOfTen(exp).toBigInteger();
+                                testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi.abs(), 0, 0, 0, 0, exp);
+                            });
+                });
+    }
+
+    @Test
+    @ForceFormatLocale("jp-JP")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.count", text = "3")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.1.exp", text = "4")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.1", text = "万")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.2.exp", text = "8")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.2", text = "億")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.3.exp", text = "12")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.3", text = "兆")
+    void testLocalizedCompacts() {
+        CompactOptions opts = getCompactOps();
+        testNumberContainer(1e4, opts, "1万", 1e4, 0, 0, 0, 0, 4);
+        testNumberContainer(1e8, opts, "1億", 1e8, 0, 0, 0, 0, 8);
+        testNumberContainer(1e12, opts, "1兆", 1e12, 0, 0, 0, 0, 12);
+        testNumberContainer(1.234e15, opts, "1,234兆", 1.234e15, 0, 0, 0, 0, 12);
+        testNumberContainer(9999_9999L, opts, "9,999.99万", 9999_9900, 0, 0, 0, 0, 4);
     }
 
     @Test
