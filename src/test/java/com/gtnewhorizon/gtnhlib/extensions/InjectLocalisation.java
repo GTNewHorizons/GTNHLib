@@ -10,13 +10,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.StringTranslate;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
+
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 /**
  * Tests using this annotation must include a String parameter, it will be filled with the a unique generated id for the
@@ -36,6 +36,7 @@ public @interface InjectLocalisation {
     @Retention(RetentionPolicy.RUNTIME)
     @ExtendWith(InjectLocalisation.Extension.class)
     @interface Repeatable {
+
         InjectLocalisation[] value();
     }
 

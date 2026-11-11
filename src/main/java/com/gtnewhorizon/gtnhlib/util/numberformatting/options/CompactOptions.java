@@ -1,7 +1,5 @@
 package com.gtnewhorizon.gtnhlib.util.numberformatting.options;
 
-import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_THOUSAND;
-
 import java.math.BigDecimal;
 
 import org.jetbrains.annotations.NotNull;

@@ -14,7 +14,6 @@ import java.math.RoundingMode;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gtnewhorizon.gtnhlib.extensions.InjectLocalisation;
 import org.junit.jupiter.api.Test;
 
 import com.gtnewhorizon.gtnhlib.extensions.DefaultExponentialFormat;
@@ -22,6 +21,7 @@ import com.gtnewhorizon.gtnhlib.extensions.DisableFormattedNotation;
 import com.gtnewhorizon.gtnhlib.extensions.ForceDisplayLocale;
 import com.gtnewhorizon.gtnhlib.extensions.ForceFormatLocale;
 import com.gtnewhorizon.gtnhlib.extensions.GlobalDisableExponentialNotation;
+import com.gtnewhorizon.gtnhlib.extensions.InjectLocalisation;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.ExponentialFormat;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
@@ -243,13 +243,13 @@ public class NumberFormatUtilTest {
 
     @Test
     @ForceFormatLocale("jp-JP")
-    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.count", text = "3")
-    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.1.exp", text = "4")
-    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.1", text = "万")
-    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.2.exp", text = "8")
-    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.2", text = "億")
-    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.3.exp", text = "12")
-    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.3", text = "兆")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.count", text = "3")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.1.exp", text = "4")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.1", text = "万")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.2.exp", text = "8")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.2", text = "億")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.3.exp", text = "12")
+    @InjectLocalisation(key = "gtnhlib.unified.abbreviation.3", text = "兆")
     void testLocalizedCompacts() {
         CompactOptions options = new CompactOptions();
         options.disableExponentialFormatting();
