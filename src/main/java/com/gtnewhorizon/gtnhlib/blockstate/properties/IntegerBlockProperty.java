@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
+import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.MetaBlockProperty;
 
 public interface IntegerBlockProperty extends BlockProperty<Integer> {
@@ -188,6 +189,17 @@ public interface IntegerBlockProperty extends BlockProperty<Integer> {
         @Override
         public String getValue(int meta) {
             return BlockProperty.getIndexSafe(values, ((MetaBlockProperty<Integer>) base).getValue(meta));
+        }
+
+        @Override
+        public String stringify(String value) {
+            return value;
+        }
+
+        @Override
+        public String parse(String text) throws InvalidPropertyTextException {
+            if (!values.contains(text)) throw new InvalidPropertyTextException("Unknown mapped value: " + text);
+            return text;
         }
     }
 
