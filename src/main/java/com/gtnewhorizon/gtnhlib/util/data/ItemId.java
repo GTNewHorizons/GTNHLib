@@ -303,7 +303,7 @@ public final class ItemId implements ImmutableItemStack {
             if (a == null || b == null) return false;
 
             if (getGenericItem(a) != getGenericItem(b)) return false;
-            if (getGenericMeta(a) == getGenericMeta(b)) return false;
+            if (getGenericMeta(a) != getGenericMeta(b)) return false;
             return Objects.equals(getGenericTag(a), getGenericTag(b));
         }
     };
