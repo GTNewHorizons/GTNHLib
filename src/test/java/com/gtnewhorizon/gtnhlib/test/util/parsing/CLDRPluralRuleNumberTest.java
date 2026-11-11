@@ -693,7 +693,7 @@ public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
                             line.name,
                             line.expected,
                             line.actual,
-                            line.pass ? "OK" : "FAIL"));;
+                            line.pass ? "OK" : "FAIL"));
         }
         // some shenanigans to get the thing to print out more clearly
         sb.append(System.lineSeparator()).append("\u00A0");
