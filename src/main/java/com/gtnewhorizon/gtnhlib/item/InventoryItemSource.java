@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.item;
 
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -9,8 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSource;
-
-import it.unimi.dsi.fastutil.ints.IntIterators;
 
 public class InventoryItemSource implements ItemSource {
 
@@ -25,11 +22,7 @@ public class InventoryItemSource implements ItemSource {
     }
 
     protected int[] getSlots() {
-        if (this.inv instanceof ISidedInventory sided) {
-            return sided.getAccessibleSlotsFromSide(this.side.ordinal());
-        } else {
-            return IntIterators.unwrap(IntIterators.fromTo(0, this.inv.getSizeInventory()));
-        }
+        return StandardInventoryIterator.getInventorySlotIndices(inv, side);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.gtnewhorizon.gtnhlib.item;
 
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -11,8 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.primitives.Ints;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
-
-import it.unimi.dsi.fastutil.ints.IntIterators;
 
 public class InventoryItemSink implements ItemSink {
 
@@ -43,11 +40,7 @@ public class InventoryItemSink implements ItemSink {
     }
 
     protected int[] getSlots() {
-        if (this.inv instanceof ISidedInventory sided) {
-            return sided.getAccessibleSlotsFromSide(this.side.ordinal());
-        } else {
-            return IntIterators.unwrap(IntIterators.fromTo(0, this.inv.getSizeInventory()));
-        }
+        return StandardInventoryIterator.getInventorySlotIndices(inv, side);
     }
 
     @Override
