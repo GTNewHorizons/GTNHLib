@@ -15,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierCommandWrapper;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentBlockName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
@@ -33,6 +34,7 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestAo;
@@ -40,6 +42,9 @@ import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.test.block.BlockWeightedRngTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockXUVRotationTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockXYUVRotationTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockYUVRotationTest;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
@@ -70,6 +75,7 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
 
         if (GTNHLibConfig.enableTestBlocks) {
+            BlockLightUnderStair.register();
             BlockTest.register();
             BlockTestAo.register();
             BlockTestLectern.register();
@@ -77,6 +83,9 @@ public class CommonProxy {
             BlockTestTintMul.register();
             BlockRngTest.register();
             BlockWeightedRngTest.register();
+            BlockYUVRotationTest.register();
+            BlockXUVRotationTest.register();
+            BlockXYUVRotationTest.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
@@ -90,6 +99,7 @@ public class CommonProxy {
         ChatComponentCustomRegistry.register(ChatComponentEnergy::new);
         ChatComponentCustomRegistry.register(ChatComponentFluidName::new);
         ChatComponentCustomRegistry.register(ChatComponentItemName::new);
+        ChatComponentCustomRegistry.register(ChatComponentBlockName::new);
 
         // Number formatting config registration. Primarily aimed at client side, but does exist on server side
         // as well, just in-case calls are made to number formatting.
