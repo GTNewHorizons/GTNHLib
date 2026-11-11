@@ -18,13 +18,10 @@ public class TextFormatUtil {
     public static final @NotNull String FORMAT_PUSH_STACK = FORMAT_ESCAPE_PREFIX + "s";
     public static final @NotNull String FORMAT_POP_STACK = FORMAT_ESCAPE_PREFIX + "t";
 
-    /**
-     * Pre-processes a localized chat message with custom format push/pop instructions. This allows nested localizations
-     * to set their own format without clobbering whatever came before, without needing any extra context info.
-     * <p>
-     * </p>
-     * Example: {@code §a§lHello §s§eWorld§t!} is transformed into {@code §a§lHello §eWorld§a§l!}
-     */
+    /// Pre-processes a localized chat message with custom format push/pop instructions. This allows nested localizations
+    /// to set their own format without clobbering whatever came before, without needing any extra context info.
+    ///
+    /// Example: `§a§lHello §s§eWorld§t!` is transformed into `§a§lHello §eWorld§a§l!``
     public static @NotNull String processFormatStacks(@NotNull String message) {
         // Short circuit if there aren't any pops, because pops mutate while pushes don't.
         // Invalid codes are ignored by the font renderer so it won't cause problems if we ignore erroneous pushes.

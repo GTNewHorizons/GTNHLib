@@ -357,32 +357,6 @@ gtnhlib.unified.unit.minute=m
 gtnhlib.unified.unit.hour=h
 gtnhlib.unified.unit.day=d
 
-# Long names for units that are sometimes fully spelt
-gtnhlib.unified.unit.amp.long.singular=amp
-gtnhlib.unified.unit.amp.long.plural=amps
-gtnhlib.unified.unit.amp.long_capitalized.singular=Amp
-gtnhlib.unified.unit.amp.long_capitalized.plural=Amps
-gtnhlib.unified.unit.tick.long.singular=tick
-gtnhlib.unified.unit.tick.long.plural=ticks
-gtnhlib.unified.unit.tick.long_capitalized.singular=Tick
-gtnhlib.unified.unit.tick.long_capitalized.plural=Ticks
-gtnhlib.unified.unit.second.long.singular=second
-gtnhlib.unified.unit.second.long.plural=seconds
-gtnhlib.unified.unit.second.long_capitalized.singular=Second
-gtnhlib.unified.unit.second.long_capitalized.plural=Seconds
-gtnhlib.unified.unit.minute.long.singular=minute
-gtnhlib.unified.unit.minute.long.plural=minutes
-gtnhlib.unified.unit.minute.long_capitalized.singular=Minute
-gtnhlib.unified.unit.minute.long_capitalized.plural=Minutes
-gtnhlib.unified.unit.hour.long.singular=hour
-gtnhlib.unified.unit.hour.long.plural=hours
-gtnhlib.unified.unit.hour.long_capitalized.singular=Hour
-gtnhlib.unified.unit.hour.long_capitalized.plural=Hours
-gtnhlib.unified.unit.day.long.singular=day
-gtnhlib.unified.unit.day.long.plural=days
-gtnhlib.unified.unit.day.long_capitalized.singular=Day
-gtnhlib.unified.unit.day.long_capitalized.plural=Days
-
 # Special Value Names
 gtnhlib.unified.value.infinity=Infinity
 gtnhlib.unified.value.neg_infinity=-Infinity
