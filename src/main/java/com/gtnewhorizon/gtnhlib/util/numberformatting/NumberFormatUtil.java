@@ -626,153 +626,167 @@ public final class NumberFormatUtil {
 
     /* ========================= Unit Formatters ========================= */
 
-    public static final @NotNull IUnitFormatter FORMAT_FLUID = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_FLUID = new UnitFormatter(
             LOC_CACHE::getSpacingFluid,
             NumberFormatUtil::getFluidUnit);
 
-    public static final @NotNull IUnitFormatter FORMAT_RF = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_RF = new UnitFormatter(
             LOC_CACHE::getSpacingEnergy,
             LOC_CACHE::getUnitRF);
 
-    public static final @NotNull IUnitFormatter FORMAT_MJ = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MJ = new UnitFormatter(
             LOC_CACHE::getSpacingEnergy,
             LOC_CACHE::getUnitMJ);
 
-    public static final @NotNull IUnitFormatter FORMAT_AE = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_AE = new UnitFormatter(
             LOC_CACHE::getSpacingEnergy,
             LOC_CACHE::getUnitAE);
 
-    public static final @NotNull IUnitFormatter FORMAT_EU = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_EU = new UnitFormatter(
             LOC_CACHE::getSpacingEnergy,
             LOC_CACHE::getUnitEU);
 
-    public static final @NotNull IUnitFormatter FORMAT_AMP = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_AMP = new UnitFormatter(
             LOC_CACHE::getSpacingAmperage,
             LOC_CACHE::getUnitAmp);
 
-    public static final @NotNull IUnitFormatter FORMAT_HEAT = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_HEAT = new UnitFormatter(
             LOC_CACHE::getSpacingHeat,
             LOC_CACHE::getUnitHeat);
 
-    public static final @NotNull IUnitFormatter FORMAT_ACIDITY = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_ACIDITY = new UnitFormatter(
             LOC_CACHE::getSpacingAcidity,
             LOC_CACHE::getUnitAcidity);
 
-    public static final @NotNull IUnitFormatter FORMAT_RADIATION = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_RADIATION = new UnitFormatter(
             LOC_CACHE::getSpacingRadiation,
             LOC_CACHE::getUnitRadiation);
 
-    public static final @NotNull IUnitFormatter FORMAT_TEMPERATURE = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_TEMPERATURE = new UnitFormatter(
             LOC_CACHE::getSpacingTemperature,
             LOC_CACHE::getUnitTemperature);
 
-    public static final @NotNull IUnitFormatter FORMAT_FORCE = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_FORCE = new UnitFormatter(
             LOC_CACHE::getSpacingForce,
             LOC_CACHE::getUnitForce);
 
     // electron volt units
 
-    public static final @NotNull IUnitFormatter FORMAT_ELECTRON_VOLT = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_ELECTRON_VOLT = new UnitFormatter(
             LOC_CACHE::getSpacingElectronVolt,
             LOC_CACHE::getUnitElectronVolt);
 
-    public static final @NotNull IUnitFormatter FORMAT_KEV = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_KEV = new UnitFormatter(
             LOC_CACHE::getSpacingElectronVolt,
             LOC_CACHE::getUnitKiloElectronVolt);
 
-    public static final @NotNull IUnitFormatter FORMAT_MEV = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MEV = new UnitFormatter(
             LOC_CACHE::getSpacingElectronVolt,
             LOC_CACHE::getUnitMegaElectronVolt);
 
-    public static final @NotNull IUnitFormatter FORMAT_GEV = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_GEV = new UnitFormatter(
             LOC_CACHE::getSpacingElectronVolt,
             LOC_CACHE::getUnitGigaElectronVolt);
 
-    public static final @NotNull IUnitFormatter FORMAT_TEV = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_TEV = new UnitFormatter(
             LOC_CACHE::getSpacingElectronVolt,
             LOC_CACHE::getUnitTeraElectronVolt);
 
     // mass units
 
-    public static final @NotNull IUnitFormatter FORMAT_NANOGRAM = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_NANOGRAM = new UnitFormatter(
             LOC_CACHE::getSpacingMass,
             LOC_CACHE::getUnitNanogram);
 
-    public static final @NotNull IUnitFormatter FORMAT_MICROGRAM = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MICROGRAM = new UnitFormatter(
             LOC_CACHE::getSpacingMass,
             LOC_CACHE::getUnitMicrogram);
 
-    public static final @NotNull IUnitFormatter FORMAT_MILLIGRAM = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MILLIGRAM = new UnitFormatter(
             LOC_CACHE::getSpacingMass,
             LOC_CACHE::getUnitMilligram);
 
-    public static final @NotNull IUnitFormatter FORMAT_GRAM = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_GRAM = new UnitFormatter(
             LOC_CACHE::getSpacingMass,
             LOC_CACHE::getUnitGram);
 
-    public static final @NotNull IUnitFormatter FORMAT_KILOGRAM = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_KILOGRAM = new UnitFormatter(
             LOC_CACHE::getSpacingMass,
             LOC_CACHE::getUnitKilogram);
 
     // distance units
 
-    public static final @NotNull IUnitFormatter FORMAT_NANOMETER = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_NANOMETER = new UnitFormatter(
             LOC_CACHE::getSpacingDistance,
             LOC_CACHE::getUnitNanometer);
 
-    public static final @NotNull IUnitFormatter FORMAT_MICROMETER = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MICROMETER = new UnitFormatter(
             LOC_CACHE::getSpacingDistance,
             LOC_CACHE::getUnitMicrometer);
 
-    public static final @NotNull IUnitFormatter FORMAT_MILLIMETER = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MILLIMETER = new UnitFormatter(
             LOC_CACHE::getSpacingDistance,
             LOC_CACHE::getUnitMillimeter);
 
-    public static final @NotNull IUnitFormatter FORMAT_CENTIMETER = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_CENTIMETER = new UnitFormatter(
             LOC_CACHE::getSpacingDistance,
             LOC_CACHE::getUnitCentimeter);
 
-    public static final @NotNull IUnitFormatter FORMAT_METER = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_METER = new UnitFormatter(
             LOC_CACHE::getSpacingDistance,
             LOC_CACHE::getUnitMeter);
 
-    public static final @NotNull IUnitFormatter FORMAT_KILOMETER = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_KILOMETER = new UnitFormatter(
             LOC_CACHE::getSpacingDistance,
             LOC_CACHE::getUnitKilometer);
 
     // time units
 
-    public static final @NotNull IUnitFormatter FORMAT_NANOSECOND = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_NANOSECOND = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitNanosecond);
 
-    public static final @NotNull IUnitFormatter FORMAT_MICROSECOND = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MICROSECOND = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitMicrosecond);
 
-    public static final @NotNull IUnitFormatter FORMAT_MILLISECOND = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MILLISECOND = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitMillisecond);
 
-    public static final @NotNull IUnitFormatter FORMAT_TICK = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_TICK = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitTick);
 
-    public static final @NotNull IUnitFormatter FORMAT_SECOND = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_SECOND = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitSecond);
 
-    public static final @NotNull IUnitFormatter FORMAT_MINUTE = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_MINUTE = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitMinute);
 
-    public static final @NotNull IUnitFormatter FORMAT_HOUR = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_HOUR = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitHour);
 
-    public static final @NotNull IUnitFormatter FORMAT_DAY = new UnitFormatter(
+    public static final @NotNull UnitFormatter FORMAT_DAY = new UnitFormatter(
             LOC_CACHE::getSpacingTime,
             LOC_CACHE::getUnitDay);
+
+    // frequent throughput units
+
+    public static final @NotNull ThroughputUnitFormatter FORMAT_EU_PER_TICK = new ThroughputUnitFormatter(
+            LOC_CACHE::getSpacingEnergyThroughput,
+            LOC_CACHE::getUnitFormatEnergyThroughput,
+            NumberFormatUtil::getEnergyUnit,
+            LOC_CACHE::getUnitTick);
+
+    public static final @NotNull ThroughputUnitFormatter FORMAT_FLUID_PER_SECOND = new ThroughputUnitFormatter(
+            LOC_CACHE::getSpacingEnergyThroughput,
+            LOC_CACHE::getUnitFormatEnergyThroughput,
+            NumberFormatUtil::getEnergyUnit,
+            LOC_CACHE::getUnitSecond);
 
     /* ========================= Internals ========================= */
 
@@ -799,8 +813,8 @@ public final class NumberFormatUtil {
 
     public static class UnitFormatter implements IUnitFormatter {
 
-        private final @NotNull Supplier<@NotNull String> formatSupplier;
-        private final @NotNull Supplier<@NotNull String> unitSupplier;
+        public final @NotNull Supplier<@NotNull String> formatSupplier;
+        public final @NotNull Supplier<@NotNull String> unitSupplier;
 
         public UnitFormatter(@NotNull Supplier<@NotNull String> formatSupplier,
                 @NotNull Supplier<@NotNull String> unitSupplier) {
@@ -827,10 +841,10 @@ public final class NumberFormatUtil {
 
     public static class ThroughputUnitFormatter implements IUnitFormatter, AutoCloseable {
 
-        private final @NotNull Supplier<@NotNull String> formatSupplier;
-        private final @NotNull Supplier<@NotNull String> unitFormatSupplier;
-        private final @NotNull Supplier<@NotNull String> unit1Supplier;
-        private final @NotNull Supplier<@NotNull String> unit2Supplier;
+        public final @NotNull Supplier<@NotNull String> formatSupplier;
+        public final @NotNull Supplier<@NotNull String> unitFormatSupplier;
+        public final @NotNull Supplier<@NotNull String> unit1Supplier;
+        public final @NotNull Supplier<@NotNull String> unit2Supplier;
         private @NotNull String cachedUnitText;
 
         public ThroughputUnitFormatter(@NotNull Supplier<@NotNull String> formatSupplier,

@@ -18,7 +18,8 @@ public class TextFormatUtil {
     public static final @NotNull String FORMAT_PUSH_STACK = FORMAT_ESCAPE_PREFIX + "s";
     public static final @NotNull String FORMAT_POP_STACK = FORMAT_ESCAPE_PREFIX + "t";
 
-    /// Pre-processes a localized chat message with custom format push/pop instructions. This allows nested localizations
+    /// Pre-processes a localized chat message with custom format push/pop instructions. This allows nested
+    /// localizations
     /// to set their own format without clobbering whatever came before, without needing any extra context info.
     ///
     /// Example: `§a§lHello §s§eWorld§t!` is transformed into `§a§lHello §eWorld§a§l!``
@@ -242,6 +243,11 @@ public class TextFormatUtil {
             this.numberThemeSupplier = numberThemeSupplier;
         }
 
+        public UnitFormatterWithDualTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull Supplier<@NotNull String> unitThemeSupplier, @NotNull NumberFormatUtil.UnitFormatter from) {
+            this(numberThemeSupplier, from.formatSupplier, unitThemeSupplier, from.unitSupplier);
+        }
+
         @Override
         public @NotNull String format(@Nullable String value) {
             return TextFormatUtil.FORMAT_PUSH_STACK + super.format(this.numberThemeSupplier.get() + value)
@@ -257,6 +263,11 @@ public class TextFormatUtil {
                 @NotNull Supplier<@NotNull String> formatSupplier, @NotNull Supplier<@NotNull String> unitSupplier) {
             super(formatSupplier, unitSupplier);
             this.themeSupplier = themeSupplier;
+        }
+
+        public UnitFormatterWithTheme(@NotNull Supplier<@NotNull String> themeSupplier,
+                @NotNull NumberFormatUtil.UnitFormatter from) {
+            this(themeSupplier, from.formatSupplier, from.unitSupplier);
         }
 
         @Override
@@ -277,6 +288,11 @@ public class TextFormatUtil {
             this.numberThemeSupplier = numberThemeSupplier;
         }
 
+        public UnitFormatterWithNumberTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull NumberFormatUtil.UnitFormatter from) {
+            this(numberThemeSupplier, from.formatSupplier, from.unitSupplier);
+        }
+
         @Override
         public @NotNull String format(@Nullable String value) {
             return super.format(
@@ -295,6 +311,11 @@ public class TextFormatUtil {
                     () -> TextFormatUtil.FORMAT_PUSH_STACK + unitThemeSupplier.get()
                             + unitSupplier.get()
                             + TextFormatUtil.FORMAT_POP_STACK);
+        }
+
+        public UnitFormatterWithUnitTheme(@NotNull Supplier<@NotNull String> unitThemeSupplier,
+                @NotNull NumberFormatUtil.UnitFormatter from) {
+            this(from.formatSupplier, unitThemeSupplier, from.unitSupplier);
         }
     }
 
@@ -318,6 +339,18 @@ public class TextFormatUtil {
             this.numberThemeSupplier = numberThemeSupplier;
         }
 
+        public ThroughputUnitFormatterWithDualTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull Supplier<@NotNull String> unitThemeSupplier,
+                @NotNull NumberFormatUtil.ThroughputUnitFormatter from) {
+            this(
+                    numberThemeSupplier,
+                    from.formatSupplier,
+                    unitThemeSupplier,
+                    () -> unitThemeSupplier.get() + from.unitFormatSupplier.get(),
+                    from.unit1Supplier,
+                    from.unit2Supplier);
+        }
+
         @Override
         public @NotNull String format(@Nullable String value) {
             return TextFormatUtil.FORMAT_PUSH_STACK + super.format(this.numberThemeSupplier.get() + value)
@@ -335,6 +368,16 @@ public class TextFormatUtil {
                 @NotNull Supplier<@NotNull String> unit2Supplier) {
             super(formatSupplier, unitFormatSupplier, unit1Supplier, unit2Supplier);
             this.numberThemeSupplier = numberThemeSupplier;
+        }
+
+        public ThroughputUnitFormatterWithTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull NumberFormatUtil.ThroughputUnitFormatter from) {
+            this(
+                    numberThemeSupplier,
+                    from.formatSupplier,
+                    from.unitFormatSupplier,
+                    from.unit1Supplier,
+                    from.unit2Supplier);
         }
 
         @Override
@@ -355,6 +398,16 @@ public class TextFormatUtil {
                 @NotNull Supplier<@NotNull String> unit2Supplier) {
             super(formatSupplier, unitFormatSupplier, unit1Supplier, unit2Supplier);
             this.numberThemeSupplier = numberThemeSupplier;
+        }
+
+        public ThroughputUnitFormatterWithNumberTheme(@NotNull Supplier<@NotNull String> numberThemeSupplier,
+                @NotNull NumberFormatUtil.ThroughputUnitFormatter from) {
+            this(
+                    numberThemeSupplier,
+                    from.formatSupplier,
+                    from.unitFormatSupplier,
+                    from.unit1Supplier,
+                    from.unit2Supplier);
         }
 
         @Override
@@ -379,6 +432,16 @@ public class TextFormatUtil {
                             + TextFormatUtil.FORMAT_POP_STACK,
                     unit1Supplier,
                     unit2Supplier);
+        }
+
+        public ThroughputUnitFormatterWithUnitTheme(@NotNull Supplier<@NotNull String> unitThemeSupplier,
+                @NotNull NumberFormatUtil.ThroughputUnitFormatter from) {
+            this(
+                    from.formatSupplier,
+                    unitThemeSupplier,
+                    from.unitFormatSupplier,
+                    from.unit1Supplier,
+                    from.unit2Supplier);
         }
     }
 

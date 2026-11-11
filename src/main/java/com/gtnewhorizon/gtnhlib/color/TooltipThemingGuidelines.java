@@ -8,6 +8,8 @@ import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
+import com.gtnewhorizon.gtnhlib.util.TextFormatUtil;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -184,6 +186,52 @@ public class TooltipThemingGuidelines extends TextThemingGuidelineContainer {
     @Getter
     @Setter(AccessLevel.PRIVATE)
     private @NotNull String cableLoss = EnumChatFormatting.RED.toString();
+
+    /** The standard themed formatter for EU voltage/throughput measurements */
+    public final NumberFormatUtil.ThroughputUnitFormatter FORMAT_EU_VOLTAGE = new TextFormatUtil.ThroughputUnitFormatterWithDualTheme(
+            this::getVoltage,
+            this::getUnit,
+            NumberFormatUtil.FORMAT_EU_PER_TICK);
+
+    /** The standard themed formatter for EU capacity measurements */
+    public final NumberFormatUtil.UnitFormatter FORMAT_EU_CAPACITY = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getAmperage,
+            NumberFormatUtil.FORMAT_EU);
+
+    /** The standard themed formatter for amp measurements */
+    public final NumberFormatUtil.UnitFormatter FORMAT_AMP = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getAmperage,
+            NumberFormatUtil.FORMAT_AMP);
+
+    /** The standard themed formatter for heat measurements */
+    public final NumberFormatUtil.UnitFormatter FORMAT_HEAT = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getHeat,
+            NumberFormatUtil.FORMAT_HEAT);
+
+    /** The standard themed formatter for electron volt measurement. */
+    public final NumberFormatUtil.UnitFormatter FORMAT_ELECTRON_VOLT = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getElectronVolt,
+            NumberFormatUtil.FORMAT_ELECTRON_VOLT);
+
+    /** The standard themed formatter for kilo-electron volt measurement. */
+    public final NumberFormatUtil.UnitFormatter FORMAT_KILO_ELECTRON_VOLT = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getElectronVolt,
+            NumberFormatUtil.FORMAT_KEV);
+
+    /** The standard themed formatter for mega-electron volt measurement. */
+    public final NumberFormatUtil.UnitFormatter FORMAT_MEGA_ELECTRON_VOLT = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getElectronVolt,
+            NumberFormatUtil.FORMAT_MEV);
+
+    /** The standard themed formatter for giga-electron volt measurement. */
+    public final NumberFormatUtil.UnitFormatter FORMAT_GIGA_ELECTRON_VOLT = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getElectronVolt,
+            NumberFormatUtil.FORMAT_GEV);
+
+    /** The standard themed formatter for tera-electron volt measurement. */
+    public final NumberFormatUtil.UnitFormatter FORMAT_TERA_ELECTRON_VOLT = new TextFormatUtil.UnitFormatterWithTheme(
+            this::getElectronVolt,
+            NumberFormatUtil.FORMAT_TEV);
 
     public TooltipThemingGuidelines(@NotNull ResourceLocation @NotNull... resources) {
         super(

@@ -62,6 +62,13 @@ Used to create repeating color patterns
 Length of a pattern can be configured
 #example:{color-pattern:1*dark_red,2*red,3*gold,2*yellow,green,2*aqua,3*light_purple,2*dark_purple:12233344566777881223334456677788§o1223334456677788}
 
+{white}Themed Measurement Commands
+A few common measurement types have standardized coloring in gt, so these commands apply it correctly.
+#example:Voltage: {fmt-EUt:1_000_000}
+#example:Amperage: {fmt-amp:1}
+#example:Heat: {fmt-heat:900}
+#example:electron volt measurements: {fmt-MeV:100}
+
 #include:gtnhlib:showcase-loc-units
 
 #include:gtnhlib:showcase-plurality-presets
