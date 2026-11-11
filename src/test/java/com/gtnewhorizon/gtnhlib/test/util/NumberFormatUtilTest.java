@@ -14,6 +14,7 @@ import java.math.RoundingMode;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.gtnewhorizon.gtnhlib.extensions.InjectLocalisation;
 import org.junit.jupiter.api.Test;
 
 import com.gtnewhorizon.gtnhlib.extensions.DefaultExponentialFormat;
@@ -238,6 +239,28 @@ public class NumberFormatUtilTest {
                 NumberFormatUtil.formatNumberCompact(BD_TRILLION.multiply(BD_TRILLION), options));
 
         assertEquals("999.99K", NumberFormatUtil.formatNumberCompact(999_999L, options));
+    }
+
+    @Test
+    @ForceFormatLocale("jp-JP")
+    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.count", text = "3")
+    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.1.exp", text = "4")
+    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.1", text = "万")
+    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.2.exp", text = "8")
+    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.2", text = "億")
+    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.3.exp", text = "12")
+    @InjectLocalisation( key = "gtnhlib.unified.abbreviation.3", text = "兆")
+    void testLocalizedCompacts() {
+        CompactOptions options = new CompactOptions();
+        options.disableExponentialFormatting();
+
+        assertEquals("10,000", NumberFormatUtil.formatNumberCompact(new BigDecimal("9999.999"), options));
+        assertEquals("1万", NumberFormatUtil.formatNumberCompact(1e4, options));
+        assertEquals("1億", NumberFormatUtil.formatNumberCompact(1e8, options));
+        assertEquals("1兆", NumberFormatUtil.formatNumberCompact(1e12, options));
+        assertEquals("1,000兆", NumberFormatUtil.formatNumberCompact(1e15, options));
+
+        assertEquals("9,999.99万", NumberFormatUtil.formatNumberCompact(9999_9999L, options));
     }
 
     @Test

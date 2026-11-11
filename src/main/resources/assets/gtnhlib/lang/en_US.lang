@@ -304,12 +304,19 @@ gtnhlib.chat.command.more_usages=... and %s more
 # Unified numeric abbreviation
 # 1 = number, 2 = abbreviation
 gtnhlib.unified.abbreviation.format=%1$s%2$s
-gtnhlib.unified.abbreviation.thousand=K
-gtnhlib.unified.abbreviation.million=M
-gtnhlib.unified.abbreviation.billion=B
-gtnhlib.unified.abbreviation.trillion=T
-gtnhlib.unified.abbreviation.quadrillion=Q
-gtnhlib.unified.abbreviation.quintillion=P
+gtnhlib.unified.abbreviation.count=6
+gtnhlib.unified.abbreviation.1.exp=3
+gtnhlib.unified.abbreviation.1=K
+gtnhlib.unified.abbreviation.2.exp=6
+gtnhlib.unified.abbreviation.2=M
+gtnhlib.unified.abbreviation.3.exp=9
+gtnhlib.unified.abbreviation.3=B
+gtnhlib.unified.abbreviation.4.exp=12
+gtnhlib.unified.abbreviation.4=T
+gtnhlib.unified.abbreviation.5.exp=15
+gtnhlib.unified.abbreviation.5=Q
+gtnhlib.unified.abbreviation.6.exp=18
+gtnhlib.unified.abbreviation.6=P
 
 # Exponential number formatting
 # 1 = mantissa, 2 = exponent

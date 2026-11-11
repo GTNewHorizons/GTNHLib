@@ -11,19 +11,23 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 @SuppressWarnings("unchecked")
 public final class CompactOptions extends NumberOptionsBase<CompactOptions> {
 
-    private @NotNull BigDecimal compactThreshold = BD_THOUSAND;
+    private @NotNull BigDecimal compactThreshold;
 
     /**
      * Creates a new format option with the value of another format option.
-     * 
+     *
      * @param other The instance to copy from.
      */
     public CompactOptions(CompactOptions other) {
         super(other);
+        // always default to the first threshold
         this.compactThreshold = other.compactThreshold;
     }
 
-    public CompactOptions() {}
+    public CompactOptions() {
+        var thresholds = NumberFormatUtil.LOC_CACHE.getCompactDividerThresholds();
+        this.compactThreshold = thresholds.get(thresholds.size() - 1).number;
+    }
 
     @Override
     public String format(Number number) {

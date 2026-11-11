@@ -10,9 +10,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.StringTranslate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -34,7 +36,6 @@ public @interface InjectLocalisation {
     @Retention(RetentionPolicy.RUNTIME)
     @ExtendWith(InjectLocalisation.Extension.class)
     @interface Repeatable {
-
         InjectLocalisation[] value();
     }
 
@@ -44,6 +45,12 @@ public @interface InjectLocalisation {
 
         protected Extension() {
             super(InjectLocalisation.class, Repeatable.class);
+        }
+
+        @Override
+        public void beforeEach(ExtensionContext context) throws Exception {
+            super.beforeEach(context);
+            NumberFormatUtil.LOC_CACHE.onResourceManagerReload();
         }
 
         @Override
@@ -73,6 +80,8 @@ public @interface InjectLocalisation {
                 byte[] bytes = toRestore.getBytes(StandardCharsets.UTF_8);
                 StringTranslate.inject(new ByteArrayInputStream(bytes));
             }
+            NumberFormatUtil.LOC_CACHE.resetToDefaults();
+            NumberFormatUtil.LOC_CACHE.onResourceManagerReload();
         }
     }
 }

@@ -18,6 +18,8 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.function.Supplier;
 
@@ -33,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import com.google.common.collect.ImmutableList;
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
@@ -67,30 +70,6 @@ public final class NumberFormatUtil {
         @LangKey("gtnhlib.unified.abbreviation.format")
         @Getter
         private @NotNull String abbreviationFormat = "%s%s";
-
-        @LangKey("gtnhlib.unified.abbreviation.thousand")
-        @Getter
-        private @NotNull String abbreviationThousand = "K";
-
-        @LangKey("gtnhlib.unified.abbreviation.million")
-        @Getter
-        private @NotNull String abbreviationMillion = "M";
-
-        @LangKey("gtnhlib.unified.abbreviation.billion")
-        @Getter
-        private @NotNull String abbreviationBillion = "B";
-
-        @LangKey("gtnhlib.unified.abbreviation.trillion")
-        @Getter
-        private @NotNull String abbreviationTrillion = "T";
-
-        @LangKey("gtnhlib.unified.abbreviation.quadrillion")
-        @Getter
-        private @NotNull String abbreviationQuadrillion = "Q";
-
-        @LangKey("gtnhlib.unified.abbreviation.quintillion")
-        @Getter
-        private @NotNull String abbreviationQuintillion = "P";
 
         // exponential formatting
 
@@ -356,8 +335,46 @@ public final class NumberFormatUtil {
 
         private final @NotNull Object2ObjectOpenHashMap<@NotNull String, @NotNull String> defaults = new Object2ObjectOpenHashMap<>();
 
-        @SideOnly(Side.CLIENT)
-        private synchronized void onResourceManagerReload(IResourceManager resourceManager) {
+        private static final ImmutableList<CompactDividerThreshold> DEFAULT_COMPACT_DIVIDERS = ImmutableList
+                .<CompactDividerThreshold>builder().add(new CompactDividerThreshold(BD_QUADRILLION, "Q"))
+                .add(new CompactDividerThreshold(BD_TRILLION, "T")).add(new CompactDividerThreshold(BD_BILLION, "B"))
+                .add(new CompactDividerThreshold(BD_MILLION, "M")).add(new CompactDividerThreshold(BD_THOUSAND, "K"))
+                .build();
+
+        @Getter
+        private @NotNull ImmutableList<CompactDividerThreshold> compactDividerThresholds = DEFAULT_COMPACT_DIVIDERS;
+
+        private LocalisationCache() {
+            this.ensureDefaultsLoaded();
+        }
+
+        private void ensureDefaultsLoaded() {
+            // init defaults if needed
+            // update the field values
+            for (final Field field : this.getClass().getDeclaredFields()) {
+                // we only care about string fields with the lang key annotation
+                if (field.getType() != String.class) continue;
+                LangKey annotation = field.getAnnotation(LangKey.class);
+                if (annotation == null) continue;
+                if (!this.defaults.containsKey(annotation.value())) return;
+                defaults.computeIfAbsent(annotation.value(), ($_) -> {
+                    try {
+                        return (String) FieldUtils.readField(field, this, true);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+
+        @ApiStatus.Internal
+        @VisibleForTesting
+        public synchronized void onResourceManagerReload() {
+            this.updateKeys();
+            this.updateCompactDividerList();
+        }
+
+        private void updateKeys() {
             boolean initDefaults = defaults.isEmpty();
             try {
                 // update the field values
@@ -394,6 +411,60 @@ public final class NumberFormatUtil {
                 throw new RuntimeException(e);
             }
         }
+
+        private void updateCompactDividerList() {
+            boolean success = false;
+            LinkedList<CompactDividerThreshold> builder = new LinkedList<>();
+            try {
+                int abbreviationCount = Integer
+                        .parseInt(StatCollector.translateToLocal("gtnhlib.unified.abbreviation.count"));
+                // ensure we have at least 1 abbreviation threshold.
+                if (abbreviationCount <= 0) {
+                    throw new IllegalStateException("abbreviation count must be at least 1!");
+                }
+
+                // not using programmer counting because translators aren't always programmers
+                for (int i = 1; i <= abbreviationCount; i++) {
+                    String base = "gtnhlib.unified.abbreviation." + i;
+                    int exponent = Integer.parseInt(StatCollector.translateToLocal(base + ".exp"));
+                    String text = StatCollector.translateToLocal(base);
+                    builder.add(new CompactDividerThreshold(new BigDecimal(1).scaleByPowerOfTen(exponent), text));
+                }
+
+                builder.sort(Comparator.comparing((CompactDividerThreshold a) -> a.number).reversed());
+
+                success = true;
+            } catch (RuntimeException e) {
+                GTNHLib.error("failed to load localized compact dividers: " + e);
+            }
+            ImmutableList<CompactDividerThreshold> thresholds = ImmutableList.copyOf(builder);
+            if (!success || thresholds.size() <= 0) {
+                this.compactDividerThresholds = DEFAULT_COMPACT_DIVIDERS;
+            } else {
+                this.compactDividerThresholds = thresholds;
+            }
+        }
+
+        @ApiStatus.Internal
+        @VisibleForTesting
+        public void resetToDefaults() {
+            this.compactDividerThresholds = DEFAULT_COMPACT_DIVIDERS;
+            try {
+                // update the field values
+                for (final Field field : this.getClass().getDeclaredFields()) {
+                    // we only care about string fields with the lang key annotation
+                    if (field.getType() != String.class) continue;
+                    LangKey annotation = field.getAnnotation(LangKey.class);
+                    if (annotation == null) continue;
+                    if (!this.defaults.containsKey(annotation.value())) return;
+                    String def = this.defaults.get(annotation.value());
+                    // update the field value
+                    FieldUtils.writeField(field, this, def, true);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @SideOnly(Side.CLIENT)
@@ -403,7 +474,7 @@ public final class NumberFormatUtil {
 
         @Override
         public void onResourceManagerReload(IResourceManager resourceManager) {
-            LOC_CACHE.onResourceManagerReload(resourceManager);
+            LOC_CACHE.onResourceManagerReload();
             // run the callbacks that pre-cache formatting to an even higher degree.
             recacheUnitFormatters();
         }
@@ -484,46 +555,37 @@ public final class NumberFormatUtil {
 
     /* ========================= Abbreviation ========================= */
 
-    private static final class CompactDividerThreshold {
+    public static final class CompactDividerThreshold {
 
-        public final BigDecimal number;
-        public final Supplier<String> supplier;
+        public final @NotNull BigDecimal number;
+        public final @NotNull String abbreviation;
 
-        private CompactDividerThreshold(BigDecimal number, Supplier<String> supplier) {
-            this.number = number;
-            this.supplier = supplier;
+        private CompactDividerThreshold(@NotNull BigDecimal number, @NotNull String abbreviation) {
+            this.number = number.stripTrailingZeros();
+            this.abbreviation = abbreviation;
         }
     }
 
     public static class AbbreviatedNumberInfo {
 
-        public final BigDecimal rounded;
+        public final @NotNull BigDecimal rounded;
         public final int exp;
-        public final String abbvr;
+        public final @NotNull String abbvr;
 
-        public AbbreviatedNumberInfo(BigDecimal rounded, int exp, String abbvr) {
+        public AbbreviatedNumberInfo(@NotNull BigDecimal rounded, int exp, @NotNull String abbvr) {
             this.rounded = rounded;
             this.exp = exp;
             this.abbvr = abbvr;
         }
     }
 
-    private static final ImmutableList<CompactDividerThreshold> COMPACT_DIVIDERS = ImmutableList
-            .<CompactDividerThreshold>builder()
-            .add(new CompactDividerThreshold(BD_QUADRILLION, LOC_CACHE::getAbbreviationQuadrillion))
-            .add(new CompactDividerThreshold(BD_TRILLION, LOC_CACHE::getAbbreviationTrillion))
-            .add(new CompactDividerThreshold(BD_BILLION, LOC_CACHE::getAbbreviationBillion))
-            .add(new CompactDividerThreshold(BD_MILLION, LOC_CACHE::getAbbreviationMillion))
-            .add(new CompactDividerThreshold(BD_THOUSAND, LOC_CACHE::getAbbreviationThousand)).build();
-
     /**
      * @return null if the compact divider list was somehow empty (probably due to a loc loading issue)
      */
     public static @Nullable AbbreviatedNumberInfo getAbbreviatedNumberInformation(BigDecimal number,
             NumberOptionsBase<?> options) {
-        // localing to prevent race conditions, because O plan on making this a localizable list down the line for
-        // languages like japanese that use compact number thresholds.
-        final ImmutableList<CompactDividerThreshold> compactDividers = COMPACT_DIVIDERS;
+        // localing to prevent race conditions
+        final ImmutableList<CompactDividerThreshold> compactDividers = LOC_CACHE.getCompactDividerThresholds();
         if (compactDividers.isEmpty()) return null;
 
         // find the divider that matches this
@@ -535,26 +597,29 @@ public final class NumberFormatUtil {
         CompactDividerThreshold threshold = compactDividers.get(dividerIdx);
 
         // Prevent unit rollover caused only by rounding:
-        // If abs(value) is still below the next threshold, do not allow rounded to reach 1000.
+        // If abs(value) is still below the next threshold, do not allow rounded to reach the next threshold.
         BigDecimal scaled = number.divide(threshold.number, MathContext.UNLIMITED);
         int dp = options.getMaxDecimalPlaces();
         RoundingMode rm = options.getRoundingMode();
 
         BigDecimal rounded = scaled.setScale(dp, rm);
 
-        BigDecimal nextThreshold = threshold.number.multiply(BD_THOUSAND);
-        if (abs.compareTo(nextThreshold) < 0 && rounded.abs().compareTo(BD_THOUSAND) >= 0) {
-            BigDecimal step = BigDecimal.ONE.scaleByPowerOfTen(-dp); // 10^-dp (works for dp <= 0 too)
-            BigDecimal maxAbs = BD_THOUSAND.subtract(step).setScale(dp, RoundingMode.UNNECESSARY);
-            rounded = (rounded.signum() < 0) ? maxAbs.negate() : maxAbs;
+        // don't attempt to prevent unit inflation if we're already on the last threshold
+        if (dividerIdx > 0) {
+            BigDecimal thresholdDifference = compactDividers.get(dividerIdx - 1).number
+                    .divide(threshold.number, MathContext.UNLIMITED);
+            BigDecimal nextThreshold = threshold.number.multiply(thresholdDifference);
+            if (abs.compareTo(nextThreshold) < 0 && rounded.abs().compareTo(thresholdDifference) >= 0) {
+                BigDecimal step = BigDecimal.ONE.scaleByPowerOfTen(-dp); // 10^-dp (works for dp <= 0 too)
+                BigDecimal maxAbs = thresholdDifference.subtract(step).setScale(dp, RoundingMode.UNNECESSARY);
+                rounded = (rounded.signum() < 0) ? maxAbs.negate() : maxAbs;
+            }
         }
 
-        rounded = rounded.stripTrailingZeros();
-
         return new AbbreviatedNumberInfo(
-                rounded,
+                rounded.stripTrailingZeros(),
                 threshold.number.precision() - 1 - threshold.number.scale(),
-                threshold.supplier.get());
+                threshold.abbreviation);
     }
 
     private static @Nullable String abbreviate(BigDecimal value, NumberOptionsBase<?> options) {

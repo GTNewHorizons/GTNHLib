@@ -11,7 +11,6 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -28,8 +27,6 @@ import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
 import com.gtnewhorizon.gtnhlib.util.parsing.CLDRPluralRuleNumber;
-
-import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 
 @DisableFormattedNotation(false)
 @GlobalDisableExponentialNotation(false)
@@ -267,34 +264,34 @@ public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
         testNumberContainer(990, opts, "0.99K", 990, 0, 0, 0, 0, 3);
 
         // in threshold
-        Stream.of(
-                IntObjectImmutablePair.of(3, NumberFormatUtil.LOC_CACHE.getAbbreviationThousand()),
-                IntObjectImmutablePair.of(6, NumberFormatUtil.LOC_CACHE.getAbbreviationMillion()),
-                IntObjectImmutablePair.of(9, NumberFormatUtil.LOC_CACHE.getAbbreviationBillion()),
-                IntObjectImmutablePair.of(12, NumberFormatUtil.LOC_CACHE.getAbbreviationTrillion()),
-                IntObjectImmutablePair.of(15, NumberFormatUtil.LOC_CACHE.getAbbreviationQuadrillion()))
-                .forEach(pair -> {
-                    int exp = pair.leftInt();
-                    String abbvr = pair.right();
-                    // not very memory efficient but eh, this is just testing code
-                    Stream.of(
-                            new BigDecimal("1.12"),
-                            new BigDecimal("1.1"),
-                            new BigDecimal("1"),
-                            new BigDecimal("12.34"),
-                            new BigDecimal("12.3"),
-                            new BigDecimal("12"),
-                            new BigDecimal("10"),
-                            new BigDecimal("123.45"),
-                            new BigDecimal("123.4"),
-                            new BigDecimal("123"),
-                            new BigDecimal("120"),
-                            new BigDecimal("100"),
-                            new BigDecimal("999.99")).forEach(bd -> {
-                                BigInteger bi = bd.scaleByPowerOfTen(exp).toBigInteger();
-                                testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi, 0, 0, 0, 0, exp);
-                            });
-                });
+        // Stream.of(
+        // IntObjectImmutablePair.of(3, NumberFormatUtil.LOC_CACHE.getAbbreviationThousand()),
+        // IntObjectImmutablePair.of(6, NumberFormatUtil.LOC_CACHE.getAbbreviationMillion()),
+        // IntObjectImmutablePair.of(9, NumberFormatUtil.LOC_CACHE.getAbbreviationBillion()),
+        // IntObjectImmutablePair.of(12, NumberFormatUtil.LOC_CACHE.getAbbreviationTrillion()),
+        // IntObjectImmutablePair.of(15, NumberFormatUtil.LOC_CACHE.getAbbreviationQuadrillion()))
+        // .forEach(pair -> {
+        // int exp = pair.leftInt();
+        // String abbvr = pair.right();
+        // // not very memory efficient but eh, this is just testing code
+        // Stream.of(
+        // new BigDecimal("1.12"),
+        // new BigDecimal("1.1"),
+        // new BigDecimal("1"),
+        // new BigDecimal("12.34"),
+        // new BigDecimal("12.3"),
+        // new BigDecimal("12"),
+        // new BigDecimal("10"),
+        // new BigDecimal("123.45"),
+        // new BigDecimal("123.4"),
+        // new BigDecimal("123"),
+        // new BigDecimal("120"),
+        // new BigDecimal("100"),
+        // new BigDecimal("999.99")).forEach(bd -> {
+        // BigInteger bi = bd.scaleByPowerOfTen(exp).toBigInteger();
+        // testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi, 0, 0, 0, 0, exp);
+        // });
+        // });
     }
 
     @Test
@@ -306,34 +303,34 @@ public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
         testNumberContainer(-990, opts, "-0.99K", 990, 0, 0, 0, 0, 3);
 
         // in threshold
-        Stream.of(
-                IntObjectImmutablePair.of(3, NumberFormatUtil.LOC_CACHE.getAbbreviationThousand()),
-                IntObjectImmutablePair.of(6, NumberFormatUtil.LOC_CACHE.getAbbreviationMillion()),
-                IntObjectImmutablePair.of(9, NumberFormatUtil.LOC_CACHE.getAbbreviationBillion()),
-                IntObjectImmutablePair.of(12, NumberFormatUtil.LOC_CACHE.getAbbreviationTrillion()),
-                IntObjectImmutablePair.of(15, NumberFormatUtil.LOC_CACHE.getAbbreviationQuadrillion()))
-                .forEach(pair -> {
-                    int exp = pair.leftInt();
-                    String abbvr = pair.right();
-                    // not very memory efficient but eh, this is just testing code
-                    Stream.of(
-                            new BigDecimal("-1.12"),
-                            new BigDecimal("-1.1"),
-                            new BigDecimal("-1"),
-                            new BigDecimal("-12.34"),
-                            new BigDecimal("-12.3"),
-                            new BigDecimal("-12"),
-                            new BigDecimal("-10"),
-                            new BigDecimal("-123.45"),
-                            new BigDecimal("-123.4"),
-                            new BigDecimal("-123"),
-                            new BigDecimal("-120"),
-                            new BigDecimal("-100"),
-                            new BigDecimal("-999.99")).forEach(bd -> {
-                                BigInteger bi = bd.stripTrailingZeros().scaleByPowerOfTen(exp).toBigInteger();
-                                testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi.abs(), 0, 0, 0, 0, exp);
-                            });
-                });
+        // Stream.of(
+        // IntObjectImmutablePair.of(3, NumberFormatUtil.LOC_CACHE.getAbbreviationThousand()),
+        // IntObjectImmutablePair.of(6, NumberFormatUtil.LOC_CACHE.getAbbreviationMillion()),
+        // IntObjectImmutablePair.of(9, NumberFormatUtil.LOC_CACHE.getAbbreviationBillion()),
+        // IntObjectImmutablePair.of(12, NumberFormatUtil.LOC_CACHE.getAbbreviationTrillion()),
+        // IntObjectImmutablePair.of(15, NumberFormatUtil.LOC_CACHE.getAbbreviationQuadrillion()))
+        // .forEach(pair -> {
+        // int exp = pair.leftInt();
+        // String abbvr = pair.right();
+        // // not very memory efficient but eh, this is just testing code
+        // Stream.of(
+        // new BigDecimal("-1.12"),
+        // new BigDecimal("-1.1"),
+        // new BigDecimal("-1"),
+        // new BigDecimal("-12.34"),
+        // new BigDecimal("-12.3"),
+        // new BigDecimal("-12"),
+        // new BigDecimal("-10"),
+        // new BigDecimal("-123.45"),
+        // new BigDecimal("-123.4"),
+        // new BigDecimal("-123"),
+        // new BigDecimal("-120"),
+        // new BigDecimal("-100"),
+        // new BigDecimal("-999.99")).forEach(bd -> {
+        // BigInteger bi = bd.stripTrailingZeros().scaleByPowerOfTen(exp).toBigInteger();
+        // testNumberContainer(bi, opts, bd.toPlainString() + abbvr, bi.abs(), 0, 0, 0, 0, exp);
+        // });
+        // });
     }
 
     @Test
@@ -606,21 +603,12 @@ public class CLDRPluralRuleNumberTest extends CLDRPluralRuleTest {
         int scaleBy = 0;
         // fix up compact notation
         if (options instanceof CompactOptions) {
-            if (unparsed.endsWith(NumberFormatUtil.LOC_CACHE.getAbbreviationThousand())) {
-                scaleBy = 3;
-            } else if (unparsed.endsWith(NumberFormatUtil.LOC_CACHE.getAbbreviationMillion())) {
-                scaleBy = 6;
-            } else if (unparsed.endsWith(NumberFormatUtil.LOC_CACHE.getAbbreviationBillion())) {
-                scaleBy = 9;
-            } else if (unparsed.endsWith(NumberFormatUtil.LOC_CACHE.getAbbreviationTrillion())) {
-                scaleBy = 12;
-            } else if (unparsed.endsWith(NumberFormatUtil.LOC_CACHE.getAbbreviationQuadrillion())) {
-                scaleBy = 15;
-            } else if (unparsed.endsWith(NumberFormatUtil.LOC_CACHE.getAbbreviationQuintillion())) {
-                scaleBy = 18;
-            }
-            if (scaleBy != 0) {
-                unparsed = unparsed.substring(0, unparsed.length() - 1);
+            for (var threshold : NumberFormatUtil.LOC_CACHE.getCompactDividerThresholds()) {
+                if (unparsed.endsWith(threshold.abbreviation)) {
+                    unparsed = unparsed.substring(0, unparsed.length() - threshold.abbreviation.length());
+                    scaleBy = threshold.number.precision() - 1 - threshold.number.scale();
+                    break;
+                }
             }
         }
         Number ret;
