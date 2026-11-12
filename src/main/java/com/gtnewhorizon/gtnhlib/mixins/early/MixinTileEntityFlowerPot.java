@@ -29,7 +29,7 @@ public class MixinTileEntityFlowerPot {
         }
     }
 
-    @Inject(method = "readFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("TAIL"), remap = false)
+    @Inject(method = "readFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("TAIL"))
     private void gtnhlib$updateOnRead(NBTTagCompound compound, CallbackInfo ci) {
         TileEntityFlowerPot te = ((TileEntityFlowerPot) (Object) this);
         World world = te.getWorldObj();
