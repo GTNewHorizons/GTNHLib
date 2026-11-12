@@ -14,7 +14,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.gtnewhorizon.gtnhlib.CommonProxy;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import com.gtnewhorizon.gtnhlib.util.CommandUtils;
+import com.mojang.brigadier.tree.CommandNode;
 
 @Mixin(CommandHandler.class)
 public class MixinCommandHandler {
@@ -23,6 +26,31 @@ public class MixinCommandHandler {
     private boolean gtnhlib$isServerCommandManager() {
         // this is used to make sure that we only inject into the server command handler
         return (Object) this instanceof ServerCommandManager;
+    }
+
+    /**
+     * Thermos and its forks strip the leading slash before calling this, and vanilla strips one more below. A command
+     * whose name starts with a slash, such as {@code //wand}, arrives here as {@code /wand} and would be looked up as
+     * {@code wand}, so it is run before vanilla touches it.
+     */
+    @Inject(method = "executeCommand", at = @At("HEAD"), cancellable = true)
+    private void gtnhlib$keepSlashOnThermos(ICommandSender sender, String command,
+            CallbackInfoReturnable<Integer> cir) {
+        if (!gtnhlib$isServerCommandManager() || !CommonProxy.isThermosServer()) return;
+
+        String trimmed = command.trim();
+        if (!trimmed.startsWith("/")) return;
+
+        int space = trimmed.indexOf(' ');
+        String name = space == -1 ? trimmed : trimmed.substring(0, space);
+        CommandNode<ICommandSender> node = BrigadierApi.getCommandDispatcher().getRoot().getChild(name);
+        if (node == null) return;
+
+        if (!node.canUse(sender)) {
+            cir.setReturnValue(CommandUtils.error(sender, "commands.generic.permission"));
+            return;
+        }
+        cir.setReturnValue(BrigadierApi.executeCommand(sender, trimmed));
     }
 
     @Inject(
