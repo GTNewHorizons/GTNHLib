@@ -147,6 +147,13 @@ public class ItemTransfer {
 
             int availableCount = available.getStackSize();
 
+            // Pre-check: cap how much we extract to what the sink can currently accept for this item,
+            // so we never pull out more than it can take. This avoids the extract-then-return path that
+            // drops/voids items when the source slot is refilled in the meantime. Sinks without a
+            // simulated iterator fall back to the original behaviour (uncapped).
+            availableCount = Math.min(availableCount, sinkCapacityFor(sink, available, availableCount));
+            if (availableCount <= 0) continue; // no room for this item, don't extract anything
+
             // Loop through this slot until we've transferred everything out of it that we can
             while (availableCount > 0) {
                 if (itemsTransferred >= maxTotalTransferred) break outer;
@@ -226,5 +233,45 @@ public class ItemTransfer {
         prevStacksTransferred = stacksTransferred;
 
         return itemsTransferred;
+    }
+
+    /**
+     * Computes how many items of {@code stack} the given sink can currently accept, up to {@code amount}.
+     * <p>
+     * Uses the sink's simulated (read-only) iterator, so the backing inventory is not modified. Existing matching
+     * stacks are filled first, then empty slots, mirroring {@link ItemSink#store}. If the sink does not support a
+     * simulated iterator, {@code amount} is returned unchanged (no capping).
+     */
+    private int sinkCapacityFor(ItemSink sink, ImmutableItemStack stack, int amount) {
+        InventoryIterator sinkIter = sink.simulatedSinkIterator();
+        if (sinkIter == null) return amount;
+
+        InsertionItemStack insertion = new InsertionItemStack(stack);
+        int remaining = amount;
+
+        // Pass 1: fill existing matching stacks first
+        while (sinkIter.hasNext() && remaining > 0) {
+            ImmutableItemStack slot = sinkIter.next();
+            if (slot == null || slot.isEmpty()) continue;
+            if (!slot.matches(stack)) continue;
+            insertion.set(remaining);
+            remaining = sinkIter.insert(insertion, false);
+        }
+
+        // Pass 2: then fill empty slots. Rewind the iterator if it supports it; otherwise use a fresh
+        // one, since some simulated iterators are forward-only (rewind() returns false).
+        if (remaining > 0) {
+            InventoryIterator emptyIter = sinkIter.rewind() ? sinkIter : sink.simulatedSinkIterator();
+            if (emptyIter != null) {
+                while (emptyIter.hasNext() && remaining > 0) {
+                    ImmutableItemStack slot = emptyIter.next();
+                    if (slot != null && !slot.isEmpty()) continue;
+                    insertion.set(remaining);
+                    remaining = emptyIter.insert(insertion, false);
+                }
+            }
+        }
+
+        return amount - remaining;
     }
 }
