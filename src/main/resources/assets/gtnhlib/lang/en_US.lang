@@ -300,3 +300,20 @@ commands.title.icon.single=Changed title icon for %s
 # Brigadier command errors
 gtnhlib.chat.command.incomplete=Incomplete command
 gtnhlib.chat.command.more_usages=... and %s more
+
+# Structure command
+gtnhlib.chat.structure.saved=Saved structure %s to %s
+gtnhlib.chat.structure.loaded=Placed structure %s
+gtnhlib.chat.structure.error.name=Invalid structure name "%s" (use a-z, 0-9, _ and -, with / between folders)
+gtnhlib.chat.structure.error.rotation=Invalid rotation "%s" (none, rotate_90, rotate_180 or rotate_270)
+gtnhlib.chat.structure.error.mirror=Invalid mirror "%s" (none, east_west, north_south or both)
+gtnhlib.chat.structure.error.missing=No structure file at %s
+gtnhlib.chat.structure.error.read=Could not read %s: %s
+gtnhlib.chat.structure.error.write=Could not write %s: %s
+gtnhlib.chat.structure.error.coordinate=Invalid coordinate "%s" (a number, ~ or ~n)
+gtnhlib.chat.structure.error.size=Structures can be at most %s blocks on each side
+gtnhlib.chat.structure.error.exception=Structure failed: %s (see the log)
+gtnhlib.chat.structure.error.marker=Look at a structure marker to set its data
+gtnhlib.chat.structure.marker.data=Structure marker data: %s
+tile.gtnhlib.structure_marker.name=Structure Marker
+tile.gtnhlib.structure_void.name=Structure Void
