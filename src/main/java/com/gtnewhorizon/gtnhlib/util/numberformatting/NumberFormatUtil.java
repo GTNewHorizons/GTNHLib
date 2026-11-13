@@ -6,20 +6,45 @@ import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_QUADRI
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_THOUSAND;
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.Constants.BD_TRILLION;
 import static com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig.*;
+import static java.lang.annotation.ElementType.FIELD;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Locale;
+import java.util.function.Supplier;
 
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
+
+import com.google.common.collect.ImmutableList;
+import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.CompactOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.FormatOptions;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.options.NumberOptionsBase;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import io.netty.util.internal.ConcurrentSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import lombok.Getter;
 
 @SuppressWarnings("unused")
 public final class NumberFormatUtil {
@@ -27,6 +52,448 @@ public final class NumberFormatUtil {
     /* ========================= Formatters ========================= */
 
     private NumberFormatUtil() {}
+
+    /* ========================= Localisation ========================= */
+
+    public static class LocalisationCache {
+
+        @Target({ FIELD })
+        @Retention(RetentionPolicy.RUNTIME)
+        private @interface LangKey {
+
+            @NotNull
+            String value();
+        }
+
+        // numeric abbreviation
+
+        @LangKey("gtnhlib.unified.abbreviation.format")
+        @Getter
+        private @NotNull String abbreviationFormat = "%s%s";
+
+        // exponential formatting
+
+        @LangKey("gtnhlib.unified.exponential_format.scientific")
+        @Getter
+        private @NotNull String exponentialFormatScientific = "%se%s";
+
+        @LangKey("gtnhlib.unified.exponential_format.engineering")
+        @Getter
+        private @NotNull String exponentialFormatEngineering = "%se%s";
+
+        @LangKey("gtnhlib.unified.exponential_format.power_of_ten")
+        @Getter
+        private @NotNull String exponentialFormatPowerOfTen = "%s*10^%s";
+
+        // units
+
+        @LangKey("gtnhlib.unified.unit.fluid.mb")
+        @Getter
+        private @NotNull String unitMillibucket = "mB";
+
+        @LangKey("gtnhlib.unified.unit.fluid.liter")
+        @Getter
+        private @NotNull String unitLiter = "L";
+
+        @LangKey("gtnhlib.unified.unit.RF")
+        @Getter
+        private @NotNull String unitRF = "RF";
+
+        @LangKey("gtnhlib.unified.unit.MJ")
+        @Getter
+        private @NotNull String unitMJ = "MJ";
+
+        @LangKey("gtnhlib.unified.unit.AE")
+        @Getter
+        private @NotNull String unitAE = "AE";
+
+        @LangKey("gtnhlib.unified.unit.EU")
+        @Getter()
+        private @NotNull String unitEU = "EU";
+
+        @LangKey("gtnhlib.unified.unit.amp")
+        @Getter
+        private @NotNull String unitAmp = "A";
+
+        @LangKey("gtnhlib.unified.unit.heat")
+        @Getter
+        private @NotNull String unitHeat = "K";
+
+        @LangKey("gtnhlib.unified.unit.acidity")
+        @Getter
+        private @NotNull String unitAcidity = "pH";
+
+        @LangKey("gtnhlib.unified.unit.radiation")
+        @Getter
+        private @NotNull String unitRadiation = "Sv";
+
+        @LangKey("gtnhlib.unified.unit.temperature")
+        @Getter
+        private @NotNull String unitTemperature = "°C";
+
+        @LangKey("gtnhlib.unified.unit.force")
+        @Getter
+        private @NotNull String UnitForce = "N";
+
+        @LangKey("gtnhlib.unified.unit.electron_volt")
+        @Getter
+        private @NotNull String unitElectronVolt = "eV";
+
+        @LangKey("gtnhlib.unified.unit.kilo_electron_volt")
+        @Getter
+        private @NotNull String unitKiloElectronVolt = "KeV";
+
+        @LangKey("gtnhlib.unified.unit.mega_electron_volt")
+        @Getter
+        private @NotNull String unitMegaElectronVolt = "MeV";
+
+        @LangKey("gtnhlib.unified.unit.giga_electron_volt")
+        @Getter
+        private @NotNull String unitGigaElectronVolt = "GeV";
+
+        @LangKey("gtnhlib.unified.unit.tera_electron_volt")
+        @Getter
+        private @NotNull String unitTeraElectronVolt = "TeV";
+
+        @LangKey("gtnhlib.unified.unit.nanogram")
+        @Getter
+        private @NotNull String unitNanogram = "ng";
+
+        @LangKey("gtnhlib.unified.unit.microgram")
+        @Getter
+        private @NotNull String unitMicrogram = "μg";
+
+        @LangKey("gtnhlib.unified.unit.milligram")
+        @Getter
+        private @NotNull String unitMilligram = "mg";
+
+        @LangKey("gtnhlib.unified.unit.gram")
+        @Getter
+        private @NotNull String unitGram = "g";
+
+        @LangKey("gtnhlib.unified.unit.kilogram")
+        @Getter
+        private @NotNull String unitKilogram = "kg";
+
+        @LangKey("gtnhlib.unified.unit.nanometer")
+        @Getter
+        private @NotNull String unitNanometer = "nm";
+
+        @LangKey("gtnhlib.unified.unit.micrometer")
+        @Getter
+        private @NotNull String unitMicrometer = "μm";
+
+        @LangKey("gtnhlib.unified.unit.millimeter")
+        @Getter
+        private @NotNull String unitMillimeter = "mm";
+
+        @LangKey("gtnhlib.unified.unit.centimeter")
+        @Getter
+        private @NotNull String unitCentimeter = "cm";
+
+        @LangKey("gtnhlib.unified.unit.meter")
+        @Getter
+        private @NotNull String unitMeter = "m";
+
+        @LangKey("gtnhlib.unified.unit.kilometer")
+        @Getter
+        private @NotNull String unitKilometer = "km";
+
+        @LangKey("gtnhlib.unified.unit.nanosecond")
+        @Getter
+        private @NotNull String unitNanosecond = "ns";
+
+        @LangKey("gtnhlib.unified.unit.microsecond")
+        @Getter
+        private @NotNull String unitMicrosecond = "μs";
+
+        @LangKey("gtnhlib.unified.unit.millisecond")
+        @Getter
+        private @NotNull String unitMillisecond = "ms";
+
+        @LangKey("gtnhlib.unified.unit.tick")
+        @Getter
+        private @NotNull String unitTick = "t";
+
+        @LangKey("gtnhlib.unified.unit.second")
+        @Getter
+        private @NotNull String unitSecond = "s";
+
+        @LangKey("gtnhlib.unified.unit.minute")
+        @Getter
+        private @NotNull String unitMinute = "m";
+
+        @LangKey("gtnhlib.unified.unit.hour")
+        @Getter
+        private @NotNull String unitHour = "h";
+
+        @LangKey("gtnhlib.unified.unit.day")
+        @Getter
+        private @NotNull String unitDay = "d";
+
+        // special values
+
+        @LangKey("gtnhlib.unified.value.infinity")
+        @Getter
+        private @NotNull String specialValueInfinity = "Infinity";
+
+        @LangKey("gtnhlib.unified.value.neg_infinity")
+        @Getter
+        private @NotNull String specialValueNegInfinity = "-Infinity";
+
+        @LangKey("gtnhlib.unified.value.nan")
+        @Getter
+        private @NotNull String specialValueNaN = "NaN";
+
+        @LangKey("gtnhlib.unified.value.null")
+        @Getter
+        private @NotNull String specialValueNull = "NULL";
+
+        // unit formatting
+
+        @LangKey("gtnhlib.unified.measurement.spacing.fluid")
+        @Getter
+        private @NotNull String spacingFluid = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.energy")
+        @Getter
+        private @NotNull String spacingEnergy = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.amperage")
+        @Getter
+        private @NotNull String spacingAmperage = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.heat")
+        @Getter
+        private @NotNull String spacingHeat = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.electron_volt")
+        @Getter
+        private @NotNull String spacingElectronVolt = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.acidity")
+        @Getter
+        private @NotNull String spacingAcidity = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.radiation")
+        @Getter
+        private @NotNull String spacingRadiation = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.temperature")
+        @Getter
+        private @NotNull String spacingTemperature = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.force")
+        @Getter
+        private @NotNull String spacingForce = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.mass")
+        @Getter
+        private @NotNull String spacingMass = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.distance")
+        @Getter
+        private @NotNull String spacingDistance = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.time")
+        @Getter
+        private @NotNull String spacingTime = "%s %s";
+
+        // thoughput unit formatting
+
+        @LangKey("gtnhlib.unified.measurement.spacing.fluid_throughput")
+        @Getter
+        private @NotNull String spacingFluidThroughput = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.unit_format.fluid_throughput")
+        @Getter
+        private @NotNull String unitFormatFluidThroughput = "%s/%s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.energy_throughput")
+        @Getter
+        private @NotNull String spacingEnergyThroughput = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.unit_format.energy_throughput")
+        @Getter
+        private @NotNull String unitFormatEnergyThroughput = "%s/%s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.mass_throughput")
+        @Getter
+        private @NotNull String spacingMassThroughput = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.unit_format.mass_throughput")
+        @Getter
+        private @NotNull String unitFormatMassThroughput = "%s/%s";
+
+        @LangKey("gtnhlib.unified.measurement.spacing.speed")
+        @Getter
+        private @NotNull String spacingSpeed = "%s %s";
+
+        @LangKey("gtnhlib.unified.measurement.unit_format.speed")
+        @Getter
+        private @NotNull String unitFormatSpeed = "%s/%s";
+
+        private final @NotNull Object2ObjectOpenHashMap<@NotNull String, @NotNull String> defaults = new Object2ObjectOpenHashMap<>();
+
+        private static final ImmutableList<CompactDividerThreshold> DEFAULT_COMPACT_DIVIDERS = ImmutableList
+                .<CompactDividerThreshold>builder().add(new CompactDividerThreshold(BD_QUADRILLION, "Q"))
+                .add(new CompactDividerThreshold(BD_TRILLION, "T")).add(new CompactDividerThreshold(BD_BILLION, "B"))
+                .add(new CompactDividerThreshold(BD_MILLION, "M")).add(new CompactDividerThreshold(BD_THOUSAND, "K"))
+                .build();
+
+        @Getter
+        private @NotNull ImmutableList<CompactDividerThreshold> compactDividerThresholds = DEFAULT_COMPACT_DIVIDERS;
+
+        private LocalisationCache() {
+            this.ensureDefaultsLoaded();
+        }
+
+        private void ensureDefaultsLoaded() {
+            // init defaults if needed
+            // update the field values
+            for (final Field field : this.getClass().getDeclaredFields()) {
+                // we only care about string fields with the lang key annotation
+                if (field.getType() != String.class) continue;
+                LangKey annotation = field.getAnnotation(LangKey.class);
+                if (annotation == null) continue;
+                if (!this.defaults.containsKey(annotation.value())) return;
+                defaults.computeIfAbsent(annotation.value(), ($_) -> {
+                    try {
+                        return (String) FieldUtils.readField(field, this, true);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+
+        @ApiStatus.Internal
+        @VisibleForTesting
+        public synchronized void onResourceManagerReload() {
+            this.updateKeys();
+            this.updateCompactDividerList();
+        }
+
+        private void updateKeys() {
+            boolean initDefaults = defaults.isEmpty();
+            try {
+                // update the field values
+                for (final Field field : this.getClass().getDeclaredFields()) {
+                    // we only care about string fields with the lang key annotation
+                    if (field.getType() != String.class) continue;
+                    LangKey annotation = field.getAnnotation(LangKey.class);
+                    if (annotation == null) continue;
+                    String langKey = annotation.value();
+
+                    // init defaults if needed
+                    if (initDefaults) {
+                        defaults.computeIfAbsent(annotation.value(), ($_) -> {
+                            try {
+                                return (String) FieldUtils.readField(field, this, true);
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
+
+                    // attempt to translate, else fallback to the default value, and then they key itself.
+                    String translated;
+                    if (!StatCollector.canTranslate(langKey)) {
+                        translated = this.defaults.getOrDefault(annotation.value(), langKey);
+                    } else {
+                        translated = StatCollector.translateToLocal(annotation.value());
+                    }
+
+                    // update the field value
+                    FieldUtils.writeField(field, this, translated, true);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void updateCompactDividerList() {
+            boolean success = false;
+            LinkedList<CompactDividerThreshold> builder = new LinkedList<>();
+            try {
+                int abbreviationCount = Integer
+                        .parseInt(StatCollector.translateToLocal("gtnhlib.unified.abbreviation.count"));
+                // ensure we have at least 1 abbreviation threshold.
+                if (abbreviationCount <= 0) {
+                    throw new IllegalStateException("abbreviation count must be at least 1!");
+                }
+
+                // not using programmer counting because translators aren't always programmers
+                for (int i = 1; i <= abbreviationCount; i++) {
+                    String base = "gtnhlib.unified.abbreviation." + i;
+                    int exponent = Integer.parseInt(StatCollector.translateToLocal(base + ".exp"));
+                    String text = StatCollector.translateToLocal(base);
+                    builder.add(new CompactDividerThreshold(new BigDecimal(1).scaleByPowerOfTen(exponent), text));
+                }
+
+                builder.sort(Comparator.comparing((CompactDividerThreshold a) -> a.number).reversed());
+
+                success = true;
+            } catch (RuntimeException e) {
+                GTNHLib.error("failed to load localized compact dividers: " + e);
+            }
+            ImmutableList<CompactDividerThreshold> thresholds = ImmutableList.copyOf(builder);
+            if (!success || thresholds.size() <= 0) {
+                this.compactDividerThresholds = DEFAULT_COMPACT_DIVIDERS;
+            } else {
+                this.compactDividerThresholds = thresholds;
+            }
+        }
+
+        @ApiStatus.Internal
+        @VisibleForTesting
+        public void resetToDefaults() {
+            this.compactDividerThresholds = DEFAULT_COMPACT_DIVIDERS;
+            try {
+                // update the field values
+                for (final Field field : this.getClass().getDeclaredFields()) {
+                    // we only care about string fields with the lang key annotation
+                    if (field.getType() != String.class) continue;
+                    LangKey annotation = field.getAnnotation(LangKey.class);
+                    if (annotation == null) continue;
+                    if (!this.defaults.containsKey(annotation.value())) return;
+                    String def = this.defaults.get(annotation.value());
+                    // update the field value
+                    FieldUtils.writeField(field, this, def, true);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static class ReloadListener implements IResourceManagerReloadListener {
+
+        private static final ReloadListener INSTANCE = new ReloadListener();
+
+        @Override
+        public void onResourceManagerReload(IResourceManager resourceManager) {
+            LOC_CACHE.onResourceManagerReload();
+            // run the callbacks that pre-cache formatting to an even higher degree.
+            recacheUnitFormatters();
+        }
+    }
+
+    private static final ConcurrentSet<ThroughputUnitFormatter> THROUGHPUT_UNIT_FORMATTERS = new ConcurrentSet<>();
+
+    @ApiStatus.Internal
+    public static void recacheUnitFormatters() {
+        THROUGHPUT_UNIT_FORMATTERS.forEach(ThroughputUnitFormatter::updateCachedUnitString);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @ApiStatus.Internal
+    public static IResourceManagerReloadListener getReloadListener() {
+        return ReloadListener.INSTANCE;
+    }
+
+    public final static LocalisationCache LOC_CACHE = new LocalisationCache();
 
     /* ========================= Main Formatter ========================= */
 
@@ -40,8 +507,6 @@ public final class NumberFormatUtil {
 
         BigDecimal val = bigDecimalConverter(value);
         BigDecimal abs = val.abs();
-
-        if (abs.signum() == 0) return "0";
 
         // Exponential for more than 1T by default
         if (isExponentialFormattingEnabled(abs, options)) {
@@ -71,8 +536,6 @@ public final class NumberFormatUtil {
         BigDecimal val = bigDecimalConverter(value);
         BigDecimal abs = val.abs();
 
-        if (abs.signum() == 0) return "0";
-
         // Below threshold, do exact formatting
         if (abs.compareTo(options.getCompactThreshold()) < 0) {
             return formatNumber(value, options.toFormatOptions());
@@ -84,66 +547,104 @@ public final class NumberFormatUtil {
         }
 
         // Abbreviated (1K, 2.5M etc)
-        return abbreviate(val, options);
+        String ret = abbreviate(val, options);
+        // fallback in case something goes really wrong
+        if (ret == null) return formatNumber(value, options.toFormatOptions());
+        return ret;
     }
 
     /* ========================= Abbreviation ========================= */
 
-    private static String abbreviate(BigDecimal value, NumberOptionsBase<?> options) {
-        BigDecimal abs = value.abs();
+    public static final class CompactDividerThreshold {
 
-        BigDecimal divisor;
-        String suffix;
+        public final @NotNull BigDecimal number;
+        public final @NotNull String abbreviation;
 
-        if (abs.compareTo(BD_QUADRILLION) >= 0) {
-            divisor = BD_QUADRILLION;
-            suffix = "Q";
-        } else if (abs.compareTo(BD_TRILLION) >= 0) {
-            divisor = BD_TRILLION;
-            suffix = "T";
-        } else if (abs.compareTo(BD_BILLION) >= 0) {
-            divisor = BD_BILLION;
-            suffix = "B";
-        } else if (abs.compareTo(BD_MILLION) >= 0) {
-            divisor = BD_MILLION;
-            suffix = "M";
-        } else {
-            divisor = BD_THOUSAND;
-            suffix = "K";
+        private CompactDividerThreshold(@NotNull BigDecimal number, @NotNull String abbreviation) {
+            this.number = number.stripTrailingZeros();
+            this.abbreviation = abbreviation;
         }
+    }
 
-        BigDecimal scaled = value.divide(divisor, MathContext.UNLIMITED);
+    public static class AbbreviatedNumberInfo {
 
-        int dp = options.getDecimalPlaces();
+        public final @NotNull BigDecimal rounded;
+        public final int exp;
+        public final @NotNull String abbvr;
+
+        public AbbreviatedNumberInfo(@NotNull BigDecimal rounded, int exp, @NotNull String abbvr) {
+            this.rounded = rounded;
+            this.exp = exp;
+            this.abbvr = abbvr;
+        }
+    }
+
+    /**
+     * @return null if the compact divider list was somehow empty (probably due to a loc loading issue)
+     */
+    public static @Nullable AbbreviatedNumberInfo getAbbreviatedNumberInformation(BigDecimal number,
+            NumberOptionsBase<?> options) {
+        // localing to prevent race conditions
+        final ImmutableList<CompactDividerThreshold> compactDividers = LOC_CACHE.getCompactDividerThresholds();
+        if (compactDividers.isEmpty()) return null;
+
+        // find the divider that matches this
+        final BigDecimal abs = number.abs();
+        int dividerIdx = 0;
+        for (; dividerIdx < compactDividers.size() - 1; dividerIdx++) {
+            if (compactDividers.get(dividerIdx).number.compareTo(abs) <= 0) break;
+        }
+        CompactDividerThreshold threshold = compactDividers.get(dividerIdx);
+
+        // Prevent unit rollover caused only by rounding:
+        // If abs(value) is still below the next threshold, do not allow rounded to reach the next threshold.
+        BigDecimal scaled = number.divide(threshold.number, MathContext.UNLIMITED);
+        int dp = options.getMaxDecimalPlaces();
         RoundingMode rm = options.getRoundingMode();
 
         BigDecimal rounded = scaled.setScale(dp, rm);
 
-        // Prevent unit rollover caused only by rounding:
-        // If abs(value) is still below the next threshold, do not allow rounded to reach 1000.
-        BigDecimal nextThreshold = divisor.multiply(BD_THOUSAND);
-        if (abs.compareTo(nextThreshold) < 0 && rounded.abs().compareTo(BD_THOUSAND) >= 0) {
-            BigDecimal step = BigDecimal.ONE.scaleByPowerOfTen(-dp); // 10^-dp (works for dp <= 0 too)
-            BigDecimal maxAbs = BD_THOUSAND.subtract(step).setScale(dp, RoundingMode.UNNECESSARY);
-            rounded = (rounded.signum() < 0) ? maxAbs.negate() : maxAbs;
+        // don't attempt to prevent unit inflation if we're already on the last threshold
+        if (dividerIdx > 0) {
+            BigDecimal thresholdDifference = compactDividers.get(dividerIdx - 1).number
+                    .divide(threshold.number, MathContext.UNLIMITED);
+            BigDecimal nextThreshold = threshold.number.multiply(thresholdDifference);
+            if (abs.compareTo(nextThreshold) < 0 && rounded.abs().compareTo(thresholdDifference) >= 0) {
+                BigDecimal step = BigDecimal.ONE.scaleByPowerOfTen(-dp); // 10^-dp (works for dp <= 0 too)
+                BigDecimal maxAbs = thresholdDifference.subtract(step).setScale(dp, RoundingMode.UNNECESSARY);
+                rounded = (rounded.signum() < 0) ? maxAbs.negate() : maxAbs;
+            }
         }
 
-        rounded = rounded.stripTrailingZeros();
+        return new AbbreviatedNumberInfo(
+                rounded.stripTrailingZeros(),
+                threshold.number.precision() - 1 - threshold.number.scale(),
+                threshold.abbreviation);
+    }
 
-        return formatNumber(rounded, options.toFormatOptions()) + suffix;
+    private static @Nullable String abbreviate(BigDecimal value, NumberOptionsBase<?> options) {
+
+        AbbreviatedNumberInfo info = getAbbreviatedNumberInformation(value, options);
+        if (info == null) return null;
+
+        return String.format(
+                LOC_CACHE.abbreviationFormat,
+                formatNumber(info.rounded, options.toFormatOptions()),
+                info.abbvr);
     }
 
     /* ========================= Exponential ========================= */
 
     private static String formatExponential(BigDecimal value, NumberOptionsBase<?> options) {
-        return EXPONENTIAL_FORMAT.format(value, options);
+        return options.getExponentialFormat().format(value, options);
     }
 
     /* ========================= Fluids ========================= */
 
-    public static String getFluidUnit() {
+    public static @NotNull String getFluidUnit() {
         if (debugFluidUnit) return "X";
-        return useForgeFluidMillibuckets ? "mB" : "L";
+        return StatCollector
+                .translateToLocal(useForgeFluidMillibuckets ? LOC_CACHE.unitMillibucket : LOC_CACHE.unitLiter);
     }
 
     public static String formatFluid(Number value) {
@@ -151,7 +652,7 @@ public final class NumberFormatUtil {
     }
 
     public static String formatFluid(Number value, FormatOptions options) {
-        return formatNumber(value, options) + " " + getFluidUnit();
+        return String.format(LOC_CACHE.spacingFluid, formatNumber(value, options), getFluidUnit());
     }
 
     public static String formatFluidCompact(Number value) {
@@ -159,7 +660,7 @@ public final class NumberFormatUtil {
     }
 
     public static String formatFluidCompact(Number value, CompactOptions options) {
-        return formatNumberCompact(value, options) + " " + getFluidUnit();
+        return String.format(LOC_CACHE.spacingFluid, formatNumberCompact(value, options), getFluidUnit());
     }
 
     public static String formatFluid(FluidStack stack) {
@@ -168,8 +669,8 @@ public final class NumberFormatUtil {
 
     /* ========================= Energy ========================= */
 
-    public static String getEnergyUnit() {
-        return "EU";
+    public static @NotNull String getEnergyUnit() {
+        return LOC_CACHE.unitEU;
     }
 
     public static String formatEnergy(Number value) {
@@ -177,20 +678,283 @@ public final class NumberFormatUtil {
     }
 
     public static String formatEnergy(Number value, FormatOptions options) {
-        return formatNumber(value, options) + " " + getEnergyUnit();
+        return String.format(LOC_CACHE.spacingEnergy, formatNumber(value, options), getEnergyUnit());
     }
 
     public static String formatEnergyCompact(Number value, CompactOptions options) {
-        return formatNumberCompact(value, options) + " " + getEnergyUnit();
+        return String.format(LOC_CACHE.spacingEnergy, formatNumberCompact(value, options), getEnergyUnit());
     }
 
     public static String formatEnergyCompact(Number value) {
         return formatEnergyCompact(value, new CompactOptions());
     }
 
+    /* ========================= Unit Formatters ========================= */
+
+    public static final @NotNull UnitFormatter FORMAT_FLUID = new UnitFormatter(
+            LOC_CACHE::getSpacingFluid,
+            NumberFormatUtil::getFluidUnit);
+
+    public static final @NotNull UnitFormatter FORMAT_RF = new UnitFormatter(
+            LOC_CACHE::getSpacingEnergy,
+            LOC_CACHE::getUnitRF);
+
+    public static final @NotNull UnitFormatter FORMAT_MJ = new UnitFormatter(
+            LOC_CACHE::getSpacingEnergy,
+            LOC_CACHE::getUnitMJ);
+
+    public static final @NotNull UnitFormatter FORMAT_AE = new UnitFormatter(
+            LOC_CACHE::getSpacingEnergy,
+            LOC_CACHE::getUnitAE);
+
+    public static final @NotNull UnitFormatter FORMAT_EU = new UnitFormatter(
+            LOC_CACHE::getSpacingEnergy,
+            LOC_CACHE::getUnitEU);
+
+    public static final @NotNull UnitFormatter FORMAT_AMP = new UnitFormatter(
+            LOC_CACHE::getSpacingAmperage,
+            LOC_CACHE::getUnitAmp);
+
+    public static final @NotNull UnitFormatter FORMAT_HEAT = new UnitFormatter(
+            LOC_CACHE::getSpacingHeat,
+            LOC_CACHE::getUnitHeat);
+
+    public static final @NotNull UnitFormatter FORMAT_ACIDITY = new UnitFormatter(
+            LOC_CACHE::getSpacingAcidity,
+            LOC_CACHE::getUnitAcidity);
+
+    public static final @NotNull UnitFormatter FORMAT_RADIATION = new UnitFormatter(
+            LOC_CACHE::getSpacingRadiation,
+            LOC_CACHE::getUnitRadiation);
+
+    public static final @NotNull UnitFormatter FORMAT_TEMPERATURE = new UnitFormatter(
+            LOC_CACHE::getSpacingTemperature,
+            LOC_CACHE::getUnitTemperature);
+
+    public static final @NotNull UnitFormatter FORMAT_FORCE = new UnitFormatter(
+            LOC_CACHE::getSpacingForce,
+            LOC_CACHE::getUnitForce);
+
+    // electron volt units
+
+    public static final @NotNull UnitFormatter FORMAT_ELECTRON_VOLT = new UnitFormatter(
+            LOC_CACHE::getSpacingElectronVolt,
+            LOC_CACHE::getUnitElectronVolt);
+
+    public static final @NotNull UnitFormatter FORMAT_KEV = new UnitFormatter(
+            LOC_CACHE::getSpacingElectronVolt,
+            LOC_CACHE::getUnitKiloElectronVolt);
+
+    public static final @NotNull UnitFormatter FORMAT_MEV = new UnitFormatter(
+            LOC_CACHE::getSpacingElectronVolt,
+            LOC_CACHE::getUnitMegaElectronVolt);
+
+    public static final @NotNull UnitFormatter FORMAT_GEV = new UnitFormatter(
+            LOC_CACHE::getSpacingElectronVolt,
+            LOC_CACHE::getUnitGigaElectronVolt);
+
+    public static final @NotNull UnitFormatter FORMAT_TEV = new UnitFormatter(
+            LOC_CACHE::getSpacingElectronVolt,
+            LOC_CACHE::getUnitTeraElectronVolt);
+
+    // mass units
+
+    public static final @NotNull UnitFormatter FORMAT_NANOGRAM = new UnitFormatter(
+            LOC_CACHE::getSpacingMass,
+            LOC_CACHE::getUnitNanogram);
+
+    public static final @NotNull UnitFormatter FORMAT_MICROGRAM = new UnitFormatter(
+            LOC_CACHE::getSpacingMass,
+            LOC_CACHE::getUnitMicrogram);
+
+    public static final @NotNull UnitFormatter FORMAT_MILLIGRAM = new UnitFormatter(
+            LOC_CACHE::getSpacingMass,
+            LOC_CACHE::getUnitMilligram);
+
+    public static final @NotNull UnitFormatter FORMAT_GRAM = new UnitFormatter(
+            LOC_CACHE::getSpacingMass,
+            LOC_CACHE::getUnitGram);
+
+    public static final @NotNull UnitFormatter FORMAT_KILOGRAM = new UnitFormatter(
+            LOC_CACHE::getSpacingMass,
+            LOC_CACHE::getUnitKilogram);
+
+    // distance units
+
+    public static final @NotNull UnitFormatter FORMAT_NANOMETER = new UnitFormatter(
+            LOC_CACHE::getSpacingDistance,
+            LOC_CACHE::getUnitNanometer);
+
+    public static final @NotNull UnitFormatter FORMAT_MICROMETER = new UnitFormatter(
+            LOC_CACHE::getSpacingDistance,
+            LOC_CACHE::getUnitMicrometer);
+
+    public static final @NotNull UnitFormatter FORMAT_MILLIMETER = new UnitFormatter(
+            LOC_CACHE::getSpacingDistance,
+            LOC_CACHE::getUnitMillimeter);
+
+    public static final @NotNull UnitFormatter FORMAT_CENTIMETER = new UnitFormatter(
+            LOC_CACHE::getSpacingDistance,
+            LOC_CACHE::getUnitCentimeter);
+
+    public static final @NotNull UnitFormatter FORMAT_METER = new UnitFormatter(
+            LOC_CACHE::getSpacingDistance,
+            LOC_CACHE::getUnitMeter);
+
+    public static final @NotNull UnitFormatter FORMAT_KILOMETER = new UnitFormatter(
+            LOC_CACHE::getSpacingDistance,
+            LOC_CACHE::getUnitKilometer);
+
+    // time units
+
+    public static final @NotNull UnitFormatter FORMAT_NANOSECOND = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitNanosecond);
+
+    public static final @NotNull UnitFormatter FORMAT_MICROSECOND = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitMicrosecond);
+
+    public static final @NotNull UnitFormatter FORMAT_MILLISECOND = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitMillisecond);
+
+    public static final @NotNull UnitFormatter FORMAT_TICK = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitTick);
+
+    public static final @NotNull UnitFormatter FORMAT_SECOND = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitSecond);
+
+    public static final @NotNull UnitFormatter FORMAT_MINUTE = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitMinute);
+
+    public static final @NotNull UnitFormatter FORMAT_HOUR = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitHour);
+
+    public static final @NotNull UnitFormatter FORMAT_DAY = new UnitFormatter(
+            LOC_CACHE::getSpacingTime,
+            LOC_CACHE::getUnitDay);
+
+    // frequent throughput units
+
+    public static final @NotNull ThroughputUnitFormatter FORMAT_EU_PER_TICK = new ThroughputUnitFormatter(
+            LOC_CACHE::getSpacingEnergyThroughput,
+            LOC_CACHE::getUnitFormatEnergyThroughput,
+            NumberFormatUtil::getEnergyUnit,
+            LOC_CACHE::getUnitTick);
+
+    public static final @NotNull ThroughputUnitFormatter FORMAT_FLUID_PER_SECOND = new ThroughputUnitFormatter(
+            LOC_CACHE::getSpacingEnergyThroughput,
+            LOC_CACHE::getUnitFormatEnergyThroughput,
+            NumberFormatUtil::getEnergyUnit,
+            LOC_CACHE::getUnitSecond);
+
     /* ========================= Internals ========================= */
 
-    private static String rawNumberToString(Number value) {
+    public interface IUnitFormatter {
+
+        @NotNull
+        String getUnit();
+
+        @NotNull
+        String format(@Nullable String value);
+
+        @NotNull
+        String format(@Nullable Number value, @NotNull NumberOptionsBase<?> options);
+
+        default @NotNull String format(@Nullable Number value) {
+            return this.format(value, new FormatOptions());
+        }
+
+        default @NotNull String formatCompact(@Nullable Number value) {
+            return this.format(value, new CompactOptions());
+        }
+
+    }
+
+    public static class UnitFormatter implements IUnitFormatter {
+
+        public final @NotNull Supplier<@NotNull String> formatSupplier;
+        public final @NotNull Supplier<@NotNull String> unitSupplier;
+
+        public UnitFormatter(@NotNull Supplier<@NotNull String> formatSupplier,
+                @NotNull Supplier<@NotNull String> unitSupplier) {
+            this.formatSupplier = formatSupplier;
+            this.unitSupplier = unitSupplier;
+        }
+
+        @Override
+        public @NotNull String getUnit() {
+            return unitSupplier.get();
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return String.format(this.formatSupplier.get(), value, unitSupplier.get());
+        }
+
+        @Override
+        public @NotNull String format(@Nullable Number value, @NotNull NumberOptionsBase<?> options) {
+            return String.format(this.formatSupplier.get(), options.format(value), unitSupplier.get());
+        }
+
+    }
+
+    public static class ThroughputUnitFormatter implements IUnitFormatter, AutoCloseable {
+
+        public final @NotNull Supplier<@NotNull String> formatSupplier;
+        public final @NotNull Supplier<@NotNull String> unitFormatSupplier;
+        public final @NotNull Supplier<@NotNull String> unit1Supplier;
+        public final @NotNull Supplier<@NotNull String> unit2Supplier;
+        private @NotNull String cachedUnitText;
+
+        public ThroughputUnitFormatter(@NotNull Supplier<@NotNull String> formatSupplier,
+                @NotNull Supplier<@NotNull String> unitFormatSupplier, @NotNull Supplier<@NotNull String> unit1Supplier,
+                @NotNull Supplier<@NotNull String> unit2Supplier) {
+            this.formatSupplier = formatSupplier;
+            this.unitFormatSupplier = unitFormatSupplier;
+            this.unit1Supplier = unit1Supplier;
+            this.unit2Supplier = unit2Supplier;
+            THROUGHPUT_UNIT_FORMATTERS.add(this);
+            updateCachedUnitString();
+        }
+
+        @VisibleForTesting
+        @Override
+        public void close() {
+            THROUGHPUT_UNIT_FORMATTERS.remove(this);
+        }
+
+        private void updateCachedUnitString() {
+            this.cachedUnitText = this.createCachedUnitString();
+        }
+
+        protected String createCachedUnitString() {
+            return String.format(this.unitFormatSupplier.get(), this.unit1Supplier.get(), this.unit2Supplier.get());
+        }
+
+        @Override
+        public @NotNull String getUnit() {
+            return cachedUnitText;
+        }
+
+        @Override
+        public @NotNull String format(@Nullable String value) {
+            return String.format(this.formatSupplier.get(), value, this.cachedUnitText);
+        }
+
+        @Override
+        public @NotNull String format(@Nullable Number value, @NotNull NumberOptionsBase<?> options) {
+            return this.format(options.format(value));
+        }
+
+    }
+
+    public static String rawNumberToString(Number value) {
         if (value instanceof BigDecimal bd) {
             // It seems BigDecimal.toString() may emit exponential notation, but
             // toPlainString() never does.
@@ -216,7 +980,7 @@ public final class NumberFormatUtil {
         return value.toString();
     }
 
-    private static boolean isExponentialFormattingEnabled(BigDecimal absValue, NumberOptionsBase<?> options) {
+    public static boolean isExponentialFormattingEnabled(BigDecimal absValue, NumberOptionsBase<?> options) {
         // Global flag disables exponential formatting entirely
         boolean disabledGlobally = globalDisableExponentialNotation;
 
@@ -238,18 +1002,19 @@ public final class NumberFormatUtil {
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
         df.setDecimalFormatSymbols(symbols);
         df.setGroupingUsed(true);
-        df.setMaximumFractionDigits(options.getDecimalPlaces());
+        df.setMaximumFractionDigits(options.getMaxDecimalPlaces());
+        df.setMinimumFractionDigits(options.getMinDecimalPlaces());
         df.setRoundingMode(options.getRoundingMode());
 
         return df;
     }
 
     private static String handleSpecialCases(Number value) {
-        if (value == null) return "NULL";
+        if (value == null) return LOC_CACHE.specialValueNull;
         if (value instanceof Double || value instanceof Float) {
             double d = value.doubleValue();
-            if (Double.isNaN(d)) return "NaN";
-            if (Double.isInfinite(d)) return d > 0 ? "Infinity" : "-Infinity";
+            if (Double.isNaN(d)) return LOC_CACHE.specialValueNaN;
+            if (Double.isInfinite(d)) return d > 0 ? LOC_CACHE.specialValueInfinity : LOC_CACHE.specialValueNegInfinity;
         }
 
         if (disableFormattedNotation) return rawNumberToString(value);
@@ -265,6 +1030,8 @@ public final class NumberFormatUtil {
 
     public static void postConfiguration() {
         NumberFormatConfig.syncNumberFormatting();
+        // recache unit formatter in case some are dependent on configs
+        NumberFormatUtil.recacheUnitFormatters();
     }
 
     public static BigDecimal bigDecimalConverter(Number number) {

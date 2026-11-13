@@ -1,0 +1,74 @@
+{white}Comments
+Lines starting with {color_name://} are completely ignored
+#example:// comment is hidden
+
+{white}Horizontal Rule Command
+#example:{hr}
+#example:{hr:21}
+#example:{red:{hr}}
+
+{white}Static Color Commands
+The simplest form of commands, simply appends the relevant color code
+#example:not colored {red:Colored} not colored
+#example:not colored {green} Colored
+#example:{blue:{var:some_text} <- can contain commands}
+
+{white}Dynamic Color Commands
+Works similarly to simple color commands but the color codes are defined via a config that can be changed via a resource pack.
+#example:{color_note:this is a note}
+#example:{color_danger:this is dangerous}
+#example:{color_danger:{var:some_text} <- can contain commands}
+
+{white}Boolean If Commands
+only appends their content if the provided variable has the right boolean value
+#example:{var:true} = {if:true:text is shown because the var is true}
+#example:{var:false} = {if:false:text is hidden because the var is false}
+#example:{var:true} = {if-not:true:is hidden because the var is true}
+#example:{var:false} = {if-not:false:text is shown because the var is false}
+
+{white}If Defined Commands
+Only appends it's contents if the given variable exists
+#example:Requires at least 3 wrenches{ifdef:existing_var: and {var:existing_var} screw{plural:existing_var:s}}
+#example:Requires at least 3 wrenches{ifdef:missing_var: and {var:missing_var} screw{plural:missing_var:s}}
+
+{white}Simple Plurality Commands
+Only appends it's content if the value is plural or singular
+#example:{var:1} = There {plural:1:are}{singular:1:is} {var:1} bird{plural:1:s}
+#example:{var:-1} = There {plural:-1:are}{singular:-1:is} {var:-1} bird{plural:-1:s}
+#example:{var:2} = There {plural:2:are}{singular:2:is} {var:2} bird{plural:2:s}
+
+{white}Localized Plurality Commands
+Uses CLDR Plural Rules to accurately pluralize words based on a numeric variable
+#example:{var:1} screw{plural-custom:1:1:n = 1::s} | {var:2} screw{plural-custom:2:1:n = 1::s}
+Translators can use localized presets commands for their respective language:
+#example:{var:1} {plural-fr:1:litre:de litres:litres} | {var:1M} {plural-fr:1M:litre:de litres:litres} | {var:2} {plural-fr:2:litre:de litres:litres}
+#example:{var:1} корпус{plural-ru:1::а:ов:а} | {var:2} корпус{plural-ru:2::а:ов:а} | {var:5} корпус{plural-ru:5::а:ов:а}
+
+{white}Isolation Command
+Isolates all format changes to itself.
+#example:normal {yellow:yellow {italic}yellow italic {isolate:yellow italic {green}green, {italic}green italic, {blue}blue} yellow italic} normal
+{color_note:Color codes disables previous style codes}
+{color_note:this is an mc feature not a bug in my code}
+
+{white}Comment Command
+Hides it's contents
+#example:{#:this is hidden}this isn't hidden{//:so is this hidden}
+
+{white}Color patterns
+Used to create repeating color patterns
+#example:{color-pattern:green,dark_green:RADIATION {var:some_text} <- can contain commands}
+#example:{color-pattern:dark_red,red,gold,yellow,green,aqua,light_purple,dark_purple:rainbow text is easy now}
+{color_note:style tags inside these commands is ignored, can't fix that}
+Length of a pattern can be configured
+#example:{color-pattern:1*dark_red,2*red,3*gold,2*yellow,green,2*aqua,3*light_purple,2*dark_purple:12233344566777881223334456677788§o1223334456677788}
+
+{white}Themed Measurement Commands
+A few common measurement types have standardized coloring in gt, so these commands apply it correctly.
+#example:Voltage: {fmt-EUt:1_000_000}
+#example:Amperage: {fmt-amp:1}
+#example:Heat: {fmt-heat:900}
+#example:electron volt measurements: {fmt-MeV:100}
+
+#include:gtnhlib:showcase-loc-units
+
+#include:gtnhlib:showcase-plurality-presets

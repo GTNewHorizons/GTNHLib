@@ -300,3 +300,125 @@ commands.title.icon.single=Changed title icon for %s
 # Brigadier command errors
 gtnhlib.chat.command.incomplete=Incomplete command
 gtnhlib.chat.command.more_usages=... and %s more
+
+# Unified numeric abbreviation
+# 1 = number, 2 = abbreviation
+gtnhlib.unified.abbreviation.format=%1$s%2$s
+gtnhlib.unified.abbreviation.count=6
+gtnhlib.unified.abbreviation.1.exp=3
+gtnhlib.unified.abbreviation.1=K
+gtnhlib.unified.abbreviation.2.exp=6
+gtnhlib.unified.abbreviation.2=M
+gtnhlib.unified.abbreviation.3.exp=9
+gtnhlib.unified.abbreviation.3=B
+gtnhlib.unified.abbreviation.4.exp=12
+gtnhlib.unified.abbreviation.4=T
+gtnhlib.unified.abbreviation.5.exp=15
+gtnhlib.unified.abbreviation.5=Q
+gtnhlib.unified.abbreviation.6.exp=18
+gtnhlib.unified.abbreviation.6=P
+
+# Exponential number formatting
+# 1 = mantissa, 2 = exponent
+gtnhlib.unified.exponential_format.scientific=%1$se%2$s
+# 1 = mantissa, 2 = exponent
+gtnhlib.unified.exponential_format.engineering=%1$se%2$s
+# 1 = mantissa, 2 = exponent
+gtnhlib.unified.exponential_format.power_of_ten=%1$s*10^%2$s
+
+# Unified tooltip measurements
+gtnhlib.unified.unit.fluid.mb=mB
+gtnhlib.unified.unit.fluid.liter=L
+gtnhlib.unified.unit.RF=RF
+gtnhlib.unified.unit.MJ=MJ
+gtnhlib.unified.unit.AE=AE
+gtnhlib.unified.unit.EU=EU
+gtnhlib.unified.unit.amp=A
+gtnhlib.unified.unit.heat=K
+gtnhlib.unified.unit.acidity=pH
+gtnhlib.unified.unit.radiation=Sv
+gtnhlib.unified.unit.temperature=°C
+gtnhlib.unified.unit.force=N
+gtnhlib.unified.unit.electron_volt=eV
+gtnhlib.unified.unit.kilo_electron_volt=KeV
+gtnhlib.unified.unit.mega_electron_volt=MeV
+gtnhlib.unified.unit.giga_electron_volt=GeV
+gtnhlib.unified.unit.tera_electron_volt=TeV
+gtnhlib.unified.unit.nanogram=ng
+gtnhlib.unified.unit.microgram=μg
+gtnhlib.unified.unit.milligram=mg
+gtnhlib.unified.unit.gram=g
+gtnhlib.unified.unit.kilogram=kg
+gtnhlib.unified.unit.nanometer=nm
+gtnhlib.unified.unit.micrometer=μm
+gtnhlib.unified.unit.millimeter=mm
+gtnhlib.unified.unit.centimeter=cm
+gtnhlib.unified.unit.meter=m
+gtnhlib.unified.unit.kilometer=km
+gtnhlib.unified.unit.nanosecond=ns
+gtnhlib.unified.unit.microsecond=μs
+gtnhlib.unified.unit.millisecond=ms
+gtnhlib.unified.unit.tick=t
+gtnhlib.unified.unit.second=s
+gtnhlib.unified.unit.minute=m
+gtnhlib.unified.unit.hour=h
+gtnhlib.unified.unit.day=d
+
+# Special Value Names
+gtnhlib.unified.value.infinity=Infinity
+gtnhlib.unified.value.neg_infinity=-Infinity
+gtnhlib.unified.value.nan=NaN
+gtnhlib.unified.value.null=NULL
+
+# Plain Measurements
+
+# Measurement-Unit Spacing:
+# Default is based on: https://physics.nist.gov/cuu/Units/checklist.html which specifies the following:
+# > There is a space between the numerical value and unit symbol, even when the value is used in an adjectival sense,
+# > except in the case of superscript units for plane angle. 
+# 1 = amount, 2 = unit
+gtnhlib.unified.measurement.spacing.fluid=%1$s %2$s
+gtnhlib.unified.measurement.spacing.energy=%1$s %2$s
+gtnhlib.unified.measurement.spacing.amperage=%1$s %2$s
+gtnhlib.unified.measurement.spacing.heat=%1$s %2$s
+gtnhlib.unified.measurement.spacing.electron_volt=%1$s %2$s
+gtnhlib.unified.measurement.spacing.acidity=%1$s %2$s
+gtnhlib.unified.measurement.spacing.radiation=%1$s %2$s
+gtnhlib.unified.measurement.spacing.temperature=%1$s %2$s
+gtnhlib.unified.measurement.spacing.force=%1$s %2$s
+gtnhlib.unified.measurement.spacing.mass=%1$s %2$s
+gtnhlib.unified.measurement.spacing.distance=%1$s %2$s
+gtnhlib.unified.measurement.spacing.time=%1$s %2$s
+
+# Fluid Throughput:
+# {mb/s:amount}
+# {L/h:amount}
+# {l/m}
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.fluid_throughput=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.fluid_throughput=%1$s/%2$s
+
+# Energy Throughput:
+# Uses {rf/t:amount} while active
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.energy_throughput=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.energy_throughput=%1$s/%2$s
+
+# Mass Throughput:
+# {g/s:amount}
+# {kg/h:amount}
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.mass_throughput=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.mass_throughput=%1$s/%2$s
+
+# Distance Throughput:
+# {m/s:amount}
+# {cm/d:amount}
+# {km/h}
+# 1 = amount, 2 = throughput_unit
+gtnhlib.unified.measurement.spacing.speed=%1$s %2$s
+# 1 = amount_unit, 2 = short_time_unit
+gtnhlib.unified.measurement.unit_format.speed=%1$s/%2$s

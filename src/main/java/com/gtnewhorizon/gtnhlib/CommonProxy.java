@@ -27,6 +27,7 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.AutoEventBus;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
+import com.gtnewhorizon.gtnhlib.eventhandlers.CommonConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.eventhandlers.InventoryEventDebugHandler;
 import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
@@ -34,6 +35,7 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoaders;
 import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
@@ -46,10 +48,12 @@ import com.gtnewhorizon.gtnhlib.test.block.BlockXUVRotationTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockXYUVRotationTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockYUVRotationTest;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
+import com.gtnewhorizon.gtnhlib.util.TextFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 import com.mojang.brigadier.tree.CommandNode;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -68,6 +72,11 @@ public class CommonProxy {
 
     public void construct(FMLConstructionEvent event) {
         AutoEventBus.executePhase(Phase.CONSTRUCT);
+        TemplatedTextLoaders.STANDARD.initialize();
+        TemplatedTextLoaders.TOOLTIP.initialize();
+
+        // ConfigChangedEvent is client-only; register handler only on client.
+        FMLCommonHandler.instance().bus().register(new CommonConfigEventHandler());
     }
 
     public void preInit(FMLPreInitializationEvent event) {
@@ -105,6 +114,7 @@ public class CommonProxy {
         // as well, just in-case calls are made to number formatting.
         try {
             ConfigurationManager.registerConfig(NumberFormatConfig.class);
+            ConfigurationManager.registerConfig(TextFormatConfig.class);
             // only register in dev
             if (!isObf()) ConfigurationManager.registerConfig(ExampleConfig.class);
         } catch (ConfigException e) {
