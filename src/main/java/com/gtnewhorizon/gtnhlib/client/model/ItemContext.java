@@ -3,6 +3,7 @@ package com.gtnewhorizon.gtnhlib.client.model;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +35,8 @@ public class ItemContext implements BakedModelQuadContext.Item {
 
     public void set(ItemStack stack, Random random) {
         this.stack = stack;
-        this.blockState = BlockPropertyRegistry.getBlockState(pool, stack);
+        this.blockState = stack.getItem() instanceof ItemBlock ? BlockPropertyRegistry.getBlockState(pool, stack)
+                : null;
         this.random = random;
         // I mean, I *could* pack 0, 0, 0. But that seems like a waste when I know the answer...
         this.random.setSeed(0);
