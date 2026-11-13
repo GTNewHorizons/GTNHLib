@@ -209,11 +209,12 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         }
 
         final boolean useAO = JsonUtil.loadBool(in, "ambientocclusion", true);
+        final String renderType = JsonUtil.loadStr(in, "render_type", null);
         final Map<Position, ModelDisplay> display = loadDisplay(in);
         final var textures = loadTextures(in);
         final List<ModelElement> elements = loadElements(in);
 
-        return new JSONModel(parentId, useAO, display, textures, elements);
+        return new JSONModel(parentId, useAO, renderType, display, textures, elements);
     }
 
     public enum Position {
