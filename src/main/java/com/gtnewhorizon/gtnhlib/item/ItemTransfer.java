@@ -157,6 +157,11 @@ public class ItemTransfer {
                 int toTransferThisOP = Math.min(remainingTransferAllowance, maxItemsPerTransfer);
                 int toExtract = Math.min(availableCount, toTransferThisOP);
 
+                if (checkCapacity) {
+                    if (!sink.mayAcceptItems()) break outer;
+                    checkCapacity = false;
+                }
+
                 OptionalInt simulatedRejection = sink.simulateStore(insertion.set(available, toExtract));
                 if (simulatedRejection.isPresent()) {
                     toExtract -= simulatedRejection.getAsInt();
@@ -165,11 +170,6 @@ public class ItemTransfer {
 
                 // Filters may depend on stack size. Re-check the exact amount about to be extracted.
                 if (filter != null && !filter.test(insertion.set(available, toExtract))) break;
-
-                if (checkCapacity) {
-                    if (!sink.mayAcceptItems()) break outer;
-                    checkCapacity = false;
-                }
 
                 ItemStack extracted = iter.extract(toExtract, false);
 
@@ -233,5 +233,4 @@ public class ItemTransfer {
 
         return itemsTransferred;
     }
-
 }

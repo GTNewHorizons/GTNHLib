@@ -94,6 +94,7 @@ public class InventoryItemSink implements ItemSink {
     @Override
     public OptionalInt simulateStore(ImmutableItemStack stack) {
         if (stack.isEmpty()) return ZERO;
+        if (!standardStorage) return OptionalInt.empty();
         InventoryIterator iter = simulatedSinkIterator();
         return iter == null ? OptionalInt.empty() : OptionalInt.of(store(stack, iter, true));
     }
