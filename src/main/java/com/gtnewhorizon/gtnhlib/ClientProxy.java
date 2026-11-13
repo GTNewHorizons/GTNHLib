@@ -26,12 +26,17 @@ import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
+import com.gtnewhorizon.gtnhlib.test.block.CommandBlackHole;
+import com.gtnewhorizon.gtnhlib.test.block.RenderBlackHole;
+import com.gtnewhorizon.gtnhlib.test.block.TileTestBlackHole;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
 
+import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -67,6 +72,13 @@ public class ClientProxy extends CommonProxy {
         // External model loader handlers. For the low low price of calling this method (and having your jar scanned),
         // you too can automatically load textures for your models!
         ModelRegistry.registerModid(MODID);
+
+        // The black hole reads the GL state Angelica tracks.
+        if (GTNHLibConfig.enableTestBlocks && Loader.isModLoaded("angelica")) {
+            final RenderBlackHole blackHole = new RenderBlackHole();
+            ClientRegistry.bindTileEntitySpecialRenderer(TileTestBlackHole.class, blackHole);
+            ClientCommandHandler.instance.registerCommand(new CommandBlackHole(blackHole));
+        }
 
         if (GTNHLibConfig.enableTestItems) {
             TexturedItemRenderer.register(TestItem.INSTANCE);
