@@ -51,6 +51,16 @@ public interface ItemSink {
     int store(ImmutableItemStack stack);
 
     /**
+     * Reports how many offered items this sink would reject without modifying the inventory or the offered stack.
+     * Simulation uses the same admission, insertion order and shared capacity rules as {@link #store}.
+     *
+     * @return The number of rejected items, or {@link OptionalInt#empty()} if simulation is unsupported.
+     */
+    default OptionalInt simulateStore(ImmutableItemStack stack) {
+        return OptionalInt.empty();
+    }
+
+    /**
      * Creates an iterator for this sink. May return null if iterators are not supported. Modifying any backing
      * inventories while this iterator exists (without going through the iterator) is undefined behaviour.
      */

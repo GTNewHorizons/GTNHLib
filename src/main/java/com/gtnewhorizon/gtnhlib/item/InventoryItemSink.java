@@ -1,5 +1,7 @@
 package com.gtnewhorizon.gtnhlib.item;
 
+import java.util.OptionalInt;
+
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -86,9 +88,17 @@ public class InventoryItemSink implements ItemSink {
     @Override
     public int store(ImmutableItemStack stack) {
         if (stack.isEmpty()) return 0;
+        return store(stack, sinkIterator(), false);
+    }
 
-        StandardInventoryIterator iter = sinkIterator();
+    @Override
+    public OptionalInt simulateStore(ImmutableItemStack stack) {
+        if (stack.isEmpty()) return ZERO;
+        InventoryIterator iter = simulatedSinkIterator();
+        return iter == null ? OptionalInt.empty() : OptionalInt.of(store(stack, iter, true));
+    }
 
+    private int store(ImmutableItemStack stack, InventoryIterator iter, boolean simulate) {
         InsertionItemStack insertion = new InsertionItemStack(stack);
 
         while (iter.hasNext()) {
@@ -101,7 +111,11 @@ public class InventoryItemSink implements ItemSink {
             if (insertion.isEmpty()) return 0;
         }
 
-        iter.rewind();
+        if (!iter.rewind()) {
+            if (!simulate) return insertion.getStackSize();
+            iter = simulatedSinkIterator();
+            if (iter == null) return insertion.getStackSize();
+        }
 
         while (iter.hasNext()) {
             ImmutableItemStack slot = iter.next();

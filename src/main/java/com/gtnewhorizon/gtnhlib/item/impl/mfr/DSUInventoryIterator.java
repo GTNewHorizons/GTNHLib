@@ -21,6 +21,13 @@ public class DSUInventoryIterator extends AbstractInventoryIterator {
         this.simulated = simulated;
     }
 
+    static int simulateStore(IDeepStorageUnit dsu, int[] allowedSlots, ImmutableItemStack stack) {
+        DSUInventoryIterator iter = new DSUInventoryIterator(dsu, allowedSlots, true);
+        if (!iter.hasNext()) return stack.getStackSize();
+        iter.next();
+        return iter.insert(stack, false);
+    }
+
     @Override
     protected ItemStack getStackInSlot(int slot) {
         if (slot != 0) return null;
