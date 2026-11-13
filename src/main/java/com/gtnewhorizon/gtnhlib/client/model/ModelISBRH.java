@@ -83,7 +83,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         // Setup for rendering
         final Tessellator tesselator = TessellatorManager.get();
         final IBlockAccess wrappedContext = (world.getBlock(x, y, z) == block) ? world
-                : new WorldWrapper(world, block, x, y, z);
+                : new WorldWrapper(world, block, world.getBlockMetadata(x, y, z), x, y, z);
         worldContext.set(wrappedContext, x, y, z, RAND);
         final int meta = wrappedContext.getBlockMetadata(x, y, z);
 
@@ -150,6 +150,20 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
         if (ANGELICA) AngelicaHelper.resetAngelicaLighting(tesselator);
         worldContext.reset();
         return rendered;
+    }
+
+    public void renderFallingBlock(World world, Block block, int x, int y, int z, int meta, RenderBlocks renderer) {
+        final Tessellator tesselator = TessellatorManager.get();
+        final boolean renderAllFaces = renderer.renderAllFaces;
+        renderer.renderAllFaces = true;
+
+        tesselator.startDrawingQuads();
+        tesselator.setTranslation(-x - 0.5, -y - 0.5, -z - 0.5);
+        renderWorldBlock(new WorldWrapper(world, block, meta, x, y, z), x, y, z, block, JSON_ISBRH_ID, renderer);
+        tesselator.setTranslation(0, 0, 0);
+        tesselator.draw();
+
+        renderer.renderAllFaces = renderAllFaces;
     }
 
     public void renderQuad(ModelQuadView quad, float x, float y, float z, Tessellator tessellator,
@@ -585,7 +599,8 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
     /// this means we have to actually respect the block passed into [ModelISBRH#renderWorldBlock]. In order to read a
     /// blockstate with that, we wrap the original IBA with one that just returns a slightly different block.
     @Desugar
-    private record WorldWrapper(IBlockAccess wrapped, Block replace, int x, int y, int z) implements IBlockAccess {
+    private record WorldWrapper(IBlockAccess wrapped, Block replace, int replaceMeta, int x, int y, int z)
+            implements IBlockAccess {
 
         @Override
         public Block getBlock(int x, int y, int z) {
@@ -605,6 +620,7 @@ public class ModelISBRH implements ISimpleBlockRenderingHandler, IItemRenderer {
 
         @Override
         public int getBlockMetadata(int x, int y, int z) {
+            if (x == this.x && y == this.y && z == this.z) return replaceMeta;
             return wrapped.getBlockMetadata(x, y, z);
         }
 
