@@ -12,12 +12,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.gtnewhorizon.gtnhlib.CommonProxy;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
-import com.gtnewhorizon.gtnhlib.util.CommandUtils;
-import com.mojang.brigadier.tree.CommandNode;
 
 @Mixin(CommandHandler.class)
 public class MixinCommandHandler {
@@ -31,26 +30,20 @@ public class MixinCommandHandler {
     /**
      * Thermos and its forks strip the leading slash before calling this, and vanilla strips one more below. A command
      * whose name starts with a slash, such as {@code //wand}, arrives here as {@code /wand} and would be looked up as
-     * {@code wand}, so it is run before vanilla touches it.
+     * {@code wand}, so the slash vanilla is about to strip is put back.
      */
-    @Inject(method = "executeCommand", at = @At("HEAD"), cancellable = true)
-    private void gtnhlib$keepSlashOnThermos(ICommandSender sender, String command,
-            CallbackInfoReturnable<Integer> cir) {
-        if (!gtnhlib$isServerCommandManager() || !CommonProxy.isThermosServer()) return;
+    @ModifyVariable(method = "executeCommand", at = @At("HEAD"), argsOnly = true)
+    private String gtnhlib$keepSlashOnThermos(String command) {
+        if (!gtnhlib$isServerCommandManager() || !CommonProxy.isThermosServer()) return command;
 
         String trimmed = command.trim();
-        if (!trimmed.startsWith("/")) return;
+        if (!trimmed.startsWith("/")) return command;
 
         int space = trimmed.indexOf(' ');
         String name = space == -1 ? trimmed : trimmed.substring(0, space);
-        CommandNode<ICommandSender> node = BrigadierApi.getCommandDispatcher().getRoot().getChild(name);
-        if (node == null) return;
+        if (BrigadierApi.getCommandDispatcher().getRoot().getChild(name) == null) return command;
 
-        if (!node.canUse(sender)) {
-            cir.setReturnValue(CommandUtils.error(sender, "commands.generic.permission"));
-            return;
-        }
-        cir.setReturnValue(BrigadierApi.executeCommand(sender, trimmed));
+        return "/" + trimmed;
     }
 
     @Inject(
