@@ -43,6 +43,11 @@ public class WrappedItemIO implements ItemIO {
     }
 
     @Override
+    public void setSlotStackLimit(int limit) {
+        if (sink != null) sink.setSlotStackLimit(limit);
+    }
+
+    @Override
     public OptionalInt getStoredItemsInSink(@Nullable ItemStackPredicate filter) {
         return sink == null ? OptionalInt.empty() : sink.getStoredItemsInSink(filter);
     }
