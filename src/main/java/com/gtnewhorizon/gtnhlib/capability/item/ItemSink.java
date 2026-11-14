@@ -33,6 +33,15 @@ public interface ItemSink {
     }
 
     /**
+     * Checks whether this sink may accept items with the current transfer settings. Return false only when every item
+     * would be rejected, and return true when capacity is unknown. Read current inventory state without changing the
+     * inventory.
+     */
+    default boolean mayAcceptItems() {
+        return true;
+    }
+
+    /**
      * Injects a stack into this sink. This operation is not atomic. There is no guarantee that the sink is completely
      * full when items are rejected, this is just a best-effort operation.
      *
@@ -40,6 +49,16 @@ public interface ItemSink {
      */
     @Nonnegative
     int store(ImmutableItemStack stack);
+
+    /**
+     * Reports how many offered items this sink would reject without modifying the inventory or the offered stack.
+     * Simulation uses the same admission, insertion order and shared capacity rules as {@link #store}.
+     *
+     * @return The number of rejected items, or {@link OptionalInt#empty()} if simulation is unsupported.
+     */
+    default OptionalInt simulateStore(ImmutableItemStack stack) {
+        return OptionalInt.empty();
+    }
 
     /**
      * Creates an iterator for this sink. May return null if iterators are not supported. Modifying any backing
