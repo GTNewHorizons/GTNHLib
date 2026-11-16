@@ -20,6 +20,7 @@ public enum Mixins implements IMixins {
     BACKPORT_SERVER_TICKING(Side.COMMON, "MixinMinecraftServer"),
     GAME_RULES_API(Side.COMMON, "MixinGameRules"),
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
+    CLIMBABLE_BLOCK(Side.COMMON, "MixinForgeHooks_ClimbableBlock"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
