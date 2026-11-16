@@ -1,5 +1,6 @@
 package com.gtnewhorizon.gtnhlib.item;
 
+import java.util.OptionalInt;
 import java.util.function.Consumer;
 
 import net.minecraft.item.ItemStack;
@@ -133,6 +134,7 @@ public class ItemTransfer {
         if (iter == null) return 0;
 
         int itemsTransferred = 0, stacksTransferred = 0;
+        boolean checkCapacity = true;
 
         InsertionItemStack insertion = new InsertionItemStack();
 
@@ -146,7 +148,6 @@ public class ItemTransfer {
 
             int availableCount = available.getStackSize();
 
-            // Loop through this slot until we've transferred everything out of it that we can
             while (availableCount > 0) {
                 if (itemsTransferred >= maxTotalTransferred) break outer;
                 if (stacksTransferred >= stacksToTransfer) break outer;
@@ -155,6 +156,17 @@ public class ItemTransfer {
 
                 int toTransferThisOP = Math.min(remainingTransferAllowance, maxItemsPerTransfer);
                 int toExtract = Math.min(availableCount, toTransferThisOP);
+
+                if (checkCapacity) {
+                    if (!sink.mayAcceptItems()) break outer;
+                    checkCapacity = false;
+                }
+
+                OptionalInt simulatedRejection = sink.simulateStore(insertion.set(available, toExtract));
+                if (simulatedRejection.isPresent()) {
+                    toExtract -= simulatedRejection.getAsInt();
+                    if (toExtract <= 0) break;
+                }
 
                 // Filters may depend on stack size. Re-check the exact amount about to be extracted.
                 if (filter != null && !filter.test(insertion.set(available, toExtract))) break;
@@ -206,6 +218,8 @@ public class ItemTransfer {
 
                 if (transferred <= 0) break;
 
+                // One item may be rejected while another fits. Recheck capacity after a successful insertion.
+                checkCapacity = true;
                 itemsTransferred += transferred;
 
                 stacksTransferred++;
