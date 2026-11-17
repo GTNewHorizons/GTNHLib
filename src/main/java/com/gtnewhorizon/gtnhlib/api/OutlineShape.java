@@ -206,9 +206,8 @@ public final class OutlineShape {
         return axis == 0 ? x : axis == 1 ? y : z;
     }
 
-    /// The outline's lines, flattened to `x1, y1, z1, x2, y2, z2` each. Empty if the boxes make a grid of over 32³
-    /// cells,
-    /// which is too costly to merge.
+    /// The outline's lines, flattened to `x1, y1, z1, x2, y2, z2` each. If the boxes make a grid of over 32³ cells,
+    /// which is too costly to merge, each box is outlined on its own.
     public DoubleList getLines() {
         if (lines == null) {
             lines = faces != null ? faces.buildLines() : isEmpty() ? DoubleLists.EMPTY_LIST : buildLines();
@@ -221,7 +220,7 @@ public final class OutlineShape {
     private DoubleList buildLines() {
         double[][] grid = { gridLines(0), gridLines(1), gridLines(2) };
         if ((long) (grid[0].length - 1) * (grid[1].length - 1) * (grid[2].length - 1) > MAX_CELLS) {
-            return DoubleLists.EMPTY_LIST;
+            return buildBoxEdges();
         }
         boolean[][][] filled = new boolean[grid[0].length - 1][grid[1].length - 1][grid[2].length - 1];
         List<AxisAlignedBB> planes = new ArrayList<>();
@@ -322,6 +321,24 @@ public final class OutlineShape {
             if (inside) return true;
         }
         return false;
+    }
+
+    /// Every edge of every box, unmerged.
+    private DoubleList buildBoxEdges() {
+        DoubleArrayList segments = new DoubleArrayList();
+        for (AxisAlignedBB box : boxes) {
+            for (int axis = 0; axis < 3; axis++) {
+                if (min(box, axis) == max(box, axis)) continue;
+                int uAxis = (axis + 1) % 3, vAxis = (axis + 2) % 3;
+                for (double u : new double[] { min(box, uAxis), max(box, uAxis) }) {
+                    for (double v : new double[] { min(box, vAxis), max(box, vAxis) }) {
+                        addPoint(segments, axis, min(box, axis), u, v);
+                        addPoint(segments, axis, max(box, axis), u, v);
+                    }
+                }
+            }
+        }
+        return DoubleLists.unmodifiable(segments);
     }
 
     private static void addPoint(DoubleArrayList segments, int axis, double along, double u, double v) {

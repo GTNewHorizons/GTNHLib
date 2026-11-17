@@ -49,7 +49,7 @@ final class FaceShape {
         return faces.isEmpty();
     }
 
-    /// The nearest face entered. The side is its normal's main axis, up on a tie.
+    /// The nearest face crossed. The side is its normal's main axis, up on a tie.
     MovingObjectPosition rayTrace(int x, int y, int z, Vec3 start, Vec3 end) {
         double sx = start.xCoord - x, sy = start.yCoord - y, sz = start.zCoord - z;
         double dx = end.xCoord - start.xCoord, dy = end.yCoord - start.yCoord, dz = end.zCoord - start.zCoord;
@@ -72,11 +72,11 @@ final class FaceShape {
         return new MovingObjectPosition(x, y, z, side, hit);
     }
 
-    /// How far along the ray (0 to 1) it enters face `f` from the front, or -1.
+    /// How far along the ray (0 to 1) it crosses face `f`, or -1.
     private double hit(int f, double sx, double sy, double sz, double dx, double dy, double dz) {
         double[] face = faces.get(f), n = normals.get(f);
         double facing = n[0] * dx + n[1] * dy + n[2] * dz;
-        if (facing > -TOLERANCE) return -1;
+        if (Math.abs(facing) < TOLERANCE) return -1;
         double t = (n[0] * (face[0] - sx) + n[1] * (face[1] - sy) + n[2] * (face[2] - sz)) / facing;
         if (t < 0 || t > 1) return -1;
         return contains(face, n, sx + t * dx, sy + t * dy, sz + t * dz) ? t : -1;
