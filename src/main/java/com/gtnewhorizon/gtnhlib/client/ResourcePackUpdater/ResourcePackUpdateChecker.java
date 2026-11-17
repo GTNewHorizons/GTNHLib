@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
@@ -19,6 +21,7 @@ public final class ResourcePackUpdateChecker {
 
     private static final long FAILURE_COOLDOWN_MILLIS = 30L * 60L * 1000L;
     private static final long MANUAL_COOLDOWN_MILLIS = 30L * 1000L;
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+\\.\\d+)");
     private static boolean hasRunThisSession = false;
     private static long lastFailureMillis = 0L;
     private static long lastManualMillis = 0L;
@@ -227,24 +230,31 @@ public final class ResourcePackUpdateChecker {
         if (version == null) {
             return "unknown";
         }
-        if (version.startsWith("2.8")) {
-            return "2.8.X";
+        Matcher matcher = VERSION_PATTERN.matcher(version.trim());
+        if (!matcher.find()) {
+            RpUpdaterLog.debug("Unrecognized modpack version: {}", version);
+            return "unknown";
         }
-        if (version.startsWith("2.9")) {
-            return "2.9.X";
-        }
-        if (version.matches("\\d+\\.\\d+\\.X")) {
-            return version;
-        }
-        return "unknown";
+        return matcher.group(1) + ".X";
     }
 
-    private static String readModpackVersion() { // TODO Get Actual modpack version somehow, because yes
+    // The pack builder writes the real version (e.g. "2.9.0" or "2.9.x (Daily 103)") into
+    // DreamCoreMod.properties. Coremods older than 2.9.26 lack that field, so fall back to the
+    // hardcoded Refstrings value, which is only accurate to the major.minor line.
+    private static String readModpackVersion() {
+        String version = readStaticString("com.dreammaster.coremod.DreamCoreMod", "displayedModpackVersion");
+        if (version == null) {
+            version = readStaticString("com.dreammaster.lib.Refstrings", "MODPACKPACK_VERSION");
+        }
+        return version;
+    }
+
+    private static String readStaticString(String className, String fieldName) {
         try {
-            Class<?> refstrings = Class.forName("com.dreammaster.lib.Refstrings");
-            return (String) refstrings.getField("MODPACKPACK_VERSION").get(null);
+            Object value = Class.forName(className).getField(fieldName).get(null);
+            return value instanceof String ? (String) value : null;
         } catch (Exception e) {
-            RpUpdaterLog.debug("Refstrings not available: {}", e.toString());
+            RpUpdaterLog.debug("{}.{} not available: {}", className, fieldName, e.toString());
             return null;
         }
     }
