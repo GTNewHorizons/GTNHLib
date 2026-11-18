@@ -10,14 +10,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 public interface IBlockClimbableFromSide {
 
     /**
-     * Tells if this entity can climb at this side here
+     * Tells if this player entity can climb at this side here
      *
-     * @param world  the world the block is in
-     * @param x      the x coordinate of the block
-     * @param y      the y coordinate of the block
-     * @param z      the z coordinate of the block
-     * @param side   the side of the block that the entity touches
-     * @param entity the entity that tries to climb
+     * @param world        the world the block is in
+     * @param x            the x coordinate of the block
+     * @param y            the y coordinate of the block
+     * @param z            the z coordinate of the block
+     * @param side         the side of the block that the entity touches
+     * @param entityPlayer the player entity that tries to climb
      * @return true if the side can be climbed
      * @implNote Keep this method lean: it runs for each entity that tries to climb.
      */
