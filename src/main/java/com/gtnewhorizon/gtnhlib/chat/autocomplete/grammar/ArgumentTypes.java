@@ -262,9 +262,11 @@ public final class ArgumentTypes {
 
     /// Names only work in /effect when the potion name mixin is applied, otherwise only numeric ids are accepted.
     private static List<String> suggestEffects() {
-        return  Arrays.stream(Potion.potionTypes).filter(Objects::nonNull).map(potion -> GTNHLibConfig.injectModernIdExt && AutocompleteConfig.effectNames
-                ? ModernIds.getPotionId(potion).toString()
-                : Integer.toString(potion.id))
+        return Arrays.stream(Potion.potionTypes).filter(Objects::nonNull)
+                .map(
+                        potion -> GTNHLibConfig.injectModernIdExt && AutocompleteConfig.effectNames
+                                ? ModernIds.getPotionId(potion).toString()
+                                : Integer.toString(potion.id))
                 .sorted().collect(Collectors.toList());
     }
 
