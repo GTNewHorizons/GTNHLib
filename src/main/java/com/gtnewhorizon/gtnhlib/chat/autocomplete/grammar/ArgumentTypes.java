@@ -27,7 +27,6 @@ import net.minecraft.util.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.chat.autocomplete.AutocompleteConfig;
 import com.gtnewhorizon.gtnhlib.util.data.Lazy;
 
 /// The argument types used by the built-in command grammars.
@@ -256,8 +255,7 @@ public final class ArgumentTypes {
     private static List<String> suggestEffects() {
         return Arrays.stream(Potion.potionTypes).filter(Objects::nonNull)
                 .map(
-                        potion -> AutocompleteConfig.effectNames ? potion.getName().replaceAll("^potion\\.", "")
-                                : Integer.toString(potion.id))
+                        potion -> Integer.toString(potion.id))
                 .collect(Collectors.toList());
     }
 }
