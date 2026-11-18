@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -27,6 +28,9 @@ import net.minecraft.util.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+import com.gtnewhorizon.gtnhlib.chat.autocomplete.AutocompleteConfig;
+import com.gtnewhorizon.gtnhlib.modern.ModernIds;
 import com.gtnewhorizon.gtnhlib.util.data.Lazy;
 
 /// The argument types used by the built-in command grammars.
@@ -38,7 +42,8 @@ public final class ArgumentTypes {
     private static final Pattern COORDINATE = Pattern.compile("~|~?-?\\d+(\\.\\d+)?");
     private static final Pattern INTEGER = Pattern.compile("-?\\d+");
     private static final Pattern NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
-    private static final Pattern EFFECT = Pattern.compile("[A-Za-z0-9_.]+");
+    private static final Pattern EFFECT = Pattern.compile("[A-Za-z0-9_.:-]+");
+    private static final Pattern ENCHANTMENT = Pattern.compile("[A-Za-z0-9_.:-]+");
     private static final Pattern REGISTRY_NAME = Pattern.compile("[A-Za-z0-9_.:|-]+");
     private static final Pattern STAT = Pattern.compile("\\*|[A-Za-z0-9_.:-]+");
     private static final Pattern WORD = Pattern.compile("\\S+");
@@ -79,6 +84,10 @@ public final class ArgumentTypes {
 
     public static ArgumentType effect() {
         return new ArgumentType(EFFECT, sender -> suggestEffects(), false);
+    }
+
+    public static ArgumentType enchant() {
+        return new ArgumentType(ENCHANTMENT, sender -> suggestEnchantments(), false);
     }
 
     public static ArgumentType word() {
@@ -253,7 +262,19 @@ public final class ArgumentTypes {
 
     /// Names only work in /effect when the potion name mixin is applied, otherwise only numeric ids are accepted.
     private static List<String> suggestEffects() {
-        return Arrays.stream(Potion.potionTypes).filter(Objects::nonNull).map(potion -> Integer.toString(potion.id))
-                .collect(Collectors.toList());
+        return  Arrays.stream(Potion.potionTypes).filter(Objects::nonNull).map(potion -> GTNHLibConfig.injectModernIdExt && AutocompleteConfig.effectNames
+                ? ModernIds.getPotionId(potion).toString()
+                : Integer.toString(potion.id))
+                .sorted().collect(Collectors.toList());
+    }
+
+    /// Names only work in /enchant when the enchantment name mixin is applied, otherwise only numeric ids are accepted.
+    private static List<String> suggestEnchantments() {
+        return Arrays.stream(Enchantment.enchantmentsList).filter(Objects::nonNull)
+                .map(
+                        enchantment -> GTNHLibConfig.injectModernIdExt && AutocompleteConfig.enchantNames
+                                ? ModernIds.getEnchantmentId(enchantment).toString()
+                                : Integer.toString(enchantment.effectId))
+                .sorted().collect(Collectors.toList());
     }
 }

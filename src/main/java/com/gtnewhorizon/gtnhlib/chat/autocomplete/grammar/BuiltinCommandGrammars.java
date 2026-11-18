@@ -6,6 +6,7 @@ import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.c
 import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.coordinate;
 import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.criteria;
 import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.difficulty;
+import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.enchant;
 import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.entity;
 import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.gameMode;
 import static com.gtnewhorizon.gtnhlib.chat.autocomplete.grammar.ArgumentTypes.gameRule;
@@ -62,7 +63,7 @@ public final class BuiltinCommandGrammars {
         driver.register(
                 command(
                         param("player", player()),
-                        param("enchantment ID", integer()),
+                        param("enchantment ID", enchant()),
                         optional(param("level", integer()))),
                 "enchant");
         driver.register(command(param("mode", gameMode()), optional(param("player", player()))), "gamemode");
