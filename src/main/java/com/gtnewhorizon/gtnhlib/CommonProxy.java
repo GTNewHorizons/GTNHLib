@@ -15,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierCommandWrapper;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
+import com.gtnewhorizon.gtnhlib.chat.autocomplete.BuiltinChatAutocompleteDrivers;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentBlockName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
@@ -93,6 +94,8 @@ public class CommonProxy {
         if (GTNHLibConfig.enableTestItems) {
             GameRegistry.registerItem(TestItem.INSTANCE, "testitem");
         }
+
+        BuiltinChatAutocompleteDrivers.init();
 
         BlockPropertyInit.init();
 
