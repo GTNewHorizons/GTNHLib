@@ -1,6 +1,7 @@
 package com.gtnewhorizon.gtnhlib.mixins;
 
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+import com.gtnewhorizon.gtnhlib.chat.autocomplete.AutocompleteConfig;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
@@ -87,6 +88,9 @@ public enum Mixins implements IMixins {
                     "flowerpotcompat.MixinBOPPlant",
                     "flowerpotcompat.MixinBOPMushroom")
             .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
+    CHAT_AUTOCOMPLETE_SUGGESTIONS(new MixinBuilder("Draw chat autocomplete suggestions on top of an open chat window")
+            .setPhase(Phase.EARLY).addClientMixins("MixinGuiChat_AutocompleteSuggestions")
+            .setApplyIf(() -> AutocompleteConfig.enabled)),
     //
     ;
 
