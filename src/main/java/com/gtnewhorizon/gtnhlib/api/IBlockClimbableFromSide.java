@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.api;
 
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -23,7 +23,7 @@ public interface IBlockClimbableFromSide {
      */
     @SuppressWarnings({ "unused", "MethodWithTooManyParameters" }) // default method by design
     default boolean isClimbableSide(IBlockAccess world, int x, int y, int z, ForgeDirection side,
-            EntityLivingBase EntityPlayer) {
+            EntityPlayer entityPlayer) {
         return true;
     }
 }
