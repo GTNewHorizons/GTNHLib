@@ -10,26 +10,20 @@ import net.minecraftforge.common.util.ForgeDirection;
 public interface IBlockClimbableFromSide {
 
     /**
-     * Tells if an entity can climb this block.
+     * Tells if this entity can climb at this side here
      *
-     * @param entity the entity that touches the block
-     * @return true if the entity can climb the block
-     */
-    default boolean canClimb(EntityLivingBase entity) {
-        return true;
-    }
-
-    /**
-     * Tells if a side of this block can be climbed.
-     *
-     * @param world the world the block is in
-     * @param x     the x coordinate of the block
-     * @param y     the y coordinate of the block
-     * @param z     the z coordinate of the block
-     * @param side  the side of the block that the entity touches
+     * @param world  the world the block is in
+     * @param x      the x coordinate of the block
+     * @param y      the y coordinate of the block
+     * @param z      the z coordinate of the block
+     * @param side   the side of the block that the entity touches
+     * @param entity the entity that tries to climb
      * @return true if the side can be climbed
+     * @implNote Keep this method lean: it runs for each entity that tries to climb.
      */
-    default boolean isClimbableSide(IBlockAccess world, int x, int y, int z, ForgeDirection side) {
+    @SuppressWarnings({ "unused", "MethodWithTooManyParameters" }) // default method by design
+    default boolean isClimbableSide(IBlockAccess world, int x, int y, int z, ForgeDirection side,
+            EntityLivingBase entity) {
         return true;
     }
 }

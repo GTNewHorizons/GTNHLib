@@ -1,6 +1,5 @@
 package com.gtnewhorizon.gtnhlib.blocks.util;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
@@ -35,8 +34,9 @@ public final class BlockClimbing {
         final int maxZ = MathHelper.floor_double(box.maxZ + CONTACT_DISTANCE);
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
+                if (!(world.getBlock(x, y, z) instanceof IBlockClimbableFromSide climbableBlock)) continue;
                 final ForgeDirection side = getTouchedSide(box, x, z);
-                if (side != ForgeDirection.UNKNOWN && isClimbableSide(world, x, y, z, side, entity)) {
+                if (side != ForgeDirection.UNKNOWN && climbableBlock.isClimbableSide(world, x, y, z, side, entity)) {
                     return true;
                 }
             }
@@ -54,12 +54,5 @@ public final class BlockClimbing {
             return box.minZ >= z + 1 ? ForgeDirection.SOUTH : ForgeDirection.NORTH;
         }
         return ForgeDirection.UNKNOWN;
-    }
-
-    private static boolean isClimbableSide(World world, int x, int y, int z, ForgeDirection side,
-            EntityLivingBase entity) {
-        final Block block = world.getBlock(x, y, z);
-        return block instanceof IBlockClimbableFromSide climbable && climbable.canClimb(entity)
-                && climbable.isClimbableSide(world, x, y, z, side);
     }
 }
