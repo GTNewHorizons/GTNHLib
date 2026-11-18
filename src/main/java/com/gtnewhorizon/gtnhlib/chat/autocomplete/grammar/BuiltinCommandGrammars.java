@@ -63,7 +63,7 @@ public final class BuiltinCommandGrammars {
         driver.register(
                 command(
                         param("player", player()),
-                        param("enchantment ID", enchant()),
+                        param("enchantment", enchant()),
                         optional(param("level", integer()))),
                 "enchant");
         driver.register(command(param("mode", gameMode()), optional(param("player", player()))), "gamemode");
