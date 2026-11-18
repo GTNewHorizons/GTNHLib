@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.falsepattern.deploader.DeploaderStub;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
+import com.gtnewhorizon.gtnhlib.chat.autocomplete.AutocompleteConfig;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.mixins.Mixins;
@@ -55,6 +56,7 @@ public class GTNHLibCore implements IFMLLoadingPlugin, IEarlyMixinLoader {
         verifyDependencies();
         try {
             ConfigurationManager.registerConfig(GTNHLibConfig.class);
+            ConfigurationManager.registerConfig(AutocompleteConfig.class);
         } catch (ConfigException e) {
             throw new RuntimeException(e);
         }

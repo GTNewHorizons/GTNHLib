@@ -117,6 +117,20 @@ description.villager.profession.agricraft.villager=Agricraft Farmer
 # Number Formatting Config
 gtnhlib.config.number_formatting.numberFormatLocale=Number Format Locale
 gtnhlib.config.number_formatting.numberFormatLocale.tooltip=Select the locale used for number formatting. System Default uses the system language format.
+# Chat Autocomplete Config
+gtnhlib.config.autocomplete=Chat Autocomplete
+gtnhlib.config.autocomplete.tooltip=Suggestions and command hints while typing in chat.
+gtnhlib.config.autocomplete.enabled=Enable Autocomplete
+gtnhlib.config.autocomplete.enabled.tooltip=Enables the suggestion popup and the gray command hint. When disabled on a server, the server stops sending suggestions, and clients that join it turn autocomplete off.
+gtnhlib.config.autocomplete.showpopup=Show Suggestion Popup
+gtnhlib.config.autocomplete.showpopup.tooltip=Shows the list of suggestions above the chat bar. When hidden, the arrow keys and tab work as they do in vanilla.
+gtnhlib.config.autocomplete.showhint=Show Command Hint
+gtnhlib.config.autocomplete.showhint.tooltip=Shows the rest of the command in gray after the text, such as '<player> <item> [amount]'.
+gtnhlib.config.autocomplete.popuprows=Popup Rows
+gtnhlib.config.autocomplete.popuprows.tooltip=How many suggestions the popup shows at once.
+gtnhlib.config.autocomplete.maxsuggestions=Maximum Suggestions
+gtnhlib.config.autocomplete.maxsuggestions.tooltip=The most suggestions sent to a client at once. Long lists, such as items, are narrowed down as the player types.
+
 # Resource Pack Updater
 # Resource Pack Update Notifier
 gtnhlib.chat.rpupdater.update_available=§3New update available for §f%s: v%s §7(you have v%s)§3.
