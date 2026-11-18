@@ -26,7 +26,7 @@ tile.weighted_rng_test.name=Weighted RNG Test Block
 
 # Configuration
 fml.configgui.tooltip.default=[default: %s]
-fml.configgui.tooltip.defaultNumeric=[range: %2$s ~ %3$s, default: %1$s]
+fml.configgui.tooltip.defaultNumeric=[range: %1$s ~ %2$s, default: %3$s]
 
 # Moved from WAWLA
 # Villager Professions
