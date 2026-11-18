@@ -39,6 +39,7 @@ import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestAo;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestOutlineShape;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.test.block.BlockWeightedRngTest;
@@ -83,6 +84,7 @@ public class CommonProxy {
             BlockTestTintMul.register();
             BlockRngTest.register();
             BlockWeightedRngTest.register();
+            BlockTestOutlineShape.register();
             BlockYUVRotationTest.register();
             BlockXUVRotationTest.register();
             BlockXYUVRotationTest.register();
@@ -143,6 +145,7 @@ public class CommonProxy {
         event.registerServerCommand(new TitleCommand());
 
         if (isThermosServer()) {
+            GTNHLib.LOG.info("Thermos detected, applying command wrapper");
             for (CommandNode<ICommandSender> node : BrigadierApi.getCommandDispatcher().getRoot().getChildren()) {
                 event.registerServerCommand(new BrigadierCommandWrapper(node.getName()));
             }
@@ -155,14 +158,18 @@ public class CommonProxy {
      * @return true if the server core is detected, false otherwise.
      */
     public static boolean isThermosServer() {
-        try {
-            Class.forName("thermos.ThermosRemapper", false, CommonProxy.class.getClassLoader());
-            GTNHLib.LOG.info("Thermos detected, applying command wrapper");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
+        if (thermosServer == null) {
+            try {
+                Class.forName("thermos.ThermosRemapper", false, CommonProxy.class.getClassLoader());
+                thermosServer = true;
+            } catch (ClassNotFoundException e) {
+                thermosServer = false;
+            }
         }
+        return thermosServer;
     }
+
+    private static Boolean thermosServer;
 
     public void serverStarted(FMLServerStartedEvent event) {}
 

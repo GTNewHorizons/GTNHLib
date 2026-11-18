@@ -33,8 +33,18 @@ public class WrappedItemIO implements ItemIO {
     }
 
     @Override
+    public OptionalInt simulateStore(ImmutableItemStack stack) {
+        return sink == null ? OptionalInt.of(stack.getStackSize()) : sink.simulateStore(stack);
+    }
+
+    @Override
     public void setAllowedSinkSlots(int @Nullable [] slots) {
         if (sink != null) sink.setAllowedSinkSlots(slots);
+    }
+
+    @Override
+    public void setSlotStackLimit(int limit) {
+        if (sink != null) sink.setSlotStackLimit(limit);
     }
 
     @Override
