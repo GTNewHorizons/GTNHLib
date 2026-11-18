@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib.mixins.early;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
@@ -17,6 +18,7 @@ public class MixinForgeHooks_ClimbableBlock {
     @ModifyReturnValue(method = "isLivingOnLadder", at = @At("RETURN"))
     private static boolean gtnhlib$climbBlock(boolean original, Block block, World world, int x, int y, int z,
             EntityLivingBase entity) {
-        return original || BlockClimbing.isClimbing(world, entity);
+        return original
+                || (entity instanceof EntityPlayer entityPlayer && BlockClimbing.isClimbing(world, entityPlayer));
     }
 }

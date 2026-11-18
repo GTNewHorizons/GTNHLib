@@ -1,6 +1,6 @@
 package com.gtnewhorizon.gtnhlib.blocks.util;
 
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -19,14 +19,14 @@ public final class BlockClimbing {
     private BlockClimbing() {}
 
     /**
-     * Tells if an entity climbs a block side it touches.
+     * Tells if the player entity climbs a block side it touches.
      *
-     * @param world  the world the entity is in
-     * @param entity the entity to check
+     * @param world        the world the entity is in
+     * @param entityPlayer the player entity to check
      * @return true if the entity climbs a block side
      */
-    public static boolean isClimbing(World world, EntityLivingBase entity) {
-        final AxisAlignedBB box = entity.boundingBox;
+    public static boolean isClimbing(World world, EntityPlayer entityPlayer) {
+        final AxisAlignedBB box = entityPlayer.boundingBox;
         final int y = MathHelper.floor_double(box.minY);
         final int minX = MathHelper.floor_double(box.minX - CONTACT_DISTANCE);
         final int maxX = MathHelper.floor_double(box.maxX + CONTACT_DISTANCE);
@@ -36,9 +36,7 @@ public final class BlockClimbing {
             for (int z = minZ; z <= maxZ; z++) {
                 if (!(world.getBlock(x, y, z) instanceof IBlockClimbableFromSide climbableBlock)) continue;
                 final ForgeDirection side = getTouchedSide(box, x, z);
-                if (side != ForgeDirection.UNKNOWN && climbableBlock.isClimbableSide(world, x, y, z, side, entity)) {
-                    return true;
-                }
+                if (climbableBlock.isClimbableSide(world, x, y, z, side, entityPlayer)) return true;
             }
         }
         return false;

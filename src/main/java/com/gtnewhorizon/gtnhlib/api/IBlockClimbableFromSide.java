@@ -23,7 +23,7 @@ public interface IBlockClimbableFromSide {
      */
     @SuppressWarnings({ "unused", "MethodWithTooManyParameters" }) // default method by design
     default boolean isClimbableSide(IBlockAccess world, int x, int y, int z, ForgeDirection side,
-            EntityLivingBase entity) {
+            EntityLivingBase EntityPlayer) {
         return true;
     }
 }
