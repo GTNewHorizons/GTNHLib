@@ -285,13 +285,23 @@ public class NBTStructure {
                 if (state.getType() == BlockStateContainer.BlockStateType.BLOCK_ENTITY) {
                     TileEntity te = world.getTileEntity(x, y, z);
                     if (te != null) {
-                        NBTTagCompound nbt = state.getCompound() != null ? state.getCompound() : new NBTTagCompound();
-                        nbt.setInteger("x", x);
-                        nbt.setInteger("y", y);
-                        nbt.setInteger("z", z);
                         te.blockType = state.getBlock();
                         te.blockMetadata = state.getMeta();
-                        te.readFromNBT(getTileEntityNBTPostPlace(world, rand, x, y, z, state, integrity, nbt));
+                        NBTTagCompound nbt = getTileEntityNBTPostPlace(
+                                world,
+                                rand,
+                                x,
+                                y,
+                                z,
+                                state,
+                                integrity,
+                                state.getCompound());
+                        if (nbt != null) {
+                            nbt.setInteger("x", x);
+                            nbt.setInteger("y", y);
+                            nbt.setInteger("z", z);
+                            te.readFromNBT(nbt);
+                        }
                         te.markDirty();
                         if (te instanceof IInventory && state.getLootTable() != null) {
                             WeightedRandomChestContent.generateChestContents(
@@ -318,8 +328,8 @@ public class NBTStructure {
      * @param state
      * @param integrity
      * @param nbt
-     * @return The tag compound that will be applied to the tile entity. If you create a new NBTTagCompound instance
-     *         don't forget to set the x y and z coords in the new compound.
+     * @return The tag compound that will be applied to the tile entity, or null to leave the new tile entity as it is.
+     *         The x, y and z coords are set for you.
      */
     protected NBTTagCompound getTileEntityNBTPostPlace(World world, Random rand, int x, int y, int z,
             BlockStateContainer state, float integrity, NBTTagCompound nbt) {
