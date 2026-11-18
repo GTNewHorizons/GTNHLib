@@ -16,6 +16,7 @@ public enum Mixins implements IMixins {
     AUTO_CONFIG_GUI(Side.CLIENT, "fml.MixinGuiModList"),
     EVENT_BUS_ACCESSOR(Side.COMMON, "fml.EventBusAccessor", "fml.EnumHolderAccessor"),
     TOOLTIP_RENDER(Side.CLIENT, "MixinGuiScreen"),
+    TEXT_FIELD_AMP_CODE_AWARE(Side.CLIENT, "MixinGuiTextField_AmpCodeAware"),
     EQUIPMENT_CHANGE_EVENT(Side.COMMON, "MixinEntityLivingBase"),
     BACKPORT_SERVER_TICKING(Side.COMMON, "MixinMinecraftServer"),
     GAME_RULES_API(Side.COMMON, "MixinGameRules"),
