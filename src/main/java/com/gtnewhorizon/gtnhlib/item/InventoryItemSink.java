@@ -1,22 +1,36 @@
 package com.gtnewhorizon.gtnhlib.item;
 
+import java.util.OptionalInt;
+
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.primitives.Ints;
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.capability.item.ItemSink;
 
-import it.unimi.dsi.fastutil.ints.IntIterators;
-
 public class InventoryItemSink implements ItemSink {
+
+    private static final ClassValue<Boolean> STANDARD_STORAGE = new ClassValue<>() {
+
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            try {
+                return type.getMethod("store", ImmutableItemStack.class).getDeclaringClass() == InventoryItemSink.class
+                        && type.getMethod("sinkIterator").getDeclaringClass() == InventoryItemSink.class;
+            } catch (NoSuchMethodException | SecurityException | LinkageError ignored) {
+                return false;
+            }
+        }
+    };
 
     public final IInventory inv;
     private final ForgeDirection side;
+    private final boolean standardStorage;
 
     private int[] allowedSlots;
     private int slotStackLimit = Integer.MAX_VALUE;
@@ -24,14 +38,11 @@ public class InventoryItemSink implements ItemSink {
     public InventoryItemSink(IInventory inv, ForgeDirection side) {
         this.inv = inv;
         this.side = side;
+        standardStorage = STANDARD_STORAGE.get(getClass());
     }
 
     protected int[] getSlots() {
-        if (this.inv instanceof ISidedInventory sided) {
-            return sided.getAccessibleSlotsFromSide(this.side.ordinal());
-        } else {
-            return IntIterators.unwrap(IntIterators.fromTo(0, this.inv.getSizeInventory()));
-        }
+        return StandardInventoryIterator.getInventorySlotIndices(inv, side);
     }
 
     @Override
@@ -52,11 +63,43 @@ public class InventoryItemSink implements ItemSink {
     }
 
     @Override
+    public boolean mayAcceptItems() {
+        // Existing subclasses can accept items independently of the visible inventory's capacity
+        if (!standardStorage) return true;
+        if (slotStackLimit <= 0) return false;
+        // An inaccessible slot can provide a positive hint. The insertion iterator still checks slot permissions.
+        if (inv.getSizeInventory() > 0 && hasCapacity(0)) return true;
+        for (int slot : getSlots()) {
+            if (hasCapacity(slot)) return true;
+        }
+        return false;
+    }
+
+    private boolean hasCapacity(int slot) {
+        ItemStack stored = inv.getStackInSlot(slot);
+        if (stored == null || stored.stackSize <= 0) return true;
+        // Avoid querying slot capacity for a single unstackable item
+        if (stored.stackSize == 1) {
+            return stored.isStackable() && stored.stackSize < Math.min(getSlotStackLimit(slot, stored), slotStackLimit);
+        }
+        return stored.stackSize < Math.min(getSlotStackLimit(slot, stored), slotStackLimit) && stored.isStackable();
+    }
+
+    @Override
     public int store(ImmutableItemStack stack) {
         if (stack.isEmpty()) return 0;
+        return store(stack, sinkIterator(), false);
+    }
 
-        StandardInventoryIterator iter = sinkIterator();
+    @Override
+    public OptionalInt simulateStore(ImmutableItemStack stack) {
+        if (stack.isEmpty()) return ZERO;
+        if (!standardStorage) return OptionalInt.empty();
+        InventoryIterator iter = simulatedSinkIterator();
+        return iter == null ? OptionalInt.empty() : OptionalInt.of(store(stack, iter, true));
+    }
 
+    private int store(ImmutableItemStack stack, InventoryIterator iter, boolean simulate) {
         InsertionItemStack insertion = new InsertionItemStack(stack);
 
         while (iter.hasNext()) {
@@ -69,7 +112,11 @@ public class InventoryItemSink implements ItemSink {
             if (insertion.isEmpty()) return 0;
         }
 
-        iter.rewind();
+        if (!iter.rewind()) {
+            if (!simulate) return insertion.getStackSize();
+            iter = simulatedSinkIterator();
+            if (iter == null) return insertion.getStackSize();
+        }
 
         while (iter.hasNext()) {
             ImmutableItemStack slot = iter.next();
@@ -95,7 +142,7 @@ public class InventoryItemSink implements ItemSink {
 
             @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {
-                return InventoryItemSink.this.getSlotStackLimit(slot, stack);
+                return Math.min(InventoryItemSink.this.getSlotStackLimit(slot, stack), slotStackLimit);
             }
         };
     }
@@ -107,7 +154,7 @@ public class InventoryItemSink implements ItemSink {
 
         int baseLimit;
         if (invStackLimit > 64) {
-            baseLimit = invStackLimit / 64 * existingMaxStack;
+            baseLimit = Math.min(invStackLimit, Ints.saturatedCast((long) (invStackLimit / 64) * existingMaxStack));
         } else {
             baseLimit = Math.min(invStackLimit, existingMaxStack);
         }
@@ -126,7 +173,7 @@ public class InventoryItemSink implements ItemSink {
 
             @Override
             protected int getSlotStackLimit(int slot, ItemStack stack) {
-                return InventoryItemSink.this.getSlotStackLimit(slot, stack);
+                return Math.min(InventoryItemSink.this.getSlotStackLimit(slot, stack), slotStackLimit);
             }
 
             @Override
@@ -149,11 +196,6 @@ public class InventoryItemSink implements ItemSink {
             public ImmutableItemStack previous() {
                 GTNHLib.LOG.warn("This simulated sink iterator doesn't support backward traversal");
                 return null;
-            }
-
-            @Override
-            public boolean rewind() {
-                return false;
             }
         };
     }
