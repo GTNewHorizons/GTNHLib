@@ -12,7 +12,7 @@ public class TextFieldFormatting {
 
     private TextFieldFormatting() {}
 
-    static boolean loggedNonMixinedField = false;
+    private static boolean loggedNonMixinedField = false;
 
     public static void setAmpCodeAware(GuiTextField field, boolean enabled) {
         if (field == null) {
