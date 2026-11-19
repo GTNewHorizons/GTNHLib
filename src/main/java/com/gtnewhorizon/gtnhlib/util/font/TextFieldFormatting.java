@@ -15,6 +15,10 @@ public class TextFieldFormatting {
     static boolean loggedNonMixinedField = false;
 
     public static void setAmpCodeAware(GuiTextField field, boolean enabled) {
+        if (field == null) {
+            return;
+        }
+
         if (!(field instanceof IAmpCodeAwareField)) {
             // Shouldn't happen because of the mixin
             logNoMixinWarning(field);
@@ -25,6 +29,10 @@ public class TextFieldFormatting {
     }
 
     public static boolean isAmpCodeAware(GuiTextField field) {
+        if (field == null) {
+            return false;
+        }
+
         if (!(field instanceof IAmpCodeAwareField)) {
             // Shouldn't happen because of the mixin, keep the previous behavior if it does anyhow
             logNoMixinWarning(field);
