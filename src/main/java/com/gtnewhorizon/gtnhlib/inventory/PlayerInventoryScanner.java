@@ -33,6 +33,7 @@ public final class PlayerInventoryScanner {
         }
 
         poster.player = player;
+        poster.current = current;
         InventoryDiffer.diff(state.previous, current, poster);
         state.swap();
     }
@@ -41,8 +42,8 @@ public final class PlayerInventoryScanner {
         accumulateArray(player.inventory.mainInventory, out);
         accumulateArray(player.inventory.armorInventory, out);
         accumulate(player.inventory.getItemStack(), out); // cursor / held stack
-        if (player.inventoryContainer instanceof ContainerPlayer) {
-            accumulateInventory(((ContainerPlayer) player.inventoryContainer).craftMatrix, out);
+        if (player.inventoryContainer instanceof ContainerPlayer container) {
+            accumulateInventory(container.craftMatrix, out);
         }
         if (Mods.BAUBLES) {
             accumulateInventory(BaublesCompat.getBaubles(player), out);

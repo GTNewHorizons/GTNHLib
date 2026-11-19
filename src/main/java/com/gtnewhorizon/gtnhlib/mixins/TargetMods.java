@@ -8,7 +8,8 @@ import com.gtnewhorizon.gtnhmixins.builders.TargetModBuilder;
 public enum TargetMods implements ITargetMod {
 
     LWJGL3IFY("me.eigenraven.lwjgl3ify.core.Lwjgl3ifyCoremod"),
-    THAUMCRAFT("", "Thaumcraft");
+    THAUMCRAFT("", "Thaumcraft"),
+    BIOMES_O_PLENTY("biomesoplenty.BiomesOPlenty", "BiomesOPlenty");
 
     private final TargetModBuilder builder;
 

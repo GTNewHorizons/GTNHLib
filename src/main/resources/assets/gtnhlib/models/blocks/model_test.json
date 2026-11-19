@@ -1,6 +1,12 @@
 {
-  "parent": "block/cube_all",
+  "parent": "block/cube",
   "textures": {
-    "all": "minecraft:stone"
+    "particle": "gtnhlib:blocks/test",
+    "north": "blocks/stone",
+    "south": "minecraft:blocks/oak_planks",
+    "east":  "items/blaze_rod",
+    "west":  "minecraft:items/apple",
+    "up":    "gtnhlib:blocks/test",
+    "down":  "gtnhlib:blocks/test"
   }
 }

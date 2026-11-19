@@ -20,16 +20,24 @@ public enum Mixins implements IMixins {
     BACKPORT_SERVER_TICKING(Side.COMMON, "MixinMinecraftServer"),
     GAME_RULES_API(Side.COMMON, "MixinGameRules"),
     BRIGADIER(Side.COMMON, "MixinCommandHandler", "MixinCommandHelp"),
+    CLIMBABLE_BLOCK(Side.COMMON, "MixinForgeHooks_ClimbableBlock"),
     FONT_RENDERER(new MixinBuilder("Font rendering replacements").addClientMixins("MixinFontRenderer")
             .setPhase(Phase.EARLY).setApplyIf(() -> GTNHLibConfig.enableFontRendererMixin)),
     BLOCK_PROPERTIES_ACCESSORS(Side.COMMON, "MixinTileEntitySkull"),
     MODEL_TEXTURE_LOADING(new MixinBuilder("Automatically load models, textures, and metadata.").addClientMixins(
             "models.FRMAccessor",
-            "models.MixinEffectRenderer_FixParticleIcons",
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
+            "models.MixinTextureAtlasSprite",
+            "models.MixinTextureMap",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
+    MODEL_PARTICLE_FIXES(new MixinBuilder("Override particle icons for models.").addClientMixins(
+            "models.particles.MixinEffectRenderer",
+            "models.particles.MixinEntity",
+            "models.particles.MixinRenderGlobal",
+            "models.particles.RenderGlobalAccessor",
+            "models.particles.WorldAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
     MODEL_ITEM_RENDERER(new MixinBuilder("Restore origin pivot before modifier").addClientMixins("models.MixinModelFHC")
             .setPhase(Phase.EARLY)),
     MODEL_BLOCK_CRACKS(new MixinBuilder("Fix crack texture appearance for modeled blocks")
@@ -50,9 +58,13 @@ public enum Mixins implements IMixins {
             .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
     CUSTOM_CHAT_COMPONENT_REGISTRATION(new MixinBuilder("Custom chat component registration")
             .addCommonMixins("MixinIChatComponentSerializer").setPhase(Phase.EARLY)),
+    ITEM_CHAT_COMPONENT(new MixinBuilder("Localize item names in chat components on the client")
+            .addCommonMixins("MixinItemStack_GetChatComponent").setPhase(Phase.EARLY)
+            .setApplyIf(() -> GTNHLibConfig.enableLocalizedItemChatComponents)),
     MULTI_RELEASE_JAR_FILTER(new MixinBuilder("Skip multi-release JAR entries in mod discovery")
             .addCommonMixins("fml.MixinJarDiscoverer").setPhase(Phase.EARLY).addExcludedMod(TargetMods.LWJGL3IFY)),
     PICK_BLOCK_TRAP(Side.CLIENT, "MixinMinecraft_PickBlockTrap"),
+    OUTLINE_SHAPE_RAY_TRACE(Side.COMMON, "MixinBlock_OutlineShapeRayTrace"),
 
     ENHANCED_INFUSION_RECIPE(new MixinBuilder(
             "Allow Thaumcraft Infusion Recipes to transform items instead of consuming them in an EnhancedInfusionRecipe")
@@ -62,6 +74,19 @@ public enum Mixins implements IMixins {
     WORLD_DELETION_EVENT(Side.CLIENT, "MixinGuiSelectWorld"),
     WORLD_LOAD_WARNING(new MixinBuilder("Accessors for the world conversion warning screen system")
             .addCommonMixins("AccessorGuiNotification", "AccessorStartupQuery").setPhase(Phase.EARLY)),
+    MODDED_FLOWERS_IN_FLOWER_POT(new MixinBuilder()
+            .addCommonMixins("MixinBlockFlowerPot", "MixinTileEntityFlowerPot", "MixinRenderBlocks_FlowerPot")
+            .setApplyIf(() -> GTNHLibConfig.enableMoreFlowerPottage).setPhase(Phase.EARLY)),
+    BIOMES_O_PLENTY_FLOWER_POT(new MixinBuilder("Implement IFlowerPottable on BoP blocks")
+            .setApplyIf(() -> GTNHLibConfig.enableMoreFlowerPottage).setPhase(Phase.LATE)
+            .addCommonMixins(
+                    "flowerpotcompat.MixinBOPColorizedSapling",
+                    "flowerpotcompat.MixinBOPSapling",
+                    "flowerpotcompat.MixinBOPFlower",
+                    "flowerpotcompat.MixinBOPFlower2",
+                    "flowerpotcompat.MixinBOPPlant",
+                    "flowerpotcompat.MixinBOPMushroom")
+            .addRequiredMod(TargetMods.BIOMES_O_PLENTY)),
     //
     ;
 

@@ -14,6 +14,7 @@ import org.joml.Vector3f;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormatElement.Type;
 
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
 import lombok.Getter;
@@ -243,6 +244,15 @@ public class VertexFormat {
 
     public final int getVertexFlags() {
         return this.vertexFlags;
+    }
+
+    public final boolean hasInlinePosition() {
+        if (elementsArray.length == 0) return false;
+
+        final VertexFormatElement first = elementsArray[0];
+        return first.getWriter().isInlinePosition() && first.getType() == Type.FLOAT
+                && first.getCount() == 3
+                && first.getByteSize() == 12;
     }
 
     public final boolean hasTexture() {

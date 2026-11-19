@@ -13,6 +13,8 @@ import com.gtnewhorizon.gtnhlib.client.renderer.CapturingTessellator;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.primitive.ModelPrimitiveView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadViewMutable;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.DefaultVertexFormat;
+import com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat;
 
 /**
  * Unit tests for TessellatorManager compiling mode and capturing mode.
@@ -23,6 +25,21 @@ public class TessellatorManagerTest {
     void cleanup() {
         // Ensure clean state after each test
         TessellatorManager.cleanup();
+    }
+
+    @Test
+    void testRejectedFormatDoesNotLeakTheStack() {
+        final VertexFormat uvFirst = new VertexFormat(
+                DefaultVertexFormat.TEXTURE_ELEMENT,
+                DefaultVertexFormat.POSITION_ELEMENT);
+
+        final int depth = TessellatorManager.getDirectCaptureDepth();
+
+        assertThrows(IllegalArgumentException.class, () -> TessellatorManager.startCapturingDirect(uvFirst));
+        assertEquals(
+                depth,
+                TessellatorManager.getDirectCaptureDepth(),
+                "Nothing should be left on the DirectTessellator stack");
     }
 
     @Test

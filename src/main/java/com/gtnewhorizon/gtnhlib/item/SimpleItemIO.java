@@ -55,8 +55,10 @@ public abstract class SimpleItemIO implements ItemIO {
     public int store(ImmutableItemStack stack) {
         if (stack == null || stack.isEmpty()) return 0;
 
-        InventoryIterator iter = sinkIterator();
+        return store(stack, sinkIterator());
+    }
 
+    protected static int store(ImmutableItemStack stack, InventoryIterator iter) {
         InsertionItemStack insertion = new InsertionItemStack(stack);
 
         while (iter.hasNext()) {

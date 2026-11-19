@@ -2,6 +2,7 @@ package com.gtnewhorizon.gtnhlib;
 
 import static com.gtnewhorizon.gtnhlib.core.GTNHLibCore.isObf;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
@@ -12,7 +13,9 @@ import net.minecraftforge.common.util.FakePlayer;
 import com.gtnewhorizon.gtnhlib.blockstate.command.BlockStateCommand;
 import com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit;
 import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import com.gtnewhorizon.gtnhlib.brigadier.BrigadierCommandWrapper;
 import com.gtnewhorizon.gtnhlib.chat.ChatComponentCustomRegistry;
+import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentBlockName;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentEnergy;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluid;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentFluidName;
@@ -31,15 +34,22 @@ import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
 import com.gtnewhorizon.gtnhlib.teams.TeamAdminCommand;
 import com.gtnewhorizon.gtnhlib.teams.TeamCommand;
+import com.gtnewhorizon.gtnhlib.test.block.BlockLightUnderStair;
 import com.gtnewhorizon.gtnhlib.test.block.BlockRngTest;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestAo;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestLectern;
+import com.gtnewhorizon.gtnhlib.test.block.BlockTestOutlineShape;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTint;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestTintMul;
 import com.gtnewhorizon.gtnhlib.test.block.BlockWeightedRngTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockXUVRotationTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockXYUVRotationTest;
+import com.gtnewhorizon.gtnhlib.test.block.BlockYUVRotationTest;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatConfig;
 import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
+import com.mojang.brigadier.tree.CommandNode;
 
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -66,12 +76,18 @@ public class CommonProxy {
         GTNHLib.info("GTNHLib version " + Tags.VERSION + " loaded.");
 
         if (GTNHLibConfig.enableTestBlocks) {
+            BlockLightUnderStair.register();
             BlockTest.register();
+            BlockTestAo.register();
             BlockTestLectern.register();
             BlockTestTint.register();
             BlockTestTintMul.register();
             BlockRngTest.register();
             BlockWeightedRngTest.register();
+            BlockTestOutlineShape.register();
+            BlockYUVRotationTest.register();
+            BlockXUVRotationTest.register();
+            BlockXYUVRotationTest.register();
         }
 
         if (GTNHLibConfig.enableTestItems) {
@@ -85,6 +101,7 @@ public class CommonProxy {
         ChatComponentCustomRegistry.register(ChatComponentEnergy::new);
         ChatComponentCustomRegistry.register(ChatComponentFluidName::new);
         ChatComponentCustomRegistry.register(ChatComponentItemName::new);
+        ChatComponentCustomRegistry.register(ChatComponentBlockName::new);
 
         // Number formatting config registration. Primarily aimed at client side, but does exist on server side
         // as well, just in-case calls are made to number formatting.
@@ -126,7 +143,33 @@ public class CommonProxy {
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new BlockStateCommand());
         event.registerServerCommand(new TitleCommand());
+
+        if (isThermosServer()) {
+            GTNHLib.LOG.info("Thermos detected, applying command wrapper");
+            for (CommandNode<ICommandSender> node : BrigadierApi.getCommandDispatcher().getRoot().getChildren()) {
+                event.registerServerCommand(new BrigadierCommandWrapper(node.getName()));
+            }
+        }
     }
+
+    /**
+     * Checks if the current environment is a Thermos server or its fork like Crucible.
+     *
+     * @return true if the server core is detected, false otherwise.
+     */
+    public static boolean isThermosServer() {
+        if (thermosServer == null) {
+            try {
+                Class.forName("thermos.ThermosRemapper", false, CommonProxy.class.getClassLoader());
+                thermosServer = true;
+            } catch (ClassNotFoundException e) {
+                thermosServer = false;
+            }
+        }
+        return thermosServer;
+    }
+
+    private static Boolean thermosServer;
 
     public void serverStarted(FMLServerStartedEvent event) {}
 

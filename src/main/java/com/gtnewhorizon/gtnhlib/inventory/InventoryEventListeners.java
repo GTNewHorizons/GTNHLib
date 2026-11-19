@@ -29,8 +29,8 @@ public final class InventoryEventListeners {
         if (ready) return;
         forgeBusId = ((EventBusAccessor) (Object) MinecraftForge.EVENT_BUS).getBusID();
         // The throwaway instances exist only to reach the per-class ListenerList; their fields are never read.
-        added = new InventoryChangedEvent.ItemAdded(null, null).getListenerList();
-        removed = new InventoryChangedEvent.ItemRemoved(null, null).getListenerList();
+        added = new InventoryChangedEvent.ItemAdded(null, null, 0).getListenerList();
+        removed = new InventoryChangedEvent.ItemRemoved(null, null, 0).getListenerList();
         ready = true;
     }
 }

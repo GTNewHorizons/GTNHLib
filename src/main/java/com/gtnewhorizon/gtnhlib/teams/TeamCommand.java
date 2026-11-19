@@ -17,6 +17,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.UsernameCache;
 
 import com.gtnewhorizon.gtnhlib.GTNHLib;
 import com.gtnewhorizon.gtnhlib.GTNHLibConfig;
@@ -495,7 +496,12 @@ public class TeamCommand {
 
         for (UUID memberUuid : team.getMembers()) {
             EntityPlayer member = ServerPlayerUtils.getPlayerByUUID(sender.getEntityWorld(), memberUuid);
-            if (member != null) builder.suggest(member.getCommandSenderName());
+            if (member != null) {
+                builder.suggest(member.getCommandSenderName());
+            } else {
+                String cachedName = UsernameCache.getLastKnownUsername(memberUuid);
+                if (cachedName != null) builder.suggest(cachedName);
+            }
         }
         return builder.buildFuture();
     }

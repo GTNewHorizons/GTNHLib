@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -52,7 +53,7 @@ public interface BlockProperty<TValue> {
     /// Converts a json value into a java value.
     /// It cannot be assumed that the json value is compatible with the string serialization methods.
     /// @throws InvalidPropertyJsonException When the json is invalid
-    default TValue deserialize(JsonElement element) {
+    default TValue deserialize(JsonElement element) throws InvalidPropertyJsonException {
         try {
             return getGson().fromJson(element, getType());
         } catch (JsonSyntaxException e) {
@@ -77,10 +78,21 @@ public interface BlockProperty<TValue> {
         }
     }
 
-    /// Parses text into a java value.
+    /// Converts a java value into its text/string representation.
     /// It cannot be assumed that the text value is compatible with the json serialization methods.
     default String stringify(TValue value) {
         return getGson().toJson(value);
+    }
+
+    default boolean appliesTo(IBlockAccess world, int x, int y, int z) {
+        return appliesTo(
+                world,
+                x,
+                y,
+                z,
+                world.getBlock(x, y, z),
+                world.getBlockMetadata(x, y, z),
+                world.getTileEntity(x, y, z));
     }
 
     default boolean appliesTo(IBlockAccess world, int x, int y, int z, Block block, int meta,
@@ -94,6 +106,12 @@ public interface BlockProperty<TValue> {
 
     default void setValue(World world, int x, int y, int z, TValue value) {
         throw new UnsupportedOperationException();
+    }
+
+    default boolean appliesTo(ItemStack stack) {
+        // Items.feather.getDamage is a shim that returns raw metadata; stack.getItemDamage() may return a
+        // non-meta value for items that override it.
+        return appliesTo(stack, stack.getItem(), Items.feather.getDamage(stack));
     }
 
     default boolean appliesTo(ItemStack stack, Item item, int meta) {

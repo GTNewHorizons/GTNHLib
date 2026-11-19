@@ -21,6 +21,11 @@ public final class NumberFormatConfig {
     @Config.DefaultBoolean(true)
     public static boolean useForgeFluidMillibuckets = true;
 
+    @Config.Comment({ "Debug: replaces the fluid unit with 'X' so places that hardcode L/mB instead of",
+            "using NumberFormatUtil.getFluidUnit() are easy to spot. If you're not a dev, you don't need this." })
+    @Config.DefaultBoolean(false)
+    public static boolean debugFluidUnit = false;
+
     @Config.Comment({ "Controls how very large numbers are rendered when scientific notation is used.",
             "  SCIENTIFIC   – Standard scientific notation (e.g. 1.23e12)",
             "  ENGINEERING  – Engineering notation with exponent in multiples of 3 (e.g. 123e9)",

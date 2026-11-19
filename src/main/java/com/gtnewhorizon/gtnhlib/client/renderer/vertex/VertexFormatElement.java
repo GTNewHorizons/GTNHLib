@@ -40,6 +40,11 @@ public class VertexFormatElement {
         this.writer = writer;
     }
 
+    @Override
+    public String toString() {
+        return usage.getName() + "[" + type.getName() + " x" + count + ", index=" + index + ", " + byteSize + " bytes]";
+    }
+
     public void setupBufferState(long offset, int stride) {
         this.usage.setupBufferState(this.count, this.type.getGlType(), stride, offset, this.index);
     }

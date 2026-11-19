@@ -1,6 +1,7 @@
 
 plugins {
     id("com.gtnewhorizons.gtnhconvention")
+    id("me.champeau.jmh") version "0.7.3"
 }
 
 minecraft {
@@ -79,4 +80,19 @@ for (jarTask in listOf(tasks.jar, tasks.shadowJar, tasks.sourcesJar)) {
             attributes("Multi-Release" to true)
         }
     }
+}
+
+sourceSets {
+    named("jmh") {
+        compileClasspath += sourceSets["patchedMc"].output
+        runtimeClasspath = files(main17.output) + runtimeClasspath + files(sourceSets["patchedMc"].output)
+    }
+}
+
+dependencies {
+    add("jmhRuntimeOnly", files(sourceSets["patchedMc"].output))
+}
+
+tasks.named<me.champeau.jmh.JMHTask>("jmh") {
+    dependsOn(main17.compileJavaTaskName)
 }

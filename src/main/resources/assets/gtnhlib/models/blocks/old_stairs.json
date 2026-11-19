@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/stairs",
   "textures": {
-    "bottom": "minecraft:planks_oak",
-    "side": "minecraft:planks_oak",
-    "top": "minecraft:planks_oak"
+    "bottom": "minecraft:blocks/planks_oak",
+    "side": "minecraft:blocks/planks_oak",
+    "top": "minecraft:blocks/planks_oak"
   }
 }

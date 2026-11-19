@@ -10,6 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
+import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyJsonException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 import com.gtnewhorizon.gtnhlib.blockstate.core.MetaBlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.TransformableProperty;
@@ -34,7 +35,7 @@ public interface OrientationBlockProperty extends BlockProperty<Orientation>, Tr
     }
 
     @Override
-    default Orientation deserialize(JsonElement element) {
+    default Orientation deserialize(JsonElement element) throws InvalidPropertyJsonException {
         return element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? parse(element.getAsString())
                 : Orientation.UNKNOWN;
     }

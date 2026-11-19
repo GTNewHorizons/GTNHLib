@@ -4,7 +4,9 @@ import static com.gtnewhorizon.gtnhlib.util.CommandUtils.colorChatComponent;
 import static com.gtnewhorizon.gtnhlib.util.CommandUtils.success;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,6 +18,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.MinecraftForge;
 
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.teams.TeamDataSync;
@@ -26,6 +29,9 @@ public class TeamActions {
     public static void onRename(Team team, String oldName, String newName, boolean adminAction,
             @Nullable ICommandSender admin) {
         team.markDirty();
+
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamRenameEvent(team, oldName, newName, adminAction));
+
         TeamManager.forEachOnlineTeamMember(team, member -> {
             NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
             success(
@@ -99,6 +105,8 @@ public class TeamActions {
         TeamManager.PLAYER_TEAM_CACHE.put(playerId, invitingTeam);
         invitingTeam.markDirty();
 
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamJoinEvent(invitingTeam, playerId, oldTeam));
+
         TeamDataSync newTeamData = TeamNetwork.createCompleteTeamDataSyncPacket(invitingTeam);
         TeamManager.forEachOnlineTeamMember(invitingTeam, member -> {
             NetworkHandler.instance.sendTo(newTeamData, member);
@@ -133,6 +141,9 @@ public class TeamActions {
         TeamManager.transferTeamData(team, newTeam, kicked, TeamDataTransferReason.JoinedNewTeam);
         team.markDirty();
         newTeam.markDirty();
+
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamKickEvent(team, kicked, newTeam, adminAction));
+
         TeamDataSync teamData = TeamNetwork.createCompleteTeamDataSyncPacket(team);
         TeamManager.forEachOnlineTeamMember(team, member -> {
             NetworkHandler.instance.sendTo(teamData, member);
@@ -170,7 +181,8 @@ public class TeamActions {
         String teamName = oldTeam.getTeamName();
         oldTeam.removeMember(playerId);
 
-        if (oldTeam.getMembers().isEmpty()) {
+        boolean teamDisbanded = oldTeam.getMembers().isEmpty();
+        if (teamDisbanded) {
             TeamManager.TEAMS.remove(oldTeam);
             TeamManager.TEAM_MAP.remove(oldTeam.getTeamId());
             oldTeam.markRemoved();
@@ -188,9 +200,11 @@ public class TeamActions {
         // Create a new solo team for the player
         Team newTeam = TeamManager.createTeam(player.getCommandSenderName(), player.getUniqueID());
         TeamManager.transferTeamData(oldTeam, newTeam, playerId, TeamDataTransferReason.JoinedNewTeam);
-        if (!oldTeam.getMembers().isEmpty()) oldTeam.markDirty();
+        if (!teamDisbanded) oldTeam.markDirty();
         newTeam.markDirty();
         TeamNetwork.sendPlayerAllTeamData((EntityPlayerMP) player, newTeam);
+
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamLeaveEvent(oldTeam, playerId, newTeam, teamDisbanded));
 
         success(player, "gtnhlib.chat.teams.message.left_team", colorChatComponent(EnumChatFormatting.GOLD, teamName));
     }
@@ -201,6 +215,10 @@ public class TeamActions {
                 ServerPlayerUtils.getPlayerName(target));
         if (team.isOfficer(target)) {
             team.addOwner(target);
+
+            MinecraftForge.EVENT_BUS
+                    .post(new TeamEvents.TeamPromoteEvent(team, target, TeamRole.OFFICER, TeamRole.OWNER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.promoted_to_owner", playerComp);
                 if (member.getUniqueID().equals(target)) {
@@ -216,6 +234,10 @@ public class TeamActions {
             }
         } else {
             team.addOfficer(target);
+
+            MinecraftForge.EVENT_BUS.post(
+                    new TeamEvents.TeamPromoteEvent(team, target, TeamRole.MEMBER, TeamRole.OFFICER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.promoted_to_officer", playerComp);
                 if (member.getUniqueID().equals(target)) {
@@ -238,6 +260,10 @@ public class TeamActions {
                 ServerPlayerUtils.getPlayerName(target));
         if (team.isOwner(target)) {
             team.removeOwner(target);
+
+            MinecraftForge.EVENT_BUS
+                    .post(new TeamEvents.TeamDemoteEvent(team, target, TeamRole.OWNER, TeamRole.OFFICER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.demoted_to_officer", playerComp);
                 if (member.getUniqueID().equals(target)) {
@@ -253,6 +279,10 @@ public class TeamActions {
             }
         } else {
             team.removeOfficer(target);
+
+            MinecraftForge.EVENT_BUS
+                    .post(new TeamEvents.TeamDemoteEvent(team, target, TeamRole.OFFICER, TeamRole.MEMBER, adminAction));
+
             TeamManager.forEachOnlineTeamMember(team, member -> {
                 success(member, "gtnhlib.chat.teams.message.demoted_to_member", playerComp);
                 if (member.getUniqueID().equals(target)) {
@@ -365,17 +395,22 @@ public class TeamActions {
                 colorChatComponent(EnumChatFormatting.GOLD, teamName));
         notice.getChatStyle().setColor(EnumChatFormatting.RED);
 
+        Map<UUID, Team> newTeamsByMember = new HashMap<>();
         for (UUID uuid : members) {
             String name = ServerPlayerUtils.getPlayerName(uuid);
             Team newTeam = TeamManager.createTeam(name, uuid);
             TeamManager.transferTeamData(team, newTeam, uuid, TeamDataTransferReason.JoinedNewTeam);
             newTeam.markDirty();
+            newTeamsByMember.put(uuid, newTeam);
             TeamManager.forEachOnlineTeamMember(newTeam, member -> {
                 NetworkHandler.instance.sendTo(TeamNetwork.createTeamInfoSyncPacket(member.getUniqueID()), member);
                 TeamNetwork.sendPlayerAllTeamData(member, newTeam);
                 member.addChatMessage(notice);
             });
         }
+
+        MinecraftForge.EVENT_BUS.post(new TeamEvents.TeamDisbandEvent(team, newTeamsByMember, adminAction));
+
         if (adminAction) {
             success(
                     admin,

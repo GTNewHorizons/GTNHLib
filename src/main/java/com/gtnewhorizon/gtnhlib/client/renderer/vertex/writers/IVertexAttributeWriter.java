@@ -14,6 +14,10 @@ public interface IVertexAttributeWriter {
     // Populate the Tessellator using the buffer's contents
     int readAttribute(long pointer, Tessellator tessellator);
 
+    default boolean isInlinePosition() {
+        return false;
+    }
+
     default int writeAttributeTransformed(long pointer, int[] data, int index, Matrix4fc transform, Vector3f scratch) {
         return writeAttribute(pointer, data, index);
     }

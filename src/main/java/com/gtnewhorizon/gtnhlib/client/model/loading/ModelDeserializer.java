@@ -7,7 +7,6 @@ import static com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -106,8 +105,6 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         return ret;
     }
 
-    private static Pattern TEXEX = Pattern.compile("^([^:]+:)blocks?/");
-
     private static Object2ObjectOpenHashMap<String, String> loadTextures(JsonObject in) {
 
         final var textures = new Object2ObjectOpenHashMap<String, String>();
@@ -115,15 +112,6 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         if (in.has("textures")) {
             for (Map.Entry<String, JsonElement> e : in.getAsJsonObject("textures").entrySet()) {
                 String s = e.getValue().getAsString();
-
-                // If it's a texture variable, no munging is needed
-                if (!s.startsWith("#")) {
-                    // Add the default domain, if it's absent.
-                    if (!s.contains(":")) s = "minecraft:" + s;
-
-                    // Strip "block/" if present
-                    s = TEXEX.matcher(s).replaceFirst("$1");
-                }
 
                 // The key is always a variable, so prepend accordingly
                 final var key = e.getKey();
@@ -221,11 +209,12 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         }
 
         final boolean useAO = JsonUtil.loadBool(in, "ambientocclusion", true);
+        final String renderType = JsonUtil.loadStr(in, "render_type", null);
         final Map<Position, ModelDisplay> display = loadDisplay(in);
         final var textures = loadTextures(in);
         final List<ModelElement> elements = loadElements(in);
 
-        return new JSONModel(parentId, useAO, display, textures, elements);
+        return new JSONModel(parentId, useAO, renderType, display, textures, elements);
     }
 
     public enum Position {
@@ -336,19 +325,18 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
         public static final class Face {
 
             private final ForgeDirection name;
-            private final Vector4f uv;
+            private final JSONModel.BakedUV bakedUV;
             private final String texture;
             private final ForgeDirection cullFace;
-            private final int rotation;
             private final int tintIndex;
 
             public Face(ForgeDirection name, Vector4f uv, String texture, ForgeDirection cullFace, int rotation,
                     int tintIndex) {
                 this.name = name;
-                this.uv = uv;
+                this.bakedUV = new JSONModel.BakedUV(uv, rotation);
                 this.texture = texture;
                 this.cullFace = cullFace;
-                this.rotation = rotation;
+
                 this.tintIndex = tintIndex;
             }
 
@@ -356,8 +344,12 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
                 return name;
             }
 
+            public JSONModel.BakedUV bakedUV() {
+                return bakedUV;
+            }
+
             public Vector4f uv() {
-                return uv;
+                return bakedUV.uv();
             }
 
             public String texture() {
@@ -369,7 +361,7 @@ public class ModelDeserializer implements JsonDeserializer<JSONModel> {
             }
 
             public int rotation() {
-                return rotation;
+                return bakedUV.rotation();
             }
 
             public int tintIndex() {

@@ -80,7 +80,7 @@ public class BlockTestTintMul extends Block implements IBlockColor {
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase player, ItemStack itemIn) {
         BlockState state = BlockPropertyRegistry.getBlockState(world, x, y, z);
         state.setPropertyValue("facing", DirectionUtil.yawToDirection(player.rotationYaw));
-        state.place(world, x, y, z);
+        state.place(world, x, y, z, 3);
         state.close();
     }
 
