@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Unique;
 import com.gtnewhorizon.gtnhlib.util.font.IAmpCodeAwareField;
 
 @Mixin(GuiTextField.class)
-public class MixinGuiTextField_AmpCodeAware implements IAmpCodeAwareField {
+public abstract class MixinGuiTextField_AmpCodeAware implements IAmpCodeAwareField {
 
     @Unique
     private boolean gtnhlib$ampCodeAware = true;
