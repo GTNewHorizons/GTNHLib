@@ -14,6 +14,7 @@ import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.TextureStitchEvent;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,6 +23,7 @@ import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
+import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.state.MissingState;
@@ -37,6 +39,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 /// Handles model loading and caching. All caches are size-based - this means that if a model has enough parents, it may
 /// exhaust the caches and unload itself before being fully baked. There *probably* won't be any consequences for this
@@ -61,6 +64,20 @@ public class ModelRegistry {
     /// {@link ModelRegistry#getBakedModel(BlockState)}
     public static JSONModel getJSONModel(ResourceLoc.ModelLoc loc) {
         return JSON_MODEL_CACHE.get(loc);
+    }
+
+    public static BakedModel getBakedModel(ResourceLoc.ModelLoc loc) {
+        return LOOSE_MODEL_CACHE.get(loc);
+    }
+
+    public static void registerItemModel(Item item, ResourceLoc.ModelLoc loc) {
+        ITEM_MODELS.put(item, loc);
+        MinecraftForgeClient.registerItemRenderer(item, ModelISBRH.INSTANCE.get());
+    }
+
+    public static @Nullable BakedModel getItemModel(Item item) {
+        final var loc = ITEM_MODELS.get(item);
+        return loc == null ? null : getBakedModel(loc);
     }
 
     /// Registers the given mod ID for automatic texture loading. The resource pack attached to this mod will be scanned
@@ -92,6 +109,13 @@ public class ModelRegistry {
     private static final ThreadsafeCache<ResourceLoc.ModelLoc, JSONModel> JSON_MODEL_CACHE = new ThreadsafeCache<>(
             modelCacheSize,
             s -> loadAndResolveJSONModel((ResourceLoc.ModelLoc) s),
+            false);
+
+    private static final Reference2ObjectOpenHashMap<Item, ResourceLoc.ModelLoc> ITEM_MODELS = new Reference2ObjectOpenHashMap<>();
+
+    private static final ThreadsafeCache<ResourceLoc.ModelLoc, BakedModel> LOOSE_MODEL_CACHE = new ThreadsafeCache<>(
+            modelCacheSize,
+            s -> getJSONModel((ResourceLoc.ModelLoc) s).bake(new JSONVariant((ResourceLoc.ModelLoc) s, 0, 0, false)),
             false);
 
     private static BakedModel bakeModel(BlockState state) {
@@ -172,6 +196,7 @@ public class ModelRegistry {
             BLOCKSTATE_MODEL_CACHE.clear();
             STATE_MODEL_MAP_CACHE.clear();
             JSON_MODEL_CACHE.clear();
+            LOOSE_MODEL_CACHE.clear();
 
             if (!(irm instanceof GlobalResourceManager manager)) {
                 return;
