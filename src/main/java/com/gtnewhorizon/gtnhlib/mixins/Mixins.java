@@ -91,6 +91,17 @@ public enum Mixins implements IMixins {
     CHAT_AUTOCOMPLETE_SUGGESTIONS(new MixinBuilder("Draw chat autocomplete suggestions on top of an open chat window")
             .setPhase(Phase.EARLY).addClientMixins("MixinGuiChat_AutocompleteSuggestions")
             .setApplyIf(() -> AutocompleteConfig.enabled)),
+    COMMANDEFFECT_POTIONNAMES(new MixinBuilder("Allow potion names to be used in the /effect command")
+            .setPhase(Phase.EARLY).addCommonMixins("MixinCommandEffect_PotionNames").setApplyIf(
+                    () -> AutocompleteConfig.enabled && GTNHLibConfig.injectModernIdExt
+                            && AutocompleteConfig.effectNames)),
+    COMMANDENCHANT_ENCHANTNAMES(new MixinBuilder("Allow enchantment names to be used in the /enchant command")
+            .setPhase(Phase.EARLY).addCommonMixins("MixinCommandEnchant_EnchantNames").setApplyIf(
+                    () -> AutocompleteConfig.enabled && GTNHLibConfig.injectModernIdExt
+                            && AutocompleteConfig.enchantNames)),
+    MODERN_ID_EXT(new MixinBuilder("Add ModernIdExt interfaces to various minecraft classes").setPhase(Phase.EARLY)
+            .addCommonMixins("MixinPotion_ModernId", "MixinEnchantment_ModernId")
+            .setApplyIf(() -> GTNHLibConfig.injectModernIdExt)),
     //
     ;
 
