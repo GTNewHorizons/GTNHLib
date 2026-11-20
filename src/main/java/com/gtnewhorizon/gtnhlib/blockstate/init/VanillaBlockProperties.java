@@ -506,7 +506,7 @@ class VanillaBlockProperties {
             @Override
             public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
                 int meta = world.getBlockMetadata(x, y, z);
-                if (meta == 8) {
+                if ((meta & 8) != 0) {
                     y--;
                     if (!(world.getBlock(x, y, z) instanceof BlockDoor)) return UNKNOWN;
                     meta = world.getBlockMetadata(x, y, z);
@@ -523,7 +523,7 @@ class VanillaBlockProperties {
             @Override
             public void setValue(World world, int x, int y, int z, ForgeDirection value) {
                 int meta = world.getBlockMetadata(x, y, z);
-                if (meta == 8) {
+                if ((meta & 8) != 0) {
                     y--;
                     if (!(world.getBlock(x, y, z) instanceof BlockDoor)) return;
                     meta = world.getBlockMetadata(x, y, z);
@@ -559,7 +559,7 @@ class VanillaBlockProperties {
             @Override
             public Boolean getValue(IBlockAccess world, int x, int y, int z) {
                 int meta = world.getBlockMetadata(x, y, z);
-                if (meta == 8) {
+                if ((meta & 8) != 0) {
                     y--;
                     if (!(world.getBlock(x, y, z) instanceof BlockDoor)) return false;
                     meta = world.getBlockMetadata(x, y, z);
@@ -570,7 +570,7 @@ class VanillaBlockProperties {
             @Override
             public void setValue(World world, int x, int y, int z, Boolean value) {
                 int meta = world.getBlockMetadata(x, y, z);
-                if (meta == 8) {
+                if ((meta & 8) != 0) {
                     y--;
                     if (!(world.getBlock(x, y, z) instanceof BlockDoor)) return;
                     meta = world.getBlockMetadata(x, y, z);

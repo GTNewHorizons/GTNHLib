@@ -558,10 +558,10 @@ public class BlockStateImpl implements BlockState {
             if (entry.property != null) {
                 if (entry.property.hasTrait(BlockPropertyTrait.VectorTransformable)
                         && transform instanceof VectorTransform vector) {
-                    entry.value = ((VectorTransformableProperty<Object>) entry.property).transform(entry, vector);
+                    entry.value = ((VectorTransformableProperty<Object>) entry.property).transform(entry.value, vector);
                 } else if (entry.property.hasTrait(BlockPropertyTrait.Transformable)
                         && transform instanceof DirectionTransform dir) {
-                            entry.value = ((TransformableProperty<Object>) entry.property).transform(entry, dir);
+                            entry.value = ((TransformableProperty<Object>) entry.property).transform(entry.value, dir);
                         }
             } else {
                 GTNHLib.LOG.warn(
