@@ -17,6 +17,8 @@ import cpw.mods.fml.common.event.*;
         version = Tags.VERSION,
         name = GTNHLib.MODNAME,
         acceptedMinecraftVersions = "[1.7.10]",
+        // Before, since Dashboard itself requires GTNHLib
+        dependencies = "before:dashboard@[1.0.2,)",
         acceptableRemoteVersions = "[0.0.13,)")
 public class GTNHLib {
 
