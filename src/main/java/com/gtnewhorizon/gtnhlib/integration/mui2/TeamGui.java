@@ -25,6 +25,7 @@ import com.cleanroommc.modularui.value.BoolValue;
 import com.cleanroommc.modularui.value.sync.BooleanSyncValue;
 import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.value.sync.StringSyncValue;
+import com.cleanroommc.modularui.widget.scroll.ScrollArea;
 import com.cleanroommc.modularui.widgets.ButtonWidget;
 import com.cleanroommc.modularui.widgets.ListWidget;
 import com.cleanroommc.modularui.widgets.TextWidget;
@@ -1148,7 +1149,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         data.currentView = newView;
         syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(newView);
         selectedTeam = null;
-        displayListWidget.getScrollArea().getScrollY().scrollTo(displayListWidget.getScrollArea(), 0);
+        ScrollArea scrollArea = displayListWidget.getScrollArea();
+        scrollArea.getScrollY().animateTo(scrollArea, 0);
     }
 
     public void restoreView(TeamGuiData data, PanelSyncManager syncManager) {
@@ -1156,7 +1158,8 @@ public class TeamGui implements IGuiHolder<TeamGuiData> {
         data.currentView = windowHistory.pop();
         syncManager.findSyncHandler("team_gui_mode", GuiViewSyncValue.class).setValue(data.currentView);
         selectedTeam = null;
-        displayListWidget.getScrollArea().getScrollY().scrollTo(displayListWidget.getScrollArea(), 0);
+        ScrollArea scrollArea = displayListWidget.getScrollArea();
+        scrollArea.getScrollY().animateTo(scrollArea, 0);
     }
 
 }
