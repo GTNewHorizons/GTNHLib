@@ -29,6 +29,7 @@ public enum Mixins implements IMixins {
             "models.MixinFileResourcePack",
             "models.MixinFolderResourcePack",
             "models.MixinRenderBlocks",
+            "models.MixinRenderFallingBlock",
             "models.MixinTextureAtlasSprite",
             "models.MixinTextureMap",
             "models.SRRMAccessor").setPhase(Phase.EARLY).setApplyIf(() -> true)),
