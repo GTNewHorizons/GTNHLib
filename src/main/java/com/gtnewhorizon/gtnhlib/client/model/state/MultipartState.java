@@ -18,7 +18,8 @@ import com.gtnewhorizon.gtnhlib.client.model.state.MultipartState.Case.Condition
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.MonopartDough;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.UnbakedModel;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
 public class MultipartState implements StateModelMap, UnbakedModel {
@@ -39,9 +40,9 @@ public class MultipartState implements StateModelMap, UnbakedModel {
         if (GTNHLibConfig.enableModelDebugLogs) {
             MODEL_LOGGER.info("bake: baking multipart model with {} cases", multipart.size());
         }
-        final var bread = new Object2ObjectArrayMap<Condition, BakedModel>(multipart.size());
+        final var bread = new ObjectArrayList<Pair<Condition, BakedModel>>(multipart.size());
         for (var c : multipart) {
-            bread.put(c.when, new MonopartDough(c.apply).bake());
+            bread.add(Pair.of(c.when, new MonopartDough(c.apply).bake()));
         }
 
         return new MultipartModel(bread);
