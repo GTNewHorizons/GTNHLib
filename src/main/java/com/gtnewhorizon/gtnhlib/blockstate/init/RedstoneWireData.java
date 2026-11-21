@@ -64,8 +64,8 @@ class RedstoneWireData implements BlockStateDataHandler {
                     || (!sideIsNormalCube && BlockRedstoneWire.isPowerProviderOrWire(world, sideX, y - 1, sideZ, -1))
                     || (canClimb && sideIsNormalCube
                             && BlockRedstoneWire.isPowerProviderOrWire(world, sideX, y + 1, sideZ, -1))) {
-                value = SIDE;
-            }
+                                value = SIDE;
+                            }
 
             connected |= !value.equals(NONE);
             if (data.length() > 0) data.append(',');
