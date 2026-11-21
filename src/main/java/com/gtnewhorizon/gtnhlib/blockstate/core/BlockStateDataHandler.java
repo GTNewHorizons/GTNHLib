@@ -60,4 +60,13 @@ public interface BlockStateDataHandler {
      * @param world only contains the block itself until this adds to it, only valid during this call
      */
     void decode(Block block, int meta, String data, BlockStateDataWorld world);
+
+    /**
+     * Sets up the blocks around the block when it has no data, IE because it was never encoded. Only needed if the
+     * block's renderer draws nothing without some of them (IE a double plant's upper half without its lower half).
+     * Called on any thread, so this must be thread safe.
+     *
+     * @param world only contains the block itself until this adds to it, only valid during this call
+     */
+    default void decodeDefault(Block block, int meta, BlockStateDataWorld world) {}
 }

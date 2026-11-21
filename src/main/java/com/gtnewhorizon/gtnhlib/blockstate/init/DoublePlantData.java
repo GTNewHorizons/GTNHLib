@@ -56,4 +56,12 @@ class DoublePlantData implements BlockStateDataHandler {
 
         world.setBlock(0, -1, 0, block, lowerMeta);
     }
+
+    /** vanilla doesn't render an upper half without its lower half, so it gets double tall grass, the most common */
+    @Override
+    public void decodeDefault(Block block, int meta, BlockStateDataWorld world) {
+        if (!BlockDoublePlant.func_149887_c(meta)) return;
+
+        world.setBlock(0, -1, 0, block, 2);
+    }
 }

@@ -106,6 +106,15 @@ public final class BlockStateDataRegistry {
         }
     }
 
+    /** If decoding fails the world keeps what was set until then. */
+    public static void decodeDefault(BlockStateDataHandler handler, Block block, int meta, BlockStateDataWorld world) {
+        try {
+            handler.decodeDefault(block, meta, world);
+        } catch (Exception e) {
+            logOnce(block, "the handler's decodeDefault threw an exception", e);
+        }
+    }
+
     private static void logOnce(Block block, String problem, @Nullable Exception exception) {
         if (LOGGED_BLOCKS.add(block)) {
             GTNHLib.LOG.warn(
