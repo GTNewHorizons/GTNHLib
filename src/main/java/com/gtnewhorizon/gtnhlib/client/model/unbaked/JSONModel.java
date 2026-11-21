@@ -55,6 +55,8 @@ public class JSONModel implements UnbakedModel {
     @Nullable
     protected JSONModel parent;
     protected final boolean useAO;
+    @Nullable
+    protected String renderType;
     protected final Map<Position, ModelDisplay> display;
     @NotNull
     protected final Object2ObjectMap<String, String> textures;
@@ -92,11 +94,12 @@ public class JSONModel implements UnbakedModel {
     private static final float RESCALE_22_5 = 1.0F / (float) Math.cos((float) (Math.PI / 8)) - 1.0F;
     private static final float RESCALE_45 = 1.0F / (float) Math.cos((float) (Math.PI / 4)) - 1.0F;
 
-    public JSONModel(@Nullable ModelLoc parentId, boolean useAO, Map<Position, ModelDisplay> display,
-            @NotNull Object2ObjectMap<String, String> textures,
+    public JSONModel(@Nullable ModelLoc parentId, boolean useAO, @Nullable String renderType,
+            Map<Position, ModelDisplay> display, @NotNull Object2ObjectMap<String, String> textures,
             @NotNull List<ModelDeserializer.ModelElement> elements) {
         this.parentId = parentId;
         this.useAO = useAO;
+        this.renderType = renderType;
         this.display = display;
         this.textures = textures;
         this.elements = elements;
@@ -110,6 +113,7 @@ public class JSONModel implements UnbakedModel {
         this.parentId = og.parentId;
         this.parent = og.parent;
         this.useAO = og.useAO;
+        this.renderType = og.renderType;
         this.display = og.display;
         this.textures = og.textures;
         this.elements = og.elements;
@@ -243,6 +247,9 @@ public class JSONModel implements UnbakedModel {
                 quad.setEmissiveness(e.lightEmission());
                 quad.setDirectionalShading(e.shade());
                 quad.setHasAmbientOcclusion(this.useAO);
+                if ("translucent".equals(this.renderType) || "minecraft:translucent".equals(this.renderType)) {
+                    quad.setTransparent();
+                }
 
                 // Figure out the UV rotations
                 BakedUV bakedUV;
@@ -571,6 +578,7 @@ public class JSONModel implements UnbakedModel {
         }
 
         if (this.elements.isEmpty()) this.elements = this.parent.elements;
+        if (this.renderType == null) this.renderType = this.parent.renderType;
 
         // Resolve texture variables
         // Add parent texture mappings, but prioritize ours.
