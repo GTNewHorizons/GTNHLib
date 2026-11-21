@@ -181,8 +181,7 @@ public class TemplatedTextLoader implements AutoCloseable {
                 amountUnitVariations);
     }
 
-    public static <T extends NumberFormatUtil.ThroughputUnitFormatter> void addThroughputVariations(
-            @NotNull Map<@NotNull String, @NotNull ITemplatedTextCommand> map,
+    public static void addThroughputVariations(@NotNull Map<@NotNull String, @NotNull ITemplatedTextCommand> map,
             @NotNull Function<@NotNull Supplier<@NotNull String>, @NotNull ITemplatedTextCommand> commandSupplier,
             @NotNull String... amountUnitVariations) {
         for (Pair<Supplier<String>, String[]> timeVariation : throughputVariations) {
@@ -386,6 +385,7 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @param resource The resource location for the file you want to load.
      * @return The processed output of the file.
      */
+    @SuppressWarnings("unused")
     public List<String> loadStandardPath(@NotNull ResourceLocation resource) {
         return loadStandardPath(resource, "", Collections::emptyMap);
     }
@@ -400,6 +400,7 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @param cacheKeyExtra A string added to the resource location when computing the cache key.
      * @return The processed output of the file.
      */
+    @SuppressWarnings("unused")
     public List<String> loadStandardPath(@NotNull ResourceLocation resource, @NotNull String cacheKeyExtra) {
         return loadStandardPath(resource, cacheKeyExtra, Collections::emptyMap);
     }
@@ -429,6 +430,7 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @param lazyContext A lazy provider for the context with which to parse the file.
      * @return The processed output of the file.
      */
+    @SuppressWarnings("unused")
     public List<String> loadStandardPathWithContext(@NotNull ResourceLocation resource,
             @NotNull Supplier<@NotNull TemplatedTextContext> lazyContext) {
         return loadStandardPathWithContext(resource, "", lazyContext);
@@ -476,7 +478,7 @@ public class TemplatedTextLoader implements AutoCloseable {
      * @return The parsed lines with processed stacks and the special line formatting if one is specified.
      */
     public List<String> loadStandardPath(@NotNull ResourceLocation resource,
-            @NotNull Map<@NotNull String, @NotNull Object> vars) {
+            @NotNull Map<@NotNull String, @Nullable Object> vars) {
         return loadStandardPath(resource, new TemplatedTextContext(vars));
     }
 
