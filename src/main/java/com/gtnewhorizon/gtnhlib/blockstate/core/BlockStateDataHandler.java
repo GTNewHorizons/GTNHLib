@@ -41,6 +41,12 @@ public interface BlockStateDataHandler {
     Type getType();
 
     /**
+     * Saved together with {@link Type#LOCAL_ONLY} data, starting at 0. Increase it whenever the data {@link #encode}
+     * returns changes, so data saved with another version (or before the handler was registered) is encoded again.
+     */
+    int getVersion();
+
+    /**
      * Called on any thread, so this must be thread safe. The world may not be a real {@link net.minecraft.world.World}:
      * it may have no tile entities, and blocks that aren't known are air.
      *

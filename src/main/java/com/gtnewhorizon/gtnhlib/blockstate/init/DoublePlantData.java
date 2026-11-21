@@ -29,6 +29,11 @@ class DoublePlantData implements BlockStateDataHandler {
     }
 
     @Override
+    public int getVersion() {
+        return 0;
+    }
+
+    @Override
     public String encode(IBlockAccess world, int x, int y, int z, Block block, int meta) {
         // lower halves store their plant themselves
         if (!BlockDoublePlant.func_149887_c(meta)) return null;

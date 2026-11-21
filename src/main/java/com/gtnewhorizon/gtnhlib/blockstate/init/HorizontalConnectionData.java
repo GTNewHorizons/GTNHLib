@@ -38,6 +38,11 @@ class HorizontalConnectionData implements BlockStateDataHandler {
     }
 
     @Override
+    public int getVersion() {
+        return 0;
+    }
+
+    @Override
     public String encode(IBlockAccess world, int x, int y, int z, Block block, int meta) {
         boolean[] connected = new boolean[SIDE_NAMES.length];
         for (int side = 0; side < SIDE_NAMES.length; side++) {
