@@ -34,6 +34,8 @@ public class BlockStateDataWorld implements IBlockAccess {
     /** null where nothing was set */
     private final Block[] blockByIndex = new Block[WIDTH * WIDTH * WIDTH];
     private final int[] metaByIndex = new int[WIDTH * WIDTH * WIDTH];
+    /** null where nothing was set, the block itself included */
+    private final TileEntity[] tileEntityByIndex = new TileEntity[WIDTH * WIDTH * WIDTH];
 
     /** @param biome null for plains */
     public BlockStateDataWorld(int x, int y, int z, Block block, int meta, @Nullable BiomeGenBase biome) {
@@ -73,6 +75,27 @@ public class BlockStateDataWorld implements IBlockAccess {
         this.metaByIndex[index] = meta;
     }
 
+    /**
+     * For {@link BlockStateDataHandler#decode}, the block itself (offset 0, 0, 0) can have one too. Larger offsets than
+     * {@link #MAX_OFFSET} throw an {@link IllegalArgumentException}.
+     */
+    public void setTileEntity(int offsetX, int offsetY, int offsetZ, TileEntity tileEntity) {
+        int index = getIndexForOffset(offsetX, offsetY, offsetZ);
+        if (index == -1) {
+            throw new IllegalArgumentException(
+                    "Offset [" + offsetX
+                            + ","
+                            + offsetY
+                            + ","
+                            + offsetZ
+                            + "] is outside the fake world, at most ["
+                            + MAX_OFFSET
+                            + "] is allowed on each axis.");
+        }
+
+        this.tileEntityByIndex[index] = tileEntity;
+    }
+
     // IBlockAccess
 
     @Override
@@ -97,7 +120,8 @@ public class BlockStateDataWorld implements IBlockAccess {
 
     @Override
     public TileEntity getTileEntity(int x, int y, int z) {
-        return null;
+        int index = getIndexForOffset(x - this.x, y - this.y, z - this.z);
+        return (index != -1) ? this.tileEntityByIndex[index] : null;
     }
 
     @Override
