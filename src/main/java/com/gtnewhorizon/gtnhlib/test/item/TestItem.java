@@ -105,6 +105,8 @@ public class TestItem extends Item implements ItemWithTextures {
         n(args, "1.5", 1.5);
         n(args, "2", 2);
         n(args, "5", 5);
+        n(args, "100", 100);
+        n(args, "900", 900);
         n(args, "1234", 1234);
 
         n(args, "1.001K", 1001, new CompactOptions().setDecimalPlaces(3, 3));

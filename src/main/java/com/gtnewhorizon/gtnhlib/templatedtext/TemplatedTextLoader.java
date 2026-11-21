@@ -307,6 +307,16 @@ public class TemplatedTextLoader implements AutoCloseable {
         addGlobalCommand(
                 (a, b, c, d) -> { throw new RuntimeException("The crash command was executed!"); },
                 "throw-err");
+        addGlobalCommand(
+                (a, b, c, d) -> { throw new HardCrashTestException("The crash command was executed!"); },
+                "throw-critical-err");
+    }
+
+    private static class HardCrashTestException extends RuntimeException {
+
+        public HardCrashTestException(String message) {
+            super(message);
+        }
     }
 
     public TemplatedTextLoader(@NotNull String folder) {
@@ -603,6 +613,7 @@ public class TemplatedTextLoader implements AutoCloseable {
             evaluateLinesNoFormat(out, lines, new TemplatedTextContext(vars));
             out.replaceAll(parsedLine -> TextFormatUtil.processFormatStacks(formatLine(parsedLine)));
         } catch (RuntimeException e) {
+            if (e instanceof HardCrashTestException) throw e;
             appendException(out, "UNEXPECTED-ERROR", e);
         }
         return out;
@@ -645,6 +656,7 @@ public class TemplatedTextLoader implements AutoCloseable {
                     out.add(TextFormatUtil.wrapFormatting(EnumChatFormatting.RED, errLine));
                 }
             } catch (RuntimeException e) {
+                if (e instanceof HardCrashTestException) throw e;
                 appendException(out, "LINE-ERROR", e);
             }
         }

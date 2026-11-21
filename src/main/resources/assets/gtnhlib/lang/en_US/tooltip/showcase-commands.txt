@@ -64,8 +64,9 @@ Length of a pattern can be configured
 
 {white}Themed Measurement Commands
 A few common measurement types have standardized coloring in gt, so these commands apply it correctly.
-#example:Voltage: {fmt-EUt:1_000_000}
-#example:Amperage: {fmt-amp:1}
+#example:Voltage: {fmt-eu-voltage:1_000_000}
+#example:Voltage: {fmt-eu-capacity:1_000_000}
+#example:Amperage: {fmt-amps:1}
 #example:Heat: {fmt-heat:900}
 #example:electron volt measurements: {fmt-MeV:100}
 
