@@ -136,8 +136,9 @@ public final class BlockRenderCapture {
         quad.setColorIndex(tinted ? 0 : -1);
 
         float tolerance = COLOR_TOLERANCE / (tinted ? multiplierMax : 255.0f);
-        float faceShade = getVanillaShade(quad.getNormalFace());
-        if (allNear(shadeByVertex, faceShade, tolerance)) {
+        ModelQuadFacing normalFace = quad.getNormalFace();
+        // vanilla only shades quads facing a block side, others (IE crossed squares) would match the 1.0 of top faces
+        if (normalFace != UNASSIGNED && allNear(shadeByVertex, getVanillaShade(normalFace), tolerance)) {
             setColor(quad, WHITE);
             quad.setDirectionalShading(true);
         } else if (allNear(shadeByVertex, 1.0f, tolerance)) {
@@ -174,7 +175,7 @@ public final class BlockRenderCapture {
         return true;
     }
 
-    /** the brightness {@link RenderBlocks} gives faces pointing in the direction */
+    /** the brightness {@link RenderBlocks} gives faces pointing in the direction, never called for unassigned */
     private static float getVanillaShade(ModelQuadFacing facing) {
         return switch (facing) {
             case NEG_Y -> 0.5f;
