@@ -35,6 +35,7 @@ public class BlockPropertyInit {
         });
 
         VanillaBlockProperties.initVanilla();
+        HorizontalConnectionProperty.register();
     }
 
     private static class MetaProperty implements IntegerBlockProperty, MetaBlockProperty<Integer> {
