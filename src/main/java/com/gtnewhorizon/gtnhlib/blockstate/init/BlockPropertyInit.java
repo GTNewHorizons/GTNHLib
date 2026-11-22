@@ -38,6 +38,7 @@ public class BlockPropertyInit {
         HorizontalConnectionProperty.register();
         FlowerPotProperties.register();
         DoublePlantProperty.register();
+        DoorHingeProperty.register();
     }
 
     private static class MetaProperty implements IntegerBlockProperty, MetaBlockProperty<Integer> {
