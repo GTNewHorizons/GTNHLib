@@ -46,7 +46,9 @@ class RedstoneWireProperty implements BlockProperty<String> {
 
     static void register() {
         for (int side = 0; side < SIDE_DIRECTIONS.length; side++) {
-            registerProperty(BlockRedstoneWire.class, new RedstoneWireProperty(SIDE_DIRECTIONS[side], SIDE_POWER_DIRECTIONS[side]));
+            registerProperty(
+                    BlockRedstoneWire.class,
+                    new RedstoneWireProperty(SIDE_DIRECTIONS[side], SIDE_POWER_DIRECTIONS[side]));
         }
     }
 

@@ -70,7 +70,13 @@ class StemProperty implements DirectionBlockProperty {
         for (ForgeDirection direction : FRUIT_DIRECTIONS) {
             if (direction == facing) {
                 Block block = world.getBlock(x, y, z);
-                world.setBlock(x + direction.offsetX, y, z + direction.offsetZ, ((BlockStem) block).field_149877_a, 0, 2);
+                world.setBlock(
+                        x + direction.offsetX,
+                        y,
+                        z + direction.offsetZ,
+                        ((BlockStem) block).field_149877_a,
+                        0,
+                        2);
             }
         }
     }
