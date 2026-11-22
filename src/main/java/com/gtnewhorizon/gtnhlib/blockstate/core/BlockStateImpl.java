@@ -774,9 +774,32 @@ public class BlockStateImpl implements BlockState {
         compact();
     }
 
+    /**
+     * The generic {@code meta} value (see {@link com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit}) if this
+     * state has one, otherwise 0. Placing the block with it first lets properties that read the block's meta see the
+     * real one.
+     */
+    private int getPlacedMeta() {
+        for (int i = 0; i < entries.size(); i++) {
+            PropertyEntry entry = entries.get(i);
+
+            if (!"meta".equals(entry.name)) continue;
+
+            if (entry.value instanceof Number number) return number.intValue();
+
+            try {
+                return Integer.parseInt(String.valueOf(entry.value));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
     @Override
     public boolean place(World world, int x, int y, int z, int flags) {
-        world.setBlock(x, y, z, this.block, 0, flags);
+        world.setBlock(x, y, z, this.block, getPlacedMeta(), flags);
 
         Map<String, BlockProperty> availableProperties = null;
 
