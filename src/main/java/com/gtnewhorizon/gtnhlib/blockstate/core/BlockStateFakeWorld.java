@@ -23,8 +23,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A world that only contains the blocks around one position, everything else is air. Used to place a
- * {@link BlockState} without the real world, IE to read a block's model, colors or bounds.
+ * A world that only contains the blocks around one position, everything else is air. Used to place a {@link BlockState}
+ * without the real world, IE to read a block's model, colors or bounds.
  *
  * <p>
  * Blocks can be set at offsets of at most {@link #MAX_OFFSET} on each axis from the position, setting them doesn't

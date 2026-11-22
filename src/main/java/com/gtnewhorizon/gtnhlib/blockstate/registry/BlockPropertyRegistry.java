@@ -404,15 +404,15 @@ public class BlockPropertyRegistry {
     /**
      * @return true if the block got properties since the saved {@link BlockState#toString} was read. Only the
      *         properties from {@link #getPossibleProperties(Block, int, PropertyConsumer)} are checked, the ones that
-     *         need a world (custom factories, tile entity classes) and removed ones aren't. Meta properties that
-     *         don't apply to the meta are skipped, they're never saved.
+     *         need a world (custom factories, tile entity classes) and removed ones aren't. Meta properties that don't
+     *         apply to the meta are skipped, they're never saved.
      */
     public static boolean isOutdated(Block block, int meta, String savedState) {
         Set<String> savedNames = BlockState.fromString(null, savedState).toMap().keySet();
 
         boolean[] outdated = { false };
         getPossibleProperties(block, meta, property -> {
-            if (property instanceof MetaBlockProperty<?> metaProperty && !metaProperty.appliesTo(meta)) return;
+            if (property instanceof MetaBlockProperty<?>metaProperty && !metaProperty.appliesTo(meta)) return;
             if (!savedNames.contains(property.getName())) outdated[0] = true;
         });
         return outdated[0];
