@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -27,6 +28,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockStateImpl;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockStatePool;
+import com.gtnewhorizon.gtnhlib.blockstate.core.MetaBlockProperty;
 import com.gtnewhorizon.gtnhlib.util.data.BlockMeta;
 import com.gtnewhorizon.gtnhlib.util.data.ImmutableBlockMeta;
 import com.gtnewhorizon.gtnhlib.util.data.ImmutableItemMeta;
@@ -397,6 +399,23 @@ public class BlockPropertyRegistry {
     /// Pooled overload of [#getBlockState(Block, int)]. The returned state must be [BlockState#close]d.
     public static BlockState getBlockState(BlockStatePool pool, Block block, int meta) {
         return pool.getInstance().fromBlockMeta(block, meta);
+    }
+
+    /**
+     * @return true if the block got properties since the saved {@link BlockState#toString} was read. Only the
+     *         properties from {@link #getPossibleProperties(Block, int, PropertyConsumer)} are checked, the ones that
+     *         need a world (custom factories, tile entity classes) and removed ones aren't. Meta properties that
+     *         don't apply to the meta are skipped, they're never saved.
+     */
+    public static boolean isOutdated(Block block, int meta, String savedState) {
+        Set<String> savedNames = BlockState.fromString(null, savedState).toMap().keySet();
+
+        boolean[] outdated = { false };
+        getPossibleProperties(block, meta, property -> {
+            if (property instanceof MetaBlockProperty<?> metaProperty && !metaProperty.appliesTo(meta)) return;
+            if (!savedNames.contains(property.getName())) outdated[0] = true;
+        });
+        return outdated[0];
     }
 
     @SuppressWarnings("resource")
