@@ -44,7 +44,7 @@ class DoorHingeProperty implements BlockProperty<String> {
      * @return whether there's a door at the position of the lower half, in a {@link BlockStateFakeWorld} a missing one
      *         is placed there with all bits 0: closed, facing west
      */
-    static boolean hasLowerHalf(World world, int x, int y, int z) {
+    static boolean getOrPlaceLowerHalf(World world, int x, int y, int z) {
         if (world.getBlock(x, y, z) instanceof BlockDoor) return true;
         if (!(world instanceof BlockStateFakeWorld)) return false;
 

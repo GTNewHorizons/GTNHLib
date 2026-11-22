@@ -61,14 +61,12 @@ class DoublePlantProperty implements IntegerBlockProperty {
         return lowerMeta;
     }
 
-    /**
-     * the lower half below gives the upper half its plant. The block's meta isn't placed yet, so lower halves get one
-     * below as well, they don't read it.
-     */
+    /** the lower half below gives the upper half its plant, lower halves store it themselves */
     @Override
     public void setValue(World world, int x, int y, int z, Integer lowerMeta) {
         if (!(world instanceof BlockStateFakeWorld)) return;
 
+        if (!BlockDoublePlant.func_149887_c(world.getBlockMetadata(x, y, z))) return;
         if (lowerMeta < 0 || lowerMeta > 15 || BlockDoublePlant.func_149887_c(lowerMeta)) return;
 
         world.setBlock(x, y - 1, z, world.getBlock(x, y, z), lowerMeta, 2);

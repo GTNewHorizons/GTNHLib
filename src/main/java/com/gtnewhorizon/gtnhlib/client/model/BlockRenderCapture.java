@@ -72,6 +72,7 @@ public final class BlockRenderCapture {
 
         Map<ModelQuadFacing, ArrayList<ModelQuadView>> quadsByFacing = new EnumMap<>(ModelQuadFacing.class);
         IIcon particle = null;
+        int colorMultiplier = block.colorMultiplier(world, x, y, z);
         for (ModelQuadViewMutable capturedQuad : capturedQuads) {
             ModelQuad quad = (ModelQuad) capturedQuad;
             for (int vertex = 0; vertex < 4; vertex++) {
@@ -89,7 +90,6 @@ public final class BlockRenderCapture {
             quad.setSprite(sprite);
             if (particle == null) particle = sprite;
 
-            int colorMultiplier = block.colorMultiplier(world, x, y, z);
             separateColors(quad, colorMultiplier);
 
             quadsByFacing.computeIfAbsent(getCullFacing(quad), facing -> new ArrayList<>()).add(quad);

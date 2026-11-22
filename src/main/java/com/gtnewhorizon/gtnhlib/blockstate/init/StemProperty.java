@@ -24,7 +24,7 @@ class StemProperty implements DirectionBlockProperty {
 
     private static final StemProperty INSTANCE = new StemProperty();
 
-    /** by the direction {@link BlockStem#getState} returns */
+    /** in the order {@link BlockStem#getState} checks them */
     private static final ForgeDirection[] FRUIT_DIRECTIONS = { ForgeDirection.WEST, ForgeDirection.EAST,
             ForgeDirection.NORTH, ForgeDirection.SOUTH };
 
@@ -50,13 +50,16 @@ class StemProperty implements DirectionBlockProperty {
         return value != ForgeDirection.DOWN && value != ForgeDirection.UNKNOWN;
     }
 
+    /** the same check as {@link BlockStem#getState}, which only exists on the client */
     @Override
     public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
-        Block block = world.getBlock(x, y, z);
-        int direction = ((BlockStem) block).getState(world, x, y, z);
-        if (direction == -1) return ForgeDirection.UP;
+        if (world.getBlockMetadata(x, y, z) < 7) return ForgeDirection.UP;
 
-        return FRUIT_DIRECTIONS[direction];
+        Block fruit = ((BlockStem) world.getBlock(x, y, z)).field_149877_a;
+        for (ForgeDirection direction : FRUIT_DIRECTIONS) {
+            if (world.getBlock(x + direction.offsetX, y, z + direction.offsetZ) == fruit) return direction;
+        }
+        return ForgeDirection.UP;
     }
 
     /** the stem's own fruit on that side */

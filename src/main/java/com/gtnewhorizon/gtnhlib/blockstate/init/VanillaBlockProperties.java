@@ -525,7 +525,7 @@ class VanillaBlockProperties {
                 int meta = world.getBlockMetadata(x, y, z);
                 if ((meta & 8) != 0) {
                     y--;
-                    if (!DoorHingeProperty.hasLowerHalf(world, x, y, z)) return;
+                    if (!DoorHingeProperty.getOrPlaceLowerHalf(world, x, y, z)) return;
                     meta = world.getBlockMetadata(x, y, z);
                 }
 
@@ -572,7 +572,7 @@ class VanillaBlockProperties {
                 int meta = world.getBlockMetadata(x, y, z);
                 if ((meta & 8) != 0) {
                     y--;
-                    if (!DoorHingeProperty.hasLowerHalf(world, x, y, z)) return;
+                    if (!DoorHingeProperty.getOrPlaceLowerHalf(world, x, y, z)) return;
                     meta = world.getBlockMetadata(x, y, z);
                 }
 
