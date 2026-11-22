@@ -28,7 +28,8 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>
  * Blocks can be set at offsets of at most {@link #MAX_OFFSET} on each axis from the position, setting them doesn't
- * notify any neighbors. Setting a block creates its tile entity, like a real world does.
+ * notify any neighbors. Setting a block doesn't create its tile entity, since one created from the meta wouldn't have
+ * the real one's contents (IE flower pots would get the plant of their legacy meta). Properties that need one set it.
  *
  * <p>
  * Creating a world is expensive, so keep one and {@link #reset} it for each position. Not thread safe, only use it on
@@ -128,11 +129,6 @@ public class BlockStateFakeWorld extends World {
         this.blockByIndex[index] = block;
         this.metaByIndex[index] = meta;
         this.tileEntityByIndex[index] = null;
-
-        if (block.hasTileEntity(meta)) {
-            this.setTileEntity(x, y, z, block.createTileEntity(this, meta));
-        }
-
         return true;
     }
 
