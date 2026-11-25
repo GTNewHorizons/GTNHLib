@@ -26,7 +26,7 @@ public class MonopartState implements StateModelMap {
 
     private final Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants;
 
-    MonopartState(Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants) {
+    public MonopartState(Object2ObjectMap<StateMatch, ObjectList<Weighted<JSONVariant>>> variants) {
         this.variants = Object2ObjectMaps.unmodifiable(variants);
     }
 
@@ -52,7 +52,7 @@ public class MonopartState implements StateModelMap {
         return MISSING_MODEL;
     }
 
-    static class StateMatch {
+    public static class StateMatch {
 
         @Getter
         private final String variantName;
@@ -84,7 +84,7 @@ public class MonopartState implements StateModelMap {
             }
         }
 
-        boolean matches(Map<String, String> properties) {
+        public boolean matches(Map<String, String> properties) {
             if (matchAll) return true;
 
             final var iter = Object2ObjectMaps.fastIterator(states);

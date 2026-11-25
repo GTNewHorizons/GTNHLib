@@ -26,7 +26,7 @@ public class MultipartState implements StateModelMap, UnbakedModel {
 
     private final ObjectList<Case> multipart;
 
-    MultipartState(ObjectList<Case> multipart) {
+    public MultipartState(ObjectList<Case> multipart) {
         this.multipart = multipart;
     }
 
@@ -74,12 +74,12 @@ public class MultipartState implements StateModelMap, UnbakedModel {
             boolean matches(Map<String, String> state);
         }
 
-        static final class MultiCon implements Condition {
+        public static final class MultiCon implements Condition {
 
             private final boolean requireAll;
             private final ObjectList<Condition> matches;
 
-            MultiCon(boolean requireAll, ObjectList<Condition> matches) {
+            public MultiCon(boolean requireAll, ObjectList<Condition> matches) {
                 this.requireAll = requireAll;
                 this.matches = matches;
             }
@@ -108,12 +108,12 @@ public class MultipartState implements StateModelMap, UnbakedModel {
             }
         }
 
-        static final class StateCon implements Condition {
+        public static final class StateCon implements Condition {
 
             private final String key;
             private final ObjectList<String> values;
 
-            StateCon(String key, ObjectList<String> values) {
+            public StateCon(String key, ObjectList<String> values) {
                 this.key = key;
                 this.values = values;
             }
