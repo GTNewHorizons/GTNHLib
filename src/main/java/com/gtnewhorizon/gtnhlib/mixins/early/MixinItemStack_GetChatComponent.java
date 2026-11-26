@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.gtnewhorizon.gtnhlib.chat.ItemHoverNbt;
 import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentItemName;
 
 /**
@@ -37,7 +38,9 @@ public class MixinItemStack_GetChatComponent {
             NBTTagCompound nbttagcompound = new NBTTagCompound();
             stack.writeToNBT(nbttagcompound);
             ichatcomponent.getChatStyle().setChatHoverEvent(
-                    new HoverEvent(HoverEvent.Action.SHOW_ITEM, new ChatComponentText(nbttagcompound.toString())));
+                    new HoverEvent(
+                            HoverEvent.Action.SHOW_ITEM,
+                            new ChatComponentText(ItemHoverNbt.format(nbttagcompound))));
             ichatcomponent.getChatStyle().setColor(stack.getRarity().rarityColor);
         }
 

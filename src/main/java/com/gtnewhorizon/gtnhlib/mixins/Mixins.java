@@ -58,6 +58,7 @@ public enum Mixins implements IMixins {
             .setApplyIf(() -> GTNHLibConfig.enableTranslucentItemRenders)),
     CUSTOM_CHAT_COMPONENT_REGISTRATION(new MixinBuilder("Custom chat component registration")
             .addCommonMixins("MixinIChatComponentSerializer").setPhase(Phase.EARLY)),
+    ITEM_CHAT_TOOLTIP(Side.CLIENT, "MixinGuiChat_ItemTooltip"),
     ITEM_CHAT_COMPONENT(new MixinBuilder("Localize item names in chat components on the client")
             .addCommonMixins("MixinItemStack_GetChatComponent").setPhase(Phase.EARLY)
             .setApplyIf(() -> GTNHLibConfig.enableLocalizedItemChatComponents)),
