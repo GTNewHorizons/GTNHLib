@@ -774,16 +774,63 @@ public class BlockStateImpl implements BlockState {
         compact();
     }
 
-    @Override
-    public boolean place(World world, int x, int y, int z, int flags) {
-        world.setBlock(x, y, z, this.block, 0, flags);
-
-        Map<String, BlockProperty> availableProperties = null;
-
+    /**
+     * The generic {@code meta} value (see {@link com.gtnewhorizon.gtnhlib.blockstate.init.BlockPropertyInit}) if this
+     * state has one, otherwise 0. Placing the block with it first lets properties that read the block's meta see the
+     * real one.
+     */
+    private int getPlacedMeta() {
         for (int i = 0; i < entries.size(); i++) {
             PropertyEntry entry = entries.get(i);
 
-            if (entry.name == null) continue;
+            if (!"meta".equals(entry.name)) continue;
+
+            if (entry.value instanceof Number number) return number.intValue();
+
+            try {
+                return Integer.parseInt(String.valueOf(entry.value));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
+    @Override
+    public boolean place(World world, int x, int y, int z, int flags) {
+        world.setBlock(x, y, z, this.block, getPlacedMeta(), flags);
+
+        Map<String, BlockProperty> availableProperties = null;
+
+        // meta properties first, the others may read the meta (IE the stairs shape reads the facing)
+        List<PropertyEntry> placeOrder = new ArrayList<>(entries.size());
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 0; i < entries.size(); i++) {
+                PropertyEntry entry = entries.get(i);
+
+                if (entry.name == null) continue;
+
+                if (entry.property == null && availableProperties == null) {
+                    // Deferred, we need to fetch the available properties and match the name to one
+                    availableProperties = new HashMap<>();
+                    Map<String, BlockProperty> finalAvailableProperties = availableProperties;
+                    BlockPropertyRegistry.getValidProperties(
+                            world,
+                            x,
+                            y,
+                            z,
+                            prop -> finalAvailableProperties.put(prop.getName(), prop));
+                }
+
+                BlockProperty property = (entry.property != null) ? entry.property
+                        : availableProperties.get(entry.name);
+                if ((property instanceof MetaBlockProperty) == (pass == 0)) placeOrder.add(entry);
+            }
+        }
+
+        for (int i = 0; i < placeOrder.size(); i++) {
+            PropertyEntry entry = placeOrder.get(i);
 
             if (entry.property != null) {
                 if (!entry.validated) {
@@ -816,19 +863,7 @@ public class BlockStateImpl implements BlockState {
                     entry.property.setValue(world, x, y, z, entry.value);
                 }
             } else {
-                // Deferred, we need to fetch the available properties and match the name to one
-
-                if (availableProperties == null) {
-                    availableProperties = new HashMap<>();
-                    Map<String, BlockProperty> finalAvailableProperties = availableProperties;
-                    BlockPropertyRegistry.getValidProperties(
-                            world,
-                            x,
-                            y,
-                            z,
-                            prop -> finalAvailableProperties.put(prop.getName(), prop));
-                }
-
+                // Deferred, matched by name above
                 BlockProperty match = availableProperties.get(entry.name);
 
                 if (match == null) {

@@ -134,6 +134,7 @@ public interface BlockState extends AutoCloseable, Cloneable {
     void reify(Map<String, BlockProperty<?>> validProperties);
 
     /// Puts the base block for this state into the world and applies each property independently.
+    /// Meta properties are applied before the others, so those can read the meta (IE the stairs shape).
     ///
     /// @return true when successful
     boolean place(World world, int x, int y, int z, int flags);
