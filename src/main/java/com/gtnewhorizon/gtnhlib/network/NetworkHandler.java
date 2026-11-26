@@ -18,8 +18,10 @@ public class NetworkHandler {
         instance.toClient(new MessageTitle());
         instance.toClient(new TeamInfoSync());
         instance.toClient(new TeamDataSync());
+        instance.toClient(new AutocompleteSuggestionsPacket());
 
         instance.toServer(new PacketKeyDown());
+        instance.toServer(new AutocompleteRequestPacket());
     }
 
 }
