@@ -1,33 +1,24 @@
 package com.gtnewhorizon.gtnhlib.mixins.early;
 
 import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.event.HoverEvent;
+import net.minecraft.nbt.NBTBase;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-import com.gtnewhorizon.gtnhlib.chat.customcomponents.ChatComponentItemName;
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
+import com.gtnewhorizon.gtnhlib.chat.ItemHoverNbt;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
 @Mixin(GuiChat.class)
-public abstract class MixinGuiChat_ItemTooltip extends GuiScreen {
+public class MixinGuiChat_ItemTooltip {
 
-    @ModifyExpressionValue(
+    @WrapOperation(
             method = "drawScreen",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/event/HoverEvent;getAction()Lnet/minecraft/event/HoverEvent$Action;",
-                    ordinal = 0))
-    private HoverEvent.Action gtnhlib$renderItemTooltip(HoverEvent.Action action, @Local HoverEvent hover,
-            @Local(argsOnly = true, ordinal = 0) int mouseX, @Local(argsOnly = true, ordinal = 1) int mouseY) {
-        if (action == HoverEvent.Action.SHOW_ITEM && hover.getValue() instanceof ChatComponentItemName itemName
-                && itemName.stack != null
-                && itemName.stack.getItem() != null) {
-            this.renderToolTip(itemName.stack, mouseX, mouseY);
-            return null;
-        }
-        return action;
+                    target = "Lnet/minecraft/nbt/JsonToNBT;func_150315_a(Ljava/lang/String;)Lnet/minecraft/nbt/NBTBase;"))
+    private NBTBase gtnhlib$parseItemHoverNbt(String text, Operation<NBTBase> original) {
+        return ItemHoverNbt.isEncoded(text) ? ItemHoverNbt.decode(text) : original.call(text);
     }
 }
