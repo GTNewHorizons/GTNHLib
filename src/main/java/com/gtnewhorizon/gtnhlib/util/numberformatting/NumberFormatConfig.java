@@ -118,6 +118,7 @@ public final class NumberFormatConfig {
             EXPONENTIAL_FORMAT = ExponentialFormat.SCIENTIFIC;
         }
 
+        // log new number format locale
         Locale activeLocale = numberFormatLocale.getLocale();
         GTNHLib.info("Number formatting: Using " + numberFormatLocale.getDisplayName() + " (" + activeLocale + ")");
     }

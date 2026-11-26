@@ -17,6 +17,8 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.postprocessing.shaders.UniversiumShader;
 import com.gtnewhorizon.gtnhlib.client.tooltip.LoreHandler;
 import com.gtnewhorizon.gtnhlib.color.ColorResource;
+import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelineContainer;
+import com.gtnewhorizon.gtnhlib.color.TextThemingGuidelines;
 import com.gtnewhorizon.gtnhlib.commands.CommandResourcePack;
 import com.gtnewhorizon.gtnhlib.commands.ItemInHandCommand;
 import com.gtnewhorizon.gtnhlib.compat.FalseTweaks;
@@ -24,12 +26,14 @@ import com.gtnewhorizon.gtnhlib.compat.Mods;
 import com.gtnewhorizon.gtnhlib.compat.NotEnoughItemsVersionChecker;
 import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
-import com.gtnewhorizon.gtnhlib.eventhandlers.ConfigEventHandler;
+import com.gtnewhorizon.gtnhlib.eventhandlers.ClientConfigEventHandler;
 import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
+import com.gtnewhorizon.gtnhlib.templatedtext.TemplatedTextLoader;
 import com.gtnewhorizon.gtnhlib.test.block.BlockTestOutlineShape;
 import com.gtnewhorizon.gtnhlib.test.item.TestItem;
 import com.gtnewhorizon.gtnhlib.util.AboveHotbarHUD;
 import com.gtnewhorizon.gtnhlib.util.ResourceUtil;
+import com.gtnewhorizon.gtnhlib.util.numberformatting.NumberFormatUtil;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -56,7 +60,10 @@ public class ClientProxy extends CommonProxy {
         super.construct(event);
 
         // ConfigChangedEvent is client-only; register handler only on client.
-        FMLCommonHandler.instance().bus().register(new ConfigEventHandler());
+        FMLCommonHandler.instance().bus().register(new ClientConfigEventHandler());
+
+        // initialize instances of resource-based providers
+        TextThemingGuidelines.TOOLTIPS.onClientConstruct();
     }
 
     @Override
@@ -108,6 +115,9 @@ public class ClientProxy extends CommonProxy {
         final var resourceManager = ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager());
         resourceManager.registerReloadListener(new ModelRegistry.ReloadListener());
         resourceManager.registerReloadListener(new ColorResource.CacheReloadListener());
+        resourceManager.registerReloadListener(TextThemingGuidelineContainer.getReloadListener());
+        resourceManager.registerReloadListener(NumberFormatUtil.getReloadListener());
+        resourceManager.registerReloadListener(TemplatedTextLoader.getReloadListener());
         MinecraftForge.EVENT_BUS.register(new ModelRegistry.EventHandler());
     }
 
