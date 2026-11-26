@@ -13,12 +13,22 @@ public final class AutocompleteConfig {
     /// Synced so that a server can turn autocomplete off for everyone who connects to it: clients then stop asking
     /// for suggestions, rather than showing their own suggestions until the server's empty reply arrives. The mixins
     /// follow the local value at startup, since they're applied before any server is joined.
-    @Config.Comment({ "Enables chat autocomplete: the suggestion popup and the gray hint for the rest of a command.",
-            "When disabled on a server, the server stops sending suggestions, and clients that join it turn autocomplete off." })
     @Config.DefaultBoolean(true)
     @Config.RequiresMcRestart
     @Config.Sync
     public static boolean enabled;
+
+    /// Synced so that clients suggest whichever form of effect the server's `/effect` accepts.
+    @Config.DefaultBoolean(true)
+    @Config.RequiresMcRestart
+    @Config.Sync
+    public static boolean effectNames;
+
+    /// Synced so that clients suggest whichever form of enchantment the server's `/enchant` accepts.
+    @Config.DefaultBoolean(true)
+    @Config.RequiresMcRestart
+    @Config.Sync
+    public static boolean enchantNames;
 
     @Config.Comment("Shows the popup listing suggestions above the chat bar. Arrow keys and tab work as in vanilla when it's hidden.")
     @Config.DefaultBoolean(true)

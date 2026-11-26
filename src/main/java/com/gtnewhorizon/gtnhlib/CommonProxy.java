@@ -30,6 +30,7 @@ import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import com.gtnewhorizon.gtnhlib.eventbus.Phase;
 import com.gtnewhorizon.gtnhlib.eventhandlers.InventoryEventDebugHandler;
 import com.gtnewhorizon.gtnhlib.keybind.SyncedKeybind;
+import com.gtnewhorizon.gtnhlib.modern.ModernIds;
 import com.gtnewhorizon.gtnhlib.network.NetworkHandler;
 import com.gtnewhorizon.gtnhlib.network.PacketMessageAboveHotbar;
 import com.gtnewhorizon.gtnhlib.network.PacketViewDistance;
@@ -95,6 +96,7 @@ public class CommonProxy {
             GameRegistry.registerItem(TestItem.INSTANCE, "testitem");
         }
 
+        ModernIds.init();
         BuiltinChatAutocompleteDrivers.init();
 
         BlockPropertyInit.init();
@@ -136,6 +138,7 @@ public class CommonProxy {
     public void postInit(FMLPostInitializationEvent event) {}
 
     public void serverAboutToStart(FMLServerAboutToStartEvent event) {
+        ModernIds.assignDefaultIds();
         BrigadierApi.init();
         if (GTNHLibConfig.enableTeamCommands) {
             TeamCommand.register();

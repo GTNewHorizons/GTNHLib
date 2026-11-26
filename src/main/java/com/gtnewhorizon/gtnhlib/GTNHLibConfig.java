@@ -131,4 +131,8 @@ public class GTNHLibConfig {
     @Config.Comment("Dev only: log every player inventory add/remove event to the console.")
     @Config.DefaultBoolean(false)
     public static boolean debugInventoryEvents;
+
+    @Config.Comment("Injects the ModernIdExt interface on enchantments and potions.")
+    @Config.DefaultBoolean(true)
+    public static boolean injectModernIdExt;
 }
