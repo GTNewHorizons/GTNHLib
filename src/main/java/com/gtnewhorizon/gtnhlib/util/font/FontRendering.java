@@ -46,7 +46,8 @@ public class FontRendering {
         }
     }
 
-    private static boolean preprocessorHandlesAmpCodes() {
+    /** Whether amp codes are converted to formatting when rendering text */
+    public static boolean preprocessorHandlesAmpCodes() {
         return textPreprocessor instanceof TextPreprocessor && ((TextPreprocessor) textPreprocessor).handlesAmpCodes();
     }
 
